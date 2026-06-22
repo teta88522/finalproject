@@ -11,7 +11,7 @@ public interface CodeValueMapper {
     // 코드값 전체 조회
     List<CodeValueVO> selectCodeValueList(@Param("userId") String userId);
 
-    // 특정 그룹 코드값 목록 조회
+    // 특정 그룹 코드값 목록 조회 / 머지용1
     List<CodeValueVO> selectCodeValueListByGroup(
             @Param("userId") String userId,
             @Param("settingGroupName") String settingGroupName
