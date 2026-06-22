@@ -1,0 +1,39 @@
+@charset "UTF-8";
+    .issue-status-form-page {
+        padding: 20px 10px 30px;
+    }
+
+    .issue-status-form-card {
+        background: #fff;
+        border: 1px solid #e7eaf0;
+        border-radius: 12px;
+        padding: 24px;
+        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+    }
+
+    .issue-status-form-title {
+        margin-bottom: 22px;
+    }
+
+    .issue-status-form-title h1 {
+        margin: 0 0 8px;
+        font-size: 24px;
+        font-weight: 700;
+        color: #1f2937;
+    }
+
+    .issue-status-form-title p {
+        margin: 0;
+        color: #6b7280;
+        font-size: 14px;
+    }
+
+    .issue-status-form-actions {
+        margin-top: 24px;
+        text-align: right;
+    }
+
+    .issue-status-form-actions .btn {
+        border-radius: 8px;
+        padding: 8px 16px;
+    }
