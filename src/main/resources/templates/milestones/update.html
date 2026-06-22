@@ -1,0 +1,131 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{common/layouts/default_layout}">
+<head>
+    <meta charset="UTF-8">
+    <title>마일스톤 수정</title>
+    <!-- 공통 CSS -->
+    <link rel="stylesheet" th:href="@{/css/milestones/milestone-common.css}">
+    <!-- 마일스톤 수정 전용 CSS -->
+    <link rel="stylesheet" th:href="@{/css/milestones/milestone-update.css}">
+</head>
+<body>
+    <div layout:fragment="Content" class="milestone-container">
+       <div class="kiaalap-panel">
+        
+        <div class="panel-header">
+            <h2>마일스톤 수정</h2>
+        </div>
+        
+        <!-- 수정이 필요한 부분 1: 폼 전송 URL(action)이 실제 백엔드 컨트롤러와 일치하는지 확인 (예: /milestones/edit 등) -->
+        <form id="milestoneForm" th:action="@{/milestones/update}" method="post">
+            <!-- 숨겨진 데이터 폼 -->
+            <!-- 수정이 필요한 부분 2: milestoneId 필드가 DTO의 필드명과 일치하는지 확인 -->
+            <input type="hidden" id="milestoneId" name="milestoneId" th:value="${milestone.milestoneId}">
+            <input type="hidden" id="versionId" name="versionId" th:value="${milestone.versionId}">
+            <!-- 일감 연결 ID (JS에서 쉼표로 구분된 문자열 등으로 전송) -->
+            <input type="hidden" id="selectedIssueIds" name="selectedIssueIds" value="">
+
+            <div class="panel-body">
+                <div class="content-row">
+                    
+                    <!-- 왼쪽: 정보 입력 및 일감 연결 -->
+                    <div class="content-left">
+                        <div class="form-group">
+                            <label>제목 <span class="required">*</span></label>
+                            <input type="text" id="title" name="title" class="form-control required-input" 
+                                   th:value="${milestone.title}" placeholder="마일스톤 제목을 입력하세요">
+                        </div>
+
+                        <div class="form-group">
+                            <label>설명</label>
+                            <textarea id="description" name="description" class="form-control" 
+                                      th:text="${milestone.description}" placeholder="마일스톤의 목표와 상세 내용을 적어주세요."></textarea>
+                        </div>
+
+                        <!-- 일감 연결 섹션 -->
+                        <div class="issue-section">
+                            <h3>일감 연결 관리</h3>
+                            <div class="form-group">
+                                <label>필터/검색</label>
+                                <input type="text" id="issueSearchInput" class="form-control" placeholder="일감 제목 또는 번호 입력...">
+                                <button type="button" id="btnSearchIssue" class="btn btn-default btn-sm mt-2">검색</button>
+                            </div>
+                            
+                            <div class="issue-list-container">
+                                <table class="table table-hover">
+                                    <thead style="background-color: #f9f9f9;">
+                                        <tr>
+                                            <th style="width: 50px; text-align: center;"><input type="checkbox" id="checkAllIssues"></th>
+                                            <th>일감 제목</th>
+                                            <th style="width: 100px;">상태</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="issueListBody">
+                                        <!-- JS가 여기에 기존 연결된 일감 및 검색된 일감 목록을 그려줍니다 -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 오른쪽: 상태, 담당자, 날짜 입력 -->
+                    <div class="content-right">
+                        <div class="form-group">
+                            <label>담당자 <span class="required">*</span></label>
+                            <!-- 수정이 필요한 부분 3: 백엔드의 사용자(매니저) 목록 속성명(managerList)과 userId/userName 프로퍼티가 일치하는지 확인 -->
+                            <select id="managerId" name="managerId" class="form-control required-input">
+                                <option value="">담당자 선택</option>
+                                <option th:each="manager : ${managerList}" 
+                                        th:value="${manager.userId}" 
+                                        th:text="${manager.userName}"
+                                        th:selected="${manager.userId == milestone.managerId}"></option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>상태 <span class="required">*</span></label>
+                            <!-- 수정이 필요한 부분 4: 백엔드 상태값(코드)과 일치하는지 확인 -->
+                            <select id="statusCode" name="statusCode" class="form-control required-input">
+                                <option value="">상태 선택</option>
+                                <option value="TODO" th:selected="${milestone.statusCode == 'TODO'}">진행 예정</option>
+                                <option value="IN_PROGRESS" th:selected="${milestone.statusCode == 'IN_PROGRESS'}">진행 중</option>
+                                <option value="DONE" th:selected="${milestone.statusCode == 'DONE'}">완료</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>시작일 <span class="required">*</span></label>
+                            <!-- 수정이 필요한 부분 5: 날짜 포맷 확인 (LocalDate가 'yyyy-MM-dd' 형태로 렌더링되지 않으면 #temporals.format 사용 필요) -->
+                            <input type="date" id="startDate" name="startDate" class="form-control required-input date-input"
+                                   th:value="${#temporals.format(milestone.startDate, 'yyyy-MM-dd')}">
+                        </div>
+
+                        <div class="form-group">
+                            <label>목표 일자 <span class="required">*</span></label>
+                            <input type="date" id="endDate" name="endDate" class="form-control required-input date-input"
+                                   th:value="${#temporals.format(milestone.endDate, 'yyyy-MM-dd')}">
+                            <div id="dateError" class="error-text" style="display: none; color: #dc3545; font-size: 0.9em; margin-top: 5px;">시작일은 목표일자 보다 늦을 수 없습니다.</div>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+
+            <!-- 패널 풋터: 제어 버튼 -->
+            <div class="panel-footer">
+                <button type="button" class="btn btn-default" onclick="history.back()">취소</button>
+                <div class="right-buttons">
+                    <button type="button" id="btnUpdate" class="btn btn-primary">수정 완료</button>
+                </div>
+            </div>
+        </form>
+
+    </div>
+</div>
+
+<!-- 마일스톤 수정 전용 JS -->
+<script th:src="@{/js/milestones/milestone-update.js}"></script>
+</body>
+</html>

@@ -22,4 +22,5 @@ public class MilestonesIssueDTO {
     private int progressRate;       
     private String managerId;    
     private String managerName;
+    private String issueStatusId;
 }
