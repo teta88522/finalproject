@@ -8,72 +8,58 @@
 
 <body>
 
-<div class="user-page">
+<h1>로그인</h1>
 
-    <!-- 왼쪽 파란 영역 -->
-    <div class="user-left">
-        <div class="user-logo-area">
-            <!-- 추후 팀 로고 들어갈 자리 -->
-        </div>
-    </div>
-
-    <!-- 오른쪽 로그인 영역 -->
-    <div class="user-right">
-
-        <form class="user-form-box login-form-box"
-              th:action="@{/login}"
-              method="post">
-
-            <div class="login-welcome-box">
-                <p>
-                    안녕하세요<br>
-                    000에 오신걸 환영합니다.
-                </p>
-            </div>
-
-            <div class="form-row">
-                <label for="loginId">아이디</label>
-                <input type="text"
-                       id="loginId"
-                       name="loginId"
-                       placeholder="아이디 입력">
-            </div>
-
-            <div class="form-row">
-                <label for="password">비밀번호</label>
-                <input type="password"
-                       id="password"
-                       name="password"
-                       placeholder="비밀번호 입력">
-            </div>
-
-            <div class="login-link-row">
-                <a th:href="@{/find-id}">아이디 찾기</a>
-                <span>|</span>
-                <a th:href="@{/find-password}">비밀번호 찾기</a>
-            </div>
-
-            <p class="login-error-message"
-               th:if="${param.error}">
-                * 아이디 또는 비밀번호가 잘못되었습니다.<br>
-                아이디와 비밀번호를 정확히 입력해 주세요.
-            </p>
-
-            <div class="login-btn-area">
-                <button type="submit" class="user-btn login-full-btn">로그인</button>
-
-                <button type="button"
-                        class="user-btn login-full-btn"
-                        th:onclick="|location.href='@{/join}'|">
-                    회원가입
-                </button>
-            </div>
-
-        </form>
-
-    </div>
-
+<div>
+    <p>환영합니다.</p>
 </div>
+
+<form th:action="@{/login}" method="post">
+
+    <div>
+        <label for="loginId">아이디</label>
+        <input type="text"
+               id="loginId"
+               name="loginId"
+               placeholder="아이디를 입력하세요">
+    </div>
+
+    <div>
+        <label for="password">비밀번호</label>
+        <input type="password"
+               id="password"
+               name="password"
+               placeholder="비밀번호를 입력하세요">
+    </div>
+
+    <div th:if="${param.error}">
+        <p>아이디 또는 비밀번호가 일치하지 않습니다.</p>
+    </div>
+
+    <div th:if="${param.logout}">
+        <p>로그아웃 되었습니다.</p>
+    </div>
+
+    <div>
+        <button type="submit">로그인</button>
+    </div>
+
+    <div>
+        <button type="button"
+                th:onclick="|location.href='@{/join}'|">
+            회원가입
+        </button>
+
+        <button type="button">
+            아이디 찾기
+        </button>
+
+        <button type="button">
+            비밀번호 찾기
+        </button>
+    </div>
+
+</form>
 
 </body>
 </html>

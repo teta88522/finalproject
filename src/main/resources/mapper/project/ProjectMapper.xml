@@ -1,20 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.pixcel.app.project.mapper.ProjectMapper">
-	<insert id="insertProject" parameterType="ProjectVO">
-		<selectKey keyProperty="projectId" resultType="string" order="BEFORE">
-			SELECT
-				'PROJECT_'
-				|| TO_CHAR(SYSDATE, 'YYMM')
-				|| '_'
-				|| LPAD(
-					NVL(MAX(TO_NUMBER(SUBSTR(project_id, -4))), 0) + 1,
-					4,
-					'0'
-				)
-			FROM project
-			WHERE SUBSTR(project_id, 1, 13) = 'PROJECT_' || TO_CHAR(SYSDATE, 'YYMM') || '_'
-		</selectKey>
+	<insert id="insertProject" parameterType="com.pixcel.app.project.service.ProjectVO">
 		INSERT INTO project (
 			project_id
 			, owner_id
@@ -26,6 +13,7 @@
 			, start_date
 			, end_date
 			, created_at
+			, git_url
 			)
 		VALUES (
 			#{projectId}
@@ -38,10 +26,11 @@
 			, #{startDate}
 			, #{endDate}
 			, SYSDATE
+			, #{gitUrl}
 		)
 	</insert>
 	
-	<insert id="insertProjectModules" parameterType="ProjectVO">
+	<insert id="insertProjectModules" parameterType="com.pixcel.app.project.service.ProjectVO">
 		<if test="moduleCodes != null and moduleCodes.size > 0">
 			INSERT ALL
 			<foreach collection="moduleCodes" item="code" index="idx">

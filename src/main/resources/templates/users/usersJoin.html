@@ -2,195 +2,91 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
 <meta charset="UTF-8">
-<title>회원가입</title>
-
 <link rel="stylesheet" th:href="@{/css/users/user.css}">
+<title>회원가입</title>
 </head>
 
 <body>
 
-<div class="user-page">
+<h1>회원가입</h1>
 
-    <!-- 왼쪽 파란 영역 -->
-    <div class="user-left">
-        <div class="user-logo-area">
-            <!-- 추후 팀 로고 들어갈 자리 -->
-        </div>
+<form th:action="@{/join}"
+      th:object="${userServiceVO}"
+      method="post"
+      onsubmit="return checkForm()">
+
+    <input type="hidden"
+           th:if="${_csrf != null}"
+           th:name="${_csrf.parameterName}"
+           th:value="${_csrf.token}">
+
+    <div>
+        <label for="userName">이름</label>
+        <input type="text"
+               id="userName"
+               th:field="*{userName}"
+               placeholder="이름을 입력하세요">
     </div>
 
-    <!-- 오른쪽 회원가입 영역 -->
-    <div class="user-right">
-
-        <form class="user-form-box"
-              th:action="@{/join}"
-              th:object="${userServiceVO}"
-              method="post"
-              onsubmit="return checkJoinForm()">
-
-            <h1 class="user-title">회원가입</h1>
-
-            <div class="form-row">
-                <label for="userName">이름</label>
-                <input type="text"
-                       id="userName"
-                       th:field="*{userName}"
-                       placeholder="홍길동">
-            </div>
-
-            <div class="form-row">
-                <label for="loginId">아이디</label>
-
-                <div class="id-input-wrap">
-                    <input type="text"
-                           id="loginId"
-                           th:field="*{loginId}"
-                           placeholder="test1234">
-
-                    <button type="button"
-                            class="check-btn"
-                            onclick="checkLoginId()">
-                        중복확인
-                    </button>
-                </div>
-            </div>
-
-            <p class="info-message" id="idCheckMessage"></p>
-
-            <div class="form-row">
-                <label for="password">비밀번호</label>
-                <input type="password"
-                       id="password"
-                       th:field="*{password}"
-                       placeholder="비밀번호">
-            </div>
-
-            <p class="info-message" id="passwordMessage"></p>
-
-            <div class="form-row">
-                <label for="passwordCheck">비밀번호 확인</label>
-                <input type="password"
-                       id="passwordCheck"
-                       name="passwordCheck"
-                       placeholder="비밀번호 확인">
-            </div>
-
-            <p class="info-message" id="passwordCheckMessage"></p>
-
-            <div class="form-row">
-                <label for="email">이메일</label>
-                <input type="email"
-                       id="email"
-                       th:field="*{email}"
-                       placeholder="test1234@email.com">
-            </div>
-
-            <div class="form-row">
-                <label for="phone">연락처</label>
-                <input type="text"
-                       id="phone"
-                       th:field="*{phone}"
-                       placeholder="010-1234-1234">
-            </div>
-
-            <input type="hidden" id="idCheckYn" value="N">
-
-            <div class="form-btn-area">
-                <button type="submit" class="user-btn">회원가입</button>
-
-                <button type="button"
-                        class="user-btn"
-                        th:onclick="|location.href='@{/login}'|">
-                    취소
-                </button>
-            </div>
-
-        </form>
-
+    <div>
+        <label for="loginId">아이디</label>
+        <input type="text"
+               id="loginId"
+               th:field="*{loginId}"
+               placeholder="아이디를 입력하세요">
     </div>
 
-</div>
+    <div>
+        <label for="password">비밀번호</label>
+        <input type="password"
+               id="password"
+               th:field="*{password}"
+               placeholder="비밀번호를 입력하세요">
+    </div>
+
+    <div>
+        <label for="passwordCheck">비밀번호 확인</label>
+        <input type="password"
+               id="passwordCheck"
+               name="passwordCheck"
+               placeholder="비밀번호를 다시 입력하세요">
+    </div>
+
+    <div>
+        <label for="email">이메일</label>
+        <input type="email"
+               id="email"
+               th:field="*{email}"
+               placeholder="이메일을 입력하세요">
+    </div>
+
+    <div>
+        <label for="phone">연락처</label>
+        <input type="text"
+               id="phone"
+               th:field="*{phone}"
+               placeholder="010-1234-5678">
+    </div>
+
+    <div>
+        <button type="submit">회원가입</button>
+
+        <button type="button"
+                th:onclick="|location.href='@{/login}'|">
+            취소
+        </button>
+    </div>
+
+</form>
 
 <script>
-    function checkLoginId() {
-        const loginId = document.getElementById("loginId").value;
-        const message = document.getElementById("idCheckMessage");
-        const idCheckYn = document.getElementById("idCheckYn");
-
-        if (loginId.trim() === "") {
-            alert("아이디를 입력하세요.");
-            document.getElementById("loginId").focus();
-            return;
-        }
-
-        fetch("/checkId?loginId=" + encodeURIComponent(loginId))
-            .then(response => response.json())
-            .then(data => {
-                if (data.duplicated) {
-                    message.innerText = "* 이미 사용중인 아이디입니다.";
-                    message.style.color = "red";
-                    idCheckYn.value = "N";
-                } else {
-                    message.innerText = "* 사용가능한 아이디입니다.";
-                    message.style.color = "#3366cc";
-                    idCheckYn.value = "Y";
-                }
-            })
-            .catch(error => {
-                console.log(error);
-                alert("아이디 중복확인 중 오류가 발생했습니다.");
-            });
-    }
-
-    document.getElementById("loginId").addEventListener("input", function () {
-        document.getElementById("idCheckYn").value = "N";
-        document.getElementById("idCheckMessage").innerText = "";
-    });
-
-    document.getElementById("password").addEventListener("input", function () {
-        const password = document.getElementById("password").value;
-        const message = document.getElementById("passwordMessage");
-
-        if (password.trim() === "") {
-            message.innerText = "";
-            return;
-        }
-
-        if (password.length >= 8) {
-            message.innerText = "* 안전한 비밀번호입니다.";
-            message.style.color = "#3366cc";
-        } else {
-            message.innerText = "* 비밀번호는 8자 이상 입력하세요.";
-            message.style.color = "red";
-        }
-    });
-
-    document.getElementById("passwordCheck").addEventListener("input", function () {
-        const password = document.getElementById("password").value;
-        const passwordCheck = document.getElementById("passwordCheck").value;
-        const message = document.getElementById("passwordCheckMessage");
-
-        if (passwordCheck.trim() === "") {
-            message.innerText = "";
-            return;
-        }
-
-        if (password === passwordCheck) {
-            message.innerText = "* 비밀번호가 일치합니다.";
-            message.style.color = "#3366cc";
-        } else {
-            message.innerText = "* 비밀번호가 일치하지 않습니다.";
-            message.style.color = "red";
-        }
-    });
-
-    function checkJoinForm() {
+    function checkForm() {
         const userName = document.getElementById("userName").value;
         const loginId = document.getElementById("loginId").value;
         const password = document.getElementById("password").value;
         const passwordCheck = document.getElementById("passwordCheck").value;
         const email = document.getElementById("email").value;
         const phone = document.getElementById("phone").value;
-        const idCheckYn = document.getElementById("idCheckYn").value;
 
         if (userName.trim() === "") {
             alert("이름을 입력하세요.");
@@ -204,14 +100,15 @@
             return false;
         }
 
-        if (idCheckYn !== "Y") {
-            alert("아이디 중복확인을 해주세요.");
-            return false;
-        }
-
         if (password.trim() === "") {
             alert("비밀번호를 입력하세요.");
             document.getElementById("password").focus();
+            return false;
+        }
+
+        if (passwordCheck.trim() === "") {
+            alert("비밀번호 확인을 입력하세요.");
+            document.getElementById("passwordCheck").focus();
             return false;
         }
 
