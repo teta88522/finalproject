@@ -1,0 +1,52 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{common/layouts/default_layout}">
+<head>
+<meta charset="UTF-8">
+</head>
+<body>
+<div layout:fragment="Content">
+
+<h2>코드값 입력</h2>
+
+<form th:object="${codeValue}" method="post">
+
+    <input type="hidden" th:field="*{settingCodeId}">
+
+    <div>
+        <label>사용자 ID</label>
+        <input type="text" th:field="*{userId}">
+    </div>
+
+    <div>
+        <label>그룹명</label>
+        <input type="text" th:field="*{groupName}">
+    </div>
+
+    <div>
+        <label>코드값명</label>
+        <input type="text" th:field="*{settingName}">
+    </div>
+
+    <div>
+        <label>기본값 여부</label>
+        <select th:field="*{defaultYn}">
+            <option value="N">N</option>
+            <option value="Y">Y</option>
+        </select>
+    </div>
+
+    <div>
+        <label>사용 여부</label>
+        <select th:field="*{useYn}">
+            <option value="Y">Y</option>
+            <option value="N">N</option>
+        </select>
+    </div>
+
+    <button type="submit">저장</button>
+</form>
+
+</body>
+</html>

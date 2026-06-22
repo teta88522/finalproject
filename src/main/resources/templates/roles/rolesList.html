@@ -1,0 +1,543 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{common/layouts/default_layout}">
+<head>
+<meta charset="UTF-8">
+<title>역할 및 권한</title>
+
+<style>
+    .role-list-page {
+        padding: 28px 32px;
+        background-color: #ffffff;
+    }
+
+    .role-page-title {
+        font-size: 26px;
+        font-weight: 500;
+        color: #111111;
+        margin: 0 0 24px 0;
+    }
+
+    .search-section {
+        border: 1px solid #dfe3f0;
+        border-radius: 8px;
+        background-color: #ffffff;
+        padding: 18px 20px;
+        margin-bottom: 18px;
+    }
+
+    .search-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 14px;
+    }
+
+    .search-title {
+        font-size: 15px;
+        font-weight: 500;
+        color: #333333;
+    }
+
+    .add-role-btn {
+        min-width: 82px;
+        height: 34px;
+        border: none;
+        border-radius: 5px;
+        background-color: #252ba3;
+        color: #ffffff;
+        font-size: 13px;
+        cursor: pointer;
+    }
+
+    .search-form-row {
+        display: grid;
+        grid-template-columns: 80px 1fr 80px 1fr 120px;
+        gap: 10px;
+        align-items: center;
+    }
+
+    .search-form-row label {
+        font-size: 13px;
+        color: #333333;
+    }
+
+    .search-form-row input,
+    .search-form-row select {
+        height: 32px;
+        border: 1px solid #d7dbe7;
+        border-radius: 5px;
+        padding: 0 10px;
+        font-size: 13px;
+        outline: none;
+    }
+
+    .search-btn-area {
+        display: flex;
+        gap: 8px;
+        justify-content: flex-start;
+        margin-top: 12px;
+    }
+
+    .btn-basic {
+        min-width: 70px;
+        height: 32px;
+        border: 1px solid #d7dbe7;
+        border-radius: 5px;
+        background-color: #ffffff;
+        color: #333333;
+        font-size: 12px;
+        cursor: pointer;
+    }
+
+    .btn-primary {
+        background-color: #252ba3;
+        border-color: #252ba3;
+        color: #ffffff;
+    }
+
+    .content-grid {
+        display: grid;
+        grid-template-columns: 1fr 1.6fr;
+        gap: 18px;
+    }
+
+    .content-panel {
+        border: 1px solid #dfe3f0;
+        border-radius: 8px;
+        background-color: #ffffff;
+        min-height: 500px;
+        overflow: hidden;
+    }
+
+    .panel-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px 18px 10px 18px;
+        border-bottom: 1px solid #eef1f7;
+    }
+
+    .panel-title {
+        font-size: 15px;
+        font-weight: 600;
+        color: #222222;
+    }
+
+    .panel-sub-text {
+        font-size: 12px;
+        color: #777777;
+    }
+
+    .panel-body {
+        padding: 16px 18px 18px 18px;
+    }
+
+    .summary-box-wrap {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-bottom: 12px;
+    }
+
+    .summary-box {
+        border: 1px solid #dfe3f0;
+        border-radius: 6px;
+        background-color: #fafbfe;
+        padding: 12px 14px;
+        min-height: 64px;
+    }
+
+    .summary-label {
+        font-size: 12px;
+        color: #777777;
+        margin-bottom: 6px;
+    }
+
+    .summary-value {
+        font-size: 16px;
+        font-weight: 600;
+        color: #222222;
+    }
+
+    .role-table,
+    .member-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+    }
+
+    .role-table thead th,
+    .member-table thead th {
+        background-color: #f5f6fb;
+        color: #333333;
+        font-weight: 500;
+        border-bottom: 1px solid #e4e8f2;
+        padding: 10px 8px;
+        text-align: center;
+    }
+
+    .role-table tbody td,
+    .member-table tbody td {
+        border-bottom: 1px solid #eef1f7;
+        padding: 10px 8px;
+        text-align: center;
+        color: #333333;
+    }
+
+    .role-name-link {
+        color: #2a4dbf;
+        text-decoration: none;
+        cursor: pointer;
+        font-weight: 500;
+    }
+
+    .role-name-link:hover {
+        text-decoration: underline;
+    }
+
+    .role-table tbody tr.active {
+        background-color: #f1f4ff;
+    }
+
+    .mini-btn {
+        min-width: 58px;
+        height: 28px;
+        border: 1px solid #d7dbe7;
+        border-radius: 4px;
+        background-color: #ffffff;
+        font-size: 12px;
+        cursor: pointer;
+        margin: 0 2px;
+    }
+
+    .mini-btn.delete {
+        border-color: #f1b6b6;
+        color: #d54a4a;
+        background-color: #fffafa;
+    }
+
+    .member-placeholder {
+        height: 360px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #888888;
+        font-size: 14px;
+        border: 1px dashed #d7dbe7;
+        border-radius: 6px;
+        background-color: #fafafa;
+    }
+
+    .selected-role-text {
+        margin-bottom: 12px;
+        font-size: 14px;
+        font-weight: 500;
+        color: #222222;
+    }
+
+    .pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 6px;
+        margin-top: 16px;
+    }
+
+    .page-btn {
+        width: 28px;
+        height: 28px;
+        border: 1px solid #d7dbe7;
+        border-radius: 4px;
+        background-color: #ffffff;
+        font-size: 12px;
+        cursor: pointer;
+    }
+
+    .page-btn.active {
+        background-color: #121f4d;
+        border-color: #121f4d;
+        color: #ffffff;
+    }
+
+    .role-btn-group {
+        white-space: nowrap;
+    }
+
+    .hidden {
+        display: none;
+    }
+
+    .btn-basic:hover,
+    .add-role-btn:hover,
+    .mini-btn:hover,
+    .page-btn:hover {
+        opacity: 0.9;
+    }
+</style>
+</head>
+
+<body>
+<div layout:fragment="Content">
+
+    <div class="role-list-page">
+
+        <h1 class="role-page-title">역할</h1>
+
+        <!-- 검색 영역 -->
+        <div class="search-section">
+            <div class="search-header">
+                <div class="search-title">검색조건</div>
+
+                <button type="button"
+                        class="add-role-btn"
+                        th:onclick="|location.href='@{/roles/new}'|">
+                    역할 추가
+                </button>
+            </div>
+
+            <div class="search-form-row">
+                <label for="roleName">역할 명</label>
+                <input type="text" id="roleName" placeholder="input">
+
+                <label for="userName">이름</label>
+                <input type="text" id="userName" placeholder="input">
+
+                <select>
+                    <option>선택</option>
+                </select>
+            </div>
+
+            <div class="search-btn-area">
+                <button type="button" class="btn-basic">clean</button>
+                <button type="button" class="btn-basic btn-primary">apply</button>
+            </div>
+        </div>
+
+        <!-- 목록/구성원 영역 -->
+        <div class="content-grid">
+
+            <!-- 역할 목록 -->
+            <div class="content-panel">
+                <div class="panel-header">
+                    <div class="panel-title">역할 목록</div>
+                    <div class="panel-sub-text">역할 선택 시 우측에 담당 현황 표시</div>
+                </div>
+
+                <div class="panel-body">
+
+                    <div class="summary-box-wrap">
+                        <div class="summary-box">
+                            <div class="summary-label">전체 역할 수</div>
+                            <div class="summary-value">6</div>
+                        </div>
+
+                        <div class="summary-box">
+                            <div class="summary-label">선택 역할</div>
+                            <div class="summary-value" id="selectedRoleLabel">없음</div>
+                        </div>
+                    </div>
+
+                    <table class="role-table">
+                        <thead>
+                            <tr>
+                                <th>역할명</th>
+                                <th>인원 수</th>
+                                <th>설명</th>
+                                <th>관리</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr data-role="개발자">
+                                <td>
+                                    <a class="role-name-link" onclick="selectRole('개발자')">개발자</a>
+                                </td>
+                                <td>12</td>
+                                <td>개발 담당 역할</td>
+                                <td class="role-btn-group">
+                                    <button type="button" class="mini-btn">복사 생성</button>
+                                    <button type="button" class="mini-btn delete">삭제</button>
+                                </td>
+                            </tr>
+
+                            <tr data-role="기획자">
+                                <td>
+                                    <a class="role-name-link" onclick="selectRole('기획자')">기획자</a>
+                                </td>
+                                <td>10</td>
+                                <td>기획 및 요구사항 관리</td>
+                                <td class="role-btn-group">
+                                    <button type="button" class="mini-btn">복사 생성</button>
+                                    <button type="button" class="mini-btn delete">삭제</button>
+                                </td>
+                            </tr>
+
+                            <tr data-role="팀원(default)">
+                                <td>
+                                    <a class="role-name-link" onclick="selectRole('팀원(default)')">팀원(default)</a>
+                                </td>
+                                <td>8</td>
+                                <td>기본 참여 권한</td>
+                                <td class="role-btn-group">
+                                    <button type="button" class="mini-btn">복사 생성</button>
+                                    <button type="button" class="mini-btn delete">삭제</button>
+                                </td>
+                            </tr>
+
+                            <tr data-role="팀장(default)">
+                                <td>
+                                    <a class="role-name-link" onclick="selectRole('팀장(default)')">팀장(default)</a>
+                                </td>
+                                <td>3</td>
+                                <td>팀 관리 기본 권한</td>
+                                <td class="role-btn-group">
+                                    <button type="button" class="mini-btn">복사 생성</button>
+                                    <button type="button" class="mini-btn delete">삭제</button>
+                                </td>
+                            </tr>
+
+                            <tr data-role="QA">
+                                <td>
+                                    <a class="role-name-link" onclick="selectRole('QA')">QA</a>
+                                </td>
+                                <td>4</td>
+                                <td>테스트 품질 관리</td>
+                                <td class="role-btn-group">
+                                    <button type="button" class="mini-btn">복사 생성</button>
+                                    <button type="button" class="mini-btn delete">삭제</button>
+                                </td>
+                            </tr>
+
+                            <tr data-role="문서관리자">
+                                <td>
+                                    <a class="role-name-link" onclick="selectRole('문서관리자')">문서관리자</a>
+                                </td>
+                                <td>5</td>
+                                <td>문서/자료 관리</td>
+                                <td class="role-btn-group">
+                                    <button type="button" class="mini-btn">복사 생성</button>
+                                    <button type="button" class="mini-btn delete">삭제</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="pagination">
+                        <button type="button" class="page-btn">&lt;</button>
+                        <button type="button" class="page-btn active">1</button>
+                        <button type="button" class="page-btn">2</button>
+                        <button type="button" class="page-btn">&gt;</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 역할 구성원 -->
+            <div class="content-panel">
+                <div class="panel-header">
+                    <div class="panel-title">역할 구성원</div>
+                    <div class="panel-sub-text">선택된 역할의 구성원 목록</div>
+                </div>
+
+                <div class="panel-body">
+                    <div id="memberPlaceholder" class="member-placeholder">
+                        역할 목록을 선택하지 않은 경우 역할 구성원은 표시되지 않습니다.
+                    </div>
+
+                    <div id="memberContent" class="hidden">
+                        <div class="selected-role-text">
+                            선택된 역할 :
+                            <span id="selectedRoleText">개발자</span>
+                        </div>
+
+                        <table class="member-table">
+                            <thead>
+                                <tr>
+                                    <th>프로젝트</th>
+                                    <th>이름</th>
+                                    <th>소속팀</th>
+                                    <th>ID</th>
+                                    <th>Email</th>
+                                </tr>
+                            </thead>
+                            <tbody id="memberTableBody">
+                                <!-- JS로 채움 -->
+                            </tbody>
+                        </table>
+
+                        <div class="pagination">
+                            <button type="button" class="page-btn">&lt;</button>
+                            <button type="button" class="page-btn active">1</button>
+                            <button type="button" class="page-btn">2</button>
+                            <button type="button" class="page-btn">&gt;</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <script>
+        const roleMembers = {
+            "개발자": [
+                { project: "범어동 리뉴얼", name: "김도현", team: "플랫폼팀", id: "kim.dev", email: "kim.dev@example.com" },
+                { project: "런딩존 리뉴얼", name: "이서연", team: "플랫폼팀", id: "lee.api", email: "lee.api@example.com" },
+                { project: "맵쇼핑 개발", name: "정유빈", team: "프론트팀", id: "jung.fe", email: "jung.fe@example.com" },
+                { project: "모바일 앱 개선", name: "박민호", team: "인프라팀", id: "park.ops", email: "park.ops@example.com" }
+            ],
+            "기획자": [
+                { project: "범어동 리뉴얼", name: "최민서", team: "기획팀", id: "choi.pm", email: "choi.pm@example.com" },
+                { project: "맵쇼핑 개발", name: "윤하나", team: "기획팀", id: "yoon.pm", email: "yoon.pm@example.com" }
+            ],
+            "팀원(default)": [
+                { project: "공통 프로젝트", name: "김철수", team: "개발1팀", id: "kim01", email: "kim01@example.com" }
+            ],
+            "팀장(default)": [
+                { project: "공통 프로젝트", name: "박팀장", team: "개발1팀", id: "parklead", email: "parklead@example.com" }
+            ],
+            "QA": [
+                { project: "테스트 자동화", name: "홍길동", team: "QA팀", id: "hong.qa", email: "hong.qa@example.com" }
+            ],
+            "문서관리자": [
+                { project: "문서 시스템", name: "오지훈", team: "문서팀", id: "oh.doc", email: "oh.doc@example.com" }
+            ]
+        };
+
+        function selectRole(roleName) {
+            document.getElementById("selectedRoleLabel").innerText = roleName;
+            document.getElementById("selectedRoleText").innerText = roleName;
+
+            const rows = document.querySelectorAll(".role-table tbody tr");
+            rows.forEach(row => {
+                row.classList.remove("active");
+                if (row.getAttribute("data-role") === roleName) {
+                    row.classList.add("active");
+                }
+            });
+
+            document.getElementById("memberPlaceholder").classList.add("hidden");
+            document.getElementById("memberContent").classList.remove("hidden");
+
+            const memberTableBody = document.getElementById("memberTableBody");
+            memberTableBody.innerHTML = "";
+
+            const members = roleMembers[roleName] || [];
+
+            members.forEach(member => {
+                const row = document.createElement("tr");
+                row.innerHTML =
+                    "<td>" + member.project + "</td>" +
+                    "<td>" + member.name + "</td>" +
+                    "<td>" + member.team + "</td>" +
+                    "<td>" + member.id + "</td>" +
+                    "<td>" + member.email + "</td>";
+                memberTableBody.appendChild(row);
+            });
+        }
+    </script>
+
+</div>
+</body>
+</html>

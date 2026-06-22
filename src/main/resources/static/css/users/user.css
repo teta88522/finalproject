@@ -1,67 +1,79 @@
-@charset "UTF-8";
 * {
     box-sizing: border-box;
 }
 
+html,
 body {
     margin: 0;
-    font-family: Arial, "Noto Sans KR", sans-serif;
-    background-color: #ffffff;
+    padding: 0;
+    width: 100%;
+    height: 100%;
 }
 
-.auth-container {
+/* 전체 회원가입/로그인 화면 */
+.user-page {
     display: flex;
     width: 100%;
     min-height: 100vh;
+    background-color: #ffffff;
+    font-family: Arial, "Noto Sans KR", sans-serif;
 }
 
 /* 왼쪽 파란 영역 */
-.auth-left {
+.user-left {
     width: 36%;
-    background-color: #282ea3;
+    min-height: 100vh;
+    background-color: #292fa3;
     display: flex;
     justify-content: center;
     align-items: center;
 }
 
-/* 추후 팀 로고 들어갈 자리 */
-.logo-area {
+/* 추후 팀 로고 영역 */
+.user-logo-area {
     color: #ffffff;
     font-size: 28px;
     font-weight: bold;
 }
 
 /* 오른쪽 폼 영역 */
-.auth-right {
+.user-right {
     width: 64%;
+    min-height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
 }
 
-.auth-box {
+/* 회원가입 폼 박스 */
+.user-form-box {
     width: 430px;
 }
 
-.auth-title {
+/* 제목 */
+.user-title {
     text-align: center;
     font-size: 28px;
-    font-weight: 500;
-    margin-bottom: 45px;
+    font-weight: 400;
+    margin: 0 0 42px 0;
 }
 
+/* 라벨 + 입력창 한 줄 */
 .form-row {
     display: flex;
     align-items: center;
-    margin-bottom: 15px;
+    width: 100%;
+    margin-bottom: 14px;
 }
 
+/* 라벨 */
 .form-row label {
-    width: 105px;
+    width: 95px;
     font-size: 14px;
     color: #333333;
 }
 
+/* 일반 input */
 .form-row input {
     flex: 1;
     height: 38px;
@@ -69,85 +81,69 @@ body {
     border-radius: 6px;
     padding: 0 12px;
     font-size: 14px;
+    color: #333333;
     outline: none;
 }
 
-.form-row input:focus {
-    border-color: #282ea3;
+.form-row input::placeholder {
+    color: #b0b0b0;
 }
 
-.id-row {
-    display: flex;
+.form-row input:focus {
+    border-color: #292fa3;
+}
+
+/* 아이디 input + 중복확인 버튼 묶음 */
+.id-input-wrap {
     flex: 1;
+    display: flex;
     gap: 8px;
 }
 
-.id-row input {
+.id-input-wrap input {
     width: 100%;
 }
 
-.small-btn {
-    width: 78px;
+/* 중복확인 버튼 */
+.check-btn {
+    width: 75px;
     height: 38px;
     border: none;
     border-radius: 6px;
-    background-color: #282ea3;
+    background-color: #292fa3;
     color: #ffffff;
     font-size: 12px;
     cursor: pointer;
 }
 
-.message {
-    margin-left: 105px;
-    margin-top: -8px;
-    margin-bottom: 10px;
+/* 안내 메시지 */
+.info-message {
+    margin: -7px 0 10px 95px;
     font-size: 12px;
     color: #3366cc;
 }
 
-.btn-area {
+/* 버튼 영역 */
+.form-btn-area {
     display: flex;
-    justify-content: center;
-    gap: 40px;
-    margin-top: 30px;
+    gap: 55px;
+    margin-top: 25px;
+    padding-left: 95px;
 }
 
-.main-btn {
-    width: 160px;
+/* 회원가입, 취소 버튼 */
+.user-btn {
+    width: 165px;
     height: 40px;
     border: none;
     border-radius: 6px;
-    background-color: #282ea3;
+    background-color: #292fa3;
     color: #ffffff;
     font-size: 14px;
     cursor: pointer;
 }
 
-.main-btn:hover,
-.small-btn:hover {
-    background-color: #1f2488;
-}
-
-.link-area {
-    display: flex;
-    justify-content: center;
-    gap: 18px;
-    margin-top: 20px;
-}
-
-.link-area a {
-    color: #333333;
-    font-size: 13px;
-    text-decoration: none;
-}
-
-.link-area a:hover {
-    text-decoration: underline;
-}
-
-.welcome-text {
-    text-align: center;
-    margin-bottom: 30px;
-    font-size: 15px;
-    color: #333333;
+.user-btn:hover,
+.check-btn:hover {
+    background-color: #20258a;
 }

@@ -1,19 +1,19 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+   xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
 <!--공통 JS / CSS 영역을 관리하는 환경 영역-->
 <head>
  <th:block th:replace="~{common/configs/config :: ConfigFragment}"></th:block>
-	<title layout:title-pattern="$LAYOUT_TITLE : $CONTENT_TITLE">pixcel</title>
+   <title layout:title-pattern="$LAYOUT_TITLE : $CONTENT_TITLE">pixcel</title>
 </head>
 <body>
-	<div class="left-sidebar-pro">
-	<!--sider 영역을 참조합니다.-->
-	<aside th:replace="~{common/fragments/projectsidebar :: SiderProjectFragment}"></aside>
-	</div>
-	<div class="all-content-wrapper">
-	<!--Header 영역을 참조합니다.-->
-		<header th:replace="~{common/fragments/header :: HeaderFragment}"></header>
+   <div class="left-sidebar-pro">
+   <!--sider 영역을 참조합니다.-->
+   <aside th:replace="~{common/fragments/projectsidebar :: SiderProjectFragment}"></aside>
+   </div>
+   <div class="all-content-wrapper">
+   <!--Header 영역을 참조합니다.-->
+      <header th:replace="~{common/fragments/header :: HeaderFragment}"></header>
         <main layout:fragment="Content" ></main>
     </div>
     <footer th:replace="~{common/fragments/footer :: FooterFragment}"></footer>

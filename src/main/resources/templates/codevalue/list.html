@@ -1,371 +1,46 @@
-<!doctype html>
-<html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{common/layouts/default_layout}">
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
-<meta charset="UTF-8">
-<title>코드값 관리</title>
-
-<style>
-    :root {
-        --codevalue-page-offset: 132px;
-    }
-
-    .codevalue-page {
-        padding: 18px 10px 0;
-        height: calc(100vh - var(--codevalue-page-offset));
-        overflow: hidden;
-        box-sizing: border-box;
-    }
-
-    .codevalue-layout {
-        width: 100%;
-        height: 100%;
-        min-height: 0;
-        display: grid;
-        grid-template-rows: auto auto minmax(0, 1fr);
-    }
-
-    .codevalue-header {
-        background: #fff;
-        border: 1px solid #e7eaf0;
-        border-radius: 12px;
-        padding: 20px 24px;
-        margin-bottom: 16px;
-        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
-    }
-
-    .codevalue-header h1 {
-        margin: 0 0 8px;
-        font-size: 24px;
-        font-weight: 700;
-        color: #1f2937;
-    }
-
-    .codevalue-header p {
-        margin: 0;
-        color: #6b7280;
-        font-size: 14px;
-    }
-
-    .codevalue-alert-wrap {
-        margin-bottom: 12px;
-    }
-
-    .codevalue-alert-wrap:empty {
-        display: none;
-        margin: 0;
-    }
-
-    .codevalue-grid {
-        min-height: 0;
-        display: grid;
-        grid-template-columns: repeat(3, minmax(260px, 1fr));
-        gap: 18px;
-        align-items: stretch;
-        width: 100%;
-    }
-
-    .codevalue-card {
-        background: #fff;
-        border: 1px solid #e7eaf0;
-        border-radius: 12px;
-        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
-        overflow: hidden;
-        min-width: 0;
-        min-height: 0;
-
-        display: flex;
-        flex-direction: column;
-    }
-
-    .codevalue-card-header {
-        padding: 17px 18px 13px;
-        border-bottom: 1px solid #edf0f5;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-        flex-shrink: 0;
-    }
-
-    .codevalue-title-wrap h2 {
-        margin: 0;
-        font-size: 18px;
-        font-weight: 700;
-        color: #111827;
-    }
-
-    .codevalue-title-wrap span {
-        display: inline-block;
-        margin-top: 5px;
-        font-size: 12px;
-        color: #6b7280;
-    }
-
-    .codevalue-add-btn {
-        white-space: nowrap;
-        border-radius: 8px;
-        padding: 7px 12px;
-        font-size: 13px;
-    }
-
-    .codevalue-table-scroll {
-        flex: 1;
-        min-height: 0;
-        overflow-y: auto;
-        overflow-x: hidden;
-    }
-
-    .codevalue-table {
-        width: 100%;
-        margin-bottom: 0;
-    }
-
-    .codevalue-table thead th {
-        position: sticky;
-        top: 0;
-        z-index: 5;
-        background: #f8fafc;
-        color: #374151;
-        font-size: 13px;
-        font-weight: 700;
-        border-bottom: 1px solid #e5e7eb !important;
-        padding: 11px 10px !important;
-    }
-
-    .codevalue-table tbody td {
-        vertical-align: middle !important;
-        padding: 10px !important;
-        font-size: 13px;
-        border-top: 1px solid #f1f3f5 !important;
-    }
-
-    .codevalue-order {
-        width: 54px;
-        text-align: center;
-        color: #6b7280;
-    }
-
-    .codevalue-name {
-        font-weight: 600;
-        color: #1f2937;
-        word-break: break-all;
-    }
-
-    .codevalue-badge-default {
-        display: inline-block;
-        padding: 4px 8px;
-        border-radius: 999px;
-        background: #e8f7ef;
-        color: #1f8f4d;
-        font-size: 12px;
-        font-weight: 700;
-    }
-
-    .codevalue-badge-none {
-        color: #9ca3af;
-        font-size: 12px;
-    }
-
-    .codevalue-actions {
-        display: flex;
-        justify-content: flex-end;
-        gap: 5px;
-        flex-wrap: wrap;
-    }
-
-    .codevalue-actions form {
-        margin: 0;
-    }
-
-    .codevalue-action-btn {
-        border: 1px solid #d8dee9;
-        background: #fff;
-        color: #374151;
-        border-radius: 7px;
-        padding: 5px 8px;
-        font-size: 12px;
-        line-height: 1.2;
-    }
-
-    .codevalue-action-btn:hover {
-        background: #f3f4f6;
-    }
-
-    .codevalue-action-danger {
-        color: #dc2626;
-        border-color: #f1c0c0;
-    }
-
-    .codevalue-action-danger:hover {
-        background: #fff1f2;
-    }
-
-    .codevalue-empty {
-        padding: 160px 10px !important;
-        text-align: center;
-        color: #9ca3af;
-    }
-
-    @media (max-width: 1400px) {
-        .codevalue-grid {
-            grid-template-columns: repeat(3, minmax(230px, 1fr));
-        }
-    }
-
-    @media (max-width: 1100px) {
-        .codevalue-page {
-            height: auto;
-            overflow: visible;
-        }
-
-        .codevalue-layout {
-            display: block;
-        }
-
-        .codevalue-grid {
-            grid-template-columns: 1fr;
-        }
-
-        .codevalue-card {
-            height: 520px;
-            margin-bottom: 18px;
-        }
-    }
-</style>
+    <meta charset="UTF-8">
+    <title>코드값 목록</title>
 </head>
-
 <body>
-<div layout:fragment="Content">
 
-    <div class="codevalue-page">
-        <div class="container-fluid codevalue-layout">
+<h2>코드값 목록</h2>
 
-            <div class="codevalue-header">
-                <h1>코드값 관리</h1>
-                <p>
-                    프로젝트에서 사용하는 작업분류, 일감 우선순위, 문서유형 코드값을 그룹별로 관리합니다.
-                    기본값은 각 그룹마다 하나만 설정할 수 있습니다.
-                </p>
-            </div>
+<a th:href="@{/code-values/new}">새 코드값 생성</a>
 
-            <div class="codevalue-alert-wrap">
-                <div th:if="${message}" class="alert alert-success" th:text="${message}"></div>
-                <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
-            </div>
+<table border="1">
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>그룹명</th>
+        <th>코드값명</th>
+        <th>기본값</th>
+        <th>사용여부</th>
+        <th>관리</th>
+    </tr>
+    </thead>
 
-            <div class="codevalue-grid">
+    <tbody>
+    <tr th:each="code : ${codeValueList}">
+        <td th:text="${code.settingCodeId}">1</td>
+        <td th:text="${code.groupName}">그룹명</td>
+        <td th:text="${code.settingName}">코드값명</td>
+        <td th:text="${code.defaultYn}">Y</td>
+        <td th:text="${code.useYn}">Y</td>
+        <td>
+            <a th:href="@{/code-values/edit(settingCodeId=${code.settingCodeId})}">수정</a>
 
-                <div class="codevalue-card"
-                     th:each="entry : ${codeValueGroupMap}">
+            <form th:action="@{/code-values/delete}" method="post" style="display:inline;">
+                <input type="hidden" name="settingCodeId" th:value="${code.settingCodeId}">
+                <input type="hidden" name="userId" th:value="${code.userId}">
+                <button type="submit">삭제</button>
+            </form>
+        </td>
+    </tr>
+    </tbody>
+</table>
 
-                    <div class="codevalue-card-header">
-                        <div class="codevalue-title-wrap">
-                            <h2 th:text="${groupNameMap.get(entry.key)}">그룹명</h2>
-                            <span>
-                                등록된 코드값
-                                <strong th:text="${#lists.size(entry.value)}">0</strong>
-                                개
-                            </span>
-                        </div>
-
-                        <a class="btn btn-primary codevalue-add-btn"
-                           th:href="@{/codevalue/create(settingGroupName=${entry.key})}">
-                            + 새 코드값
-                        </a>
-                    </div>
-
-                    <div class="codevalue-table-scroll">
-                        <table class="table codevalue-table">
-                            <thead>
-                            <tr>
-                                <th class="codevalue-order">순서</th>
-                                <th>이름</th>
-                                <th style="width:85px;">기본값</th>
-                                <th style="width:150px; text-align:right;">관리</th>
-                            </tr>
-                            </thead>
-
-                            <tbody>
-                            <tr th:if="${#lists.isEmpty(entry.value)}">
-                                <td colspan="4" class="codevalue-empty">
-                                    등록된 코드값이 없습니다.
-                                </td>
-                            </tr>
-
-                            <tr th:each="codeValue, stat : ${entry.value}">
-                                <td class="codevalue-order" th:text="${stat.count}">1</td>
-
-                                <td class="codevalue-name" th:text="${codeValue.settingName}">
-                                    코드값명
-                                </td>
-
-                                <td>
-                                    <span th:if="${codeValue.defaultYn == 'Y'}"
-                                          class="codevalue-badge-default">
-                                        기본
-                                    </span>
-
-                                    <span th:unless="${codeValue.defaultYn == 'Y'}"
-                                          class="codevalue-badge-none">
-                                        -
-                                    </span>
-                                </td>
-
-                                <td>
-                                    <div class="codevalue-actions">
-
-                                        <form th:if="${codeValue.defaultYn != 'Y'}"
-                                              th:action="@{/codevalue/default/set}"
-                                              method="post">
-                                            <input type="hidden"
-                                                   name="settingCodeId"
-                                                   th:value="${codeValue.settingCodeId}">
-                                            <button type="submit"
-                                                    class="codevalue-action-btn">
-                                                기본
-                                            </button>
-                                        </form>
-
-                                        <form th:if="${codeValue.defaultYn == 'Y'}"
-                                              th:action="@{/codevalue/default/cancel}"
-                                              method="post">
-                                            <input type="hidden"
-                                                   name="settingCodeId"
-                                                   th:value="${codeValue.settingCodeId}">
-                                            <button type="submit"
-                                                    class="codevalue-action-btn">
-                                                취소
-                                            </button>
-                                        </form>
-
-                                        <form th:action="@{/codevalue/delete}"
-                                              method="post"
-                                              onsubmit="return confirm('해당 코드값을 삭제하시겠습니까?');">
-                                            <input type="hidden"
-                                                   name="settingCodeId"
-                                                   th:value="${codeValue.settingCodeId}">
-                                            <button type="submit"
-                                                    class="codevalue-action-btn codevalue-action-danger">
-                                                삭제
-                                            </button>
-                                        </form>
-
-                                    </div>
-                                </td>
-                            </tr>
-                            </tbody>
-                        </table>
-                    </div>
-
-                </div>
-
-            </div>
-
-        </div>
-    </div>
-
-</div>
 </body>
 </html>

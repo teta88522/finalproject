@@ -4,14 +4,22 @@
 	<!-- 회원가입 -->
 	<insert id="insertUser" parameterType="userServiceVO">
 		<selectKey keyProperty="userId" resultType="String" order="BEFORE">
-			SELECT 'USERS_' || LPAD(
-			NVL(MAX(TO_NUMBER(SUBSTR(user_id, 7))), 0) + 1,
-			4,
-			'0'
-			)
-			FROM users
-			WHERE user_id LIKE 'USERS_%'
-		</selectKey>
+    		SELECT 'USERS_' || TO_CHAR(SYSDATE, 'YYYYMM') || '_' ||
+           		LPAD(
+               		NVL(
+                   		MAX(
+                       		TO_NUMBER(
+                           		SUBSTR(user_id, 14)
+                       		)
+                   		),
+                   		0
+               		) + 1,
+               		4,
+               		'0'
+           		)
+    		FROM users
+    		WHERE user_id LIKE 'USERS_' || TO_CHAR(SYSDATE, 'YYYYMM') || '_%'
+</selectKey>
 		INSERT INTO users
 		(
 			user_id,

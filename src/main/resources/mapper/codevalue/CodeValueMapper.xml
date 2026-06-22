@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.pixcel.app.codevalue.mapper.CodeValueMapper">
+
+    <!-- 특정 사용자의 코드값 전체 목록 조회 -->
+<select id="selectCodeValueList"
+        resultType="CodeValueVO">
+    SELECT
+        setting_code_id,
+        setting_group_name,
+        setting_name,
+        default_yn,
+        use_yn,
+        user_id
+    FROM setting_code
+    WHERE user_id = #{userId}
+    ORDER BY setting_group_name, setting_code_id
+</select>
+
+<!-- 특정 사용자 + 특정 그룹의 코드값 목록 조회 -->
+<select id="selectCodeValueListByGroup"
+        resultType="CodeValueVO">
+    SELECT
+        setting_code_id,
+        setting_group_name,
+        setting_name,
+        default_yn,
+        use_yn,
+        user_id
+    FROM setting_code
+    WHERE user_id = #{userId}
+      AND setting_group_name = #{settingGroupName}
+    ORDER BY setting_code_id
+</select>
+
+<!-- 코드값 ID 기준 상세 조회 -->
+<select id="selectCodeValueDetail"
+        resultType="CodeValueVO">
+    SELECT
+        setting_code_id,
+        setting_group_name,
+        setting_name,
+        default_yn,
+        use_yn,
+        user_id
+    FROM setting_code
+    WHERE setting_code_id = #{settingCodeId}
+</select>
+
+<!-- 새 코드값 등록 -->
+<insert id="insertCodeValue"
+        parameterType="CodeValueVO">
+    INSERT INTO setting_code (
+        setting_code_id,
+        setting_group_name,
+        setting_name,
+        default_yn,
+        use_yn,
+        user_id
+    ) VALUES (
+        setting_code_seq.NEXTVAL,
+        #{settingGroupName},
+        #{settingName},
+        #{defaultYn},
+        #{useYn},
+        #{userId}
+    )
+</insert>
+
+<!-- 기존 코드값 수정 -->
+<update id="updateCodeValue"
+        parameterType="CodeValueVO">
+    UPDATE setting_code
+    SET
+        setting_name = #{settingName},
+        default_yn = #{defaultYn},
+        use_yn = #{useYn}
+    WHERE setting_code_id = #{settingCodeId}
+</update>
+
+<!-- 코드값 삭제 -->
+<delete id="deleteCodeValue">
+    DELETE FROM setting_code
+    WHERE setting_code_id = #{settingCodeId}
+</delete>
+
+<!-- 같은 그룹 안의 기본값 개수 확인 -->
+<select id="countDefaultCodeValue"
+        resultType="int">
+    SELECT COUNT(*)
+    FROM setting_code
+    WHERE user_id = #{userId}
+      AND setting_group_name = #{settingGroupName}
+      AND default_yn = 'Y'
+</select>
+
+<!-- 같은 그룹 안의 코드값 이름 중복 확인 -->
+<select id="countDuplicateSettingName"
+        resultType="int">
+    SELECT COUNT(*)
+    FROM setting_code
+    WHERE user_id = #{userId}
+      AND setting_group_name = #{settingGroupName}
+      AND setting_name = #{settingName}
+</select>
+
+</mapper>
