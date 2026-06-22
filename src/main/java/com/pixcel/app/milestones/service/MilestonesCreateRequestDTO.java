@@ -21,6 +21,7 @@ import lombok.ToString;
 @Setter
 @ToString
 public class MilestonesCreateRequestDTO {
+	private String milestoneId;
 
 	@NotBlank(message = "마일스톤 제목은 필수입니다") //null이 아니고 공백 문자열("")이 아닌지 검사
 	private String title; //마일스톤 명칭
@@ -44,7 +45,11 @@ public class MilestonesCreateRequestDTO {
 	private String description; //설명
 	
 //	@NotNull(message = "버전 정보를 선택해주세요")
-//	private String versionId; //버전선택
+	private String versionId; //버전선택
 	
-	private List<Long> issueIds; //화면에서 선택한 일감 번호들의 리스트를 JSON 배열 형태로 받습니다.
+	private String selectedIssueIds; //화면에서 선택한 일감 번호들의 리스트를 JSON 배열 형태로 받습니다.
+	
+    
+    private Integer progressRate;
+    private String managerName;
 }

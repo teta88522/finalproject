@@ -1,0 +1,27 @@
+/* milestone-create.css */
+.panel-header { padding: 20px; border-bottom: 1px solid #eeeeee; }
+.panel-header h2 { margin: 0; font-size: 22px; font-weight: 500; }
+.panel-body { padding: 20px; }
+.content-row { display: flex; gap: 40px; }
+.content-left { flex: 6; }
+.content-right { flex: 4; }
+
+/* 폼 스타일 */
+.form-group { margin-bottom: 20px; }
+.form-group label { display: block; font-weight: 600; font-size: 14px; margin-bottom: 8px; color: #333333; }
+.required { color: #e12503; }
+.form-control { width: 100%; padding: 10px 15px; font-size: 14px; line-height: 1.5; color: #555555; background-color: #fff; border: 1px solid #cccccc; border-radius: 3px; box-sizing: border-box; transition: border-color 0.15s; }
+.form-control:focus { border-color: #006df0; outline: 0; }
+textarea.form-control { height: 120px; resize: vertical; }
+
+/* 에러 스타일 */
+.error-border { border: 1px solid #e12503 !important; }
+.error-text { color: #e12503; font-size: 12px; margin-top: 5px; }
+
+/* 일감 섹션 */
+.issue-section { margin-top: 30px; padding: 20px; background-color: #f9f9f9; border: 1px solid #eeeeee; border-radius: 3px; }
+.issue-section h3 { margin-top: 0; margin-bottom: 15px; font-size: 16px; color: #333333; font-weight: 600; }
+.issue-list-container { margin-top: 10px; max-height: 200px; overflow-y: auto; background: white; border: 1px solid #eeeeee; border-radius: 3px; }
+
+.panel-footer { padding: 15px 20px; background-color: #f9f9f9; border-top: 1px solid #eeeeee; display: flex; justify-content: space-between; align-items: center; border-radius: 0 0 3px 3px; }
+.right-buttons { display: flex; gap: 10px; }

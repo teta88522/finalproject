@@ -1,14 +1,76 @@
 package com.pixcel.app.milestones.service.impl;
 
-import org.springframework.stereotype.Service;
-
 import com.pixcel.app.milestones.service.MilestonesService;
-
+import com.pixcel.app.milestones.service.MilestonesVO;
+import com.pixcel.app.milestones.service.MilestoneListResponseDTO;
+import com.pixcel.app.milestones.service.MilestoneSearchVO;
+import com.pixcel.app.milestones.service.MilestonesCreateRequestDTO;
+import com.pixcel.app.milestones.service.MilestonesMemberDTO; // DTO 임포트 확인
+import com.pixcel.app.milestones.service.MilestonesIssueDTO;   // DTO 임포트 확인
+import com.pixcel.app.milestones.mapper.MilestonesMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 
-//@Service 				 //// Spring이 이 클래스를 관리하도록 하는 Bean 등록 어노테이션
-//@RequiredArgsConstructor //final이 붙은 필드들을 자동으로 생성자 주입 해주는것
-//public class MilestonesServiceImpl implements MilestonesService {
-//	private final MilestonesMapper milestonesMapper;
-//}
+@Service
+@RequiredArgsConstructor
+public class MilestonesServiceImpl implements MilestonesService {
+
+    private final MilestonesMapper milestonesMapper;
+
+    // 1. 마일스톤 생성 로직 (트랜잭션 적용)
+  
+    @Override
+    @Transactional // 마일스톤 생성과 일감 업데이트가 한 묶음으로 처리되도록 트랜잭션 걸기
+    public String createMilestone(MilestonesCreateRequestDTO requestDTO) {
+        
+        // [설명]
+        // 예전에는 여기서 requestDTO.getIssueIds()를 꺼내서 String.join(",", ...) 처리를 했어야 했습니다.
+        // 하지만! 작성해주신 JS의 validateForm() 함수에서 이미 "1234,1235" 형태로 만들어서
+        // requestDTO.getSelectedIssueIds()에 담아 보냈으므로, 여기선 아무런 가공을 할 필요가 없습니다!
+        
+        // 바로 Mapper(DB 공장)로 쿨하게 던져줍니다.
+        milestonesMapper.insertMilestone(requestDTO);
+        
+        return requestDTO.getMilestoneId();
+    }
+
+    // 2. 담당자 목록 조회
+    @Override
+    public List<MilestonesMemberDTO> getManagerList(String teamId) {
+        return milestonesMapper.getManagerList(teamId);
+    }
+
+    // 3. 일감 목록 조회
+    @Override
+    public List<MilestonesIssueDTO> getIssueList(String keyword, String versionId) {
+        return milestonesMapper.getIssueList(keyword, versionId);
+    }
+    // 4. 상세 조회
+    @Override
+    public MilestonesCreateRequestDTO getMilestoneDetail(String milestoneId) {
+        // Mapper를 통해 DB에서 데이터를 꺼내옵니다.
+        return milestonesMapper.getMilestoneDetail(milestoneId);
+    }
+    // 5. 수정
+    @Override
+    @Transactional
+    public int updateMilestone(MilestonesCreateRequestDTO updateVO) {
+        return milestonesMapper.updateMilestone(updateVO);
+    }
+    
+    // 6. 삭제
+    @Override
+    @Transactional
+    public int deleteMilestone(MilestonesVO milestonesVO) {
+    	return milestonesMapper.deleteMilestone(milestonesVO);
+    }
+    
+    //7. 목록조회
+    @Override
+    public  List<MilestoneListResponseDTO> getMilestoneList(MilestoneSearchVO searchVO){
+    	return milestonesMapper.getMilestoneList(searchVO);
+    };
+}

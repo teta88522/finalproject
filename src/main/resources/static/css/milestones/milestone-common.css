@@ -1,0 +1,64 @@
+/* milestone-common.css */
+body {
+    font-family: 'Roboto', Helvetica, Arial, sans-serif;
+    color: #303030;
+    background-color: #f6f8fa;
+}
+
+/* 기본 컨테이너 및 패널 */
+.kiaalap-wrapper, .milestone-container {
+    padding: 20px;
+    min-height: 100vh;
+}
+
+.kiaalap-panel {
+    background: #ffffff;
+    border-radius: 3px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    margin-bottom: 30px;
+}
+
+/* 공통 버튼 스타일 */
+.btn, .btn-k {
+    display: inline-block;
+    padding: 8px 15px;
+    font-size: 14px;
+    font-weight: 400;
+    text-align: center;
+    border-radius: 3px;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.btn-default {
+    background-color: #ffffff;
+    border-color: #cccccc;
+    color: #333333;
+}
+.btn-default:hover { background-color: #ebebeb; border-color: #adadad; }
+
+.btn-primary {
+    background-color: #006df0;
+    border-color: #006df0;
+    color: #ffffff;
+}
+.btn-primary:hover { background-color: #005ce6; border-color: #005ce6; }
+
+.btn-danger {
+    background-color: #d80027;
+    color: #fff;
+}
+.btn-danger:hover { background-color: #b30020; }
+
+/* 상태 뱃지 공통 */
+.status-badge {
+    padding: 6px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    border-radius: 3px;
+    color: #fff;
+    background-color: #006DF0;
+}
+.status-todo { background-color: #999999; }
+.status-done { background-color: #65b12d; }

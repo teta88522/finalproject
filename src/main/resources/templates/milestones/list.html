@@ -1,0 +1,100 @@
+<!doctype html>
+<html
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  layout:decorate="~{common/layouts/default_layout}"
+>
+  <head>
+    <meta charset="UTF-8" />
+    <title>마일스톤 목록</title>
+  </head>
+  <link rel="stylesheet" th:href="@{/css/milestones/milestone-common.css}" />
+  <!--   <link rel="stylesheet" th:href="@{/css/milestones/milestone-list.css}"> -->
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+  />
+  <body>
+    <div layout:fragment="Content">
+      <div class="kiaalap-wrapper">
+        <div class="milestone-container">
+          <div class="kiaalap-panel filter-panel">
+            <div class="filter-header">
+              <h2>마일스톤</h2>
+              <button
+                type="button"
+                class="btn btn-primary"
+                id="btnCreateMilestone"
+              >
+                마일스톤 생성
+              </button>
+            </div>
+            <form
+              class="filter-form"
+              th:action="@{/milestones/list}"
+              method="get"
+            >
+              <div class="filter-group">
+                <label>기간</label>
+                <input
+                  type="date"
+                  name="startDate"
+                  th:value="${searchVO.startDate}"
+                />
+                <span>→</span>
+                <input
+                  type="date"
+                  name="endDate"
+                  th:value="${searchVO.endDate}"
+                />
+              </div>
+              <div class="filter-group">
+                <label>일감명</label>
+                <input
+                  type="text"
+                  name="title"
+                  th:value="${searchVO.title}"
+                  placeholder="input"
+                />
+              </div>
+              <div class="filter-group">
+                <label>담당자</label>
+                <input
+                  type="text"
+                  name="managerId"
+                  th:value="${searchVO.managerName}"
+                  placeholder="담당자 이름 입력"
+                />
+              </div>
+              <div class="filter-group">
+                <label>상태</label>
+                <select name="statusCode">
+                  <option value="">전체</option>
+                  <option value="">전체</option>
+                  <option
+                    value="TODO"
+                    th:selected="${searchVO.statusCode == 'TODO'}"
+                  >
+                    진행 예정
+                  </option>
+                  <option
+                    value="IN_PROGRESS"
+                    th:selected="${searchVO.statusCode == 'IN_PROGRESS'}"
+                  >
+                    진행 중
+                  </option>
+                  <option
+                    value="DONE"
+                    th:selected="${searchVO.statusCode == 'DONE'}"
+                  >
+                    완료
+                  </option>
+                </select>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
