@@ -17,16 +17,20 @@ public class IssueStatusServiceImpl implements IssueStatusService {
 
     private final IssueStatusMapper issueStatusMapper;
 
-    // 일감 상태 전체 목록을 조회한다.
+    // 사용자별 일감 상태 전체 목록을 조회한다.
     @Override
-    public List<IssueStatusVO> getIssueStatusList() {
-        return issueStatusMapper.selectIssueStatusList();
+    public List<IssueStatusVO> getIssueStatusList(String userId) {
+        validateUserId(userId);
+
+        return issueStatusMapper.selectIssueStatusList(userId);
     }
 
-    // 일감 상태 ID 기준으로 상세 정보를 조회한다.
+    // 사용자별 일감 상태 ID 기준으로 상세 정보를 조회한다.
     @Override
-    public IssueStatusVO getIssueStatusDetail(String issueStatusId) {
-        IssueStatusVO issueStatus = issueStatusMapper.selectIssueStatusDetail(issueStatusId);
+    public IssueStatusVO getIssueStatusDetail(String issueStatusId, String userId) {
+        validateUserId(userId);
+
+        IssueStatusVO issueStatus = issueStatusMapper.selectIssueStatusDetail(issueStatusId, userId);
 
         if (issueStatus == null) {
             throw new IllegalArgumentException("존재하지 않는 일감 상태입니다.");
@@ -38,11 +42,15 @@ public class IssueStatusServiceImpl implements IssueStatusService {
     // 신규 일감 상태를 등록한다.
     @Override
     @Transactional
-    public void createIssueStatus(IssueStatusVO issueStatus) {
+    public void createIssueStatus(IssueStatusVO issueStatus, String userId) {
+        validateUserId(userId);
+
+        issueStatus.setUserId(userId);
 
         validateIssueStatus(issueStatus);
 
         int duplicateCount = issueStatusMapper.countDuplicateStatusName(
+                issueStatus.getUserId(),
                 issueStatus.getStatusName(),
                 null
         );
@@ -57,13 +65,19 @@ public class IssueStatusServiceImpl implements IssueStatusService {
     // 기존 일감 상태 정보를 수정한다.
     @Override
     @Transactional
-    public void modifyIssueStatus(IssueStatusVO issueStatus) {
+    public void modifyIssueStatus(IssueStatusVO issueStatus, String userId) {
+        validateUserId(userId);
 
         if (issueStatus.getIssueStatusId() == null || issueStatus.getIssueStatusId().trim().isEmpty()) {
             throw new IllegalArgumentException("일감 상태 ID가 없습니다.");
         }
 
-        IssueStatusVO savedIssueStatus = issueStatusMapper.selectIssueStatusDetail(issueStatus.getIssueStatusId());
+        issueStatus.setUserId(userId);
+
+        IssueStatusVO savedIssueStatus = issueStatusMapper.selectIssueStatusDetail(
+                issueStatus.getIssueStatusId(),
+                issueStatus.getUserId()
+        );
 
         if (savedIssueStatus == null) {
             throw new IllegalArgumentException("존재하지 않는 일감 상태입니다.");
@@ -72,6 +86,7 @@ public class IssueStatusServiceImpl implements IssueStatusService {
         validateIssueStatus(issueStatus);
 
         int duplicateCount = issueStatusMapper.countDuplicateStatusName(
+                issueStatus.getUserId(),
                 issueStatus.getStatusName(),
                 issueStatus.getIssueStatusId()
         );
@@ -86,9 +101,10 @@ public class IssueStatusServiceImpl implements IssueStatusService {
     // 사용 중이지 않은 일감 상태를 삭제한다.
     @Override
     @Transactional
-    public void removeIssueStatus(String issueStatusId) {
+    public void removeIssueStatus(String issueStatusId, String userId) {
+        validateUserId(userId);
 
-        IssueStatusVO issueStatus = issueStatusMapper.selectIssueStatusDetail(issueStatusId);
+        IssueStatusVO issueStatus = issueStatusMapper.selectIssueStatusDetail(issueStatusId, userId);
 
         if (issueStatus == null) {
             throw new IllegalArgumentException("존재하지 않는 일감 상태입니다.");
@@ -100,7 +116,15 @@ public class IssueStatusServiceImpl implements IssueStatusService {
             throw new IllegalArgumentException("이미 일감, 일감유형 또는 업무흐름에서 사용 중인 상태이므로 삭제할 수 없습니다.");
         }
 
-        issueStatusMapper.deleteIssueStatus(issueStatusId);
+        issueStatusMapper.deleteIssueStatus(issueStatusId, userId);
+    }
+
+    // 로그인 사용자 ID 값을 검증한다.
+    private void validateUserId(String userId) {
+
+        if (userId == null || userId.trim().isEmpty()) {
+            throw new IllegalArgumentException("사용자 정보가 없습니다.");
+        }
     }
 
     // 일감 상태 등록/수정 값을 검증한다.

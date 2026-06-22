@@ -1,46 +1,144 @@
-<!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{common/layouts/default_layout}">
 <head>
-    <meta charset="UTF-8">
-    <title>코드값 목록</title>
+<meta charset="UTF-8">
+<title>코드값 관리</title>
+
+<link rel="stylesheet" th:href="@{/css/codevalue/list.css}">
 </head>
+
 <body>
+<div layout:fragment="Content">
 
-<h2>코드값 목록</h2>
+    <div class="codevalue-page">
+        <div class="container-fluid codevalue-layout">
 
-<a th:href="@{/code-values/new}">새 코드값 생성</a>
+            <div class="codevalue-header">
+                <h1>코드값 관리</h1>
+                <p>
+                    프로젝트에서 사용하는 작업분류, 일감 우선순위, 문서유형 코드값을 그룹별로 관리합니다.
+                    기본값은 각 그룹마다 하나만 설정할 수 있습니다.
+                </p>
+            </div>
 
-<table border="1">
-    <thead>
-    <tr>
-        <th>ID</th>
-        <th>그룹명</th>
-        <th>코드값명</th>
-        <th>기본값</th>
-        <th>사용여부</th>
-        <th>관리</th>
-    </tr>
-    </thead>
+            <div class="codevalue-alert-wrap">
+                <div th:if="${message}" class="alert alert-success" th:text="${message}"></div>
+                <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+            </div>
 
-    <tbody>
-    <tr th:each="code : ${codeValueList}">
-        <td th:text="${code.settingCodeId}">1</td>
-        <td th:text="${code.groupName}">그룹명</td>
-        <td th:text="${code.settingName}">코드값명</td>
-        <td th:text="${code.defaultYn}">Y</td>
-        <td th:text="${code.useYn}">Y</td>
-        <td>
-            <a th:href="@{/code-values/edit(settingCodeId=${code.settingCodeId})}">수정</a>
+            <div class="codevalue-grid">
 
-            <form th:action="@{/code-values/delete}" method="post" style="display:inline;">
-                <input type="hidden" name="settingCodeId" th:value="${code.settingCodeId}">
-                <input type="hidden" name="userId" th:value="${code.userId}">
-                <button type="submit">삭제</button>
-            </form>
-        </td>
-    </tr>
-    </tbody>
-</table>
+                <div class="codevalue-card"
+                     th:each="entry : ${codeValueGroupMap}">
 
+                    <div class="codevalue-card-header">
+                        <div class="codevalue-title-wrap">
+                            <h2 th:text="${groupNameMap.get(entry.key)}">그룹명</h2>
+                            <span>
+                                등록된 코드값
+                                <strong th:text="${#lists.size(entry.value)}">0</strong>
+                                개
+                            </span>
+                        </div>
+
+                        <a class="btn btn-primary codevalue-add-btn"
+                           th:href="@{/codevalue/create(settingGroupName=${entry.key})}">
+                            + 새 코드값
+                        </a>
+                    </div>
+
+                    <div class="codevalue-table-scroll">
+                        <table class="table codevalue-table">
+                            <thead>
+                            <tr>
+                                <th class="codevalue-order">순서</th>
+                                <th>이름</th>
+                                <th style="width:85px;">기본값</th>
+                                <th style="width:150px; text-align:right;">관리</th>
+                            </tr>
+                            </thead>
+
+                            <tbody>
+                            <tr th:if="${#lists.isEmpty(entry.value)}">
+                                <td colspan="4" class="codevalue-empty">
+                                    등록된 코드값이 없습니다.
+                                </td>
+                            </tr>
+
+                            <tr th:each="codeValue, stat : ${entry.value}">
+                                <td class="codevalue-order" th:text="${stat.count}">1</td>
+
+                                <td class="codevalue-name" th:text="${codeValue.settingName}">
+                                    코드값명
+                                </td>
+
+                                <td>
+                                    <span th:if="${codeValue.defaultYn == 'Y'}"
+                                          class="codevalue-badge-default">
+                                        기본
+                                    </span>
+
+                                    <span th:unless="${codeValue.defaultYn == 'Y'}"
+                                          class="codevalue-badge-none">
+                                        -
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <div class="codevalue-actions">
+
+                                        <form th:if="${codeValue.defaultYn != 'Y'}"
+                                              th:action="@{/codevalue/default/set}"
+                                              method="post">
+                                            <input type="hidden"
+                                                   name="settingCodeId"
+                                                   th:value="${codeValue.settingCodeId}">
+                                            <button type="submit"
+                                                    class="codevalue-action-btn">
+                                                기본
+                                            </button>
+                                        </form>
+
+                                        <form th:if="${codeValue.defaultYn == 'Y'}"
+                                              th:action="@{/codevalue/default/cancel}"
+                                              method="post">
+                                            <input type="hidden"
+                                                   name="settingCodeId"
+                                                   th:value="${codeValue.settingCodeId}">
+                                            <button type="submit"
+                                                    class="codevalue-action-btn">
+                                                취소
+                                            </button>
+                                        </form>
+
+                                        <form th:action="@{/codevalue/delete}"
+                                              method="post"
+                                              onsubmit="return confirm('해당 코드값을 삭제하시겠습니까?');">
+                                            <input type="hidden"
+                                                   name="settingCodeId"
+                                                   th:value="${codeValue.settingCodeId}">
+                                            <button type="submit"
+                                                    class="codevalue-action-btn codevalue-action-danger">
+                                                삭제
+                                            </button>
+                                        </form>
+
+                                    </div>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+</div>
 </body>
 </html>

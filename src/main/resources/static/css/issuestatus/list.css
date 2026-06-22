@@ -1,0 +1,137 @@
+@charset "UTF-8";
+    .issue-status-page {
+        padding: 20px 10px 30px;
+    }
+
+    .issue-status-header {
+        background: #fff;
+        border: 1px solid #e7eaf0;
+        border-radius: 12px;
+        padding: 22px 26px;
+        margin-bottom: 18px;
+        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .issue-status-header h1 {
+        margin: 0 0 8px;
+        font-size: 24px;
+        font-weight: 700;
+        color: #1f2937;
+    }
+
+    .issue-status-header p {
+        margin: 0;
+        color: #6b7280;
+        font-size: 14px;
+    }
+
+    .issue-status-add-btn {
+        border-radius: 8px;
+        padding: 8px 14px;
+        white-space: nowrap;
+    }
+
+    .issue-status-card {
+        background: #fff;
+        border: 1px solid #e7eaf0;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+        overflow: hidden;
+    }
+
+    .issue-status-table-wrap {
+        padding: 0;
+    }
+
+    .issue-status-table {
+        margin-bottom: 0;
+    }
+
+    .issue-status-table thead th {
+        background: #f8fafc;
+        color: #374151;
+        font-size: 13px;
+        font-weight: 700;
+        border-bottom: 1px solid #e5e7eb !important;
+        padding: 12px 10px !important;
+    }
+
+    .issue-status-table tbody td {
+        vertical-align: middle !important;
+        padding: 12px 10px !important;
+        font-size: 13px;
+        border-top: 1px solid #f1f3f5 !important;
+    }
+
+    .status-name {
+        font-weight: 700;
+        color: #1f2937;
+    }
+
+    .status-desc {
+        color: #6b7280;
+        max-width: 520px;
+        word-break: break-all;
+    }
+
+    .status-badge-open {
+        display: inline-block;
+        padding: 4px 9px;
+        border-radius: 999px;
+        background: #e8f7ef;
+        color: #1f8f4d;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .status-badge-closed {
+        display: inline-block;
+        padding: 4px 9px;
+        border-radius: 999px;
+        background: #eef2ff;
+        color: #4338ca;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .status-actions {
+        display: flex;
+        justify-content: center;
+        gap: 6px;
+    }
+
+    .status-actions form {
+        margin: 0;
+    }
+
+    .status-action-btn {
+        border: 1px solid #d8dee9;
+        background: #fff;
+        color: #374151;
+        border-radius: 7px;
+        padding: 6px 10px;
+        font-size: 12px;
+    }
+
+    .status-action-btn:hover {
+        background: #f3f4f6;
+    }
+
+    .status-action-danger {
+        color: #dc2626;
+        border-color: #f1c0c0;
+    }
+
+    .status-action-danger:hover {
+        background: #fff1f2;
+    }
+
+    .issue-status-empty {
+        padding: 70px 10px !important;
+        text-align: center;
+        color: #9ca3af;
+    }

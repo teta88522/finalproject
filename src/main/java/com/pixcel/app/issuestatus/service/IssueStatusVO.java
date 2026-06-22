@@ -22,4 +22,8 @@ public class IssueStatusVO {
     private String statusAnswer;
 
     private String closedYn;
+    
+    private String userId;
+    
+    private String initialStatusName;
 }

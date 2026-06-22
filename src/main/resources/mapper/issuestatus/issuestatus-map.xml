@@ -3,26 +3,30 @@
 
 <mapper namespace="com.pixcel.app.issuestatus.mapper.IssueStatusMapper">
 
-    <!-- 일감 상태 목록 조회 -->
+    <!-- 사용자별 일감 상태 목록 조회 -->
     <select id="selectIssueStatusList" resultType="IssueStatusVO">
         select
             issue_status_id,
+            user_id,
             status_name,
             status_answer,
             closed_yn
         from issue_status
+        where user_id = #{userId}
         order by issue_status_id
     </select>
 
-    <!-- 일감 상태 상세 조회 -->
+    <!-- 사용자별 일감 상태 상세 조회 -->
     <select id="selectIssueStatusDetail" resultType="IssueStatusVO">
         select
             issue_status_id,
+            user_id,
             status_name,
             status_answer,
             closed_yn
         from issue_status
         where issue_status_id = #{issueStatusId}
+          and user_id = #{userId}
     </select>
 
     <!-- 일감 상태 등록 -->
@@ -47,11 +51,13 @@
 
         insert into issue_status (
             issue_status_id,
+            user_id,
             status_name,
             status_answer,
             closed_yn
         ) values (
             #{issueStatusId},
+            #{userId},
             #{statusName},
             #{statusAnswer},
             #{closedYn}
@@ -66,19 +72,22 @@
             status_answer = #{statusAnswer},
             closed_yn = #{closedYn}
         where issue_status_id = #{issueStatusId}
+          and user_id = #{userId}
     </update>
 
-    <!-- 일감 상태 삭제 -->
+    <!-- 사용자별 일감 상태 삭제 -->
     <delete id="deleteIssueStatus">
         delete from issue_status
         where issue_status_id = #{issueStatusId}
+          and user_id = #{userId}
     </delete>
 
-    <!-- 상태명 중복 검사 -->
+    <!-- 사용자별 상태명 중복 검사 -->
     <select id="countDuplicateStatusName" resultType="int">
         select count(*)
         from issue_status
-        where status_name = #{statusName}
+        where user_id = #{userId}
+          and status_name = #{statusName}
         <if test="issueStatusId != null and issueStatusId != ''">
             and issue_status_id != #{issueStatusId}
         </if>

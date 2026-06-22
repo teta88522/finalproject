@@ -18,16 +18,20 @@ public class IssueStatusController {
 
     private final IssueStatusService issueStatusService;
 
+    private static final String TEMP_LOGIN_USER_ID = "USERS_0001";
+
     // 일감 상태 목록 화면으로 이동한다.
     @GetMapping("/issuestatus/list")
     public String issueStatusList(Model model) {
 
-        model.addAttribute("issueStatusList", issueStatusService.getIssueStatusList());
+        String userId = getLoginUserId();
+
+        model.addAttribute("issueStatusList", issueStatusService.getIssueStatusList(userId));
 
         return "issuestatus/list";
     }
 
- // 일감 상태 등록 화면으로 이동한다.
+    // 일감 상태 등록 화면으로 이동한다.
     @GetMapping("/issuestatus/create")
     public String issueStatusCreateForm(Model model) {
 
@@ -43,8 +47,10 @@ public class IssueStatusController {
     public String issueStatusCreate(IssueStatusVO issueStatus,
                                     RedirectAttributes redirectAttributes) {
 
+        String userId = getLoginUserId();
+
         try {
-            issueStatusService.createIssueStatus(issueStatus);
+            issueStatusService.createIssueStatus(issueStatus, userId);
             redirectAttributes.addFlashAttribute("message", "일감 상태가 등록되었습니다.");
 
             return "redirect:/issuestatus/list";
@@ -63,8 +69,10 @@ public class IssueStatusController {
                                         Model model,
                                         RedirectAttributes redirectAttributes) {
 
+        String userId = getLoginUserId();
+
         try {
-            model.addAttribute("issueStatus", issueStatusService.getIssueStatusDetail(issueStatusId));
+            model.addAttribute("issueStatus", issueStatusService.getIssueStatusDetail(issueStatusId, userId));
 
             return "issuestatus/update";
 
@@ -80,8 +88,10 @@ public class IssueStatusController {
     public String issueStatusUpdate(IssueStatusVO issueStatus,
                                     RedirectAttributes redirectAttributes) {
 
+        String userId = getLoginUserId();
+
         try {
-            issueStatusService.modifyIssueStatus(issueStatus);
+            issueStatusService.modifyIssueStatus(issueStatus, userId);
             redirectAttributes.addFlashAttribute("message", "일감 상태가 수정되었습니다.");
 
             return "redirect:/issuestatus/list";
@@ -98,8 +108,10 @@ public class IssueStatusController {
     public String issueStatusDelete(@RequestParam("issueStatusId") String issueStatusId,
                                     RedirectAttributes redirectAttributes) {
 
+        String userId = getLoginUserId();
+
         try {
-            issueStatusService.removeIssueStatus(issueStatusId);
+            issueStatusService.removeIssueStatus(issueStatusId, userId);
             redirectAttributes.addFlashAttribute("message", "일감 상태가 삭제되었습니다.");
 
         } catch (IllegalArgumentException e) {
@@ -107,5 +119,10 @@ public class IssueStatusController {
         }
 
         return "redirect:/issuestatus/list";
+    }
+
+    // 현재 로그인 사용자 ID를 반환한다.
+    private String getLoginUserId() {
+        return TEMP_LOGIN_USER_ID;
     }
 }
