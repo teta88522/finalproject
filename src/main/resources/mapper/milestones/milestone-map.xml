@@ -1,30 +1,80 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.pixcel.app.milestones.mapper.MilestonesMapper">
-	<!-- insert -->
-		<insert id="insertMilestone" parameterType="MilestonesVO" >
-		INSERT INTO milestone
-		(
-		milestone_id,
-		title,
-		description,
-		manager_id,
-		status_code,
-		status_name,
-		start_date,
-		end_date,
-		create_at
-		)
-		VALUES
-		(
-		MILESTONE_' || TO_CHAR(SYSDATE, 'YYYYMM') || LPAD(SEQ_MILESTONE.NEXTVAL, 4, '0'),
-		#{title},
-		#{description},
-		#{statusCode},
-		#{statusName},
-		#{startDate},
-		#{endDate},
-		SYSDATE
-		)
-	</insert>
+	    <!-- 팀 ID를 조건으로 해당 팀의 멤버 목록을 조회합니다 -->
+    <select id="getManagerList" resultType="MilestonesMemberDTO">
+        SELECT 
+             t.TEAM_ID          
+            ,t.USER_ID          
+            ,u.USER_NAME         
+            ,t.TEAM_ROLE_CODE
+        FROM TEAM_MEMBER t
+        INNER JOIN USERS u ON t.USER_ID = u.USER_ID  
+        WHERE t.TEAM_ID = #{teamId}                  
+    </select>
+        <!-- 키워드 검색과 버전 필터링을 동시에 수행하는 동적 쿼리입니다 -->
+	<select id="getIssueList" resultType="MilestonesIssueDTO">
+    SELECT 
+         i.ISSUE_ID      
+        ,i.TITLE        
+        ,i.VERSION_ID    
+        ,i.PROGRESS_RATE 
+    FROM ISSUE i
+    WHERE (i.TITLE LIKE '%' || #{keyword} || '%' OR i.ISSUE_ID LIKE '%' || #{keyword} || '%')
+    <!--통합 검색창 기능입니다. 사용자가 검색어(keyword)를 입력하면, 일감의 제목에 그 글자가 들어가 있거나 혹은 일감 고유 번호(ID)에 그 숫자가 들어가 있는 것을 동시에 찾습니다.-->
+    <if test="versionId != null">
+        AND i.VERSION_ID = #{versionId}
+    </if>
+    <!--마일스톤을 새로 만들 때(아직 아무 일감도 안 골랐을 때)는 versionId가 없으므로 이 조건이 넘어가서 모든 버전의 일감이 다 보입니다!-->
+    AND i.MILESTONE_ID IS NULL
+    <!--이미 다른 마일스톤에 소속되어 일하고 있는 일감은 새로 만드는 마일스톤 검색 결과에서 원천 배제합니다.-->
+	</select>
+    
+        <!-- 오라클 프로시저를 호출하여 마일스톤 정보를 저장합니다 -->
+    <!-- statementType="CALLABLE"은 프로시저 호출 시 반드시 명시해야 합니다 -->
+	<insert id="insertMilestone" statementType="CALLABLE" parameterType="MilestonesCreateRequestDTO">
+        { CALL PKG_MILESTONE.SP_INSERT_MILESTONE(
+            #{title}, 
+            #{description}, 
+            #{managerId}, 
+            #{statusCode}, 
+            #{startDate}, 
+            #{endDate}, 
+            #{versionId}, 
+            #{selectedIssueIds},
+            #{milestoneId, mode=OUT, jdbcType=VARCHAR}
+        ) }
+    </insert>
+    
+    <select id="getMilestoneDetail" resultType="MilestonesVO">
+    	SELECT
+    		a.milestone_id,
+    		a.version_id,
+    		a.title,
+    		a.description,
+    		a.manager_id,
+    		b.user_name AS managerName, 
+    		a.status_code,
+    		a.status_name,
+    		a.start_date,
+    		a.end_date,
+    		a.created_at
+    	FROM milestone a
+    	LEFT OUTER JOIN users b ON a.manager_id = b.user_id
+    	WHERE a.milestone_id = #{milestoneId}
+    </select>
+    
+   <!-- <update id="updateMilestone" statementType="CALLABLE" parameterType="MilestoneDTO">
+        { CALL PKG_MILESTONE.SP_UPDATE_MILESTONE(
+            #{milestoneId}, 
+            #{title}, 
+            #{description}, 
+            #{managerId}, 
+            #{statusName}, 
+            #{startDate}, 
+            #{endDate}, 
+            #{versionId}, 
+            #{selectedIssueIdsStr}
+        ) }
+    </update> -->
 </mapper>

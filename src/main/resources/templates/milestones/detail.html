@@ -1,0 +1,345 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{common/layouts/default_layout}">
+<head>
+    <meta charset="UTF-8">
+    <title>마일스톤 상세</title>
+    
+    <style>
+		/* 기본 배경 및 컨테이너 */
+		.kiaalap-wrapper {
+		    padding: 20px;
+		    font-family: 'Roboto', sans-serif;
+		    color: #303030;
+		    background-color: #f6f8fa; 
+		    min-height: 100vh;
+		}
+
+		/* 하얀색 정보 패널 */
+		.kiaalap-panel {
+		    background: #ffffff;
+		    padding: 30px;
+		    box-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.1);
+		    border-radius: 3px;
+		    margin-bottom: 30px;
+		}
+
+		/* 1. 상단: 제목 및 진행률 바 영역 */
+		.header-section {
+		    border-bottom: 1px solid #eeeeee;
+		    padding-bottom: 25px;
+		    margin-bottom: 30px;
+		}
+
+		.header-title-row {
+		    display: flex;
+		    justify-content: space-between;
+		    align-items: center;
+		    margin-bottom: 20px; 
+		}
+
+		.header-title-row h2 {
+		    margin: 0;
+		    font-size: 24px;
+		    font-weight: 500;
+		    color: #303030;
+		}
+
+		.status-badge {
+		    padding: 6px 14px;
+		    font-size: 13px;
+		    font-weight: 600;
+		    border-radius: 3px;
+		    color: #fff;
+		    background-color: #006DF0;
+		}
+		.status-todo { background-color: #999999; }
+		.status-done { background-color: #65b12d; }
+
+		/* 프로그레스 바 */
+		.progress-wrapper {
+		    width: 100%;
+		}
+		.progress-label-row {
+		    display: flex;
+		    justify-content: space-between;
+		    align-items: center;
+		    margin-bottom: 8px;
+		}
+		.progress-title {
+		    font-size: 14px;
+		    font-weight: 600;
+		    color: #555;
+		}
+		.progress-percent {
+		    font-size: 16px;
+		    font-weight: 700;
+		    color: #006DF0;
+		}
+		.progress-bar-bg {
+		    background-color: #e9ecef;
+		    border-radius: 10px;
+		    height: 12px;
+		    width: 100%;
+		    overflow: hidden;
+		}
+		.progress-bar-fill {
+		    background-color: #006DF0; 
+		    height: 100%;
+		    border-radius: 10px;
+		    transition: width 0.8s ease-in-out;
+		}
+
+		/* 2. 본문: 7대3 그리드 레이아웃 */
+		.content-grid {
+		    display: grid;
+		    grid-template-columns: 7fr 3fr;
+		    gap: 40px;
+		}
+
+		.section-title {
+		    font-size: 16px;
+		    font-weight: 600;
+		    color: #333;
+		    margin-bottom: 15px;
+		    border-left: 4px solid #006DF0;
+		    padding-left: 10px;
+		}
+
+		/* 좌측 영역 스타일 */
+		.desc-box {
+		    background-color: #fcfcfc;
+		    border: 1px solid #e5e6e7;
+		    padding: 20px;
+		    border-radius: 3px;
+		    font-size: 14px;
+		    color: #555;
+		    min-height: 100px;
+		    white-space: pre-wrap; 
+		    margin-bottom: 30px;
+		}
+
+		/* 일감 테이블 스타일 */
+		.issue-table {
+		    width: 100%;
+		    border-collapse: collapse;
+		    border: 1px solid #e5e6e7;
+		}
+		.issue-table th, .issue-table td {
+		    padding: 12px 15px;
+		    border-bottom: 1px solid #e5e6e7;
+		    font-size: 14px;
+		}
+		.issue-table th {
+		    background-color: #f9f9f9;
+		    font-weight: 600;
+		    color: #333;
+		    text-align: left;
+		}
+		.empty-row {
+		    text-align: center;
+		    color: #999;
+		    padding: 30px !important;
+		}
+
+		/* 작업 내역 (로그) 박스 */
+		.history-box {
+		    background-color: #fafafa;
+		    border: 1px dashed #ccc;
+		    border-radius: 3px;
+		    height: 200px;
+		    display: flex;
+		    align-items: center;
+		    justify-content: center;
+		    color: #888;
+		    text-align: center;
+		}
+
+		/* 우측 영역 스타일 (메타 정보 박스) */
+		.meta-info-box {
+		    background-color: #fdfdfd;
+		    border: 1px solid #e5e6e7;
+		    border-radius: 3px;
+		    padding: 20px;
+		    margin-bottom: 30px;
+		}
+		.meta-item {
+		    margin-bottom: 15px;
+		}
+		.meta-item:last-child {
+		    margin-bottom: 0;
+		}
+		.meta-label {
+		    display: block;
+		    font-size: 13px;
+		    color: #777;
+		    margin-bottom: 5px;
+		}
+		.meta-value {
+		    font-size: 15px;
+		    color: #333;
+		    font-weight: 500;
+		}
+
+		/* 3. 하단 버튼 */
+		.panel-footer {
+		    margin-top: 40px;
+		    padding-top: 20px;
+		    border-top: 1px solid #f5f5f5;
+		    display: flex;
+		    justify-content: space-between;
+		}
+
+		.btn-group-right {
+		    display: flex;
+		    gap: 10px;
+		}
+
+		.btn-k {
+		    padding: 8px 25px;
+		    font-size: 14px;
+		    border-radius: 3px;
+		    cursor: pointer;
+		    border: none;
+		    transition: background-color 0.3s;
+		    font-weight: 500;
+		}
+		.btn-default {
+		    background-color: #f5f5f5;
+		    color: #333;
+		    border: 1px solid #ddd;
+		}
+		.btn-default:hover { background-color: #e8e8e8; }
+
+		.btn-primary { background-color: #006DF0; color: #fff; }
+		.btn-primary:hover { background-color: #005ce6; }
+
+		.btn-danger { background-color: #d80027; color: #fff; }
+		.btn-danger:hover { background-color: #b30020; }
+    </style>
+</head>
+<body>
+
+<div layout:fragment="Content" class="kiaalap-wrapper">
+    
+    <div class="kiaalap-panel">
+        
+        <!-- ==========================================
+             1. 상단 헤더: 제목 & 프로그레스 바
+        =========================================== -->
+        <div class="header-section">
+            <div class="header-title-row">
+                <h2 th:text="${milestone.title}">마일스톤 제목</h2>
+                <!-- 상태 뱃지 -->
+                <span class="status-badge" 
+      					th:classappend="${milestone.statusCode == 'TODO' ? 'status-todo' : (milestone.statusCode == 'IN_PROGRESS' ? 'status-inpg' : (milestone.statusCode == 'DONE' ? 'status-done' : ''))}"
+     					 th:switch="${milestone.statusCode}">
+    
+    			<th:block th:case="'TODO'">진행 예정</th:block>
+   				<th:block th:case="'IN_PROGRESS'">진행 중</th:block>
+    			<th:block th:case="'DONE'">완료</th:block>
+    			<th:block th:case="*">[[${milestone.statusName}]]</th:block>
+				</span>
+            </div>
+            
+            <!-- 🌟 요청사항 반영: 진행률 바 (안전하게 0% 고정) -->
+            <div class="progress-wrapper">
+                <div class="progress-label-row">
+                    <span class="progress-title">현재 진행중인 일감의 목표</span>
+                    <span class="progress-percent">0%</span>
+                </div>
+                <div class="progress-bar-bg">
+                    <div class="progress-bar-fill" style="width: 0%;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==========================================
+             2. 본문: 좌우 7:3 분할
+        =========================================== -->
+        <div class="content-grid">
+            
+            <!-- [좌측] 상세 설명 & 연결된 일감 & 작업 내역 -->
+            <div class="grid-left">
+                <h3 class="section-title">마일스톤 상세 설명</h3>
+                <div class="desc-box" th:text="${milestone.description}">
+                    마일스톤 상세 설명 내용
+                </div>
+
+                <h3 class="section-title">연결된 일감</h3>
+                <table class="issue-table">
+                    <thead>
+                        <tr>
+                            <th>일감 번호</th>
+                            <th>일감 제목</th>
+                            <th>담당자</th>
+                            <th>상태</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- 🌟 에러 방지: 타임리프 전용 #lists.isEmpty() 사용 -->
+                        <tr th:if="${not #lists.isEmpty(issues)}" th:each="issue : ${issues}">
+                            <td th:text="${issue.issueId}">IS-001</td>
+                            <td th:text="${issue.title}">일감 제목</td>
+                            <td th:text="${issue.managerName}">담당자</td>
+                            <td><span class="status-badge status-todo" style="font-size: 11px; padding: 3px 8px;">상태</span></td>
+                        </tr>
+                        <tr th:unless="${not #lists.isEmpty(issues)}">
+                            <td colspan="4" class="empty-row">현재 이 마일스톤에 연결된 일감이 없습니다.</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <!-- 🌟 요청사항 반영: 작업 내역 박스를 왼쪽 일감 밑으로 이동 -->
+                <h3 class="section-title" style="margin-top: 40px;">작업 내역</h3>
+                <div class="history-box">
+                    <div>
+                        <p style="margin-bottom: 5px; color: #555; font-weight: 500;">작업 내역 (로그)</p>
+                        <span style="font-size: 12px; color: #999;">※ 추후 연동될 로그 데이터가 표출됩니다.</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- [우측] 정보 요약 -->
+            <div class="grid-right">
+                <h3 class="section-title">마일스톤 정보</h3>
+                <div class="meta-info-box">
+                    <div class="meta-item">
+                        <span class="meta-label">담당자</span>
+                        <!-- 🌟 에러 방지: VO에 있는 확실한 변수인 managerId만 사용 -->
+                        <span class="meta-value" th:text="${milestone.managerName}">담당자 이름</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">시작일</span>
+                        <span class="meta-value" th:text="${#temporals.format(milestone.startDate, 'yyyy-MM-dd')}">2026-06-01</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">목표 일자</span>
+                        <span class="meta-value" th:text="${#temporals.format(milestone.endDate, 'yyyy-MM-dd')}">2026-06-30</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">버전 정보</span>
+                        <span class="meta-value" th:text="${milestone.versionId}">V-1.0</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ==========================================
+             3. 하단 버튼 영역
+        =========================================== -->
+        <div class="panel-footer">
+            <button type="button" class="btn-k btn-default" id="btnList">목록으로</button>
+            
+            <div class="btn-group-right">
+                <button type="button" class="btn-k btn-primary" id="btnEdit" th:data-id="${milestone.milestoneId}">수정</button>
+                <button type="button" class="btn-k btn-danger" id="btnDelete" th:data-id="${milestone.milestoneId}">삭제</button>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>
