@@ -1,14 +1,9 @@
 package com.pixcel.app.users.web;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.pixcel.app.users.service.userService;
 import com.pixcel.app.users.service.userServiceVO;
@@ -39,18 +34,6 @@ public class UsersController {
     @GetMapping("/login")
     public String loginForm() {
     	return "users/usersLogin";
-    }
-    
-    //아이디 중복체크
-    @GetMapping("/checkId")
-    @ResponseBody
-    public Map<String, Object> checkId(@RequestParam String loginId){
-    	Map<String,Object> map = new HashMap<>();
-    	
-    	boolean duplicated = userService.checkLoginId(loginId);
-    	map.put("duplicated", duplicated);
-    	
-    	return map;
     }
     
     
