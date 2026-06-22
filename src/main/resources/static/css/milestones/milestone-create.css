@@ -25,3 +25,48 @@ textarea.form-control { height: 120px; resize: vertical; }
 
 .panel-footer { padding: 15px 20px; background-color: #f9f9f9; border-top: 1px solid #eeeeee; display: flex; justify-content: space-between; align-items: center; border-radius: 0 0 3px 3px; }
 .right-buttons { display: flex; gap: 10px; }
+
+/* ==========================================
+   구글 스타일 자동완성 드롭다운 CSS
+========================================== */
+.search-dropdown-menu {
+    position: absolute;
+    top: 100%;      /* 입력창 바로 아래 딱 붙게 */
+    left: 0;
+    width: calc(100% - 65px); /* 옆에 있는 '검색' 버튼 너비만큼 빼기 */
+    max-height: 250px;
+    overflow-y: auto;
+    background-color: #ffffff;
+    border: 1px solid #cccccc;
+    border-top: none;
+    border-radius: 0 0 5px 5px; /* 아래쪽만 둥글게 */
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1); /* 살짝 그림자 */
+    z-index: 1000;  /* 다른 화면 요소보다 무조건 위에 뜨게 */
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.search-dropdown-item {
+    padding: 10px 15px;
+    cursor: pointer;
+    border-bottom: 1px solid #eeeeee;
+    font-size: 13px;
+    color: #333;
+    transition: background-color 0.2s;
+}
+
+.search-dropdown-item:last-child {
+    border-bottom: none;
+}
+
+.search-dropdown-item:hover {
+    background-color: #f1f5f9; /* 마우스 올렸을 때 은은한 배경색 */
+    color: #0056b3;
+}
+
+/* 드롭다운 안에 들어가는 배지(상태) 우측 정렬 */
+.search-dropdown-item .badge-right {
+    float: right;
+    font-size: 11px;
+}

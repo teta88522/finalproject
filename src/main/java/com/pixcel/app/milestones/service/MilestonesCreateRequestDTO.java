@@ -48,7 +48,7 @@ public class MilestonesCreateRequestDTO {
 	private String versionId; //버전선택
 	
 	private String selectedIssueIds; //화면에서 선택한 일감 번호들의 리스트를 JSON 배열 형태로 받습니다.
-	
+	private String statusName;
     
     private Integer progressRate;
     private String managerName;

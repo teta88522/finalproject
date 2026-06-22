@@ -1,128 +1,176 @@
-document.addEventListener("DOMContentLoaded",function(){
+document.addEventListener("DOMContentLoaded", function() {
 
-		//필요한 html 요소들을 가져옵니다.
-		const isseuSearchInput = document.getElementById("issueSearchInput");
-		const issueListBody = document.getElementById("issueListBody");	
-		const versionId = document.getElementById("versionId");
-		const selectedIssueIdsInput = document.getElementById("selectedIssueIds");
-		const form = document.getElementById("milestoneForm");
+    const issueSearchInput = document.getElementById("issueSearchInput");
+    const searchDropdown = document.getElementById("searchDropdown"); 
+    const issueListBody = document.getElementById("issueListBody");    
+    const versionIdInput = document.getElementById("versionId");
+    const selectedIssueIdsInput = document.getElementById("selectedIssueIds");
+    const form = document.getElementById("milestoneForm");
+    const startDateInput = document.getElementById("startDate");
+    const endDateInput = document.getElementById("endDate");
+    const dateErrorDiv = document.getElementById("dateError");
 
-		const startDateInput = document.getElementById("startDate");
-		const endDateInput = document.getElementById("endDate");
-		const dateErrorDiv = document.getElementById("dateError");
+    // 장바구니와 버전 관리 (생성은 무조건 비어있는 상태로 시작)
+    let selectedIssueIds = new Set();
+    let lockedVersionId = null; 
+    let searchTimeout = null; 
 
-		// 사용자가 체크한 일감의 ID들을 담아둘 장바구니
-		// 현재 고정된 버전 ID를 담아둘 변수
-		let selectedIssueIds = new Set();
-		let lockedVersionId = null;
+    // 일감 검색 API 호출 함수
+    function fetchAndShowIssues(keyword) {
+        let apiUrl = `/milestones/api/issues/search?keyword=${keyword}`;
+        
+        if (lockedVersionId !== null && lockedVersionId !== '') {
+            apiUrl += `&versionId=${lockedVersionId}`;
+        }
 
-		//일감 검색 기능
-		isseuSearchInput.addEventListener("keyup", function() {
-			const keyword = isseuSearchInput.value;
-			
-			//백엔드 API 호출을 통해 일감 검색 결과를 가져옵니다.
-			//만약 고정된 버전이 있다면 파라미터에 같이 붙여서 보냅니다
-			let apiUrl = `/milestones/api/issues/search?keyword=${keyword}`;
-			if (lockedVersionId !== null) {
-				apiUrl += `&versionId=${lockedVersionId}`;
-			}
+        fetch(apiUrl)
+            .then(response => response.json())
+            .then(data => renderDropdown(data))
+            .catch(error => console.error("일감 조회 에러 :", error));
+    }
 
-			//fetch api를 사용해 서버에 요청을 보냄
-			fetch(apiUrl)
-				.then(response => response.json())
-				.then(data => {
-					issueListBody.innerHTML = '';  // 기존에 표시되어 있던 목록을 지우고 깨끗하게 만듭니다.
+    // 검색창 타이핑 시
+    issueSearchInput.addEventListener("input", function() {
+        clearTimeout(searchTimeout); 
+        const keyword = this.value.trim();
+        searchTimeout = setTimeout(() => { fetchAndShowIssues(keyword); }, 300); 
+    });
 
-					data.forEach(issue =>{ // 서버에서 받아온 일감 리스트(data)를 하나씩 꺼내서 HTML(tr 태그)로 만들어 화면에 붙입니다.
-						const tr = document.createElement("tr");
-						const isChecked = selectedIssueIds.has(issue.issueId) ? 'checked' : ''; // 체크박스 생성: 만약 이미 장바구니에 있는 일감이라면 체크된 상태로 만듭니다.
+    // 검색창 클릭(포커스) 시 빈 문자열로 전체 검색
+    issueSearchInput.addEventListener("focus", function() {
+        const keyword = this.value.trim();
+        fetchAndShowIssues(keyword);
+    });
 
-						tr.innerHTML = `
-							<td>
-								<input type="checkbox" class="issue-checkbox"
-								value="${issue.issueId}"
-								data-version-id="${issue.versionId}" ${isChecked}>
-							</td>
-							<td>${issue.issueId} ${issue.title}</td>`;
-							
-							issueListBody.appendChild(tr);
-					});
+    // 드롭다운 렌더링
+    function renderDropdown(data) {
+        searchDropdown.innerHTML = ''; 
 
-					attachCheckboxEvents();
-            })
-					.catch(error => console.error("일감 검색중 에러 :", error));
-		});
+        if (data.length === 0) {
+            searchDropdown.innerHTML = `<li class="search-dropdown-item" style="color:#999; cursor:default;">조회된 일감이 없습니다.</li>`;
+            searchDropdown.style.display = "block";
+            return;
+        }
 
-		//일감 체크박스 클릭 이벤트
-		function attachCheckboxEvent(){
-			const checkboxes = document.querySelectorAll(".issue-checkbox"); // 모든 체크박스들을 가져옵니다.
+        data.forEach(issue => {
+            // 이미 장바구니에 있으면 드롭다운에서 안 보이게
+            if(selectedIssueIds.has(issue.issueId)) return;
 
-			checkboxes.forEach(checkbox => {
-				checkbox.addEventListener('change', function(){ 
-					const clickedIssueId = this.value; //클릭된 일감
-					const clickedVersionId = this.getAttribute("data-version-id"); //클릭된 일감의 버전 ID
+            const li = document.createElement("li");
+            li.className = "search-dropdown-item";
+            li.innerHTML = `
+                <strong>${issue.issueId}</strong> - ${issue.title}
+                <span class="badge badge-right" style="color: #0056b3;">${issue.statusName || '상태'}</span>
+            `;
+            
+            li.addEventListener("click", function() {
+                addIssueToTable(issue); 
+                searchDropdown.style.display = "none"; 
+                issueSearchInput.value = ""; 
+            });
 
-					if(this.checked){ //만약 체크를 했다면
-						selectedIssuesSet.add(clickedIssueId); //장바구니에 일감 ID 추가
+            searchDropdown.appendChild(li);
+        });
 
-						if(lockedVersionId == null){
-							lockedVersionId = clickedVersionId; //버전 고정
-							versionId.value = lockedVersionId; //폼의 숨겨진 input에 값을 넣어 서버로 보낼 준비
+        searchDropdown.style.display = (searchDropdown.children.length > 0) ? "block" : "none";
+    }
 
-							issueSearchInput.dispatchEvent(new Event('keyup')); // 버전이 고정되었으니, 검색창을 한 번 초기화시켜서 해당 버전의 일감만 다시 불러옵니다.
+    // 표에 일감 추가 및 버전 고정
+    function addIssueToTable(issue) {
+        const emptyRow = document.querySelector("#issueListBody .empty-row");
+        if (emptyRow) emptyRow.closest("tr").remove();
 
-						}
-					}else{
-						selectedIssuesSet.delete(clieckedIssueId); //체크를 해제했을 때 장바구니에서 뻅니다
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+            <td style="text-align: center;">
+                <input type="checkbox" class="issue-checkbox" 
+                       value="${issue.issueId}" 
+                       data-version-id="${issue.versionId}" checked>
+            </td>
+            <td>${issue.title} (${issue.issueId})</td>
+            <td style="text-align: center;"><span class="status-badge">${issue.statusName || '상태'}</span></td>
+        `;
+        
+        issueListBody.prepend(tr);
 
-						if(selectedIssuesSet.size == 0){ //만약 장바구니가 비었다면?
-						    lockedVersionId = null; //버전 고정 해제
-							versionId.value = ''; //폼의 숨겨진 input도 초기화
-							issueSearchInput.dispatchEvent(new Event('keyup')); //버전 고정이 해제되었으니, 검색창을 초기화시켜서 모든 버전의 일감을 다시 불러옵니다.
-						}
-					}
-					selectedIssueIdsInput.value = Array.from(selectedIssueIds).join(","); //장바구니에 담긴 일감 ID들을 폼의 숨겨진 input에 콤마로 구분된 문자열로 만들어서 넣어줍니다.
-					});
-				});
-			}
-		// 저장 버튼 클릭시 검증
-		form.addEventListener("submit", function(event){
-			let isvalid = true; //통과 여부를 체크하는 변수
+        const newCheckbox = tr.querySelector(".issue-checkbox");
+        selectedIssueIds.add(issue.issueId);
+        
+        if (!lockedVersionId) {
+            lockedVersionId = issue.versionId;
+            versionIdInput.value = lockedVersionId;
+        }
+        
+        newCheckbox.addEventListener('change', handleCheckboxChange);
+        updateHiddenInput(); 
+    }
 
-			//필수 입력값 검증
-			const requiredInputs = document.querySelectorAll(".required-input");//필수 입력값들을 가져옵니다.
-			requiredInputs.forEach(input => {
-				if(!input.value.trim() == ''){ //만약 값이 비어있다면?
-					input.classList.add("error-border"); //붉은 테두리 표시
-					isValid = false; //통과 여부를 false로
+    // 체크박스 해제 시 로직
+    function handleCheckboxChange() {
+        const clickedIssueId = this.value;
+        const clickedVersionId = this.getAttribute("data-version-id");
 
-				}else{
-					input.classList.remove("error-border"); //값이 있다면 붉은 테두리 제거
-				}
-			});
-		//2단계 : 날짜 비교 로직
-		if(startDateInput.value && endDateInput.value){ //둘 다 값이 있다면
-			const startDate = new Date(startDateInput.value);
-			const endDate = new Date(endDateInput.value);
+        if (this.checked) {
+            selectedIssueIds.add(clickedIssueId);
+            if (!lockedVersionId) {
+                lockedVersionId = clickedVersionId;
+                versionIdInput.value = lockedVersionId;
+            }
+        } else {
+            selectedIssueIds.delete(clickedIssueId);
+            if (selectedIssueIds.size === 0) {
+                lockedVersionId = null;
+                versionIdInput.value = '';
+            }
+        }
+        updateHiddenInput();
+    }
 
-			if(startDate > endDate){ //만약 시작일이 목표일자보다 늦다면?
-				startDateInput.classList.add('error-border');
+    function updateHiddenInput() {
+        selectedIssueIdsInput.value = Array.from(selectedIssueIds).join(",");
+    }
+
+    // 드롭다운 바깥 클릭 시 닫기
+    document.addEventListener("click", function(event) {
+        if (!issueSearchInput.contains(event.target) && searchDropdown && !searchDropdown.contains(event.target)) {
+            searchDropdown.style.display = "none";
+        }
+    });
+
+    // 폼 검증
+    form.addEventListener("submit", function(event) {
+        let isValid = true; 
+
+        const requiredInputs = document.querySelectorAll(".required-input");
+        requiredInputs.forEach(input => {
+            if (input.value.trim() === '') { 
+                input.classList.add("error-border"); 
+                isValid = false; 
+            } else {
+                input.classList.remove("error-border"); 
+            }
+        });
+
+        if (startDateInput.value && endDateInput.value) { 
+            const startDate = new Date(startDateInput.value);
+            const endDate = new Date(endDateInput.value);
+
+            if (startDate > endDate) { 
+                startDateInput.classList.add('error-border');
                 endDateInput.classList.add('error-border');
-				dateErrorDiv.style.display = "block"; //에러 메시지 표시
-				isValid = false; //통과 여부를 false로
-			}else{
-				startDateInput.classList.remove('error-border');
+                dateErrorDiv.style.display = "block"; 
+                isValid = false; 
+            } else {
+                startDateInput.classList.remove('error-border');
                 endDateInput.classList.remove('error-border');
-				dateErrorDiv.style.display = "none"; //에러 메시지 숨김
-			}
-		}
-		if(!isValid){ //만약 통과하지 못했다면?
-			event.preventDefault(); //폼 제출을 막습니다.
-		}
-		});
+                dateErrorDiv.style.display = "none"; 
+            }
+        }
 
-		// 날짜를 다시 선택하거나 입력창을 수정하면 붉은 선을 지워주는 센스있는 기능
-    	document.querySelectorAll('.required-input').forEach(input => {
+        if (!isValid) { event.preventDefault(); }
+    });
+
+    document.querySelectorAll('.required-input').forEach(input => {
         input.addEventListener('change', function() {
             this.classList.remove('error-border');
         });

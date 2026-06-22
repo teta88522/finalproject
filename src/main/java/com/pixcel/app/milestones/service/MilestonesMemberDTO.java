@@ -14,8 +14,8 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 public class MilestonesMemberDTO {
-	private String teamId;       
+	private String projectId;       
 	private String userId;    
-	private String userName;
-	private String teamRoleCode;
+    private String userName;
+    private String roleId;
 }

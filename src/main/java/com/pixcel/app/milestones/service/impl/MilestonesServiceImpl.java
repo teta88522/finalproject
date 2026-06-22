@@ -73,4 +73,10 @@ public class MilestonesServiceImpl implements MilestonesService {
     public  List<MilestoneListResponseDTO> getMilestoneList(MilestoneSearchVO searchVO){
     	return milestonesMapper.getMilestoneList(searchVO);
     };
+    
+    //8. 등록된 일감목록
+    @Override
+    public List<MilestonesIssueDTO> getConnectedIssues(String milestoneId) {
+        return milestonesMapper.selectConnectedIssues(milestoneId);
+    }
 }

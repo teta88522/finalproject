@@ -15,4 +15,6 @@ public interface MilestonesService {
  public int deleteMilestone(MilestonesVO milestonesVO);	  //마일스톤 삭제
  
  public List<MilestoneListResponseDTO> getMilestoneList(MilestoneSearchVO searchVO);
+ 
+ public List<MilestonesIssueDTO> getConnectedIssues(String milestoneId);
 }

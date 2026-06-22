@@ -35,6 +35,6 @@ public interface MilestonesMapper {
 	
     public List<MilestoneListResponseDTO> getMilestoneList(MilestoneSearchVO searchVO);
     
-    
+    public List<MilestonesIssueDTO> selectConnectedIssues(String milestoneId);
 }
 

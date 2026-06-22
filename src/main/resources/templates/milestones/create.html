@@ -5,26 +5,24 @@
 <head>
     <meta charset="UTF-8">
     <title>새 마일스톤 생성</title>
-	<link rel="stylesheet" th:href="@{/css/milestones/milestone-common.css}">
+    <link rel="stylesheet" th:href="@{/css/milestones/milestone-common.css}">
     <link rel="stylesheet" th:href="@{/css/milestones/milestone-create.css}">
 </head>
 <body>
-	<div layout:fragment="Content" class="milestone-container">
-	   <div class="kiaalap-panel">
+<div layout:fragment="Content" class="milestone-container">
+    <div class="kiaalap-panel">
         
         <div class="panel-header">
             <h2>새 마일스톤 생성</h2>
         </div>
         
         <form id="milestoneForm" th:action="@{/milestones/create}" method="post">
-            <!-- 숨겨진 데이터 폼 -->
             <input type="hidden" id="versionId" name="versionId" value="">
             <input type="hidden" id="selectedIssueIds" name="selectedIssueIds" value="">
 
             <div class="panel-body">
                 <div class="content-row">
                     
-                    <!-- 왼쪽: 정보 입력 및 일감 연결 -->
                     <div class="content-left">
                         <div class="form-group">
                             <label>제목 <span class="required">*</span></label>
@@ -36,25 +34,28 @@
                             <textarea id="description" name="description" class="form-control" placeholder="마일스톤의 목표와 상세 내용을 적어주세요."></textarea>
                         </div>
 
-                        <!-- 일감 연결 섹션 -->
-                        <div class="issue-section">
-                            <h3>일감 연결</h3>
-                            <div class="form-group">
-                                <label>필터/검색</label>
-                                <input type="text" id="issueSearchInput" class="form-control" placeholder="일감 제목 또는 번호 입력...">
-                            </div>
+						<div class="issue-section">
+						    <h3>일감 연결</h3>
+						    <div class="issue-search-group" style="position: relative;">
+						        <input type="text" id="issueSearchInput" class="form-control" autocomplete="off" placeholder="일감 제목 또는 번호 입력...">
+						        
+						        <ul id="searchDropdown" class="search-dropdown-menu" style="display: none;"></ul>
+						    </div>
                             
                             <div class="issue-list-container">
                                 <table class="table table-hover">
                                     <tbody id="issueListBody">
-                                        <!-- JS가 여기에 검색된 일감 목록을 그려줍니다 -->
+                                        <tr>
+                                            <td class="empty-row" style="text-align: center; color: #999; padding: 30px 10px;">
+                                                상단 검색창을 통해 연결할 일감을 찾아보세요.
+                                            </td>
+                                        </tr>
                                     </tbody>
                                 </table>
                             </div>
                         </div>
                     </div>
 
-                    <!-- 오른쪽: 상태, 담당자, 날짜 입력 -->
                     <div class="content-right">
                         <div class="form-group">
                             <label>담당자 <span class="required">*</span></label>
@@ -71,7 +72,7 @@
                             <select id="statusCode" name="statusCode" class="form-control required-input">
                                 <option value="">상태 선택</option>
                                 <option value="TODO">진행 예정</option>
-                                <option value="IN_PROGRESS">진행 중</option>
+                                <option value="IPRG">진행 중</option>
                             </select>
                         </div>
 
@@ -83,14 +84,13 @@
                         <div class="form-group">
                             <label>목표 일자 <span class="required">*</span></label>
                             <input type="date" id="endDate" name="endDate" class="form-control required-input date-input">
-                            <div id="dateError" class="error-text" style="display: none;">시작일은 목표일자 보다 늦을 수 없습니다.</div>
+                            <div id="dateError" class="error-text" style="display: none;">시작일은 목표 일자보다 늦을 수 없습니다.</div>
                         </div>
                     </div>
                     
                 </div>
             </div>
 
-            <!-- 패널 풋터: 제어 버튼 -->
             <div class="panel-footer">
                 <button type="button" class="btn btn-default" onclick="history.back()">취소</button>
                 <div class="right-buttons">
@@ -100,7 +100,8 @@
         </form>
 
     </div>
+	<script th:src="@{/js/milestones/milestone-form.js}"></script>
+    <script th:src="@{/js/milestones/milestone-create.js}"></script>
 </div>
-<script th:src="@{/js/milestones/milestone-create.js}"></script>
 </body>
 </html>

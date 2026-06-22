@@ -3,14 +3,15 @@
 <mapper namespace="com.pixcel.app.milestones.mapper.MilestonesMapper">
 	    <!-- 팀 ID를 조건으로 해당 팀의 멤버 목록을 조회합니다 -->
     <select id="getManagerList" resultType="MilestonesMemberDTO">
-        SELECT 
-             t.TEAM_ID          
-            ,t.USER_ID          
-            ,u.USER_NAME         
-            ,t.TEAM_ROLE_CODE
-        FROM TEAM_MEMBER t
-        INNER JOIN USERS u ON t.USER_ID = u.USER_ID  
-        WHERE t.TEAM_ID = #{teamId}                  
+	SELECT 
+         p.PROJECT_ID       
+        ,u.USER_ID             
+        ,u.USER_NAME          
+        ,p.ROLE_ID          
+    FROM PROJECT_MEMBER p
+    INNER JOIN TEAM_MEMBER t ON p.TEAM_MEMBER_ID = t.TEAM_MEMBER_ID
+    INNER JOIN USERS u ON t.USER_ID = u.USER_ID  
+    WHERE p.PROJECT_ID = #{projectId}                
     </select>
         <!-- 키워드 검색과 버전 필터링을 동시에 수행하는 동적 쿼리입니다 -->
 	<select id="getIssueList" resultType="MilestonesIssueDTO">
@@ -70,7 +71,7 @@
             #{title}, 
             #{description}, 
             #{managerId}, 
-            #{statusName}, 
+            #{statusCode}, 
             #{startDate}, 
             #{endDate}, 
             #{versionId}, 
@@ -152,6 +153,15 @@
         
         ORDER BY M.START_DATE DESC, I.ISSUE_ID ASC
     </select>
-    
+
+    <select id="selectConnectedIssues" resultType="MilestonesIssueDTO">
+        SELECT 
+        	 issue_id
+        	,title
+        	,version_id
+        	,progress_rate
+    	FROM ISSUE
+    	WHERE MILESTONE_ID = #{milestoneId}
+    </select>
     
 </mapper>
