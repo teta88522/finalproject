@@ -1,3 +1,78 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.pixcel.app.document.mapper.DocumentMapper"></mapper>
+<mapper namespace="com.pixcel.app.document.mapper.DocumentMapper">
+
+<!-- 문서에 파일조회 -->
+    <select id="selectAll" resultType="DocumentVO">
+        select
+            file_id,
+            project_id,
+            version_id,
+            file_code,
+            original_name,
+            stored_name,
+            file_path,
+            file_size,
+            upload_user_id,
+            upload_date,
+            file_version,
+            file_use_yn
+        from attach_file
+    </select>
+
+
+<!-- 문서 등록 -->
+    <insert id="insertDocument" parameterType="DocumentVO">
+
+        <selectKey keyProperty="documentId"
+           resultType="string"
+           order="BEFORE">
+    	SELECT
+        	'DOCUMENT_'
+        	|| TO_CHAR(SYSDATE, 'YYMM')
+        	|| '_'
+        	|| LPAD(
+            	NVL(MAX(TO_NUMBER(SUBSTR(document_id, -4))), 0) + 1,
+            	4,
+            	'0'
+        	)
+    	FROM document
+    	WHERE document_id LIKE
+          'DOCUMENT_' || TO_CHAR(SYSDATE, 'YYMM') || '_%'
+		</selectKey>
+
+        insert into document (
+            document_id,
+            project_id,
+            document_category_id,
+            version_id,
+            milestone_id,
+            created_by,
+            title,
+            description
+            <if test="statusCode != null and statusCode != ''">
+            status_code,
+            </if>
+            <if test="statusName != null and statusName != ''">
+            status_name,
+            </if>
+            
+        ) values (
+            #{documentId},
+            'PROJECT_ID_2606_0006',
+            #{documentCategoryId},
+            #{versionId},
+            #{milestoneId},
+            #{createdBy},
+            #{title},
+            #{description}
+            <if test="statusCode != null and statusCode != ''">
+				#{statusCode},
+			</if>
+            <if test="statusName != null and statusName != ''">
+				#{statusName},
+			</if>
+        )
+    </insert>
+
+</mapper>

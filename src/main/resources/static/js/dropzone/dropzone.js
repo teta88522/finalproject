@@ -112,7 +112,6 @@
      */
 
     Dropzone.prototype.events = ["drop", "dragstart", "dragend", "dragenter", "dragover", "dragleave", "addedfile", "addedfiles", "removedfile", "thumbnail", "error", "errormultiple", "processing", "processingmultiple", "uploadprogress", "totaluploadprogress", "sending", "sendingmultiple", "success", "successmultiple", "canceled", "canceledmultiple", "complete", "completemultiple", "reset", "maxfilesexceeded", "maxfilesreached", "queuecomplete"];
-
     Dropzone.prototype.defaultOptions = {
       url: null,
       method: "post",
@@ -1427,7 +1426,22 @@
   Dropzone.version = "4.3.0";
 
   Dropzone.options = {};
+  Dropzone.options.demo1Upload = {
+      autoProcessQueue: false,
+      uploadMultiple: true,
+      paramName: "files",
 
+      init: function () {
+          var myDropzone = this;
+
+          document.querySelector("#submitBtn")
+              .addEventListener("click", function(e) {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  myDropzone.processQueue();
+              });
+      }
+  };
   Dropzone.optionsForElement = function(element) {
     if (element.getAttribute("id")) {
       return Dropzone.options[camelize(element.getAttribute("id"))];

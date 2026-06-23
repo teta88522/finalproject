@@ -9,6 +9,6 @@ public interface FileMapper {
 	public int insertFile(FileVO fileVO);
 	public int selectMaxVersion(
             @Param("projectId") String projectId,
-            @Param("file_identity_key") String file_identity_key,
+            @Param("connectAddress") String connectAddress,
             @Param("originalName") String originalName);
 }

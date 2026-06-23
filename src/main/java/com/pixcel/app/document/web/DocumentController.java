@@ -1,15 +1,87 @@
 package com.pixcel.app.document.web;
 
+import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
+
+import com.pixcel.app.codevalue.service.CodeValueService;
+import com.pixcel.app.codevalue.service.CodeValueVO;
+import com.pixcel.app.document.service.DocumentService;
+import com.pixcel.app.document.service.DocumentVO;
+import com.pixcel.app.file.service.FileDTO;
+import com.pixcel.app.file.service.FileService;
+import com.pixcel.app.milestones.service.MilestoneListResponseDTO;
+import com.pixcel.app.milestones.service.MilestoneSearchVO;
+import com.pixcel.app.milestones.service.MilestonesService;
+
+import lombok.RequiredArgsConstructor;
 
 @Controller
 @RequestMapping("/document")
+@RequiredArgsConstructor
 public class DocumentController {
+	
+	Logger logger = LoggerFactory.getLogger(DocumentController.class);
+	private final DocumentService documentService;
+	private final FileService fileService;
+	private final MilestonesService milestonesService;
+	private final CodeValueService codeValueService;
+	
 	@GetMapping("/list")
-    public String accordion() {
-        return "sample/documentList";
+    public String documentList(Model model) {
+        return "document/documentList";
+    }
+	
+	@GetMapping("/add")
+    public String documentAdd(Model model) {
+		List<MilestoneListResponseDTO> milestoneList = milestonesService.getMilestoneList(new MilestoneSearchVO());
+
+	    model.addAttribute("milestoneList", milestoneList);
+	    
+	    List<CodeValueVO> codeValueList = codeValueService.getCodeValueListByGroup("g003");
+	    model.addAttribute("codeValueList", codeValueList);
+        return "document/documentAdd";
+    }
+	
+	@PostMapping("/add")
+    public String documentAddProc(@CookieValue(value="userId", required =false)String userId, DocumentVO documentVO,  @RequestParam("files") List<MultipartFile> files) {
+		
+		FileDTO fileDTO = new FileDTO();
+		
+		logger.debug(documentVO.toString());
+		System.out.print(documentVO);
+		documentVO.setCreatedBy(userId);
+		documentService.addDocument(documentVO);
+		System.out.println(documentVO.getDocumentId());
+		
+		fileDTO.setProjectId(documentVO.getProjectId());
+		fileDTO.setVersionId(documentVO.getVersionId());
+		fileDTO.setUploadUserId(documentVO.getCreatedBy());
+		fileDTO.setConnectAddress(documentVO.getDocumentId());
+
+		fileService.uploadFile(files, fileDTO);
+		
+		System.out.print(documentVO.getDocumentId() + "문서 등록");
+        return "redirect:/document/list";
+    }
+	
+	@GetMapping("/update")
+    public String documentUpdate() {
+        return "document/documentUpdate";
+    }
+	
+	@GetMapping("/history")
+    public String documentHistory() {
+        return "document/documentHistory";
     }
 
 }

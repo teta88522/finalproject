@@ -8,7 +8,7 @@
         SELECT NVL(MAX(file_version), 0)
 		FROM attach_file
 		WHERE project_id = #{projectId}
-  			AND version_id = #{versionId}
+  			AND connect_address = #{connectAddress}
   			AND original_name = #{originalName}
     </select>
 
@@ -26,31 +26,33 @@
             upload_user_id,
             upload_date,
             file_version,
-            file_use_yn,
-            file_identity_key
+            file_use_yn
         from attach_file
-        where connect_address = #{connect_address}
+        where connect_address = #{connectAddress}
     </select>
 
-    <!-- 일감 상태 등록 -->
+    <!-- 파일 등록 -->
     <insert id="insertFile" parameterType="FileVO">
-
         <selectKey keyProperty="fileId"
-                   resultType="string"
-                   order="BEFORE">
-            select
-                'attach_file_'
-                || to_char(sysdate, 'YYMM')
-                || '_'
-                || lpad(
-                    nvl(max(to_number(substr(file_id, -4))), 0) + 1,
-                    4,
-                    '0'
-                )
-            from attach_file
-            where substr(file_id, 1, 18) =
-                  'attach_file_' || to_char(sysdate, 'YYMM') || '_'
-        </selectKey>
+           resultType="string"
+           order="BEFORE">
+
+    SELECT
+        'ATTACH_FILE_'
+        || TO_CHAR(SYSDATE, 'YYMM')
+        || '_'
+        || LPAD(
+            NVL(
+                MAX(TO_NUMBER(SUBSTR(file_id, -4))),
+                0
+            ) + 1,
+            4,
+            '0'
+        )
+    FROM attach_file
+    WHERE file_id LIKE 'ATTACH_FILE_' || TO_CHAR(SYSDATE, 'YYMM') || '_%'
+
+</selectKey>
 
         insert into attach_file (
             file_id,
@@ -63,21 +65,19 @@
             file_size,
             upload_user_id,
             file_version,
-            file_use_yn,
-            file_identity_key
+            connect_address
         ) values (
             #{fileId},
-            #{projectId},
+            'PROJECT_ID_2606_0006',
             #{versionId},
-            #{fileCode},
+            'f001',
             #{originalName},
             #{storedName},
             #{filePath},
             #{fileSize},
             #{uploadUserId},
             #{fileVersion},
-            #{connectAddress},
-            #{fileIdentityKey}
+            #{connectAddress}
         )
     </insert>
 

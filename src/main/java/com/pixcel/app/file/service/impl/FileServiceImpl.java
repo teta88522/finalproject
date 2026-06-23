@@ -6,6 +6,7 @@ import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.pixcel.app.file.mapper.FileMapper;
@@ -13,6 +14,7 @@ import com.pixcel.app.file.service.FileDTO;
 import com.pixcel.app.file.service.FileService;
 import com.pixcel.app.file.service.FileVO;
 
+@Service
 public class FileServiceImpl implements FileService{
 	
 	@Autowired
@@ -40,8 +42,8 @@ public class FileServiceImpl implements FileService{
 					String originName = file.getOriginalFilename();
 					
 					String projectId =  req.getProjectId();
-					String fileIdentityKey = req.getFileIdentityKey();
-					int maxVersion = fileMapper.selectMaxVersion(originName, projectId, fileIdentityKey);
+					String connectAddress = req.getConnectAddress();
+					int maxVersion = fileMapper.selectMaxVersion(originName, projectId, connectAddress);
 					
 					int nextVersion = maxVersion + 1;
 					
@@ -54,16 +56,14 @@ public class FileServiceImpl implements FileService{
 					FileVO vo = new FileVO();
 					vo.setProjectId(projectId);
 					vo.setVersionId(req.getVersionId());
-					vo.setFileCode(req.getFileCode());
+//					vo.setFileCode(req.getFileCode());
 					vo.setOriginalName(originName);
 					vo.setStoredName(saveName);
 					vo.setFilePath(fileDir);
 					vo.setFileSize(String.valueOf(file.getSize()));
 					vo.setUploadUserId(req.getUploadUserId());
 					vo.setFileVersion(nextVersion);
-					vo.setConnectAddress(req.getConnectAddress());
-					vo.setFileIdentityKey(fileIdentityKey);
-					
+					vo.setConnectAddress(connectAddress);
 					
 					fileMapper.insertFile(vo);
 					
