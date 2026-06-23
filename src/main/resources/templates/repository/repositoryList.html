@@ -59,29 +59,29 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr th:if="${#lists.isEmpty(repositoryList)}">
-                        <td colspan="6" class="text-center" style="padding: 30px; color: #868e96;">조회된 자료가 없습니다.</td>
-                    </tr>
-                    <tr th:each="repo : ${repositoryList}" style="border-bottom: 1px solid #eee;">
-                        <td style="padding: 12px;">
-                            <a th:href="@{/repository/detail(fileId=${repo.fileId})}" th:text="${repo.originalName}" style="color: #333; font-weight: 500; text-decoration: none;"></a>
-                        </td>
-                        <td style="padding: 12px;" th:text="${#strings.substring(repo.uploadDate, 0, 16)}">2026-06-23 12:00</td>
-                        <td style="padding: 12px;"><span th:text="${repo.fileSize}"></span> Bytes</td>
-                        <td style="padding: 12px;">0</td>
-                        <td style="padding: 12px; font-size: 13px; color: #666;" th:text="${repo.fileCode}">SHA256:...</td>
-                        <td style="padding: 12px;" class="text-center">
-                            <a th:href="@{/repository/download(fileId=${repo.fileId})}" style="color: #007bff; text-decoration: none;">
-                                📥
-                            </a>
-                        </td>
-                    </tr>
-                </tbody>
+				    <tr th:if="${#lists.isEmpty(repositoryList)}">
+				        <td colspan="6" class="text-center" style="padding: 30px; color: #868e96;">조회된 자료가 없습니다.</td>
+				    </tr>
+				    <tr th:each="repo : ${repositoryList}" style="border-bottom: 1px solid #eee;">
+				        <td style="padding: 12px;">
+				            <a th:href="@{/repository/detail(fileId=${repo.fileId})}" th:text="${repo.originalName}" style="color: #333; font-weight: 500; text-decoration: none;"></a>
+				        </td>
+				        <td style="padding: 12px;" th:text="${#dates.format(repo.uploadDate, 'yyyy-MM-dd HH:mm')}">2026-06-23 12:00</td>
+				        <td style="padding: 12px;" th:text="${repo.fileSizeText}"></td>
+
+				        <td style="padding: 12px;">0</td>
+				        <td style="padding: 12px; font-size: 13px; color: #666;" th:text="${repo.fileCode}">SHA256:...</td>
+				        <td style="padding: 12px;" class="text-center">
+				            <a th:href="@{/repository/download(fileId=${repo.fileId})}" style="color: #007bff; text-decoration: none;"></a>
+				        </td>
+				    </tr>
+				</tbody>
             </table>
         </div>
     </div>
 
 </div>
+
 </body>
 
 </html>

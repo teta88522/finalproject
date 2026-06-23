@@ -24,7 +24,25 @@ public class RepositoryVO {
 	private String originalName;
 	private String storedName;
 	private String filePath;
-	private String fileSize;
+	
+	private long fileSize;
+	public String getFileSizeText() {
+		if (fileSize == 0) {
+		return "0 B";
+		}
+
+		if (fileSize >= 1024L * 1024L) {
+		return String.format("%.2f MB", fileSize / 1024.0 / 1024.0);
+		}
+
+		if (fileSize >= 1024L) {
+		return String.format("%.2f KB", fileSize / 1024.0);
+		}
+
+		return fileSize + " B";
+		} 
+
+	
 	private String uploadUserId;
 	private Date uploadDate;
 	private String fileVersion;

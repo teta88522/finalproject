@@ -85,7 +85,6 @@ public class RepositoryServiceImpl implements RepositoryService{
 			repositoryVO.setOriginalName(originalName);
 			repositoryVO.setStoredName(storedName);
 			repositoryVO.setFilePath(savePath + storedName);
-			repositoryVO.setFileSize(String.valueOf(fileSize));
 		}catch(IOException e) {
 			throw new RuntimeException("파일 업로드 중 오류가 발생했습니다.", e);
 		}
