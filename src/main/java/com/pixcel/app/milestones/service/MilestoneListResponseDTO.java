@@ -7,6 +7,12 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 
+import lombok.Getter;
+import lombok.Setter;
+
+
+@Getter
+@Setter
 public class MilestoneListResponseDTO {
     
     // --- 1. 마일스톤 자체의 기본 정보 ---

@@ -7,7 +7,8 @@ import com.pixcel.app.file.service.FileVO;
 public interface FileMapper {
 	public List<FileVO> selectAll(String connectAddress);
 	public int insertFile(FileVO fileVO);
-	public int selectMaxVersion(@Param("fileCode") String fileCode,
+	public int selectMaxVersion(
             @Param("projectId") String projectId,
-            @Param("versionId") String versionId);
+            @Param("connectAddress") String connectAddress,
+            @Param("originalName") String originalName);
 }

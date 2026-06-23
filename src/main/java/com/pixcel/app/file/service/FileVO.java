@@ -25,10 +25,10 @@ public class FileVO {
 	private String filePath;
 	private String fileSize;
 	private String uploadUserId;
-	@DateTimeFormat(pattern="yyyy-MM-dd")
-	private String uploadDate;
+//	@DateTimeFormat(pattern="yyyy-MM-dd")
+//	private String uploadDate;
 	private int fileVersion;
-	private String fileUseYn;
+//	private String fileUseYn;
 	private String connectAddress;
-	private String fileGroupKey;
+	private String fileIdentityKey;
 }
