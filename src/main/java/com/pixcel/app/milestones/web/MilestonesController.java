@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Slf4j //로그를 남겨주는 어노테이션
 @Controller
@@ -129,10 +131,21 @@ public class MilestonesController {
     }
     //삭제
     @PostMapping("/delete")
-    public String deleteMilestone( String milestoneId,HttpSession session) {
+    public String deleteMilestone( String milestoneId,HttpSession session,RedirectAttributes rttr) {
     	String projectId = getProjectIdFromSession(session);
-    	milestonesService.deleteMilestone(milestoneId,projectId);
-    	return "redirect:/milestones/list";
+    	try {
+    		milestonesService.deleteMilestone(milestoneId,projectId);
+    		rttr.addFlashAttribute("message", "마일스톤이 정상적으로 삭제되었습니다.");
+            return "redirect:/milestones/list";
+    	}catch(DataIntegrityViolationException e) {
+    		rttr.addFlashAttribute("errorMessage", "해당 마일스톤에 연결된 문서가 있어 삭제할 수 없습니다.");
+    		return "redirect:/milestones/detail?id=" + milestoneId;
+    	}catch (Exception e) {
+            // 3. 혹시 모를 기타 에러 대비
+            rttr.addFlashAttribute("errorMessage", "마일스톤 삭제 중 알 수 없는 오류가 발생했습니다.");
+            return "redirect:/milestones/detail?id=" + milestoneId;
+    	}
+    	
     }
     
     //목록

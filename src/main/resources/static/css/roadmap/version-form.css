@@ -1,0 +1,100 @@
+/* version-form.css */
+
+.form-panel {
+    max-width: 800px; /* 폼이 너무 넓어지지 않도록 제한 */
+    margin: 0 auto;   /* 중앙 정렬 */
+}
+
+.panel-header {
+    padding: 20px 25px;
+    border-bottom: 1px solid #eeeeee;
+}
+
+.panel-header h2 {
+    margin: 0;
+    font-size: 18px;
+    color: #333;
+}
+
+.panel-body {
+    padding: 25px;
+}
+
+/* 폼 요소 공통 스타일 */
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    color: #444;
+}
+
+.required {
+    color: #d80027; /* 필수 입력 표시 (빨간색) */
+    margin-left: 3px;
+}
+
+.form-control {
+    width: 100%;
+    padding: 10px 12px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    transition: border-color 0.2s;
+    font-family: inherit;
+}
+
+.form-control:focus {
+    border-color: #006df0;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(0, 109, 240, 0.1);
+}
+
+textarea.form-control {
+    resize: vertical; /* 세로로만 크기 조절 가능하게 */
+}
+
+.form-hint {
+    display: block;
+    margin-top: 5px;
+    font-size: 12px;
+    color: #888;
+}
+
+/* 체크박스 스타일 */
+.checkbox-group {
+    display: flex;
+    align-items: center;
+    margin-top: 30px;
+}
+
+.form-checkbox {
+    width: 18px;
+    height: 18px;
+    margin: 0 10px 0 0;
+    cursor: pointer;
+}
+
+.checkbox-group label {
+    font-size: 14px;
+    color: #555;
+    cursor: pointer;
+    font-weight: normal;
+}
+
+/* 하단 버튼 영역 */
+.form-actions {
+    margin-top: 40px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+    text-align: right; /* 버튼 우측 정렬 */
+}
+
+.form-actions .btn {
+    margin-left: 10px; /* 버튼 사이 간격 */
+}

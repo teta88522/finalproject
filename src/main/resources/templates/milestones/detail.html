@@ -14,6 +14,13 @@
 <div layout:fragment="Content" class="kiaalap-wrapper">
     
     <div class="kiaalap-panel">
+	<div th:if="${errorMessage != null}" class="page-message page-message-error" th:text="${errorMessage}">
+        에러 메시지 출력 영역
+    </div>
+    
+    <div th:if="${message != null}" class="page-message page-message-success" th:text="${message}">
+        성공 메시지 출력 영역
+    </div>
         
         <!-- ==========================================
              1. 상단 헤더: 제목 & 프로그레스 바
@@ -131,6 +138,20 @@
 
     </div>
 <script th:src="@{/js/milestones/milestone-detail.js}"></script>
+<script>
+    // 화면에 .page-message 클래스를 가진 요소가 있다면
+    const messages = document.querySelectorAll('.page-message');
+    if (messages.length > 0) {
+        // 3초(3000ms) 뒤에 실행
+        setTimeout(function() {
+            messages.forEach(msg => {
+                msg.style.transition = 'opacity 0.5s ease'; // 스르륵 효과
+                msg.style.opacity = '0'; // 투명하게 만듦
+                setTimeout(() => msg.remove(), 500); // 완전히 삭제
+            });
+        }, 3000);
+    }
+</script>
 </div>
 
 </body>

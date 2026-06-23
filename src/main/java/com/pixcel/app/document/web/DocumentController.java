@@ -41,16 +41,16 @@ public class DocumentController {
         return "document/documentList";
     }
 	
-	@GetMapping("/add")
-    public String documentAdd(Model model) {
-		List<MilestoneListResponseDTO> milestoneList = milestonesService.getMilestoneList(new MilestoneSearchVO());
-
-	    model.addAttribute("milestoneList", milestoneList);
-	    
-	    List<CodeValueVO> codeValueList = codeValueService.getCodeValueListByGroup("g003");
-	    model.addAttribute("codeValueList", codeValueList);
-        return "document/documentAdd";
-    }
+//	@GetMapping("/add")
+//    public String documentAdd(Model model) {
+//		List<MilestoneListResponseDTO> milestoneList = milestonesService.getMilestoneList(new MilestoneSearchVO());
+//
+//	    model.addAttribute("milestoneList", milestoneList);
+//	    
+//	    List<CodeValueVO> codeValueList = codeValueService.getCodeValueListByGroup("g003");
+//	    model.addAttribute("codeValueList", codeValueList);
+//        return "document/documentAdd";
+//    }
 	
 	@PostMapping("/add")
     public String documentAddProc(@CookieValue(value="userId", required =false)String userId, DocumentVO documentVO,  @RequestParam("files") List<MultipartFile> files) {
