@@ -126,12 +126,7 @@
 				<otherwise>SYSDATE</otherwise>
 			  </choose>
 			, #{fileVersion}
-			<!-- fileUseYn값이 들어오면 그 값을 사용하고, 
-			누락되었다면 기본값 문자열인 'd001'을 주입한다. -->
-			, <choose>
-				<when test="fileUseYn != null">#{fileUseYn}</when>
-				<otherwise>'d001'</otherwise>
-			  </choose>
+			, #{fileUseYn}
 			, #{connectAddress}
 		)
 	</insert>
@@ -139,6 +134,7 @@
 	<update id="updateRepository" parameterType="RepositoryVO">
 		UPDATE attach_file
 		<set>
+		<!-- 사용자가 입력하지 않은 값은 넘기고 입력한 값만 저장한다. -->
 			<if test="projectId != null">project_id = #{projectId},</if>
 			<if test="versionId != null">version_id = #{versionId},</if>
 			<if test="fileCode != null">file_code = #{fileCode},</if>
@@ -150,5 +146,6 @@
 			<if test="fileUseYn != null">file_use_yn = #{fileUseYn},</if>
 			<if test="connectAddress != null">connect_address = #{connectAddress},</if>
 		</set>
+		WHERE file_id = #{fileId}
 	</update>
 </mapper>
