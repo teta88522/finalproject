@@ -1,0 +1,59 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{common/layouts/default_layout}">
+<head>
+<meta charset="UTF-8">
+<title>프로젝트 상세</title>
+</head>
+
+<body>
+<div layout:fragment="Content">
+
+    <div class="project-detail-page">
+
+        <div class="project-detail-header">
+            <h1 th:text="${project.projectName}">프로젝트명</h1>
+
+            <div class="project-detail-meta">
+                <span>식별자: </span>
+                <strong th:text="${project.identifier}">identifier</strong>
+            </div>
+        </div>
+
+        <div class="project-detail-card">
+            <h3>프로젝트 정보</h3>
+
+            <div class="detail-row">
+                <span class="label">프로젝트명</span>
+                <span th:text="${project.projectName}">프로젝트명</span>
+            </div>
+
+            <div class="detail-row">
+                <span class="label">상태</span>
+                <span th:text="${project.statusName != null ? project.statusName : project.statusCode}">
+                    진행중
+                </span>
+            </div>
+
+            <div class="detail-row">
+                <span class="label">생성자</span>
+                <span th:text="${project.ownerName}">생성자</span>
+            </div>
+
+            <div class="detail-row">
+                <span class="label">설명</span>
+                <span th:text="${project.description}">설명</span>
+            </div>
+        </div>
+
+        <div class="project-detail-guide">
+            왼쪽 사이드바에서 프로젝트 기능을 선택할 수 있습니다.
+            관리자는 설정 메뉴에서 프로젝트 구성원을 관리할 수 있습니다.
+        </div>
+
+    </div>
+
+</div>
+</body>
+</html>

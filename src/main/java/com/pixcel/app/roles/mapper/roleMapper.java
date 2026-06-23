@@ -33,7 +33,7 @@ public interface roleMapper {
     public List<roleServiceVO> selectRoleList(String createdBy);
 
     // 선택한 역할을 담당하는 구성원 목록 조회
-    public List<roleMemberVO> selectRoleMemberList(String roleId);
+    public List<roleMemberVO> selectRoleMemberList(@Param("roleId") String roleId);
     
     public roleServiceVO selectRoleById(@Param("roleId") String roleId);
 

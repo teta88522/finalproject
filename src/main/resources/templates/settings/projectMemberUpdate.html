@@ -1,0 +1,151 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{common/layouts/default_layout}">
+<head>
+<meta charset="UTF-8">
+<title>프로젝트 구성원 수정</title>
+
+<link rel="stylesheet" th:href="@{/css/settings/projectMemberUpdate.css}">
+</head>
+
+<body>
+<div layout:fragment="Content">
+
+    <div class="project-member-update-page">
+
+        <!-- 상단 영역 -->
+        <div class="update-page-header">
+            <div>
+                <h1 class="update-page-title">설정 &gt; 구성원 수정</h1>
+                <p class="update-page-sub-title">
+                    구성원의 프로젝트 역할을 수정합니다.
+                </p>
+            </div>
+
+            <div class="update-project-info">
+                <span>프로젝트</span>
+                <strong th:text="${project.projectName}">프로젝트명</strong>
+            </div>
+        </div>
+
+        <!-- 수정 form -->
+        <form th:action="@{/project/{projectId}/settings/members/update(projectId=${projectId})}"
+              method="post"
+              onsubmit="return validateMemberUpdateForm();">
+
+            <!-- 수정 대상 project_member PK -->
+            <input type="hidden"
+                   name="projectMemberId"
+                   th:value="${projectMember.projectMemberId}">
+
+            <!-- 구성원 정보 -->
+            <div class="update-section">
+                <div class="section-title">구성원 정보</div>
+                <div class="section-sub-text">
+                    구성원 기본 정보입니다. 역할만 수정할 수 있습니다.
+                </div>
+
+                <div class="member-info-box">
+
+                    <div class="info-row">
+                        <span class="label">이름</span>
+                        <span th:text="${projectMember.userName}">홍길동</span>
+                    </div>
+
+                    <div class="info-row">
+                        <span class="label">로그인 ID</span>
+                        <span th:text="${projectMember.loginId}">loginId</span>
+                    </div>
+
+                    <div class="info-row">
+                        <span class="label">이메일</span>
+                        <span th:text="${projectMember.email}">email@test.com</span>
+                    </div>
+
+                    <div class="info-row">
+                        <span class="label">연락처</span>
+                        <span th:text="${projectMember.phone != null ? projectMember.phone : '-'}">
+                            010-0000-0000
+                        </span>
+                    </div>
+
+                    <div class="info-row">
+                        <span class="label">소속팀</span>
+                        <span th:text="${projectMember.teamName != null ? projectMember.teamName : '-'}">
+                            팀명
+                        </span>
+                    </div>
+
+                    <div class="info-row">
+                        <span class="label">참가일</span>
+                        <span th:text="${projectMember.joinedAt != null ? projectMember.joinedAt : '-'}">
+                            2026/06/23
+                        </span>
+                    </div>
+
+                    <div class="info-row">
+                        <span class="label">현재 역할</span>
+                        <span th:text="${projectMember.roleName != null ? projectMember.roleName : '-'}">
+                            역할명
+                        </span>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- 역할 수정 -->
+            <div class="update-section">
+                <div class="section-title">역할 수정</div>
+                <div class="section-sub-text">
+                    구성원에게 새로 부여할 역할을 선택하세요.
+                </div>
+
+                <div class="role-select-row">
+                    <label for="roleId">역할</label>
+
+                    <select id="roleId" name="roleId">
+                        <option value="">선택</option>
+
+                        <option th:each="role : ${projectRoleList}"
+                                th:value="${role.roleId}"
+                                th:text="${role.roleName}"
+                                th:selected="${role.roleId == projectMember.roleId}">
+                            역할명
+                        </option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- 버튼 영역 -->
+            <div class="form-btn-area">
+                <a th:href="@{/project/{projectId}/settings/members(projectId=${projectId})}"
+                   class="btn-basic">
+                    취소
+                </a>
+
+                <button type="submit" class="btn-basic btn-primary">
+                    저장
+                </button>
+            </div>
+
+        </form>
+
+    </div>
+
+    <script>
+        function validateMemberUpdateForm() {
+            const roleId = document.getElementById("roleId").value;
+
+            if (!roleId) {
+                alert("역할을 선택하세요.");
+                return false;
+            }
+
+            return true;
+        }
+    </script>
+
+</div>
+</body>
+</html>

@@ -31,4 +31,8 @@ public class ProjectVO {
 	
 	private List<String> moduleCodes;	// 화면에서 넘어오는 모듈 코드 배열
 	//private List<String> moduleNames;	// 화면에서 넘어오는 모듈 이름 배열
+	
+	//260623 고동현 프로젝트 리스트 화면 표시용으로 VO 추가합니다.
+	private String statusName;
+	private String ownerName;
 }

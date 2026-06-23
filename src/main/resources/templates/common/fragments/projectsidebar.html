@@ -2,153 +2,125 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <th:block th:fragment="SiderProjectFragment">
 	<!-- Start Left menu area -->
-    <nav id="sidebar" class="">
-        <div class="left-custom-menu-adp-wrap comment-scrollbar">
-            <nav class="sidebar-nav left-sidebar-menu-pro">
-            <!-- Sidebar Button -->
-            <div class="col-lg-1 col-md-1 col-sm-1 col-xs-12">
-            	<div class="menu-switcher-pro">
-            		<button type="button" id="sidebarCollapse" class="btn bar-button-pro header-drl-controller-btn btn-info navbar-btn">
-            			<i class="educate-icon educate-nav"></i>
-            			</button>
-            	</div>
-            </div>
-                <ul class="metismenu" id="menu1">
-                    <!-- 대시보드 -->
-                    <li>
-                        <a th:href="@{/dashboard}">
-                            <span class="educate-icon educate-event icon-wrap"></span>
-                            <span class="mini-click-non">대시보드</span>
-                        </a>
-                    </li>
-                    
-                    <!-- 작업내역 -->
-                    <li>
-                        <a th:href="@{/workhistory}">
-                            <span class="educate-icon educate-event icon-wrap"></span>
-                            <span class="mini-click-non">작업내역</span>
-                        </a>
-                    </li>
-                    
-                    <!-- 로드맵 -->
-                    <li>
-                        <a th:href="@{/roadmap}">
-                            <span class="educate-icon educate-event icon-wrap"></span>
-                            <span class="mini-click-non">로드맵</span>
-                        </a>
-                    </li>
-                    
-                    <!-- 마일스톤 -->
-                    <li>
-                        <a th:href="@{/milestones}">
-                            <span class="educate-icon educate-event icon-wrap"></span>
-                            <span class="mini-click-non">마일스톤</span>
-                        </a>
-                    </li>
-                    
-                    <!-- 일감 -->
-                    <li>
-                        <a th:href="@{/issues}">
-                            <span class="educate-icon educate-event icon-wrap"></span>
-                            <span class="mini-click-non">일감</span>
-                        </a>
-                    </li>
-                    
-                    <!-- 칸반 -->
-                    <li>
-                        <a th:href="@{/kanban}">
-                            <span class="educate-icon educate-event icon-wrap"></span>
-                            <span class="mini-click-non">칸반</span>
-                        </a>
-                    </li>
-                    
-                    <!-- 간트차트 -->
-                    <li>
-                        <a th:href="@{/gantt}">
-                            <span class="educate-icon educate-event icon-wrap"></span>
-                            <span class="mini-click-non">간트차트</span>
-                        </a>
-                    </li>
-                    
-                    <!-- 달력 -->
-                    <li>
-                        <a th:href="@{/calendar}">
-                            <span class="educate-icon educate-event icon-wrap"></span>
-                            <span class="mini-click-non">달력</span>
-                        </a>
-                    </li>
-                    
-                    <!-- 문서관리 -->
-                    <li>
-                        <a th:href="@{/document}">
-                            <span class="educate-icon educate-event icon-wrap"></span>
-                            <span class="mini-click-non">문서관리</span>
-                        </a>
-                    </li>
-                    
-                    <!-- 자료실 -->
-                    <li>
-                        <a th:href="@{/repository}">
-                            <span class="educate-icon educate-event icon-wrap"></span>
-                            <span class="mini-click-non">자료실</span>
-                        </a>
-                    </li>
-                    
-                    <!-- 위키 -->
-                    <li>
-                        <a th:href="@{/wiki}">
-                            <span class="educate-icon educate-event icon-wrap"></span>
-                            <span class="mini-click-non">위키</span>
-                        </a>
-                    </li>
-                    
-                    
-                    
-                    <!-- 테스트 -->
-                    <li>
-                        <a class="has-arrow" th:href="@{/test}">
-                            <span class="educate-icon educate-professor icon-wrap"></span>
-                            <span class="mini-click-non">테스트</span>
-                        </a>
-                        <ul class="submenu-angle" aria-expanded="false">
-                            <li><a th:href="@{/testlist}">
-                                <span class="mini-sub-pro">테스트 목록</span></a></li>
-                            <li><a th:href="@{/testcaseslist}">
-                                <span class="mini-sub-pro">테스트케이스 목록</span></a></li>
-                            <li><a th:href="@{/testcases}">
-                                <span class="mini-sub-pro">테스트케이스</span></a></li>
-                            <li><a th:href="@{/buglist}">
-                                <span class="mini-sub-pro">버그 목록</span></a></li>
-                        </ul>
-                    </li>
-                    
-                    <!-- 저장소 -->
-                    <li>
-                        <a th:href="@{/sourcerepository}">
-                            <span class="educate-icon educate-event icon-wrap"></span>
-                            <span class="mini-click-non">저장소</span>
-                        </a>
-                    </li>
-                    
-                    <!-- 게시판 -->
-                    <li>
-                        <a th:href="@{/notice}">
-                            <span class="educate-icon educate-event icon-wrap"></span>
-                            <span class="mini-click-non">게시판</span>
-                        </a>
-                    </li>
-                    
-                    <!-- 설정 -->
-                    <li>
-                        <a th:href="@{/setting}">
-                            <span class="educate-icon educate-event icon-wrap"></span>
-                            <span class="mini-click-non">설정</span>
-                        </a>
-                    </li>
-                </ul>
-            </nav>
-        </div>
-    </nav>
-<!-- End Left menu area -->
-    </th:block>
+	<nav id="sidebar" class="">
+		<div class="left-custom-menu-adp-wrap comment-scrollbar">
+			<nav class="sidebar-nav left-sidebar-menu-pro">
+				<!-- Sidebar Button -->
+				<div class="col-lg-1 col-md-1 col-sm-1 col-xs-12">
+					<div class="menu-switcher-pro">
+						<button type="button" id="sidebarCollapse"
+							class="btn bar-button-pro header-drl-controller-btn btn-info navbar-btn">
+							<i class="educate-icon educate-nav"></i>
+						</button>
+					</div>
+				</div>
+				<ul class="metismenu" id="menu1">
+					<!-- 대시보드 -->
+					<li><a th:href="@{/dashboard}"> <span
+							class="educate-icon educate-event icon-wrap"></span> <span
+							class="mini-click-non">대시보드</span>
+					</a></li>
+
+					<!-- 작업내역 -->
+					<li><a th:href="@{/workhistory}"> <span
+							class="educate-icon educate-event icon-wrap"></span> <span
+							class="mini-click-non">작업내역</span>
+					</a></li>
+
+					<!-- 로드맵 -->
+					<li><a th:href="@{/roadmap}"> <span
+							class="educate-icon educate-event icon-wrap"></span> <span
+							class="mini-click-non">로드맵</span>
+					</a></li>
+
+					<!-- 마일스톤 -->
+					<li><a th:href="@{/milestones}"> <span
+							class="educate-icon educate-event icon-wrap"></span> <span
+							class="mini-click-non">마일스톤</span>
+					</a></li>
+
+					<!-- 일감 -->
+					<li><a th:href="@{/issues}"> <span
+							class="educate-icon educate-event icon-wrap"></span> <span
+							class="mini-click-non">일감</span>
+					</a></li>
+
+					<!-- 칸반 -->
+					<li><a th:href="@{/kanban}"> <span
+							class="educate-icon educate-event icon-wrap"></span> <span
+							class="mini-click-non">칸반</span>
+					</a></li>
+
+					<!-- 간트차트 -->
+					<li><a th:href="@{/gantt}"> <span
+							class="educate-icon educate-event icon-wrap"></span> <span
+							class="mini-click-non">간트차트</span>
+					</a></li>
+
+					<!-- 달력 -->
+					<li><a th:href="@{/calendar}"> <span
+							class="educate-icon educate-event icon-wrap"></span> <span
+							class="mini-click-non">달력</span>
+					</a></li>
+
+					<!-- 문서관리 -->
+					<li><a th:href="@{/document}"> <span
+							class="educate-icon educate-event icon-wrap"></span> <span
+							class="mini-click-non">문서관리</span>
+					</a></li>
+
+					<!-- 자료실 -->
+					<li><a th:href="@{/repository}"> <span
+							class="educate-icon educate-event icon-wrap"></span> <span
+							class="mini-click-non">자료실</span>
+					</a></li>
+
+					<!-- 위키 -->
+					<li><a th:href="@{/wiki}"> <span
+							class="educate-icon educate-event icon-wrap"></span> <span
+							class="mini-click-non">위키</span>
+					</a></li>
+
+
+
+					<!-- 테스트 -->
+					<li><a class="has-arrow" th:href="@{/test}"> <span
+							class="educate-icon educate-professor icon-wrap"></span> <span
+							class="mini-click-non">테스트</span>
+					</a>
+						<ul class="submenu-angle" aria-expanded="false">
+							<li><a th:href="@{/testlist}"> <span
+									class="mini-sub-pro">테스트 목록</span></a></li>
+							<li><a th:href="@{/testcaseslist}"> <span
+									class="mini-sub-pro">테스트케이스 목록</span></a></li>
+							<li><a th:href="@{/testcases}"> <span
+									class="mini-sub-pro">테스트케이스</span></a></li>
+							<li><a th:href="@{/buglist}"> <span class="mini-sub-pro">버그
+										목록</span></a></li>
+						</ul></li>
+
+					<!-- 저장소 -->
+					<li><a th:href="@{/sourcerepository}"> <span
+							class="educate-icon educate-event icon-wrap"></span> <span
+							class="mini-click-non">저장소</span>
+					</a></li>
+
+					<!-- 게시판 -->
+					<li><a th:href="@{/notice}"> <span
+							class="educate-icon educate-event icon-wrap"></span> <span
+							class="mini-click-non">게시판</span>
+					</a></li>
+
+					<!-- 설정  2026/06/23 고동현 수정-->
+					<li th:if="${subscribeYn == 'Y'}"><a
+						th:href="@{/project/{projectId}/settings/members(projectId=${projectId})}">
+							<span class="educate-icon educate-event icon-wrap"></span> <span
+							class="mini-click-non">설정</span>
+					</a></li>
+				</ul>
+			</nav>
+		</div>
+	</nav>
+	<!-- End Left menu area -->
+</th:block>
 </html>

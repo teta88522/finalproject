@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.pixcel.app.manage.mapper.ManageMapper">
+
+    <!-- 관리자가 생성한 프로젝트 목록 -->
+    <select id="selectMyManageProjectList"
+            resultType="com.pixcel.app.manage.service.ManageProjectVO">
+
+        SELECT
+            p.project_id     AS "projectId",
+            p.project_name   AS "projectName",
+            p.identifier     AS "identifier",
+            p.owner_id       AS "ownerId"
+        FROM project p
+        WHERE p.owner_id = #{ownerId}
+        ORDER BY
+            p.created_at DESC,
+            p.project_name
+
+    </select>
+
+
+    <!-- 관리자가 생성한 프로젝트들의 그룹 목록 -->
+    <select id="selectMyManageGroupList"
+            resultType="com.pixcel.app.manage.service.ManageGroupVO">
+
+        SELECT
+            pg.project_group_id          AS "projectGroupId",
+            pg.project_id                AS "projectId",
+            pg.role_id                   AS "roleId",
+            pg.group_name                AS "groupName",
+            pg.group_answer              AS "groupAnswer",
+
+            p.project_name               AS "projectName",
+
+            r.role_name                  AS "roleName",
+
+            COUNT(pm.project_member_id)  AS "memberCount"
+        FROM project p
+        JOIN project_group pg
+            ON p.project_id = pg.project_id
+        LEFT JOIN role r
+            ON pg.role_id = r.role_id
+        LEFT JOIN project_member pm
+            ON pg.project_group_id = pm.project_group_id
+        WHERE p.owner_id = #{ownerId}
+        GROUP BY
+            pg.project_group_id,
+            pg.project_id,
+            pg.role_id,
+            pg.group_name,
+            pg.group_answer,
+            p.project_name,
+            r.role_name
+        ORDER BY
+            p.project_name,
+            pg.group_name
+
+    </select>
+
+</mapper>

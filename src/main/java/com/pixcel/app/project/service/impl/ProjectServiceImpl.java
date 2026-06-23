@@ -1,10 +1,18 @@
 package com.pixcel.app.project.service.impl;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.pixcel.app.project.mapper.ProjectMapper;
+import com.pixcel.app.project.service.ProjectMemberVO;
+import com.pixcel.app.project.service.ProjectRoleVO;
 import com.pixcel.app.project.service.ProjectService;
 import com.pixcel.app.project.service.ProjectVO;
 
@@ -29,6 +37,137 @@ public class ProjectServiceImpl implements ProjectService {
 		}
 		
 		return result;
+	}
+
+	//260623 고동현 프로젝트 리스트 관련 추가
+	//관리자
+	@Override
+	public List<ProjectVO> selectMyCreatedProjectList(String userId) {
+		
+		return projectMapper.selectMyCreatedProjectList(userId);
+	}
+	//일반이용자
+	@Override
+	public List<ProjectVO> selectMyJoinedProjectList(String userId) {
+		return projectMapper.selectMyJoinedProjectList(userId);
+	}
+
+	//상세화면 껍데기
+	@Override
+	public ProjectVO selectProjectDetail(String projectId) {
+		return projectMapper.selectProjectDetail(projectId);
+	}
+
+	//프로젝트 설정 - 구성원 목록조회
+	@Override
+	public List<ProjectMemberVO> selectProjectMemberList(String projectId) {
+		return projectMapper.selectProjectMemberList(projectId);
+	}
+
+	
+	//프로젝트 구성원 후보 목록 조회
+	@Override
+	public List<ProjectMemberVO> selectProjectMemberCandidateList(String projectId) {
+		return projectMapper.selectProjectMemberCandidateList(projectId);
+	}
+
+	//프로젝트 롤 조회
+	@Override
+	public List<ProjectRoleVO> selectProjectRoleList(String projectId) {
+		return projectMapper.selectProjectRoleList(projectId);
+	}
+
+	//프로젝트 구성원 등록
+	@Override
+	@Transactional
+	public Map<String, Object> insertProjectMember(ProjectMemberVO projectMemberVO) {
+		
+		Map<String,Object> resultMap = new HashMap<>();
+		
+		int duplicateCount = projectMapper.selectProjectMemberDuplicateCount(
+				projectMemberVO.getProjectId(),
+				projectMemberVO.getTeamMemberId());
+		
+		if(duplicateCount > 0 ) {
+			resultMap.put("result", false);
+			resultMap.put("message","이미 참가중인 구성원 입니다.");
+			return resultMap;
+		}
+		
+		int nextNo = projectMapper.selectProjectMemberNextNo();
+		
+	    String yearMonth = LocalDate.now()
+	            .format(DateTimeFormatter.ofPattern("yyyyMM"));
+	    
+	    String projectMemberId =
+	            "PROJECT_MEMBER_"
+	            + yearMonth
+	            + "_"
+	            + String.format("%04d", nextNo);
+	    
+	    projectMemberVO.setProjectMemberId(projectMemberId);
+
+	    int insertResult = projectMapper.insertProjectMember(projectMemberVO);
+
+	    if (insertResult <= 0) {
+	        resultMap.put("result", false);
+	        resultMap.put("message", "구성원 등록에 실패했습니다.");
+	        return resultMap;
+	    }
+
+	    resultMap.put("result", true);
+	    resultMap.put("message", "구성원이 등록되었습니다.");
+	    resultMap.put("projectMemberId", projectMemberId);
+
+	    return resultMap;
+	}
+
+	//프로젝트 멤버 단건 조회
+	@Override
+	public ProjectMemberVO selectProjectMemberDetail(String projectMemberId) {
+		return projectMapper.selectProjectMemberDetail(projectMemberId);
+	}
+
+	//프로젝트 멤버 구성원 역할 수정
+	@Override
+	@Transactional
+	public Map<String, Object> updateProjectMemberRole(ProjectMemberVO projectMemberVO) {
+		
+		Map<String, Object> resultMap = new HashMap<>();
+		
+		int updateResult = projectMapper.updateProjectMemberRole(projectMemberVO);
+		
+		if(updateResult <= 0 ) {
+			resultMap.put("result", false);
+			resultMap.put("message", "구성원 역할 수정에 실패했습니다.");
+			return resultMap;
+		}
+		
+		resultMap.put("result", true);
+		resultMap.put("message", "구성원 역할이 수정되었습니다.");
+		
+		return resultMap;
+	}
+	
+	//프로젝트 멤버 구성원 삭제
+	@Override
+	@Transactional
+	public Map<String, Object> deleteProjectMember(String projectMemberId) {
+		
+		Map<String, Object> resultMap = new HashMap<>();
+		
+		int deleteResult = projectMapper.deleteProjectMember(projectMemberId);
+		
+		if(deleteResult <= 0 ) {
+			resultMap.put("result", false);
+			resultMap.put("message", "구성원 삭제에 실패했습니다.");
+			return resultMap;
+		}
+		
+		resultMap.put("result", true);
+		resultMap.put("message", "구성원 삭제가 성공하였습니다.");
+		
+		return resultMap;
 	}
 
 }
