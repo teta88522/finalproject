@@ -27,9 +27,13 @@
 					<div class="search-header">
 						<div class="search-title">검색조건</div>
 
-						<a th:href="@{/issuetype/create}"
-							class="btn btn-custon-rounded-four btn-primary search-action-btn">
-							유형 생성 </a>
+						<div class="header-actions">
+							<a th:href="@{/issuetype/summary}"
+								class="btn btn-custon-rounded-four btn-default search-action-btn">
+								요약 </a> <a th:href="@{/issuetype/create}"
+								class="btn btn-custon-rounded-four btn-primary search-action-btn">
+								유형 생성 </a>
+						</div>
 					</div>
 
 					<form th:action="@{/issuetype/list}" method="get">

@@ -316,3 +316,278 @@ textarea.form-control {
         flex-direction: column;
     }
 }
+
+/* ==============================
+   일감유형 요약 화면
+============================== */
+
+.issuetype-summary-page {
+    padding: 12px 0;
+    height: calc(100vh - 150px);
+    min-height: 620px;
+    overflow: hidden;
+}
+
+.issuetype-summary-page > .container-fluid {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.issuetype-summary-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 12px;
+    flex: 0 0 auto;
+}
+
+.issuetype-summary-header h3 {
+    margin: 0 0 3px;
+    font-size: 22px;
+    font-weight: 700;
+    color: #303030;
+}
+
+.issuetype-summary-header p {
+    margin: 0;
+    font-size: 13px;
+    color: #777777;
+}
+
+.issuetype-summary-header .btn {
+    padding: 5px 12px;
+    font-size: 13px;
+}
+
+.issuetype-summary-layout {
+    flex: 1;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: 280px minmax(0, 1fr);
+    gap: 14px;
+    align-items: stretch;
+}
+
+.issuetype-summary-left {
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    background: #ffffff;
+    border: 1px solid #e7e7e7;
+    border-radius: 8px;
+    padding: 14px 16px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+
+.issuetype-summary-left-title {
+    flex: 0 0 auto;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #eeeeee;
+}
+
+.issuetype-summary-left-title h4 {
+    margin: 0;
+    font-size: 17px;
+    font-weight: 600;
+    color: #303030;
+}
+
+.issuetype-summary-left-title p {
+    margin: 3px 0 0;
+    color: #777777;
+    font-size: 12px;
+}
+
+.issuetype-summary-count {
+    flex: 0 0 auto;
+    margin-bottom: 10px;
+    padding: 7px 10px;
+    border-radius: 6px;
+    background: #f5f6fb;
+    color: #252ba3;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.issuetype-summary-type-list {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 4px;
+}
+
+.issuetype-summary-type-item {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    min-height: 34px;
+    padding: 7px 8px;
+    margin-bottom: 6px;
+    border: 1px solid #e2e6f0;
+    border-radius: 5px;
+    background: #fafbff;
+    color: #333333;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.issuetype-summary-type-item:hover {
+    background: #f1f4ff;
+}
+
+.issuetype-summary-type-item input {
+    margin: 0;
+}
+
+.issuetype-summary-actions {
+    flex: 0 0 auto;
+    display: flex;
+    justify-content: flex-end;
+    gap: 6px;
+    margin-top: 12px;
+}
+
+.issuetype-summary-actions .btn {
+    padding: 5px 12px;
+    font-size: 13px;
+}
+
+.issuetype-summary-right {
+    min-width: 0;
+    min-height: 0;
+    display: flex;
+}
+
+.issuetype-summary-card {
+    width: 100%;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    background: #ffffff;
+    border: 1px solid #e7e7e7;
+    border-radius: 8px;
+    padding: 14px 16px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+
+.issuetype-summary-card-title {
+    flex: 0 0 auto;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #eeeeee;
+}
+
+.issuetype-summary-card-title h4 {
+    margin: 0;
+    font-size: 17px;
+    font-weight: 600;
+    color: #303030;
+}
+
+.issuetype-summary-card-title p {
+    margin: 3px 0 0;
+    color: #777777;
+    font-size: 12px;
+}
+
+.issuetype-summary-table-scroll {
+    flex: 1;
+    min-height: 0;
+    width: 100%;
+    overflow: auto;
+}
+
+.issuetype-summary-matrix {
+    width: 100%;
+    height: 100%;
+    min-width: 760px;
+    margin-bottom: 0;
+    table-layout: fixed;
+}
+
+.issuetype-summary-matrix th,
+.issuetype-summary-matrix td {
+    padding: 8px 10px !important;
+    text-align: center;
+    vertical-align: middle !important;
+    font-size: 13px;
+}
+
+.issuetype-summary-matrix thead th {
+    height: 44px;
+    background: #f8f9fa;
+    font-weight: 600;
+    border-bottom: 1px solid #dddddd;
+    white-space: nowrap;
+}
+
+.issuetype-summary-matrix tbody tr {
+    height: 76px;
+}
+
+.issuetype-summary-matrix tbody th {
+    width: 140px;
+    background: #f8f9fa;
+    color: #303030;
+    font-weight: 600;
+    text-align: left;
+    white-space: nowrap;
+}
+
+.issuetype-summary-matrix thead th:first-child {
+    width: 140px;
+    text-align: left;
+}
+
+.issuetype-use-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 42px;
+    height: 24px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.issuetype-use-badge-on {
+    border: 1px solid #d7eadf;
+    background: #f1faf5;
+    color: #1f7a45;
+}
+
+.issuetype-use-badge-off {
+    border: 1px solid #e1e4ec;
+    background: #f7f8fb;
+    color: #888888;
+}
+
+@media (max-width: 992px) {
+    .issuetype-summary-page {
+        height: auto;
+        min-height: 0;
+        overflow: visible;
+    }
+
+    .issuetype-summary-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .issuetype-summary-left {
+        max-height: 360px;
+    }
+
+    .issuetype-summary-card {
+        min-height: 460px;
+    }
+}
+
+@media (max-width: 640px) {
+    .issuetype-summary-header {
+        flex-direction: column;
+    }
+}
