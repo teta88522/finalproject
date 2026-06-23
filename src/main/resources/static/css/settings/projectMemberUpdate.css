@@ -1,0 +1,203 @@
+.project-member-update-page {
+    padding: 30px;
+    background-color: #f5f7fb;
+    min-height: calc(100vh - 80px);
+    box-sizing: border-box;
+}
+
+/* 상단 영역 */
+.update-page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 24px;
+}
+
+.update-page-title {
+    margin: 0;
+    font-size: 28px;
+    font-weight: 700;
+    color: #222;
+}
+
+.update-page-sub-title {
+    margin: 8px 0 0;
+    font-size: 14px;
+    color: #777;
+}
+
+.update-project-info {
+    min-width: 220px;
+    padding: 14px 18px;
+    border-radius: 10px;
+    background-color: #fff;
+    border: 1px solid #e1e6ef;
+    box-shadow: 0 2px 8px rgba(20, 35, 60, 0.04);
+}
+
+.update-project-info span {
+    display: block;
+    font-size: 12px;
+    color: #777;
+    margin-bottom: 6px;
+}
+
+.update-project-info strong {
+    font-size: 15px;
+    color: #222;
+}
+
+/* 섹션 */
+.update-section {
+    background-color: #fff;
+    border: 1px solid #e1e6ef;
+    border-radius: 12px;
+    padding: 22px 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 2px 8px rgba(20, 35, 60, 0.04);
+}
+
+.section-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #222;
+}
+
+.section-sub-text {
+    margin-top: 6px;
+    font-size: 13px;
+    color: #777;
+}
+
+/* 구성원 정보 박스 */
+.member-info-box {
+    margin-top: 18px;
+    border: 1px solid #e2e7f0;
+    border-radius: 10px;
+    overflow: hidden;
+    max-width: 680px;
+    background-color: #fff;
+}
+
+.info-row {
+    display: flex;
+    min-height: 46px;
+    border-bottom: 1px solid #edf0f5;
+}
+
+.info-row:last-child {
+    border-bottom: none;
+}
+
+.info-row .label {
+    width: 130px;
+    padding: 13px 14px;
+    background-color: #f1f4f9;
+    font-weight: 700;
+    color: #444;
+    box-sizing: border-box;
+}
+
+.info-row span:last-child {
+    flex: 1;
+    padding: 13px 14px;
+    color: #333;
+    box-sizing: border-box;
+}
+
+/* 역할 선택 */
+.role-select-row {
+    margin-top: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-width: 340px;
+}
+
+.role-select-row label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #555;
+}
+
+.role-select-row select {
+    height: 38px;
+    border: 1px solid #d7dde8;
+    border-radius: 6px;
+    padding: 0 10px;
+    font-size: 14px;
+    color: #333;
+    outline: none;
+    background-color: #fff;
+    box-sizing: border-box;
+}
+
+.role-select-row select:focus {
+    border-color: #2f6fed;
+    box-shadow: 0 0 0 3px rgba(47, 111, 237, 0.12);
+}
+
+/* 하단 버튼 */
+.form-btn-area {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.btn-basic {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 36px;
+    padding: 0 18px;
+    border: 1px solid #d6dce8;
+    background-color: #fff;
+    color: #333;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: 0.15s;
+    font-size: 14px;
+    text-decoration: none;
+    box-sizing: border-box;
+}
+
+.btn-basic:hover {
+    background-color: #eef3ff;
+    border-color: #9bbcff;
+}
+
+.btn-basic.btn-primary {
+    background-color: #2f6fed;
+    border-color: #2f6fed;
+    color: #fff;
+}
+
+.btn-basic.btn-primary:hover {
+    background-color: #245fd0;
+    border-color: #245fd0;
+}
+
+/* 반응형 */
+@media (max-width: 768px) {
+    .project-member-update-page {
+        padding: 18px;
+    }
+
+    .update-page-header {
+        flex-direction: column;
+        gap: 14px;
+    }
+
+    .update-project-info {
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .info-row {
+        flex-direction: column;
+    }
+
+    .info-row .label {
+        width: 100%;
+    }
+}

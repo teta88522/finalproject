@@ -199,122 +199,134 @@
     </div>
 
     <script>
-        function selectRole(element) {
-            const roleId = element.dataset.roleId;
-            const roleName = element.dataset.roleName;
+    function selectRole(element) {
+        const roleId = element.dataset.roleId;
+        const roleName = element.dataset.roleName;
 
-            document.getElementById("selectedRoleLabel").innerText = roleName;
-            document.getElementById("selectedRoleText").innerText = roleName;
+        console.log("클릭한 roleId =", roleId);
+        console.log("클릭한 roleName =", roleName);
 
-            const rows = document.querySelectorAll(".role-table tbody tr");
+        document.getElementById("selectedRoleLabel").innerText = roleName;
+        document.getElementById("selectedRoleText").innerText = roleName;
 
-            rows.forEach(row => {
-                row.classList.remove("active");
+        const rows = document.querySelectorAll(".role-table tbody tr");
 
-                if (row.getAttribute("data-role-id") === roleId) {
-                    row.classList.add("active");
-                }
-            });
+        rows.forEach(row => {
+            row.classList.remove("active");
 
-            document.getElementById("memberPlaceholder").classList.add("hidden");
-            document.getElementById("memberContent").classList.remove("hidden");
+            if (row.getAttribute("data-role-id") === roleId) {
+                row.classList.add("active");
+            }
+        });
 
-            const memberTableBody = document.getElementById("memberTableBody");
-            memberTableBody.innerHTML = "";
+        const memberPlaceholder = document.getElementById("memberPlaceholder");
+        const memberContent = document.getElementById("memberContent");
+        const memberTableBody = document.getElementById("memberTableBody");
 
-            fetch("/roles/members?roleId=" + encodeURIComponent(roleId))
-                .then(response => response.json())
-                .then(memberList => {
+        console.log("memberPlaceholder =", memberPlaceholder);
+        console.log("memberContent =", memberContent);
+        console.log("memberTableBody =", memberTableBody);
 
-                    if (!memberList || memberList.length === 0) {
-                        const row = document.createElement("tr");
+        memberPlaceholder.classList.add("hidden");
+        memberContent.classList.remove("hidden");
 
-                        row.innerHTML =
-                            "<td colspan='5' style='text-align:center;'>" +
-                            "해당 역할을 담당하는 구성원이 없습니다." +
-                            "</td>";
+        memberTableBody.innerHTML = "";
 
-                        memberTableBody.appendChild(row);
-                        return;
-                    }
+        fetch("/roles/member?roleId=" + encodeURIComponent(roleId))
+            .then(response => response.json())
+            .then(memberList => {
+                console.log("받아온 memberList =", memberList);
+                console.log("받아온 memberList length =", memberList.length);
 
-                    memberList.forEach(member => {
-                        const row = document.createElement("tr");
-
-                        row.innerHTML =
-                            "<td>" + nullToDash(member.projectName) + "</td>" +
-                            "<td>" + nullToDash(member.userName) + "</td>" +
-                            "<td>" + nullToDash(member.teamName) + "</td>" +
-                            "<td>" + nullToDash(member.loginId) + "</td>" +
-                            "<td>" + nullToDash(member.email) + "</td>";
-
-                        memberTableBody.appendChild(row);
-                    });
-                })
-                .catch(error => {
-                    console.log(error);
-
+                if (!memberList || memberList.length === 0) {
                     const row = document.createElement("tr");
 
                     row.innerHTML =
-                        "<td colspan='5' style='text-align:center; color:red;'>" +
-                        "해당 역할의 구성원이 존재하지 않습니다." +
+                        "<td colspan='5' style='text-align:center;'>" +
+                        "해당 역할을 담당하는 구성원이 없습니다." +
                         "</td>";
 
                     memberTableBody.appendChild(row);
-                });
-        }
-
-        function copyRole(element) {
-            const roleId = element.dataset.roleId;
-
-            location.href = "/roles/new?copyRoleId=" + encodeURIComponent(roleId);
-        }
-
-        function deleteRole(element) {
-            const roleId = element.dataset.roleId;
-            const roleName = element.dataset.roleName;
-            const memberCount = Number(element.dataset.memberCount);
-
-            if (memberCount > 0) {
-                alert("해당 역할을 담당 중인 구성원이 있어 삭제할 수 없습니다.");
-                return;
-            }
-
-            if (!confirm("'" + roleName + "' 역할을 삭제하시겠습니까?")) {
-                return;
-            }
-
-            fetch("/roles/delete", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/x-www-form-urlencoded"
-                },
-                body: "roleId=" + encodeURIComponent(roleId)
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.result) {
-                    alert("역할이 삭제되었습니다.");
-                    location.reload();
-                } else {
-                    alert(data.message || "역할 삭제에 실패했습니다.");
+                    return;
                 }
+
+                memberList.forEach(member => {
+                    const row = document.createElement("tr");
+
+                    row.innerHTML =
+                        "<td>" + nullToDash(member.projectName) + "</td>" +
+                        "<td>" + nullToDash(member.userName) + "</td>" +
+                        "<td>" + nullToDash(member.teamName) + "</td>" +
+                        "<td>" + nullToDash(member.loginId) + "</td>" +
+                        "<td>" + nullToDash(member.email) + "</td>";
+
+                    memberTableBody.appendChild(row);
+                });
             })
             .catch(error => {
-                console.log(error);
-                alert("역할 삭제 중 오류가 발생했습니다.");
+                console.log("역할 구성원 조회 오류 =", error);
+
+                const row = document.createElement("tr");
+
+                row.innerHTML =
+                    "<td colspan='5' style='text-align:center; color:red;'>" +
+                    "역할 구성원 조회 중 오류가 발생했습니다." +
+                    "</td>";
+
+                memberTableBody.appendChild(row);
             });
+    }
+
+    function copyRole(element) {
+        const roleId = element.dataset.roleId;
+
+        location.href = "/roles/new?copyRoleId=" + encodeURIComponent(roleId);
+    }
+
+    function deleteRole(element) {
+        const roleId = element.dataset.roleId;
+        const roleName = element.dataset.roleName;
+        const memberCount = Number(element.dataset.memberCount);
+
+        if (memberCount > 0) {
+            alert("해당 역할을 담당 중인 구성원이 있어 삭제할 수 없습니다.");
+            return;
         }
 
-        function nullToDash(value) {
-            if (value === null || value === undefined || value === "") {
-                return "-";
+        if (!confirm("'" + roleName + "' 역할을 삭제하시겠습니까?")) {
+            return;
+        }
+
+        fetch("/roles/delete", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded"
+            },
+            body: "roleId=" + encodeURIComponent(roleId)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.result) {
+                alert("역할이 삭제되었습니다.");
+                location.reload();
+            } else {
+                alert(data.message || "역할 삭제에 실패했습니다.");
             }
+        })
+        .catch(error => {
+            console.log(error);
+            alert("역할 삭제 중 오류가 발생했습니다.");
+        });
+    }
 
-            return value;
+    function nullToDash(value) {
+        if (value === null || value === undefined || value === "") {
+            return "-";
         }
-    </script>
+
+        return value;
+    }
+</script>
 
 </div>
 </body>

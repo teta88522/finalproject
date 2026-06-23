@@ -182,35 +182,30 @@
 	</select>
 
 	<!-- 선택한 역할을 담당하는 구성원 목록 조회 -->
-	<select id="selectRoleMemberList" parameterType="String"
+	<select id="selectRoleMemberList"
 		resultType="com.pixcel.app.roles.service.roleMemberVO">
 
 		SELECT
-		p.project_id AS projectId,
-		p.project_name AS
-		projectName,
+		p.project_id AS "projectId",
+		p.project_name AS "projectName",
 
-		t.team_id AS teamId,
-		t.team_name AS teamName,
+		t.team_id AS "teamId",
+		t.team_name AS "teamName",
 
-		u.user_id AS
-		userId,
-		u.login_id AS loginId,
-		u.user_name AS userName,
-		u.email AS email,
+		u.user_id AS "userId",
+		u.login_id AS "loginId",
+		u.user_name AS "userName",
+		u.email AS "email",
 
-		r.role_id AS roleId,
-		r.role_name AS roleName
+		r.role_id AS "roleId",
+		r.role_name AS "roleName"
 		FROM project_member pm
-		JOIN
-		role r
+		JOIN role r
 		ON pm.role_id = r.role_id
 		JOIN project p
-		ON pm.project_id =
-		p.project_id
+		ON pm.project_id = p.project_id
 		JOIN team_member tm
-		ON pm.team_member_id =
-		tm.team_member_id
+		ON pm.team_member_id = tm.team_member_id
 		JOIN users u
 		ON tm.user_id = u.user_id
 		LEFT JOIN team t
@@ -264,7 +259,8 @@
 	<!-- 역할 권한 삭제 -->
 	<delete id="deleteRolePermissionByRoleId" parameterType="String">
 
-		DELETE FROM role_permission
+		DELETE
+		FROM role_permission
 		WHERE role_id = #{roleId}
 
 	</delete>
@@ -274,7 +270,8 @@
 	<delete id="deleteRole" parameterType="String">
 
 		DELETE FROM role
-		WHERE role_id = #{roleId}
+		WHERE
+		role_id = #{roleId}
 
 	</delete>
 </mapper>

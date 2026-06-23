@@ -35,12 +35,17 @@ public class RolesController {
 	}
 	
 	//역할 목록 구성원 조회
-	@GetMapping("/rolse/member")
+	@GetMapping("/roles/member")
 	@ResponseBody
-	public List<roleMemberVO> roleMemeberList(@RequestParam String roleId){
-		List<roleMemberVO> memberList = roleService.selectRoleMemberList(roleId);
-		
-		return memberList;
+	public List<roleMemberVO> roleMemberList(@RequestParam String roleId) {
+		System.out.println("선택한 roleId = [" + roleId + "]");
+
+	    List<roleMemberVO> memberList = roleService.selectRoleMemberList(roleId);
+
+	    System.out.println("memberList = " + memberList);
+	    System.out.println("memberList size = " + memberList.size());
+
+	    return memberList;
 	}
 	
 	//역할 추가 화면

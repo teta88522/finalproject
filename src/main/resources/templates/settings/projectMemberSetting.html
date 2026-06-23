@@ -1,0 +1,145 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{common/layouts/default_layout}">
+<head>
+<meta charset="UTF-8">
+<title>프로젝트 구성원 설정</title>
+
+<link rel="stylesheet"
+	th:href="@{/css/settings/projectMemberSetting.css}">
+</head>
+
+<body>
+	<div layout:fragment="Content">
+
+		<div class="project-member-setting-page">
+
+			<div class="setting-page-header">
+				<div>
+					<h1 class="setting-page-title">설정 &gt; 구성원</h1>
+					<p class="setting-page-sub-title">현재 프로젝트의 구성원을 조회하고 관리할 수
+						있습니다.</p>
+				</div>
+
+				<div class="setting-project-info">
+					<span>프로젝트</span> <strong th:text="${project.projectName}">프로젝트명</strong>
+				</div>
+			</div>
+
+			<div class="setting-section">
+
+				<div class="setting-section-header">
+					<div>
+						<div class="section-title">구성원 목록</div>
+						<div class="section-sub-text">현재 프로젝트에 참가 중인 팀원 목록입니다.</div>
+					</div>
+
+					<div class="section-action-area">
+						<button type="button" class="setting-action-btn"
+							th:data-project-id="${projectId}" onclick="goMemberAdd(this)">
+							구성원 추가</button>
+					</div>
+				</div>
+
+				<div class="member-table-wrap">
+					<table class="member-table">
+						<thead>
+							<tr>
+								<th>이름</th>
+								<th>로그인 ID</th>
+								<th>이메일</th>
+								<th>연락처</th>
+								<th>소속팀</th>
+								<th>그룹</th>
+								<th>역할</th>
+								<th>참가일</th>
+								<th>관리</th>
+							</tr>
+						</thead>
+
+						<tbody>
+							<tr
+								th:if="${projectMemberList == null or #lists.isEmpty(projectMemberList)}">
+								<td colspan="9" class="empty-row">현재 프로젝트에 등록된 구성원이 없습니다.</td>
+							</tr>
+
+							<tr th:each="member : ${projectMemberList}">
+								<td th:text="${member.userName}">홍길동</td>
+
+								<td th:text="${member.loginId}">loginId</td>
+
+								<td th:text="${member.email}">email@test.com</td>
+
+								<td th:text="${member.phone != null ? member.phone : '-'}">010-0000-0000</td>
+
+								<td th:text="${member.teamName != null ? member.teamName : '-'}">팀명</td>
+
+								<td
+									th:text="${member.groupName != null ? member.groupName : '-'}">그룹명</td>
+
+								<td><span class="role-badge"
+									th:text="${member.roleName != null ? member.roleName : '-'}">
+										역할명 </span></td>
+
+								<td th:text="${member.joinedAt != null ? member.joinedAt : '-'}">
+									2026/06/23</td>
+
+								<td class="member-action-cell">
+									<button type="button" class="mini-btn"
+										th:data-project-id="${projectId}"
+										th:data-project-member-id="${member.projectMemberId}"
+										onclick="goMemberEdit(this)">수정</button>
+
+									<form
+										th:action="@{/project/{projectId}/settings/members/delete(projectId=${projectId})}"
+										method="post" class="inline-delete-form"
+										onsubmit="return confirm('구성원을 삭제하시겠습니까?');">
+
+										<input type="hidden" name="projectMemberId"
+											th:value="${member.projectMemberId}">
+
+										<button type="submit" class="mini-btn delete">삭제</button>
+									</form>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+
+			</div>
+
+		</div>
+
+<script th:inline="javascript">
+    function goMemberAdd(button) {
+        const projectId = button.dataset.projectId;
+
+        if (!projectId) {
+            return;
+        }
+
+        location.href = "/project/"
+                + encodeURIComponent(projectId)
+                + "/settings/members/new";
+    }
+
+    function goMemberEdit(button) {
+        const projectId = button.dataset.projectId;
+        const projectMemberId = button.dataset.projectMemberId;
+
+        if (!projectId || !projectMemberId) {
+            return;
+        }
+
+        location.href = "/project/"
+                + encodeURIComponent(projectId)
+                + "/settings/members/"
+                + encodeURIComponent(projectMemberId)
+                + "/update";
+    }
+</script>
+
+	</div>
+</body>
+</html>

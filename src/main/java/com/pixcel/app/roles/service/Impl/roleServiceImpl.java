@@ -88,9 +88,9 @@ public class roleServiceImpl implements roleService {
 
 	@Override
 	public List<roleMemberVO> selectRoleMemberList(String roleId) {
-		return roleMapper.selectRoleMemberList(roleId);
+	    return roleMapper.selectRoleMemberList(roleId);
 	}
-
+	
 	@Override
 	public roleServiceVO selectRoleById(String roleId) {
 		return roleMapper.selectRoleById(roleId);

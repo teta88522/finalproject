@@ -122,7 +122,7 @@
             return;
         }
 
-        fetch("/users/check-id?loginId=" + encodeURIComponent(loginId))
+        fetch("/checkId?loginId=" + encodeURIComponent(loginId))
             .then(response => response.json())
             .then(data => {
                 if (data.duplicated) {

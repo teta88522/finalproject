@@ -1,0 +1,170 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{common/layouts/default_layout}">
+<head>
+<meta charset="UTF-8">
+<title>프로젝트 구성원 추가</title>
+
+<link rel="stylesheet" th:href="@{/css/settings/projectMemberAdd.css}">
+</head>
+
+<body>
+<div layout:fragment="Content">
+
+    <div class="project-member-add-page">
+
+        <div class="add-page-header">
+            <div>
+                <h1 class="add-page-title">설정 &gt; 구성원 추가</h1>
+                <p class="add-page-sub-title">
+                    프로젝트 생성자의 팀 구성원 중 프로젝트에 추가할 팀원을 선택합니다.
+                </p>
+            </div>
+
+            <div class="add-project-info">
+                <span>프로젝트</span>
+                <strong th:text="${project.projectName}">프로젝트명</strong>
+            </div>
+        </div>
+
+        <form th:action="@{/project/{projectId}/settings/members/add(projectId=${projectId})}"
+              method="post"
+              onsubmit="return validateMemberAddForm();">
+
+            <!-- 역할 선택 -->
+            <div class="add-section">
+                <div class="section-title">역할 선택</div>
+                <div class="section-sub-text">
+                    추가할 구성원에게 부여할 역할을 선택하세요.
+                </div>
+
+                <div class="role-select-row">
+                    <label for="roleId">역할</label>
+                    <select id="roleId" name="roleId">
+                        <option value="">선택</option>
+                        <option th:each="role : ${projectRoleList}"
+                                th:value="${role.roleId}"
+                                th:text="${role.roleName}">
+                            역할명
+                        </option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- 구성원 선택 -->
+            <div class="add-section">
+
+                <div class="section-header">
+                    <div>
+                        <div class="section-title">팀 구성원 목록</div>
+                        <div class="section-sub-text">
+                            이미 프로젝트에 참가 중인 팀원은 선택할 수 없습니다.
+                        </div>
+                    </div>
+
+                    <div class="section-count">
+                        총
+                        <strong th:text="${candidateList == null ? 0 : #lists.size(candidateList)}">0</strong>
+                        명
+                    </div>
+                </div>
+
+                <div class="candidate-table-wrap">
+                    <table class="candidate-table">
+                        <thead>
+                            <tr>
+                                <th>선택</th>
+                                <th>상태</th>
+                                <th>팀명</th>
+                                <th>이름</th>
+                                <th>로그인 ID</th>
+                                <th>이메일</th>
+                                <th>연락처</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            <tr th:if="${candidateList == null or #lists.isEmpty(candidateList)}">
+                                <td colspan="7" class="empty-row">
+                                    조회된 팀 구성원이 없습니다.
+                                </td>
+                            </tr>
+
+                            <tr th:each="member : ${candidateList}"
+                                th:classappend="${member.joinedYn == 'Y'} ? ' already-joined-row' : ''">
+
+                                <td>
+                                    <input type="radio"
+                                           name="teamMemberId"
+                                           th:value="${member.teamMemberId}"
+                                           th:disabled="${member.joinedYn == 'Y'}">
+                                </td>
+
+                                <td>
+                                    <span th:if="${member.joinedYn == 'Y'}"
+                                          class="join-badge joined">
+                                        이미 참가중
+                                    </span>
+
+                                    <span th:if="${member.joinedYn != 'Y'}"
+                                          class="join-badge available">
+                                        추가 가능
+                                    </span>
+                                </td>
+
+                                <td th:text="${member.teamName}">팀명</td>
+
+                                <td th:text="${member.userName}">홍길동</td>
+
+                                <td th:text="${member.loginId}">loginId</td>
+
+                                <td th:text="${member.email}">email@test.com</td>
+
+                                <td th:text="${member.phone != null ? member.phone : '-'}">
+                                    010-0000-0000
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+
+            <div class="form-btn-area">
+                <a th:href="@{/project/{projectId}/settings/members(projectId=${projectId})}"
+                   class="btn-basic">
+                    취소
+                </a>
+
+                <button type="submit" class="btn-basic btn-primary">
+                    저장
+                </button>
+            </div>
+
+        </form>
+
+    </div>
+
+    <script>
+        function validateMemberAddForm() {
+            const checkedMember = document.querySelector('input[name="teamMemberId"]:checked');
+            const roleId = document.getElementById("roleId").value;
+
+            if (!checkedMember) {
+                alert("추가할 구성원을 선택하세요.");
+                return false;
+            }
+
+            if (!roleId) {
+                alert("역할을 선택하세요.");
+                return false;
+            }
+
+            return true;
+        }
+    </script>
+
+</div>
+</body>
+</html>
