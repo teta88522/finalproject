@@ -22,6 +22,7 @@ import com.pixcel.app.file.service.FileService;
 import com.pixcel.app.milestones.service.MilestoneListResponseDTO;
 import com.pixcel.app.milestones.service.MilestoneSearchVO;
 import com.pixcel.app.milestones.service.MilestonesService;
+import com.pixcel.app.milestones.service.MilestonesVO;
 
 import lombok.RequiredArgsConstructor;
 
@@ -42,12 +43,14 @@ public class DocumentController {
     }
 	
 	@GetMapping("/add")
-    public String documentAdd(Model model) {
-		List<MilestoneListResponseDTO> milestoneList = milestonesService.getMilestoneList(new MilestoneSearchVO());
+    public String documentAdd(Model model, @CookieValue(value="userId", required =false)String userId) {
+		MilestoneSearchVO vo = new MilestoneSearchVO();
+		vo.setProjectId("PROJECT_ID_2606_0001"); // 이거 필수
+		List<MilestonesVO> milestoneList = milestonesService.getMilestoneList(vo);
 
 	    model.addAttribute("milestoneList", milestoneList);
 	    
-	    List<CodeValueVO> codeValueList = codeValueService.getCodeValueListByGroup("g003");
+	    List<CodeValueVO> codeValueList = codeValueService.getCodeValueListByGroup(userId,"g003");
 	    model.addAttribute("codeValueList", codeValueList);
         return "document/documentAdd";
     }

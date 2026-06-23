@@ -8,8 +8,13 @@
 </head>
 <body>
    <div class="left-sidebar-pro">
-   <!--sider 영역을 참조합니다.-->
-   <aside th:replace="~{common/fragments/projectsidebar :: SiderProjectFragment}"></aside>
+   <aside th:if="${session.menu == 'project'}"
+           th:replace="~{common/fragments/projectsidebar :: SiderProjectFragment}">
+    </aside>
+
+    <aside th:if="${session.menu == 'admin'}"
+           th:replace="~{common/fragments/adminsidebar :: SiderAdminFragment}">
+    </aside>
    </div>
    <div class="all-content-wrapper">
    <!--Header 영역을 참조합니다.-->
