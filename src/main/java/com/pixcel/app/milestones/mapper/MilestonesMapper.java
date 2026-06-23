@@ -1,16 +1,12 @@
 package com.pixcel.app.milestones.mapper;
 
 import java.util.List;
-import java.util.Map;
-
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import com.pixcel.app.milestones.service.MilestonesIssueDTO;
 import com.pixcel.app.milestones.service.MilestonesMemberDTO;
-import com.pixcel.app.milestones.service.MilestoneListResponseDTO;
 import com.pixcel.app.milestones.service.MilestoneSearchVO;
-import com.pixcel.app.milestones.service.MilestonesCreateRequestDTO;
 import com.pixcel.app.milestones.service.MilestonesVO;
 
 @Mapper
@@ -23,17 +19,17 @@ public interface MilestonesMapper {
 	// version은 특정 버전 내의 일감만 조회해야 하는 **'필터링 조건'**을 처리하기 위해 반드시 필요
 	public List<MilestonesIssueDTO> getIssueList(@Param("keyword") String keyword, @Param("versionId") String versionId);
 	
-	public void insertMilestone(MilestonesCreateRequestDTO dto);
+	public void insertMilestone(MilestonesVO dto);
     //저장 작업은 데이터를 조회해서 가져오는 게 아니라 "DB에 데이터를 넣는 동작" 자체로 끝나기 때문입니다.
 	//프로시저 사용 : 프로시저 내부에서는 마일스톤을 하나 INSERT하고, 이어서 여러 개의 일감을 UPDATE하는 복잡한 로직이기 떄문에
 	
-	public MilestonesCreateRequestDTO getMilestoneDetail(String milestoneId); //마일스톤 상세페이지
+	public MilestonesVO getMilestoneDetail(String milestoneId); //마일스톤 상세페이지
 	
-	public int updateMilestone(MilestonesCreateRequestDTO updateVO);
+	public int updateMilestone(MilestonesVO updateVO);
 	
-    public int deleteMilestone(MilestonesVO milestonesVO);	  //마일스톤 삭제
+	public int deleteMilestone(String mileStoneId);	  //마일스톤 삭제
 	
-    public List<MilestoneListResponseDTO> getMilestoneList(MilestoneSearchVO searchVO);
+    public List<MilestonesVO> getMilestoneList(MilestoneSearchVO searchVO);
     
     public List<MilestonesIssueDTO> selectConnectedIssues(String milestoneId);
 }

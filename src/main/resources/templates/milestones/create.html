@@ -1,107 +1,170 @@
 <!doctype html>
-<html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{common/layouts/default_layout}">
-<head>
-    <meta charset="UTF-8">
+<html
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  layout:decorate="~{common/layouts/default_layout}"
+>
+  <head>
+    <meta charset="UTF-8" />
     <title>새 마일스톤 생성</title>
-    <link rel="stylesheet" th:href="@{/css/milestones/milestone-common.css}">
-    <link rel="stylesheet" th:href="@{/css/milestones/milestone-create.css}">
-</head>
-<body>
-<div layout:fragment="Content" class="milestone-container">
-    <div class="kiaalap-panel">
-        
+    <link rel="stylesheet" th:href="@{/css/milestones/milestone-common.css}" />
+    <link rel="stylesheet" th:href="@{/css/milestones/milestone-create.css}" />
+  </head>
+  <body>
+    <div layout:fragment="Content" class="milestone-container">
+      <div class="kiaalap-panel">
         <div class="panel-header">
-            <h2>새 마일스톤 생성</h2>
+          <h2>새 마일스톤 생성</h2>
         </div>
-        
-        <form id="milestoneForm" th:action="@{/milestones/create}" method="post">
-            <input type="hidden" id="versionId" name="versionId" value="">
-            <input type="hidden" id="selectedIssueIds" name="selectedIssueIds" value="">
 
-            <div class="panel-body">
-                <div class="content-row">
-                    
-                    <div class="content-left">
-                        <div class="form-group">
-                            <label>제목 <span class="required">*</span></label>
-                            <input type="text" id="title" name="title" class="form-control required-input" placeholder="마일스톤 제목을 입력하세요">
-                        </div>
+        <form
+          id="milestoneForm"
+          th:action="@{/milestones/create}"
+          method="post"
+        >
+          <input type="hidden" id="versionId" name="versionId" value="" />
+          <input
+            type="hidden"
+            id="selectedIssueIds"
+            name="selectedIssueIds"
+            value=""
+          />
 
-                        <div class="form-group">
-                            <label>설명</label>
-                            <textarea id="description" name="description" class="form-control" placeholder="마일스톤의 목표와 상세 내용을 적어주세요."></textarea>
-                        </div>
-
-						<div class="issue-section">
-						    <h3>일감 연결</h3>
-						    <div class="issue-search-group" style="position: relative;">
-						        <input type="text" id="issueSearchInput" class="form-control" autocomplete="off" placeholder="일감 제목 또는 번호 입력...">
-						        
-						        <ul id="searchDropdown" class="search-dropdown-menu" style="display: none;"></ul>
-						    </div>
-                            
-                            <div class="issue-list-container">
-                                <table class="table table-hover">
-                                    <tbody id="issueListBody">
-                                        <tr>
-                                            <td class="empty-row" style="text-align: center; color: #999; padding: 30px 10px;">
-                                                상단 검색창을 통해 연결할 일감을 찾아보세요.
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="content-right">
-                        <div class="form-group">
-                            <label>담당자 <span class="required">*</span></label>
-                            <select id="managerId" name="managerId" class="form-control required-input">
-                                <option value="">담당자 선택</option>
-                                <option th:each="manager : ${managerList}" 
-                                        th:value="${manager.userId}" 
-                                        th:text="${manager.userName}"></option>
-                            </select>
-                        </div>
-
-                        <div class="form-group">
-                            <label>상태 <span class="required">*</span></label>
-                            <select id="statusCode" name="statusCode" class="form-control required-input">
-                                <option value="">상태 선택</option>
-                                <option value="TODO">진행 예정</option>
-                                <option value="IPRG">진행 중</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group">
-                            <label>시작일 <span class="required">*</span></label>
-                            <input type="date" id="startDate" name="startDate" class="form-control required-input date-input">
-                        </div>
-
-                        <div class="form-group">
-                            <label>목표 일자 <span class="required">*</span></label>
-                            <input type="date" id="endDate" name="endDate" class="form-control required-input date-input">
-                            <div id="dateError" class="error-text" style="display: none;">시작일은 목표 일자보다 늦을 수 없습니다.</div>
-                        </div>
-                    </div>
-                    
+          <div class="panel-body">
+            <div class="content-row">
+              <div class="content-left">
+                <div class="form-group">
+                  <label>제목 <span class="required">*</span></label>
+                  <input
+                    type="text"
+                    id="title"
+                    name="title"
+                    class="form-control required-input"
+                    placeholder="마일스톤 제목을 입력하세요"
+                  />
                 </div>
-            </div>
 
-            <div class="panel-footer">
-                <button type="button" class="btn btn-default" onclick="history.back()">취소</button>
-                <div class="right-buttons">
-                    <button type="submit" class="btn btn-primary">저장하기</button>
+                <div class="form-group">
+                  <label>설명</label>
+                  <textarea
+                    id="description"
+                    name="description"
+                    class="form-control"
+                    placeholder="마일스톤의 목표와 상세 내용을 적어주세요."
+                  ></textarea>
                 </div>
+
+                <div class="issue-section">
+                  <h3>일감 연결</h3>
+                  <div class="issue-search-group" style="position: relative">
+                    <input
+                      type="text"
+                      id="issueSearchInput"
+                      class="form-control"
+                      autocomplete="off"
+                      placeholder="일감 제목 또는 번호 입력..."
+                    />
+
+                    <ul
+                      id="searchDropdown"
+                      class="search-dropdown-menu"
+                      style="display: none"
+                    ></ul>
+                  </div>
+
+                  <div class="issue-list-container">
+                    <table class="table table-hover">
+                      <tbody id="issueListBody">
+                        <tr>
+                          <td
+                            class="empty-row"
+                            style="
+                              text-align: center;
+                              color: #999;
+                              padding: 30px 10px;
+                            "
+                          >
+                            상단 검색창을 통해 연결할 일감을 찾아보세요.
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+
+              <div class="content-right">
+                <div class="form-group">
+                  <label>담당자 <span class="required">*</span></label>
+                  <select
+                    id="managerId"
+                    name="managerId"
+                    class="form-control required-input"
+                  >
+                    <option value="">담당자 선택</option>
+                    <option
+                      th:each="manager : ${managerList}"
+                      th:value="${manager.userId}"
+                      th:text="${manager.userName}"
+                    ></option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label>상태 <span class="required">*</span></label>
+                  <select
+                    id="statusCode"
+                    name="statusCode"
+                    class="form-control required-input"
+                  >
+                    <option value="">상태 선택</option>
+                    <option value="TODO">진행 예정</option>
+                    <option value="IPRG">진행 중</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label>시작일 <span class="required">*</span></label>
+                  <input
+                    type="date"
+                    id="startDate"
+                    name="startDate"
+                    class="form-control required-input date-input"
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label>목표 일자 <span class="required">*</span></label>
+                  <input
+                    type="date"
+                    id="endDate"
+                    name="endDate"
+                    class="form-control required-input date-input"
+                  />
+                  <div id="dateError" class="error-text" style="display: none">
+                    시작일은 목표 일자보다 늦을 수 없습니다.
+                  </div>
+                </div>
+              </div>
             </div>
+          </div>
+
+          <div class="panel-footer">
+            <button
+              type="button"
+              class="btn btn-default"
+              onclick="history.back()"
+            >
+              취소
+            </button>
+            <div class="right-buttons">
+              <button type="submit" class="btn btn-primary">저장하기</button>
+            </div>
+          </div>
         </form>
-
+      </div>
+      <script th:src="@{/js/milestones/milestone-form.js}"></script>
+      <script th:src="@{/js/milestones/milestone-create.js}"></script>
     </div>
-	<script th:src="@{/js/milestones/milestone-form.js}"></script>
-    <script th:src="@{/js/milestones/milestone-create.js}"></script>
-</div>
-</body>
+  </body>
 </html>

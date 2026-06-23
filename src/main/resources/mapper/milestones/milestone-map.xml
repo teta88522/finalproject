@@ -33,7 +33,7 @@
     
         <!-- 오라클 프로시저를 호출하여 마일스톤 정보를 저장합니다 -->
     <!-- statementType="CALLABLE"은 프로시저 호출 시 반드시 명시해야 합니다 -->
-	<insert id="insertMilestone" statementType="CALLABLE" parameterType="MilestonesCreateRequestDTO">
+	<insert id="insertMilestone" statementType="CALLABLE" parameterType="MilestonesVO">
         { CALL PKG_MILESTONE.SP_INSERT_MILESTONE(
             #{title}, 
             #{description}, 
@@ -41,13 +41,14 @@
             #{statusCode}, 
             #{startDate}, 
             #{endDate}, 
-            #{versionId}, 
+            #{versionId},
+            #{projectId},
             #{selectedIssueIds},
             #{milestoneId, mode=OUT, jdbcType=VARCHAR}
         ) }
     </insert>
     
-    <select id="getMilestoneDetail" resultType="MilestonesCreateRequestDTO">
+    <select id="getMilestoneDetail" resultType="MilestonesVO">
     	SELECT
     		a.milestone_id,
     		a.version_id,
@@ -65,7 +66,7 @@
     	WHERE a.milestone_id = #{milestoneId}
     </select>
     
-      <update id="updateMilestone" statementType="CALLABLE" parameterType="MilestonesCreateRequestDTO">
+      <update id="updateMilestone" statementType="CALLABLE" parameterType="MilestonesVO">
         { CALL PKG_MILESTONE.SP_UPDATE_MILESTONE(
             #{milestoneId}, 
             #{title}, 
@@ -74,7 +75,7 @@
             #{statusCode}, 
             #{startDate}, 
             #{endDate}, 
-            #{versionId}, 
+            #{versionId},
             #{selectedIssueIds}
         ) }
     </update>
@@ -84,7 +85,7 @@
         ) }
     </delete>
     
-    <resultMap id="MilestoneListMap" type="MilestoneListResponseDTO">
+    <resultMap id="MilestoneListMap" type="MilestonesVO">
         
         <id property="milestoneId" column="MILESTONE_ID"/>
         <result property="title" column="MILESTONE_TITLE"/>
@@ -133,6 +134,7 @@
         LEFT OUTER JOIN USERS U ON M.MANAGER_ID = U.USER_ID  
         LEFT OUTER JOIN ISSUE I ON M.MILESTONE_ID = I.MILESTONE_ID
         <where>
+        	AND M.PROJECT_ID = #{projectId}
             <if test="startDate != null and startDate != '' and endDate != null and endDate != ''">
                 AND M.START_DATE <![CDATA[>=]]> TO_DATE(#{startDate}, 'YYYY-MM-DD')
                 AND M.END_DATE <![CDATA[<=]]> TO_DATE(#{endDate}, 'YYYY-MM-DD')

@@ -6,11 +6,13 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 //마일스톤 목록 필터를 담는 VO
 
 @Getter
 @Setter
+@ToString
 public class MilestoneSearchVO {
 
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd") //json으로 데이터를 보낼떄
@@ -25,5 +27,6 @@ public class MilestoneSearchVO {
     private String managerId;
     private String managerName;
     private String statusCode;
+    private String projectId;
 
 }

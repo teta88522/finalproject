@@ -7,12 +7,12 @@
   <head>
     <meta charset="UTF-8" />
     <title>마일스톤 목록</title>
-  <link rel="stylesheet" th:href="@{/css/milestones/milestone-common.css}" />
-  <link rel="stylesheet" th:href="@{/css/milestones/milestone-list.css}" />
-  <link
-    rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
-  />
+    <link rel="stylesheet" th:href="@{/css/milestones/milestone-common.css}" />
+    <link rel="stylesheet" th:href="@{/css/milestones/milestone-list.css}" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+    />
   </head>
   <body>
     <div layout:fragment="Content">
@@ -134,15 +134,13 @@
                   </span>
                 </div>
                 <div class="date-area">
-                  <span
-                    >시작일:
+                  <span>
                     <span th:text="${milestone.startDate}"
                       >2021-12-01</span
                     ></span
                   >
                   ~
-                  <span
-                    >목표일:
+                  <span>
                     <span th:text="${milestone.endDate}">2021-12-31</span></span
                   >
                 </div>

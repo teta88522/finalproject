@@ -2,9 +2,7 @@ package com.pixcel.app.milestones.service.impl;
 
 import com.pixcel.app.milestones.service.MilestonesService;
 import com.pixcel.app.milestones.service.MilestonesVO;
-import com.pixcel.app.milestones.service.MilestoneListResponseDTO;
 import com.pixcel.app.milestones.service.MilestoneSearchVO;
-import com.pixcel.app.milestones.service.MilestonesCreateRequestDTO;
 import com.pixcel.app.milestones.service.MilestonesMemberDTO; // DTO 임포트 확인
 import com.pixcel.app.milestones.service.MilestonesIssueDTO;   // DTO 임포트 확인
 import com.pixcel.app.milestones.mapper.MilestonesMapper;
@@ -24,7 +22,7 @@ public class MilestonesServiceImpl implements MilestonesService {
   
     @Override
     @Transactional // 마일스톤 생성과 일감 업데이트가 한 묶음으로 처리되도록 트랜잭션 걸기
-    public String createMilestone(MilestonesCreateRequestDTO requestDTO) {
+    public String createMilestone(MilestonesVO milestoneVO) {
         
         // [설명]
         // 예전에는 여기서 requestDTO.getIssueIds()를 꺼내서 String.join(",", ...) 처리를 했어야 했습니다.
@@ -32,9 +30,9 @@ public class MilestonesServiceImpl implements MilestonesService {
         // requestDTO.getSelectedIssueIds()에 담아 보냈으므로, 여기선 아무런 가공을 할 필요가 없습니다!
         
         // 바로 Mapper(DB 공장)로 쿨하게 던져줍니다.
-        milestonesMapper.insertMilestone(requestDTO);
+        milestonesMapper.insertMilestone(milestoneVO);
         
-        return requestDTO.getMilestoneId();
+        return milestoneVO.getMilestoneId();
     }
 
     // 2. 담당자 목록 조회
@@ -50,27 +48,27 @@ public class MilestonesServiceImpl implements MilestonesService {
     }
     // 4. 상세 조회
     @Override
-    public MilestonesCreateRequestDTO getMilestoneDetail(String milestoneId) {
+    public MilestonesVO getMilestoneDetail(String milestoneId,String projectId) {
         // Mapper를 통해 DB에서 데이터를 꺼내옵니다.
         return milestonesMapper.getMilestoneDetail(milestoneId);
     }
     // 5. 수정
     @Override
     @Transactional
-    public int updateMilestone(MilestonesCreateRequestDTO updateVO) {
+    public int updateMilestone(MilestonesVO updateVO) {
         return milestonesMapper.updateMilestone(updateVO);
     }
     
     // 6. 삭제
     @Override
     @Transactional
-    public int deleteMilestone(MilestonesVO milestonesVO) {
-    	return milestonesMapper.deleteMilestone(milestonesVO);
+    public int deleteMilestone(String milestoneId,String projectId) {
+    	return milestonesMapper.deleteMilestone(milestoneId);
     }
     
     //7. 목록조회
     @Override
-    public  List<MilestoneListResponseDTO> getMilestoneList(MilestoneSearchVO searchVO){
+    public  List<MilestonesVO> getMilestoneList(MilestoneSearchVO searchVO){
     	return milestonesMapper.getMilestoneList(searchVO);
     };
     
