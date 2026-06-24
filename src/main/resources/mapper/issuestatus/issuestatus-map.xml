@@ -14,7 +14,7 @@
 		closed_yn
 		from issue_status
 		where user_id = #{userId}
-		order by issue_status_id
+		order by issue_status_id ASC
 	</select>
 
 	<!-- 검색조건에 맞는 사용자별 일감상태 목록 조회 -->
@@ -37,7 +37,7 @@
 			and closed_yn = #{closedYn}
 		</if>
 
-		order by issue_status_id desc
+		order by issue_status_id ASC
 	</select>
 
 	<!-- 사용자별 일감 상태 상세 조회 -->

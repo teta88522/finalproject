@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.pixcel.app.repository.mapper.RepositoryMapper">
+<mapper
+	namespace="com.pixcel.app.repository.mapper.RepositoryMapper">
 	<!-- RepositoryVO와 테이블 컬럼의 이름을 매칭시킨다. -->
 	<resultMap id="repositoryMap" type="RepositoryVO">
 		<id property="fileId" column="file_id" />
@@ -17,137 +18,168 @@
 		<result property="fileUseYn" column="file_use_yn" />
 		<result property="connectAddress" column="connect_address" />
 	</resultMap>
-	
-	<select id="selectRepositoryList" parameterType="RepositoryVO" resultMap="repositoryMap">
-		SELECT
-			file_id
-			, project_id
-			, version_id
-			, file_code
-			, original_name
-			, stored_name
-			, file_path
-			, file_size
-			, upload_user_id
-			, upload_date
-			, file_version
-			, file_use_yn
-			, connect_address
-		FROM attach_file
+
+	<select id="selectRepositoryList" parameterType="RepositoryVO"
+		resultMap="repositoryMap">
+		SELECT * FROM (
+		SELECT rownum rn, A.* FROM (
+		SELECT * FROM attach_file
 		<where>
 			file_use_yn = 'g001'
 			<if test="projectId != null and projectId != ''">
 				AND project_id = #{projectId}
 			</if>
-			<if test="fileCode != null and fileCode != ''">
-				AND file_code LIKE '%' || #{fileCode} || '%'	
-			</if>
 			<if test="originalName != null and originalName != ''">
 				AND original_name LIKE '%' || #{originalName} || '%'
 			</if>
 			<if test="uploadUserId != null and uploadUserId != ''">
-				AND upload_user_id = #{uploadUserId}
+				AND upload_user_id LIKE '%' || #{uploadUserId} || '%'
+			</if>
+			<if test="startDate != null and startDate != ''">
+				AND TO_CHAR(upload_date, 'YYYY-MM-DD') >= #{startDate}
+			</if>
+			<if test="endDate != null and endDate != ''">
+				AND TO_CHAR(upload_date, 'YYYY-MM-DD') <![CDATA[ <= ]]>
+				#{endDate}
 			</if>
 		</where>
 		ORDER BY upload_date DESC
+		) A
+		WHERE rownum <![CDATA[ <= ]]>
+		#{endRow}
+		) WHERE rn >= #{startRow}
 	</select>
-	
-	<select id="selectRepositoryListByUserId" parameterType="string" resultMap="repositoryMap">
+
+	<select id="selectRepositoryTotalCount"
+		parameterType="com.pixcel.app.repository.service.RepositoryVO"
+		resultType="int">
+		SELECT COUNT(*) FROM attach_file
+		<where>
+			file_use_yn = 'g001'
+			<if test="projectId != null and projectId != ''"> AND project_id = #{projectId} </if>
+			<if test="originalName != null and originalName != ''"> AND original_name LIKE '%' || #{originalName} || '%'
+			</if>
+			<if test="uploadUserId != null and uploadUserId != ''"> AND upload_user_id LIKE '%' || #{uploadUserId} || '%'
+			</if>
+			<if test="startDate != null and startDate != ''"> AND TO_CHAR(upload_date, 'YYYY-MM-DD') >= #{startDate}
+			</if>
+			<if test="endDate != null and endDate != ''">
+				AND TO_CHAR(upload_date, 'YYYY-MM-DD') <![CDATA[ <= ]]>
+				#{endDate}
+			</if>
+		</where>
+	</select>
+
+	<select id="selectRepositoryListByUserId" parameterType="string"
+		resultMap="repositoryMap">
 		SELECT
-			file_id
-			, project_id
-			, version_id
-			, file_code
-			, original_name
-			, stored_name
-			, file_path
-			, file_size
-			, upload_user_id
-			, upload_date
-			, file_version
-			, file_use_yn
-			, connect_address
-		FROM attach_file
-		WHERE upload_user_id = #{uploadUserId} AND file_use_yn = 'Y'
+		file_id
+		, project_id
+		, version_id
+		, file_code
+		,
+		original_name
+		, stored_name
+		, file_path
+		, file_size
+		, upload_user_id
+		,
+		upload_date
+		, file_version
+		, file_use_yn
+		, connect_address
+		FROM
+		attach_file
+		WHERE upload_user_id = #{uploadUserId}
+		AND file_use_yn = 'Y'
 		ORDER BY upload_date DESC
 	</select>
-	
-	<select id="selectRepositoryDetail" parameterType="string" resultMap="repositoryMap">
+
+	<select id="selectRepositoryDetail" parameterType="string"
+		resultMap="repositoryMap">
 		SELECT
-			file_id
-			, project_id
-			, version_id
-			, file_code
-			, original_name
-			, stored_name
-			, file_path
-			, file_size
-			, upload_user_id
-			, upload_date
-			, file_version
-			, file_use_yn
-			, connect_address
-		FROM attach_file
+		file_id
+		, project_id
+		, version_id
+		, file_code
+		,
+		original_name
+		, stored_name
+		, file_path
+		, file_size
+		, upload_user_id
+		,
+		upload_date
+		, file_version
+		, file_use_yn
+		, connect_address
+		FROM
+		attach_file
 		WHERE file_id = #{fileId}
 	</select>
-	
+
 	<insert id="insertRepository" parameterType="RepositoryVO">
-	
-		<selectKey keyProperty="fileId" resultType="string" order="BEFORE">
-            SELECT
-                'ATTACH_FILE_'
-                || to_char(sysdate, 'YYMM')
-                || '_'
-                || lpad(
-                    nvl(max(to_number(substr(file_id, -4))), 0) + 1,
-                    4,
-                    '0'
-                )
-            FROM attach_file
-            WHERE file_id LIKE 'ATTACH_FILE_' || to_char(sysdate, 'YYMM') || '_%'
-        </selectKey>
-	
-		INSERT INTO attach_file(
-			file_id
-			, project_id
-			, version_id
-			, file_code
-			, original_name
-			, stored_name
-			, file_path
-			, file_size
-			, upload_user_id
-			, upload_date
-			, file_version
-			, file_use_yn
-			, connect_address
+
+		<selectKey keyProperty="fileId" resultType="string"
+			order="BEFORE">
+			SELECT
+			'ATTACH_FILE_'
+			|| to_char(sysdate, 'YYMM')
+			|| '_'
+			|| lpad(
+			nvl(max(to_number(substr(file_id, -4))), 0) + 1,
+			4,
+			'0'
 			)
+			FROM
+			attach_file
+			WHERE file_id LIKE 'ATTACH_FILE_' || to_char(sysdate,
+			'YYMM') || '_%'
+		</selectKey>
+
+		INSERT INTO attach_file(
+		file_id
+		, project_id
+		, version_id
+		, file_code
+		,
+		original_name
+		, stored_name
+		, file_path
+		, file_size
+		, upload_user_id
+		,
+		upload_date
+		, file_version
+		, file_use_yn
+		)
 		VALUES(
-			#{fileId}
-			, #{projectId}
-			, #{versionId}
-			, #{fileCode}
-			, #{originalName}
-			, #{storedName}
-			, #{filePath}
-			, #{fileSize}
-			, #{uploadUserId}
-			<!-- uploaddate값을 직접 넣어서 보낸다면 그값을 사용하고, 
-			만약 값을 안넣어서 보낸다면 오라클 현재 시간인 SYSDATE를 집어넣는다. -->
-			, <choose>
-				<when test="uploadDate != null">#{uploadDate}</when>
-				<otherwise>SYSDATE</otherwise>
-			  </choose>
-			, #{fileVersion}
-			, #{fileUseYn}
-			, #{connectAddress}
+		#{fileId}
+		, #{projectId}
+		, #{versionId}
+		, #{fileCode}
+		, #{originalName}
+		,
+		#{storedName}
+		, #{filePath}
+		, #{fileSize}
+		, #{uploadUserId}
+		<!-- uploaddate값을 직접 넣어서 보낸다면 그값을 사용하고, 만약 값을 안넣어서 보낸다면 오라클 현재 시간인 SYSDATE를 
+			집어넣는다. -->
+		,
+		<choose>
+			<when test="uploadDate != null">#{uploadDate}</when>
+			<otherwise>SYSDATE</otherwise>
+		</choose>
+		, #{fileVersion}
+		, #{fileUseYn}
 		)
 	</insert>
-	
+
 	<update id="updateRepository" parameterType="RepositoryVO">
 		UPDATE attach_file
 		<set>
-		<!-- 사용자가 입력하지 않은 값은 넘기고 입력한 값만 저장한다. -->
+			<!-- 사용자가 입력하지 않은 값은 넘기고 입력한 값만 저장한다. -->
 			<if test="projectId != null">project_id = #{projectId},</if>
 			<if test="versionId != null">version_id = #{versionId},</if>
 			<if test="fileCode != null">file_code = #{fileCode},</if>
@@ -161,4 +193,11 @@
 		</set>
 		WHERE file_id = #{fileId}
 	</update>
+
+	<delete id="deleteRepository" parameterType="String">
+		DELETE FROM
+		attach_file
+		WHERE file_id = #{fileId}
+	</delete>
+
 </mapper>

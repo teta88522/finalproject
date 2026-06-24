@@ -6,19 +6,19 @@
 <head>
 <title>일감유형 관리</title>
 <link rel="stylesheet" th:href="@{/css/common-ui.css}">
-<link rel="stylesheet" th:href="@{/css/common-fliter.css}">
+<link rel="stylesheet" th:href="@{/css/common-filter.css}">
 <link rel="stylesheet" th:href="@{/css/issuetype/issuetype.css}">
 </head>
 
 <body>
 	<div layout:fragment="Content">
 
-		<div class="issuetype-area">
+		<div class="issuetype-area issuetype-list-page">
 			<div class="container-fluid">
 
 				<div class="issuetype-header">
 					<div>
-						<h3>일감유형</h3>
+						<h3>일감 유형</h3>
 						<p>일감 생성 시 사용할 유형을 관리합니다.</p>
 					</div>
 				</div>
@@ -27,9 +27,13 @@
 					<div class="search-header">
 						<div class="search-title">검색조건</div>
 
-						<a th:href="@{/issuetype/create}"
-							class="btn btn-custon-rounded-four btn-primary search-action-btn">
-							유형 생성 </a>
+						<div class="header-actions">
+							<a th:href="@{/issuetype/summary}"
+								class="btn btn-custon-rounded-four btn-default search-action-btn">
+								요약 </a> <a th:href="@{/issuetype/create}"
+								class="btn btn-custon-rounded-four btn-primary search-action-btn">
+								유형 생성 </a>
+						</div>
 					</div>
 
 					<form th:action="@{/issuetype/list}" method="get">
@@ -81,7 +85,7 @@
 				<div th:if="${errorMessage}" class="page-message page-message-error"
 					th:text="${errorMessage}"></div>
 
-				<div class="issuetype-card">
+				<div class="issuetype-card issuetype-list-card">
 					<div class="issuetype-card-title">
 						<h4>일감유형 목록</h4>
 					</div>

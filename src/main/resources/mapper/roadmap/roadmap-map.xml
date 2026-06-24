@@ -11,5 +11,106 @@
             #{defaultYn}
         ) }
     </insert>
+<select id="getRoadmapList" resultType="RoadmapVO">
+	SELECT
+         version_id
+        ,version_name   
+        ,description
+        ,default_yn
+        ,status_code
+    FROM project_version
+    WHERE project_id = #{projectId} ORDER BY 
+        default_yn DESC, created_at DESC
+</select>
+
+<update id="updateRoadmap" statementType="CALLABLE" parameterType="RoadmapVO">
+        { CALL PKG_ROADMAP.SP_UPDATE_ROADMAP(
+            #{versionId}, 
+            #{projectId}, 
+            #{versionName},
+            #{description},
+            #{statusCode},
+            #{defaultYn}
+        ) }
+    </update>
+<select id="getRoadmapDetail" resultType="RoadmapVO">
+    SELECT
+        version_id,
+        version_name,
+        description,
+        status_code,
+        default_yn
+    FROM project_version
+    WHERE version_id = #{versionId}
+      AND project_id = #{projectId}
+</select>
+<delete id="deleteRoadmap" statementType="CALLABLE">
+	{ CALL PKG_ROADMAP.SP_DELETE_ROADMAP(
+           #{versionId},
+           #{projectId}
+        ) }
+</delete>
+
+<resultMap id="issueResultMap" type="MilestonesIssueDTO">
+        <id property="issueId" column="ISSUE_ID" />
+        <result property="milestoneId" column="MILESTONE_ID" />
+        <result property="title" column="ISSUE_TITLE" />
+        <result property="issueStatusId" column="ISSUE_STATUS_ID" />
+    </resultMap>
+
+    <resultMap id="milestoneResultMap" type="MilestonesVO">
+        <id property="milestoneId" column="MILESTONE_ID" />
+        <result property="versionId" column="VERSION_ID" />
+        <result property="title" column="MILESTONE_TITLE" />
+        <result property="statusCode" column="MILESTONE_STATUS" />
+        <result property="startDate" column="START_DATE" />
+        <result property="endDate" column="END_DATE" />
+        
+        <collection property="issueList" resultMap="issueResultMap" />
+    </resultMap>
+
+    <resultMap id="roadmapResultMap" type="RoadmapVO">
+        <id property="versionId" column="VERSION_ID" />
+        <result property="projectId" column="PROJECT_ID" />
+        <result property="versionName" column="VERSION_NAME" />
+        <result property="statusCode" column="VERSION_STATUS" />
+        <result property="defaultYn" column="DEFAULT_YN" />
+        
+        <collection property="milestoneList" resultMap="milestoneResultMap" />
+    </resultMap>
+
+    <select id="getRoadmapFull" resultMap="roadmapResultMap">
+        SELECT 
+            /* 1. 로드맵 (별칭 지정) */
+            v.VERSION_ID,
+            v.PROJECT_ID,
+            v.VERSION_NAME,
+            v.STATUS_CODE,
+            v.DEFAULT_YN,
+            
+            /* 2. 마일스톤 (별칭 지정 필수: 이름과 상태코드가 로드맵/일감과 겹치므로 분리) */
+            m.MILESTONE_ID,
+            m.TITLE,
+            m.STATUS_CODE,
+            m.START_DATE,
+            m.END_DATE,
+            
+            /* 3. 일감 (별칭 지정 필수: 이름과 상태코드가 겹치므로 분리) */
+            i.ISSUE_ID,
+            i.TITLE,
+            i.STATUS_CODE
+            
+        FROM PROJECT_VERSION v
+        LEFT JOIN MILESTONES m ON v.VERSION_ID = m.VERSION_ID
+        LEFT JOIN ISSUES i     ON m.MILESTONE_ID = i.MILESTONE_ID
+        
+        WHERE v.PROJECT_ID = #{projectId}
+        
+        ORDER BY 
+            v.CREATED_AT DESC,  /* 로드맵: 최신 생성순 */
+            m.START_DATE ASC,   /* 마일스톤: 시작일이 빠른 순 */
+            i.ISSUE_ID ASC      /* 일감: ID순 (혹은 원하는 정렬 기준) */
+    </select>
+
 
 </mapper>

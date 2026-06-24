@@ -16,50 +16,32 @@
 
         <div class="repo-detail-card" style="padding: 40px; min-height: 450px;">
             <form th:action="@{/repository/edit}" method="post" enctype="multipart/form-data">
-                
-                <input type="hidden" name="fileId" th:value="${repository?.fileId}">
-                <input type="hidden" name="projectId" th:value="${repository?.projectId}">
-                <input type="hidden" name="fileCode" th:value="${repository?.fileCode}">
-                <input type="hidden" name="fileVersion" th:value="${repository?.fileVersion}">
-
-                <div class="repo-upload-zone" onclick="document.getElementById('uploadFile').click();">
-                    <div class="repo-upload-inner">
-                        <p class="repo-upload-text">파일을 여기에 끌어다 놓거나 파일 선택부분을 직접 선택해주세요</p>
-                        <button type="button" class="repo-btn repo-btn-download" style="margin-top: 15px;"> 파일 업로드</button>
-                    </div>
-                    <input type="file" id="uploadFile" name="uploadFile" style="display: none;" onchange="updateFileName(this);">
-                </div>
-
-                <div class="repo-file-list-box">
-                    <div class="repo-file-item">
-                        <input type="text" id="displayFileName" class="repo-file-name-input" 
-                               th:value="${repository?.originalName}" placeholder="파일이름" readonly>
-                        <button type="button" class="repo-file-clear-btn" onclick="clearFile();">×</button>
-                    </div>
-                </div>
-
-                <div class="repo-btn-group" style="margin-top: 40px;">
-                    <a th:href="@{/repository/detail(fileId=${repository?.fileId})}" class="repo-btn repo-btn-list">취소</a>
-                    <button type="submit" class="repo-btn repo-btn-download">저장</button>
-                </div>
-            </form>
+    
+			    <div class="repo-upload-zone" onclick="document.getElementById('uploadFile').click();">
+			        </div>
+			
+			    <div class="repo-file-list-box">
+			        <div class="repo-file-item">
+			            <input type="file" id="uploadFile" name="uploadFile" style="display: none;" 
+			                   th:required="${repository.originalName == null || repository.originalName == ''}">
+			                   
+			            <input type="text" id="displayFileName" class="repo-file-name-input" 
+			                   th:value="${repository?.originalName}" placeholder="파일을 선택해주세요" readonly>
+			            <button type="button" class="repo-file-clear-btn" onclick="clearFile();">×</button>
+			        </div>
+			        
+			        <p style="color: red; font-size: 12px;">
+			            * 파일을 수정하려면 새로운 파일을 선택해주세요.
+			        </p>
+			    </div>
+			
+			    <div class="repo-btn-group" style="margin-top: 40px;">
+			        <a th:href="@{/repository/detail(fileId=${repository?.fileId})}" class="repo-btn repo-btn-list">취소</a>
+			        <button type="submit" class="repo-btn repo-btn-download">저장</button>
+			    </div>
+			</form>
         </div>
     </div>
-
-    <script>
-        function updateFileName(input) {
-            const displayInput = document.getElementById('displayFileName');
-            if (input.files && input.files.length > 0) {
-                displayInput.value = input.files[0].name;
-            }
-        }
-
-        function clearFile() {
-            document.getElementById('uploadFile').value = "";
-            document.getElementById('displayFileName').value = "";
-        }
-    </script>
-
 </div>
 </body>
 

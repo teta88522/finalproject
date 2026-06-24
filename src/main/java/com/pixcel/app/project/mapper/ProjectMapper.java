@@ -17,6 +17,8 @@ public interface ProjectMapper {
 	// 2. 프로젝트별 선택 모듈 다중 등록
 	public int insertProjectModules(ProjectVO projectVO);
 	
+	// 자료실 관련
+	public List<ProjectVO> selectAllProjects();
 	
 	//260623 고동현 프로젝트 리스트 관련추가
 	//관리자

@@ -6,19 +6,19 @@
 <head>
 <title>일감 상태 관리</title>
 <link rel="stylesheet" th:href="@{/css/common-ui.css}">
-<link rel="stylesheet" th:href="@{/css/common-fliter.css}">
+<link rel="stylesheet" th:href="@{/css/common-filter.css}">
 <link rel="stylesheet" th:href="@{/css/issuestatus/issuestatus.css}">
 </head>
 
 <body>
 	<div layout:fragment="Content">
 
-		<div class="issue-status-page">
+		<div class="issue-status-page issue-status-list-page">
 			<div class="container-fluid">
 
 				<div class="issue-status-header">
 					<div>
-						<h1>일감 상태</h1>
+						<h3>일감 상태</h3>
 						<p>일감에서 사용할 상태를 관리합니다.</p>
 					</div>
 				</div>
@@ -75,16 +75,28 @@
 				<div th:if="${errorMessage}" class="page-message page-message-error"
 					th:text="${errorMessage}"></div>
 
-				<div class="issue-status-card">
+				<div class="issue-status-card issue-status-list-card">
+					<div class="issue-status-card-title">
+						<h4>일감 상태 목록</h4>
+					</div>
+
 					<div class="issue-status-table-wrap">
 						<table class="table table-hover issue-status-table">
+							<colgroup>
+								<col style="width: 70px;">
+								<col style="width: 220px;">
+								<col>
+								<col style="width: 130px;">
+								<col style="width: 160px;">
+							</colgroup>
+
 							<thead>
 								<tr>
-									<th style="width: 70px;">번호</th>
-									<th style="width: 220px;">상태명</th>
+									<th>번호</th>
+									<th>상태명</th>
 									<th>설명</th>
-									<th style="width: 130px; text-align: center;">종료 여부</th>
-									<th style="width: 160px; text-align: center;">관리</th>
+									<th style="text-align: center;">종료 여부</th>
+									<th style="text-align: center;">관리</th>
 								</tr>
 							</thead>
 
@@ -98,10 +110,12 @@
 									<td th:text="${stat.count}">1</td>
 
 									<td><span class="status-name"
-										th:text="${status.statusName}"> 신규 </span></td>
+										th:text="${status.statusName}" th:title="${status.statusName}">
+											신규 </span></td>
 
 									<td><span class="status-desc"
-										th:text="${status.statusAnswer != null ? status.statusAnswer : '-'}">
+										th:text="${status.statusAnswer != null ? status.statusAnswer : '-'}"
+										th:title="${status.statusAnswer != null ? status.statusAnswer : '-'}">
 											설명 </span></td>
 
 									<td class="center"><span th:if="${status.closedYn == 'Y'}"
@@ -116,6 +130,7 @@
 												수정 </a>
 
 											<form th:action="@{/issuestatus/delete}" method="post"
+												class="inline-form"
 												onsubmit="return confirm('이 일감 상태를 삭제하시겠습니까? 사용 중인 상태는 삭제할 수 없습니다.');">
 												<input type="hidden" name="issueStatusId"
 													th:value="${status.issueStatusId}">
