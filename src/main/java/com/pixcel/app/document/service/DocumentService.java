@@ -9,5 +9,6 @@ public interface DocumentService {
 	public List<DocumentHistoryVO> findHistoryAll();
 	public List<DocumentCategoryVO> selectCategoryAll();
 	public List<DocumentVO> selectNoCategory();
-	public List<DocumentVO> selectCategorydoc();
+	public List<DocumentVO> selectCategorydoc(String categoryId);
+	public DocumentVO selectDetail(String documentId);
 }

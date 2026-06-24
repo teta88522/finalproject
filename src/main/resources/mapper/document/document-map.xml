@@ -70,6 +70,32 @@
     </select>
     
     <!-- 문서에 파일조회 -->
+    <select id="selectDetail" resultType="DocumentVO">
+        select
+            d.document_id,
+            d.project_id,
+            d.document_category_id,
+            c.category_name,
+            d.version_id,
+            v.version_name,
+            d.milestone_id,
+            m.title as milestone_title,
+            d.created_by,
+            u.user_name,
+            d.title,
+            d.description,
+            d.setting_code_id,
+            d.status_code,
+            d.status_name
+        from document d
+        LEFT JOIN milestone m ON d.milestone_id = m.milestone_id
+        LEFT JOIN project_version v ON d.version_id = v.version_id
+        LEFT JOIN users u ON d.created_by = u.user_id
+        LEFT JOIN document_category c ON d.document_category_id = c.document_category_id
+        WHERE d.document_id = #{documentId}
+    </select>
+    
+    <!-- 문서에 파일조회 -->
     <select id="selectCategoryAll" resultType="DocumentCategoryVO">
         select
         	count(*) over() as total_cnt,
