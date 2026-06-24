@@ -43,7 +43,90 @@
 		</if>
 
 
-		order by it.created_at desc, it.issue_type_id desc
+		order by it.created_at, it.issue_type_id ASC
+	</select>
+
+	<!-- 일감유형별 표준 항목 사용 여부 요약 목록 조회 -->
+	<select id="selectIssueTypeSummaryList"
+		parameterType="IssueTypeVO" resultType="IssueTypeVO">
+		select
+		it.issue_type_id,
+		it.initial_status_id,
+		ist.status_name as initial_status_name,
+		it.issue_type_name,
+
+		nvl(max(
+		case
+		when fs.field_code in ('i001', 'ASSIGNEE')
+		and fs.use_yn = 'Y'
+		then 'Y'
+		end
+		), 'N') as assignee_yn,
+
+		nvl(max(
+		case
+		when fs.field_code in ('i002', 'MILESTONE')
+		and fs.use_yn = 'Y'
+		then 'Y'
+		end
+		), 'N') as milestone_yn,
+
+		nvl(max(
+		case
+		when fs.field_code in ('i003', 'PARENT_ISSUE')
+		and fs.use_yn = 'Y'
+		then 'Y'
+		end
+		), 'N') as parent_issue_yn,
+
+		nvl(max(
+		case
+		when fs.field_code in ('i004', 'START_DATE')
+		and fs.use_yn = 'Y'
+		then 'Y'
+		end
+		), 'N') as start_date_yn,
+
+		nvl(max(
+		case
+		when fs.field_code in ('i005', 'DUE_DATE')
+		and fs.use_yn = 'Y'
+		then 'Y'
+		end
+		), 'N') as due_date_yn,
+
+		nvl(max(
+		case
+		when fs.field_code in ('i006', 'ESTIMATED_HOURS')
+		and fs.use_yn = 'Y'
+		then 'Y'
+		end
+		), 'N') as estimated_hours_yn
+
+		from issue_type it
+		join issue_status ist
+		on it.initial_status_id = ist.issue_status_id
+		left join issue_type_field_setting fs
+		on it.issue_type_id = fs.issue_type_id
+		where it.user_id = #{userId}
+		and ist.user_id = #{userId}
+
+		<if test="issueTypeIdList != null and issueTypeIdList.size() > 0">
+			and it.issue_type_id in
+			<foreach collection="issueTypeIdList" item="issueTypeId"
+				open="(" separator="," close=")">
+				#{issueTypeId}
+			</foreach>
+		</if>
+
+		group by
+		it.issue_type_id,
+		it.initial_status_id,
+		ist.status_name,
+		it.issue_type_name,
+		it.created_at
+
+		order by it.created_at, it.issue_type_id ASC
 	</select>
 
 	<!-- 사용자별 일감유형 상세 조회 -->
@@ -96,7 +179,7 @@
 		and it.user_id =
 		#{userId}
 		and p.owner_id = #{userId}
-		order by itp.project_id
+		order by itp.project_id ASC
 	</select>
 
 	<!-- 일감유형에서 사용 처리된 항목 코드 조회 -->
@@ -123,7 +206,7 @@
 		and it.user_id = #{userId}
 		and
 		fs.use_yn = 'Y'
-		order by case fs.field_code
+		order by case fs.field_code ASC
 		when 'i001' then 1
 		when
 		'i002' then 2
@@ -166,7 +249,7 @@
 		and it.user_id = #{userId}
 		and
 		fs.required_yn = 'Y'
-		order by case fs.field_code
+		order by case fs.field_code ASC
 		when 'i001' then 1
 		when
 		'i002' then 2
@@ -276,7 +359,8 @@
 			4,
 			'0'
 			)
-			from issue_type_field_setting
+			from
+			issue_type_field_setting
 			where substr(field_setting_id, 1, 19) =
 			'FIELD_SETTING_' || to_char(sysdate, 'YYMM') || '_'
 		</selectKey>
@@ -293,12 +377,15 @@
 		#{fieldSettingId},
 		#{issueTypeId},
 		case #{fieldCode}
-		when 'ASSIGNEE' then 'i001'
+		when 'ASSIGNEE' then
+		'i001'
 		when 'MILESTONE' then 'i002'
 		when 'PARENT_ISSUE' then 'i003'
-		when 'START_DATE' then 'i004'
+		when
+		'START_DATE' then 'i004'
 		when 'DUE_DATE' then 'i005'
-		when 'ESTIMATED_HOURS' then 'i006'
+		when
+		'ESTIMATED_HOURS' then 'i006'
 		else #{fieldCode}
 		end,
 		#{useYn},

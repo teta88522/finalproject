@@ -1,0 +1,359 @@
+@charset "UTF-8";
+
+/* ==============================
+   업무흐름 - 상태 전환 설정
+============================== */
+
+.workflow-transition-page {
+    padding: 12px 0;
+}
+
+.workflow-page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 14px;
+}
+
+.workflow-page-header h3 {
+    margin: 0 0 4px;
+    font-size: 22px;
+    font-weight: 700;
+    color: #303030;
+}
+
+.workflow-page-header p {
+    margin: 0;
+    font-size: 13px;
+    color: #777777;
+}
+
+
+/* ==============================
+   설정 대상
+============================== */
+
+.workflow-search-section {
+    margin-bottom: 14px;
+}
+
+.search-section .workflow-target-row {
+    grid-template-columns: 220px 1fr 180px;
+}
+
+
+/* ==============================
+   전환 기준 선택 영역
+============================== */
+
+.workflow-apply-section {
+    border: 1px solid #dfe3f0;
+    border-radius: 8px;
+    background: #ffffff;
+    padding: 14px 16px;
+    margin-bottom: 14px;
+}
+
+.workflow-apply-header {
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #eeeeee;
+}
+
+.workflow-apply-header h4 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #303030;
+}
+
+.workflow-apply-header p {
+    margin: 3px 0 0;
+    font-size: 12px;
+    color: #777777;
+}
+
+.workflow-apply-list {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.workflow-apply-item {
+    display: block;
+    min-height: 68px;
+    padding: 12px 14px;
+    border: 1px solid #e2e6f0;
+    border-radius: 7px;
+    background: #fafbff;
+    color: #333333;
+    text-decoration: none;
+}
+
+.workflow-apply-item:hover,
+.workflow-apply-item:focus {
+    background: #f1f4ff;
+    color: #333333;
+    text-decoration: none;
+}
+
+.workflow-apply-item strong {
+    display: block;
+    margin-bottom: 5px;
+    color: #303030;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.workflow-apply-item span {
+    display: block;
+    color: #777777;
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.workflow-apply-item-active {
+    border-color: #252ba3;
+    background: #eef3ff;
+}
+
+.workflow-apply-item-active strong {
+    color: #252ba3;
+}
+
+
+/* ==============================
+   상태 전환 매트릭스
+============================== */
+
+.workflow-transition-form {
+    margin: 0;
+}
+
+.workflow-transition-card {
+    background: #ffffff;
+    border: 1px solid #e2e6f0;
+    border-radius: 8px;
+    padding: 16px 18px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+
+.workflow-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 12px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eeeeee;
+}
+
+.workflow-card-header h4 {
+    margin: 0;
+    font-size: 17px;
+    font-weight: 600;
+    color: #303030;
+}
+
+.workflow-card-header p {
+    margin: 4px 0 0;
+    font-size: 12px;
+    color: #777777;
+}
+
+.workflow-legend {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    font-size: 12px;
+    color: #666666;
+}
+
+.workflow-legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    white-space: nowrap;
+}
+
+.workflow-legend-box {
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+    display: inline-block;
+}
+
+.workflow-legend-open {
+    border: 1px solid #d7dbe7;
+    background: #ffffff;
+}
+
+.workflow-legend-closed {
+    border: 1px solid #f1d1d1;
+    background: #fff5f5;
+}
+
+.workflow-table-scroll {
+    width: 100%;
+    overflow: auto;
+    border: 1px solid #e7e7e7;
+    border-radius: 6px;
+}
+
+.workflow-transition-table {
+    min-width: 760px;
+    margin-bottom: 0;
+    table-layout: fixed;
+}
+
+.workflow-transition-table th,
+.workflow-transition-table td {
+    text-align: center;
+    vertical-align: middle !important;
+    font-size: 13px;
+    padding: 10px 8px !important;
+}
+
+.workflow-transition-table thead th {
+    height: 46px;
+    background: #f8f9fa;
+    color: #303030;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.workflow-transition-table tbody th {
+    background: #f8f9fa;
+    color: #303030;
+    font-weight: 600;
+}
+
+.workflow-fixed-col {
+    width: 170px;
+    text-align: left !important;
+    position: sticky;
+    left: 0;
+    z-index: 2;
+}
+
+.workflow-transition-table thead .workflow-fixed-col {
+    z-index: 3;
+}
+
+.workflow-disabled-cell {
+    background: #f7f8fb;
+    color: #999999;
+}
+
+.workflow-self-mark {
+    color: #999999;
+    font-weight: 600;
+}
+
+.workflow-check-label {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    cursor: pointer;
+}
+
+.workflow-check-label input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.workflow-check-ui {
+    width: 22px;
+    height: 22px;
+    border: 1px solid #cfd5e4;
+    border-radius: 5px;
+    background: #ffffff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.workflow-check-label input:checked + .workflow-check-ui {
+    border-color: #252ba3;
+    background: #252ba3;
+}
+
+.workflow-check-label input:checked + .workflow-check-ui::after {
+    content: "✓";
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.workflow-status-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 34px;
+    height: 18px;
+    margin-left: 4px;
+    padding: 0 6px;
+    border-radius: 9px;
+    font-size: 11px;
+    font-weight: 600;
+    vertical-align: middle;
+}
+
+.workflow-status-closed {
+    border: 1px solid #f1d1d1;
+    background: #fff5f5;
+    color: #c0392b;
+}
+
+.workflow-form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 14px;
+}
+
+.workflow-form-actions .btn {
+    min-width: 72px;
+    height: 32px;
+    padding: 0 14px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+}
+
+.workflow-form-actions .btn[disabled] {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+
+/* ==============================
+   반응형
+============================== */
+
+@media (max-width: 992px) {
+    .search-section .workflow-target-row,
+    .workflow-apply-list {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .workflow-card-header {
+        flex-direction: column;
+    }
+
+    .workflow-fixed-col {
+        width: 140px;
+    }
+
+    .workflow-transition-table {
+        min-width: 680px;
+    }
+}

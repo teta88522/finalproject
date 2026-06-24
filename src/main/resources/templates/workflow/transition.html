@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{common/layouts/default_layout}">
+
+<head>
+<title>상태 전환 설정</title>
+<link rel="stylesheet" th:href="@{/css/common-ui.css}">
+<link rel="stylesheet" th:href="@{/css/common-filter.css}">
+<link rel="stylesheet" th:href="@{/css/workflow/workflow.css}">
+</head>
+
+<body>
+	<div layout:fragment="Content">
+
+		<div class="workflow-transition-page">
+			<div class="container-fluid">
+
+				<div class="workflow-page-header">
+					<div>
+						<h3>상태 전환 설정</h3>
+						<p>역할, 일감유형, 전환기준별로 허용할 상태 이동을 설정합니다.</p>
+					</div>
+				</div>
+
+				<div th:if="${successMessage}"
+					class="page-message page-message-success"
+					th:text="${successMessage}">저장되었습니다.</div>
+
+				<div th:if="${errorMessage}" class="page-message page-message-error"
+					th:text="${errorMessage}">오류가 발생했습니다.</div>
+
+				<!-- 설정 대상 -->
+				<div class="search-section workflow-search-section">
+					<div class="search-header">
+						<div class="search-title">설정 대상</div>
+					</div>
+
+					<form th:action="@{/workflow/transition}" method="get">
+						<input type="hidden" name="applyTargetCode"
+							th:value="${searchVO.applyTargetCode}">
+
+						<div class="search-form-row workflow-target-row">
+
+							<div class="search-field">
+								<label for="roleId">역할</label> <select id="roleId" name="roleId">
+									<option value="">선택</option>
+									<option th:each="role : ${roleList}" th:value="${role.roleId}"
+										th:text="${role.roleName}"
+										th:selected="${searchVO.roleId == role.roleId}">개발자</option>
+								</select>
+							</div>
+
+							<div class="search-field">
+								<label for="issueTypeId">일감유형</label> <select id="issueTypeId"
+									name="issueTypeId">
+									<option value="">선택</option>
+									<option th:each="issueType : ${issueTypeList}"
+										th:value="${issueType.issueTypeId}"
+										th:text="${issueType.issueTypeName}"
+										th:selected="${searchVO.issueTypeId == issueType.issueTypeId}">
+										결함</option>
+								</select>
+							</div>
+
+							<div class="search-field">
+								<label for="closedYn">완료여부</label> <select id="closedYn"
+									name="closedYn">
+									<option value=""
+										th:selected="${searchVO.closedYn == null or searchVO.closedYn == ''}">
+										전체</option>
+									<option value="N" th:selected="${searchVO.closedYn == 'N'}">
+										미완료</option>
+									<option value="Y" th:selected="${searchVO.closedYn == 'Y'}">
+										완료</option>
+								</select>
+							</div>
+
+						</div>
+
+						<div class="search-btn-area">
+							<a th:href="@{/workflow/transition}"
+								class="btn btn-custon-rounded-four btn-default filter-btn">
+								clean </a>
+
+							<button type="submit"
+								class="btn btn-custon-rounded-four btn-primary filter-btn">
+								apply</button>
+						</div>
+					</form>
+				</div>
+
+				<!-- 전환 기준 -->
+				<div class="workflow-apply-section">
+					<div class="workflow-apply-header">
+						<div>
+							<h4>전환 기준</h4>
+							<p>기본, 작성자, 담당자 기준으로 상태 전환 규칙을 구분합니다.</p>
+						</div>
+					</div>
+
+					<div class="workflow-apply-list">
+
+						<a
+							th:href="@{/workflow/transition(
+								roleId=${searchVO.roleId},
+								issueTypeId=${searchVO.issueTypeId},
+								closedYn=${searchVO.closedYn},
+								applyTargetCode='j003'
+							)}"
+							class="workflow-apply-item"
+							th:classappend="${searchVO.applyTargetCode == 'j003'} ? ' workflow-apply-item-active' : ''">
+							<strong>기본 전환</strong> <span>역할 기준으로 기본 허용되는 상태 전환입니다.</span>
+						</a> <a
+							th:href="@{/workflow/transition(
+								roleId=${searchVO.roleId},
+								issueTypeId=${searchVO.issueTypeId},
+								closedYn=${searchVO.closedYn},
+								applyTargetCode='j002'
+							)}"
+							class="workflow-apply-item"
+							th:classappend="${searchVO.applyTargetCode == 'j002'} ? ' workflow-apply-item-active' : ''">
+							<strong>작성자일 때</strong> <span>로그인 사용자가 일감 작성자인 경우의 전환입니다.</span>
+						</a> <a
+							th:href="@{/workflow/transition(
+								roleId=${searchVO.roleId},
+								issueTypeId=${searchVO.issueTypeId},
+								closedYn=${searchVO.closedYn},
+								applyTargetCode='j001'
+							)}"
+							class="workflow-apply-item"
+							th:classappend="${searchVO.applyTargetCode == 'j001'} ? ' workflow-apply-item-active' : ''">
+							<strong>담당자일 때</strong> <span>로그인 사용자가 일감 담당자인 경우의 전환입니다.</span>
+						</a>
+
+					</div>
+				</div>
+
+				<!-- 상태 전환 저장 -->
+				<form th:action="@{/workflow/transition/save}" method="post"
+					class="workflow-transition-form">
+
+					<input type="hidden" name="roleId" th:value="${searchVO.roleId}">
+					<input type="hidden" name="issueTypeId"
+						th:value="${searchVO.issueTypeId}"> <input type="hidden"
+						name="closedYn" th:value="${searchVO.closedYn}"> <input
+						type="hidden" name="applyTargetCode"
+						th:value="${searchVO.applyTargetCode}">
+
+					<div class="workflow-transition-card">
+
+						<div class="workflow-card-header">
+							<div>
+								<h4>상태 전환 매트릭스</h4>
+								<p>세로축은 현재 상태 전체, 가로축은 완료여부 조건에 맞는 다음 상태입니다. 같은 상태로의 전환은 설정할
+									수 없습니다.</p>
+							</div>
+
+							<div class="workflow-legend">
+								<span class="workflow-legend-item"> <span
+									class="workflow-legend-box workflow-legend-open"></span> 미완료 상태
+								</span> <span class="workflow-legend-item"> <span
+									class="workflow-legend-box workflow-legend-closed"></span> 완료
+									상태
+								</span>
+							</div>
+						</div>
+
+						<div th:if="${#lists.isEmpty(issueTypeList)}"
+							class="page-message page-message-info">등록된 일감유형이 없습니다.
+							일감유형을 먼저 등록해주세요.</div>
+
+						<div th:if="${#lists.isEmpty(roleList)}"
+							class="page-message page-message-info">등록된 역할이 없습니다. 역할을 먼저
+							등록해주세요.</div>
+
+						<div th:if="${#lists.isEmpty(fromStatusList)}"
+							class="page-message page-message-info">등록된 일감상태가 없습니다.
+							일감상태를 먼저 등록해주세요.</div>
+
+						<div th:if="${#lists.isEmpty(toStatusList)}"
+							class="page-message page-message-info">조회 가능한 다음 상태가 없습니다.
+							완료여부 조건을 확인해주세요.</div>
+
+						<div
+							th:if="${!#lists.isEmpty(issueTypeList)
+								and !#lists.isEmpty(roleList)
+								and !#lists.isEmpty(fromStatusList)
+								and !#lists.isEmpty(toStatusList)}"
+							class="workflow-table-scroll">
+
+							<table class="table table-bordered workflow-transition-table">
+								<thead>
+									<tr>
+										<th class="workflow-fixed-col">현재 상태 \ 다음 상태</th>
+
+										<th th:each="toStatus : ${toStatusList}"><span
+											th:text="${toStatus.statusName}">진행</span> <span
+											th:if="${toStatus.closedYn == 'Y'}"
+											class="workflow-status-badge workflow-status-closed">
+												완료 </span></th>
+									</tr>
+								</thead>
+
+								<tbody>
+									<tr th:each="fromStatus : ${fromStatusList}">
+										<th class="workflow-fixed-col"><span
+											th:text="${fromStatus.statusName}">신규</span> <span
+											th:if="${fromStatus.closedYn == 'Y'}"
+											class="workflow-status-badge workflow-status-closed">
+												완료 </span></th>
+
+										<td th:each="toStatus : ${toStatusList}"
+											th:classappend="${fromStatus.issueStatusId == toStatus.issueStatusId} ? ' workflow-disabled-cell' : ''">
+
+											<span
+											th:if="${fromStatus.issueStatusId == toStatus.issueStatusId}"
+											class="workflow-self-mark"> - </span> <label
+											th:unless="${fromStatus.issueStatusId == toStatus.issueStatusId}"
+											class="workflow-check-label"> <input type="checkbox"
+												name="transitionKeyList"
+												th:value="${#strings.concat(fromStatus.issueStatusId, '|', toStatus.issueStatusId)}"
+												th:checked="${savedTransitionKeyList.contains(#strings.concat(fromStatus.issueStatusId, '|', toStatus.issueStatusId))}">
+												<span class="workflow-check-ui"></span>
+										</label>
+										</td>
+									</tr>
+								</tbody>
+							</table>
+
+						</div>
+
+						<div class="workflow-form-actions">
+							<a
+								th:href="@{/workflow/transition(
+									roleId=${searchVO.roleId},
+									issueTypeId=${searchVO.issueTypeId},
+									closedYn=${searchVO.closedYn},
+									applyTargetCode=${searchVO.applyTargetCode}
+								)}"
+								class="btn btn-custon-rounded-four btn-default"> 초기화 </a>
+
+							<button type="submit"
+								class="btn btn-custon-rounded-four btn-primary"
+								th:disabled="${#lists.isEmpty(issueTypeList)
+									or #lists.isEmpty(roleList)
+									or #lists.isEmpty(fromStatusList)
+									or #lists.isEmpty(toStatusList)}">
+								저장</button>
+						</div>
+
+					</div>
+				</form>
+
+			</div>
+		</div>
+
+	</div>
+</body>
+</html>
