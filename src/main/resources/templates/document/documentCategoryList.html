@@ -33,20 +33,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr style="border-bottom:1px solid #f3f4f6;" th:each="category : ${categoryList}" th:value="${category.documentCategoryId}">
-                                    <td style="padding:10px 12px;"><input type="checkbox"></td>
-                                    <td style="padding:10px 12px;" >
-                                        <i class="fa fa-folder" style="margin-right:7px; color:#f0ad4e;"></i>
-                                        <a th:href="@{/document/list/{categoryId}(categoryId=${category.documentCategoryId})}" style="color:#333; text-decoration:none; font-weight:500;" th:text="${category.categoryName}"></a>
-                                    </td>
-                                    <td style="padding:10px 12px; color:#bbb;">—</td>
-                                    <td style="padding:10px 12px; color:#bbb;">—</td>
-                                    <td style="padding:10px 12px; color:#777;">—</td>
-                                    <td style="padding:10px 12px; color:#bbb;">—</td>
-                                    <td style="padding:10px 12px; color:#bbb;">—</td>
-                                    <td style="padding:10px 12px; color:#777;">—</td>
-                                </tr>
-                                <tr th:each="categoryNo : ${categoryNoList}" th:value="${categoryNo.documentId}">
+                                <tr th:each="categoryNo : ${categorydocList}" th:value="${categoryNo.documentId}">
                                     <td style="padding:10px 12px;"><input type="checkbox"></td>
                                     <td style="padding:10px 12px;">
                                         <i class="fa fa-file-text-o" style="margin-right:7px; color:#7b8cde;"></i>

@@ -49,9 +49,9 @@ public class FileServiceImpl implements FileService{
 					
 					String uuid = UUID.randomUUID().toString();
 					String saveName  = uuid + "_" + originName;
-					
 					File dest = new File(fileDir, saveName);
 					file.transferTo(dest);
+					String saveFileDir = fileDir + saveName;
 					
 					FileVO vo = new FileVO();
 					vo.setProjectId(projectId);
@@ -59,7 +59,7 @@ public class FileServiceImpl implements FileService{
 //					vo.setFileCode(req.getFileCode());
 					vo.setOriginalName(originName);
 					vo.setStoredName(saveName);
-					vo.setFilePath(fileDir);
+					vo.setFilePath(saveFileDir);
 					vo.setFileSize(String.valueOf(file.getSize()));
 					vo.setUploadUserId(req.getUploadUserId());
 					vo.setFileVersion(nextVersion);

@@ -3,26 +3,26 @@
 <body>
 
  <div th:fragment="HeaderFragment">
-    <div class="header-advance-area">
+
+<div class="header-advance-area">
     <div class="container-fluid">
-        <div class="row">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
 
-            <div class="col-lg-6">
-                <h3 style="color:white; margin:10px 0;">
-                    프로젝트 관리 시스템
-                </h3>
-            </div>
+            <!-- 왼쪽: 타이틀 -->
+            <h3 style="color:white; margin:10px 0;">
+                프로젝트 관리 시스템
+            </h3>
 
-            <div class="col-lg-6 text-right">
-                <form role="search" class="sr-input-func">
-                	<input type="text" placeholder="Search..." class="search-int form-control">
-                		<a href="#"><i class="fa fa-search"></i></a>
-                </form>
-            </div>
-            
+            <!-- 오른쪽: 서치바 -->
+            <form role="search" class="sr-input-func">
+                <input type="text" placeholder="Search..." class="search-int form-control">
+                <a href="#"><i class="fa fa-search"></i></a>
+            </form>
+
         </div>
     </div>
 </div>
+
         <!-- Header Top -->
         <div class="header-top-area">
             <div class="container-fluid">
@@ -34,50 +34,40 @@
 
                                 
                                 <!-- Top Menu -->
-                                <div class="col-lg-6 col-md-7 col-sm-6 col-xs-12">
-                                    <div class="header-top-menu tabl-d-n">
-                                        <ul class="nav navbar-nav mai-top-nav">
 
+            					<div class="col-lg-6 col-md-5 col-sm-6 col-xs-12">
+        								<div class="header-top-menu tabl-d-n">
+            							<ul class="nav navbar-nav mai-top-nav">
+                                        	
                                             <li class="nav-item">
-                                                <a th:href="@{/}" class="nav-link">프로젝트</a>
+                                                <a th:href="@{/dashboard/list}">프로젝트</a>
                                             </li>
-
                                             <li class="nav-item">
                                                 <a th:href="@{/about}" class="nav-link">일감</a>
                                             </li>
 
-                                            <li class="nav-item">
-                                                <a th:href="@{/manage/groups}" class="nav-link">관리</a>
-                                            </li>
+                                            <!-- subscribeYn = Y 이면 관리 탭 표시 -->
+    										<li class="nav-item" th:if="${subscribeYn == 'Y'}">
+    											<a th:href="@{/admin/list}">관리</a>
+											</li>
 
                                         </ul>
                                     </div>
                                 </div>
 
                                 <!-- Right Menu -->
-                                <div class="col-lg-5 col-md-5 col-sm-12 col-xs-12">
-                                    <div class="header-right-info">
-
-                                        <ul class="nav navbar-nav mai-top-nav header-right-menu">
-
+                                <div class="col-lg-6 col-md-7 col-sm-12 col-xs-12">
+    								<div class="header-right-info">
+        								<ul class="nav navbar-nav mai-top-nav header-right-menu" 
+            								style="margin:0; justify-content:flex-end;">
                                            
                                             <!-- User -->
                                             <li class="nav-item">
-
-                                                <a href="#"
-                                                   data-toggle="dropdown"
-                                                   class="nav-link dropdown-toggle">
-
-                                                    <img th:src="${loginUser != null ? loginUser.profileImage : '/img/default.png'}" alt="">
-
-                                                    <span th:text="${loginUser != null ? loginUser.name : 'Guest'}">
-                                                        USER
-                                                    </span>
-
-                                                    <i class="fa fa-angle-down edu-icon edu-down-arrow"></i>
-
-                                                </a>
-
+                                            <a href="#" data-toggle="dropdown" class="nav-link dropdown-toggle">
+    											<img th:src="${loginUser != null ? loginUser.profileImage : '/img/default.png'}" alt="">
+    											<span th:text="${userName != null ? userName : 'Guest'}">USER</span>
+    											<i class="fa fa-angle-down edu-icon edu-down-arrow"></i>
+											</a>
                                                 <ul role="menu"
                                                     class="dropdown-header-top author-log dropdown-menu animated zoomIn">
 
@@ -118,15 +108,15 @@
                                                 <a th:href="@{/}" class="nav-link">내정보</a>
                                             </li>
 
-                                            <li class="nav-item">
-                                                <a th:href="@{/team}" class="nav-link">팀</a>
-                                            </li>
+                                            <!-- authYn = Y 이면 팀 탭 표시 -->
+    										<li class="nav-item" th:if="${authYn == 'Y'}">
+    											<a th:href="@{/teams/list}" class="nav-link">팀</a>
+											</li>
 
                                             <li class="nav-item">
                                                 <a th:href="@{/logout}" class="nav-link">로그아웃</a>
                                             </li>
 
-                                        </ul>
                                         </ul>
 
                                     </div>

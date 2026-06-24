@@ -7,13 +7,25 @@
    <title layout:title-pattern="$LAYOUT_TITLE : $CONTENT_TITLE">pixcel</title>
 </head>
 <body>
-   <div class="left-sidebar-pro">
-   <!--sider 영역을 참조합니다.-->
-   <aside th:replace="~{common/fragments/projectsidebar :: SiderProjectFragment}"></aside>
-   </div>
-   <div class="all-content-wrapper">
+<div class="left-sidebar-pro">
+
+    <!-- th:if 는 바깥 div에, th:replace는 안쪽 div에 분리 -->
+    <div th:if="${menuType == 'project'}">
+        <div th:replace="~{common/fragments/projectsidebar :: SiderProjectFragment}"></div>
+    </div>
+
+    <div th:if="${menuType == 'admin'}">
+        <div th:replace="~{common/fragments/adminsidebar :: SiderAdminFragment}"></div>
+    </div>
+    
+    <div th:if="${menuType == 'team'}">
+        <div th:replace="~{common/fragments/teamsidebar :: SiderTeamFragment}"></div>
+    </div>
+
+</div>
    <!--Header 영역을 참조합니다.-->
       <header th:replace="~{common/fragments/header :: HeaderFragment}"></header>
+   <div class="all-content-wrapper">
         <main layout:fragment="Content" ></main>
     </div>
     <footer th:replace="~{common/fragments/footer :: FooterFragment}"></footer>

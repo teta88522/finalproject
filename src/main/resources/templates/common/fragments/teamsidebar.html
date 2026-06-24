@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<th:block th:fragment="SiderTeamFragment">
+	<!-- Start Left menu area -->
+	<nav id="sidebar" class="">
+		<div class="left-custom-menu-adp-wrap comment-scrollbar">
+			<nav class="sidebar-nav left-sidebar-menu-pro">
+				<!-- Sidebar Button -->
+				<div style="display:flex; justify-content:space-between; align-items:center; 
+            		padding:5px 15px; border-bottom:1px solid #eee;">
+   				<span style="font-weight:bold; font-size:15px; color:#333;">팀 메뉴</span>
+    			<button type="button" id="sidebarCollapse"
+        			style="background:none; border:none; cursor:pointer; padding:0; font-size:18px; color:#555;">
+        			<i class="fa fa-bars"></i>
+    			</button>
+				</div>
+				<ul class="metismenu" id="menu1">
+					<!-- 팀 관리 -->
+					<li><a th:href="@{/team/list}"> <span
+							class="educate-icon educate-event icon-wrap"></span> <span
+							class="mini-click-non">팀 관리</span>
+					</a></li>
+
+					<!-- 신청현황 -->
+					<li><a th:href="@{/members/list}"> <span
+							class="educate-icon educate-event icon-wrap"></span> <span
+							class="mini-click-non">신청현황</span>
+					</a></li>
+
+					<!-- 역할 및 권한 -->
+					<li><a th:href="@{/roadmap}"> <span
+							class="educate-icon educate-event icon-wrap"></span> <span
+							class="mini-click-non">역할 및 권한</span>
+					</a></li>
+
+					<!-- 일감유형 -->
+					<li><a th:href="@{/issuetyoe/list}"> <span
+							class="educate-icon educate-event icon-wrap"></span> <span
+							class="mini-click-non">일감유형</span>
+					</a></li>
+
+					<!-- 일감상태 -->
+					<li><a th:href="@{/issuestatus/list}"> <span
+							class="educate-icon educate-event icon-wrap"></span> <span
+							class="mini-click-non">일감상태</span>
+					</a></li>
+
+					<!-- 업무흐름 -->
+					<li><a th:href="@{/workflows/list}"> <span
+							class="educate-icon educate-event icon-wrap"></span> <span
+							class="mini-click-non">업무흐름</span>
+					</a></li>
+
+					<!-- 코드값 -->
+					<li><a th:href="@{/codevalue/list}"> <span
+							class="educate-icon educate-event icon-wrap"></span> <span
+							class="mini-click-non">코드값</span>
+					</a></li>
+
+				</ul>
+			</nav>
+		</div>
+	</nav>
+	<!-- End Left menu area -->
+</th:block>
+</html>

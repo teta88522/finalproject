@@ -32,4 +32,5 @@ public class CodeValueVO {
 
 	// 사용 여부
 	private String useYn;
+	
 }

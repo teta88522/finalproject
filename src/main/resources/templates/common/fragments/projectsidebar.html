@@ -6,14 +6,15 @@
 		<div class="left-custom-menu-adp-wrap comment-scrollbar">
 			<nav class="sidebar-nav left-sidebar-menu-pro">
 				<!-- Sidebar Button -->
-				<div class="col-lg-1 col-md-1 col-sm-1 col-xs-12">
-					<div class="menu-switcher-pro">
-						<button type="button" id="sidebarCollapse"
-							class="btn bar-button-pro header-drl-controller-btn btn-info navbar-btn">
-							<i class="educate-icon educate-nav"></i>
-						</button>
-					</div>
+				<div style="display:flex; justify-content:space-between; align-items:center; 
+            		padding:5px 15px; border-bottom:1px solid #eee;">
+   				<span style="font-weight:bold; font-size:15px; color:#333;">프로젝트 메뉴</span>
+    			<button type="button" id="sidebarCollapse"
+        			style="background:none; border:none; cursor:pointer; padding:0; font-size:18px; color:#555;">
+        			<i class="fa fa-bars"></i>
+    			</button>
 				</div>
+				
 				<ul class="metismenu" id="menu1">
 					<!-- 대시보드 -->
 					<li><a th:href="@{/dashboard}"> <span
@@ -64,7 +65,7 @@
 					</a></li>
 
 					<!-- 문서관리 -->
-					<li><a th:href="@{/document}"> <span
+					<li><a th:href="@{/document/list}"> <span
 							class="educate-icon educate-event icon-wrap"></span> <span
 							class="mini-click-non">문서관리</span>
 					</a></li>

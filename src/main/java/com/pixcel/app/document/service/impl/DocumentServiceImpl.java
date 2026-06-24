@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.pixcel.app.document.mapper.DocumentMapper;
+import com.pixcel.app.document.service.DocumentCategoryVO;
 import com.pixcel.app.document.service.DocumentHistoryVO;
 import com.pixcel.app.document.service.DocumentService;
 import com.pixcel.app.document.service.DocumentVO;
@@ -29,6 +30,21 @@ public class DocumentServiceImpl implements DocumentService{
 	@Override
 	public List<DocumentHistoryVO> findHistoryAll() {
 		return documentMapper.selectHistoryAll();
+	}
+
+	@Override
+	public List<DocumentCategoryVO> selectCategoryAll() {
+		return documentMapper.selectCategoryAll();
+	}
+
+	@Override
+	public List<DocumentVO> selectNoCategory() {
+		return documentMapper.selectNoCategory();
+	}
+
+	@Override
+	public List<DocumentVO> selectCategorydoc() {
+		return documentMapper.selectCategorydoc();
 	}
 
 }

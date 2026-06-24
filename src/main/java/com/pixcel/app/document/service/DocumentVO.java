@@ -18,9 +18,14 @@ public class DocumentVO {
 	private String documentId;
 	private String projectId;
 	private String documentCategoryId;
+	private String categoryName;
+	private String settingCodeId;
 	private String versionId;
+	private String versionName;
 	private String milestoneId;
+	private String milestoneTitle;
 	private String createdBy;
+	private String userName;
 	private String title;
 	private String description;
 	private String statusCode;

@@ -5,19 +5,78 @@
 <!-- 문서에 파일조회 -->
     <select id="selectAll" resultType="DocumentVO">
         select
-            file_id,
+            document_id,
             project_id,
+            document_category_id,
             version_id,
-            file_code,
-            original_name,
-            stored_name,
-            file_path,
-            file_size,
-            upload_user_id,
-            upload_date,
-            file_version,
-            file_use_yn
-        from attach_file
+            milestone_id,
+            created_by,
+            title,
+            description,
+            setting_code_id
+            status_code,
+            status_name
+        from document
+    </select>
+    
+    <!-- 문서에 파일조회 -->
+    <select id="selectNoCategory" resultType="DocumentVO">
+        select
+            d.document_id,
+            d.project_id,
+            d.document_category_id,
+            d.version_id,
+            v.version_name,
+            d.milestone_id,
+            m.title as milestone_title,
+            d.created_by,
+            u.user_name,
+            d.title,
+            d.description,
+            d.setting_code_id,
+            d.status_code,
+            d.status_name
+        from document d
+        LEFT JOIN milestone m ON d.milestone_id = m.milestone_id
+        LEFT JOIN project_version v ON d.version_id = v.version_id
+        LEFT JOIN users u ON d.created_by = u.user_id
+        WHERE document_category_id IS NULL
+    </select>
+    
+    <!-- 문서에 파일조회 -->
+    <select id="selectCategorydoc" resultType="DocumentVO">
+        select
+            d.document_id,
+            d.project_id,
+            d.document_category_id,
+            c.category_name,
+            d.version_id,
+            v.version_name,
+            d.milestone_id,
+            m.title as milestone_title,
+            d.created_by,
+            u.user_name,
+            d.title,
+            d.description,
+            d.setting_code_id,
+            d.status_code,
+            d.status_name
+        from document d
+        LEFT JOIN milestone m ON d.milestone_id = m.milestone_id
+        LEFT JOIN project_version v ON d.version_id = v.version_id
+        LEFT JOIN users u ON d.created_by = u.user_id
+        LEFT JOIN document_category c ON d.document_category_id = c.document_category_id
+        WHERE d.document_category_id = #{documentCategoryId}
+    </select>
+    
+    <!-- 문서에 파일조회 -->
+    <select id="selectCategoryAll" resultType="DocumentCategoryVO">
+        select
+        	count(*) over() as total_cnt,
+            document_category_id,
+            project_id,
+            category_name
+        from document_category
     </select>
 
 
@@ -49,7 +108,8 @@
             milestone_id,
             created_by,
             title,
-            description
+            description,
+            setting_code_id
             <if test="statusCode != null and statusCode != ''">
             status_code,
             </if>
@@ -65,7 +125,8 @@
             #{milestoneId},
             #{createdBy},
             #{title},
-            #{description}
+            #{description},
+            #{settingCodeId}
             <if test="statusCode != null and statusCode != ''">
 				#{statusCode},
 			</if>
