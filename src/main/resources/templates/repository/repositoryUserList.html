@@ -1,60 +1,65 @@
 <!doctype html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{common/layouts/default_layout}">
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{common/layouts/default_layout}">
 <head>
 <meta charset="UTF-8">
-<link rel="stylesheet" th:href="@{/css/repository/repositoryUserList.css}">
+<link rel="stylesheet"
+	th:href="@{/css/repository/repositoryUserList.css}">
 </head>
 <body>
-<div layout:fragment="Content">
+	<div layout:fragment="Content">
 
-    <div class="repo-container">
-        <div class="repo-header">
-            <h2 class="repo-title">자료실</h2>
-        </div>
+		<div class="repo-container">
+			<div class="repo-header">
+				<h2 class="repo-title">자료실</h2>
+			</div>
 
-        <div class="repo-detail-card">
-            
-            <div th:if="${repository != null}">
-                <div class="repo-meta-info">
-                    <span class="repo-meta-item">
-                         게시일자: <span th:text="${#strings.substring(repository.uploadDate, 0, 10)}">2026-01-01</span>
-                    </span>
-                    <span class="repo-meta-item">
-                         작성자: <span th:text="${repository.uploadUserId}">홍길동</span>
-                    </span>
-                </div>
+			<div class="repo-detail-card">
 
-                <div class="repo-file-box">
-                    <div class="repo-file-label">📎 첨부파일</div>
-                    <div class="repo-file-name" th:text="${repository.originalName}">파일이름.png</div>
-                </div>
-                
-                <div class="repo-sub-info">
-                    * 파일 버전: <span th:text="${repository.fileVersion}">1.0</span> 
-                    | 파일 크기: <span th:text="${repository.fileSize}">0</span> Bytes
-                </div>
+				<div th:if="${repository != null}">
+					<div class="repo-meta-info">
+						<span class="repo-meta-item"> 게시일자: <span
+							th:text="${#strings.substring(repository.uploadDate, 0, 10)}">2026-01-01</span>
+						</span> <span class="repo-meta-item"> 작성자: <span
+							th:text="${repository.uploadUserId}">홍길동</span>
+						</span>
+					</div>
 
-                <div class="repo-btn-group">
-                    <a th:href="@{/repository/download(fileId=${repository.fileId})}" class="repo-btn repo-btn-download"> 파일 다운로드</a>
-                    <a th:href="@{/repository}" class="repo-btn repo-btn-list">목록</a>
-                    <a th:href="@{/repository/edit(fileId=${repository.fileId})}" class="repo-btn repo-btn-edit">수정</a>
-                    <a th:href="@{/repository/delete(fileId=${repository.fileId})}" class="repo-btn repo-btn-delete" onclick="return confirm('정말 이 자료를 삭제하시겠습니까?');">삭제</a>
-                </div>
-            </div>
+					<div class="repo-file-box">
+						<div class="repo-file-label">📎 첨부파일</div>
+						<div class="repo-file-name" th:text="${repository.originalName}">파일이름.png</div>
+					</div>
 
-            <div th:unless="${repository != null}" class="repo-table-empty">
-                <p>해당 자료가 존재하지 않거나 삭제되었습니다.</p>
-                <div style="margin-top: 20px;">
-                    <a th:href="@{/repository}" class="repo-btn repo-btn-list">자료실 목록으로</a>
-                </div>
-            </div>
+					<div class="repo-sub-info">
+						* 파일 버전: <span th:text="${repository.fileVersion}">1.0</span> | 파일
+						크기: <span th:text="${repository.fileSize}">0</span> Bytes
+					</div>
 
-        </div>
-    </div>
+					<div class="repo-btn-group">
+						<a th:href="@{/repository/download(fileId=${repository.fileId})}"
+							class="repo-btn repo-btn-download"> 파일 다운로드</a> <a
+							th:href="@{/repository}" class="repo-btn repo-btn-list">목록</a> <a
+							th:href="@{/repository/edit(fileId=${repository.fileId})}"
+							class="repo-btn repo-btn-edit">수정</a> <a
+							th:href="@{/repository/delete(fileId=${repository.fileId})}"
+							class="repo-btn repo-btn-delete"
+							onclick="return confirm('정말 이 자료를 삭제하시겠습니까?');">삭제</a>
+					</div>
+				</div>
 
-</div>
+				<div th:unless="${repository != null}" class="repo-table-empty">
+					<p>해당 자료가 존재하지 않거나 삭제되었습니다.</p>
+					<div style="margin-top: 20px;">
+						<a th:href="@{/repository}" class="repo-btn repo-btn-list">자료실
+							목록으로</a>
+					</div>
+				</div>
+
+			</div>
+		</div>
+
+	</div>
 </body>
 
 </html>

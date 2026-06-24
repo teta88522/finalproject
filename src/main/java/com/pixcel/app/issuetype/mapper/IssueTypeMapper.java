@@ -10,6 +10,9 @@ public interface IssueTypeMapper {
 
 	// 검색조건에 맞는 사용자별 일감유형 목록을 조회한다.
 	List<IssueTypeVO> selectIssueTypeList(IssueTypeVO searchVO);
+	
+	// 일감유형별 표준 항목 사용 여부 요약 목록을 조회한다.
+	List<IssueTypeVO> selectIssueTypeSummaryList(IssueTypeVO searchVO);
 
     // 사용자별 일감유형 상세 정보를 조회한다.
     IssueTypeVO selectIssueTypeDetail(

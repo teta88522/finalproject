@@ -1,58 +1,71 @@
 <!doctype html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{common/layouts/default_layout}">
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{common/layouts/default_layout}">
 <head>
 <meta charset="UTF-8">
 <link rel="stylesheet" th:href="@{/css/repository/repositoryDetail.css}">
 </head>
 <body>
-<div layout:fragment="Content">
+	<div layout:fragment="Content">
 
-    <div class="repo-container">
-        <div class="repo-header">
-            <h2 class="repo-title">자료실</h2>
-        </div>
+		<div class="repo-container">
+			<div class="repo-header">
+				<h2 class="repo-title">자료실</h2>
+			</div>
 
-        <div class="repo-detail-card">
-            
-            <div th:if="${repository != null}">
-                <div class="repo-meta-info">
-                    <span class="repo-meta-item">
-                         게시일자: <span th:text="${#strings.substring(repository.uploadDate, 0, 10)}"></span>
-                    </span>
-                    <span class="repo-meta-item">
-                         작성자: <span th:text="${repository.uploadUserId}"></span>
-                    </span>
-                </div>
+			<div class="repo-detail-card">
 
-                <div class="repo-file-box">
-                    <div class="repo-file-label"> 첨부파일</div>
-                    <div class="repo-file-name" th:text="${repository.originalName}"></div>
-                </div>
-                
-                <div class="repo-sub-info">
-                    * 파일 버전: <span th:text="${repository.fileVersion}"></span> 
-                    | 파일 크기: <span th:text="${repository.fileSize}"></span> Bytes
-                </div>
+				<div th:if="${repository != null}">
+					<div class="repo-meta-info">
+						<span class="repo-meta-item"> 게시일자: <span
+							th:text="${#strings.substring(repository.uploadDate, 0, 10)}"></span>
+						</span> <span class="repo-meta-item"> 작성자: <span
+							th:text="${repository.uploadUserId}"></span>
+						</span>
+					</div>
 
-                <div class="repo-btn-group">
-                    <a th:href="@{/repository/download(fileId=${repository.fileId})}" class="repo-btn repo-btn-download"> 파일 다운로드</a>
-                    <a th:href="@{/repository}" class="repo-btn repo-btn-list">목록</a>
-                </div>
-            </div>
+					<div class="repo-file-box">
+						<div class="repo-file-label">첨부파일</div>
+						<div class="repo-file-name" th:text="${repository.originalName}"></div>
+					</div>
 
-            <div th:unless="${repository != null}" class="repo-table-empty">
-                <p>해당 자료를 찾을 수 없습니다.</p>
-                <div style="margin-top: 20px;">
-                    <a th:href="@{/repository}" class="repo-btn repo-btn-list">목록으로</a>
-                </div>
-            </div>
+					<div class="repo-sub-info">
+						* 파일 버전: <span th:text="${repository.fileVersion}"></span> | 파일
+						크기: <span th:text="${repository.fileSize}"></span> Bytes
+					</div>
 
-        </div>
-    </div>
+					<div class="repo-btn-group">
+						<a href="/repository" class="repo-btn repo-btn-list">목록</a> <a
+							th:href="@{/repository/download(fileId=${repository.fileId})}"
+							class="repo-btn repo-btn-download">파일 다운로드</a>
 
-</div>
+						<th:block
+							th:if="${userId != null && userId == repository.uploadUserId}">
+							<a th:href="@{/repository/edit(fileId=${repository.fileId})}"
+								class="repo-btn repo-btn-edit">수정</a>
+
+							<form th:action="@{/repository/delete}" method="post"
+								style="display: inline;">
+								<input type="hidden" name="fileId"
+									th:value="${repository.fileId}">
+								<button type="submit" class="repo-btn repo-btn-delete">삭제</button>
+							</form>
+						</th:block>
+					</div>
+				</div>
+
+				<div th:unless="${repository != null}" class="repo-table-empty">
+					<p>해당 자료를 찾을 수 없습니다.</p>
+					<div style="margin-top: 20px;">
+						<a th:href="@{/repository}" class="repo-btn repo-btn-list">목록으로</a>
+					</div>
+				</div>
+
+			</div>
+		</div>
+
+	</div>
 </body>
 
 </html>

@@ -81,4 +81,21 @@ public class IssueTypeVO {
     private List<String> fieldCodeList;
 
     private List<String> requiredFieldCodeList;
+    
+    /*
+     * 요약 화면 조회용 필드
+     */
+    private List<String> issueTypeIdList;
+
+    private String assigneeYn;
+
+    private String milestoneYn;
+
+    private String parentIssueYn;
+
+    private String startDateYn;
+
+    private String dueDateYn;
+
+    private String estimatedHoursYn;
 }

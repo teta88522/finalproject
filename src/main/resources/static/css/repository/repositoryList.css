@@ -1,131 +1,237 @@
 @charset "UTF-8";
 
-/* 자료실 전체 레이아웃 제어 */
+/* 레이아웃 */
 .repo-container {
-    padding: 10px 20px;
+	padding: 10px 20px;
 }
 
-/* 상단 헤더 (타이틀 & 업로드 버튼) */
 .repo-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 25px;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 25px;
 }
 
 .repo-title {
-    font-weight: 700; 
-    margin: 0; 
-    color: #111;
-    font-size: 28px;
+	font-weight: 700;
+	font-size: 28px;
+	margin: 0;
+	color: #111;
 }
 
-/* 업로드 버튼 스타일 (구현화면 푸른색 버튼 느낌 유지) */
+/* 업로드 버튼 */
 .repo-btn-upload {
-    background-color: #007bff;
-    color: #ffffff !important;
-    padding: 0 20px;
-    height: 40px;
-    line-height: 40px;
+	background-color: #007bff;
+	color: #fff !important;
+	padding: 10px 20px;
+	border-radius: 4px;
+	text-decoration: none;
+}
+
+.filter-btn.btn-secondary {
+	background-color: #6c757d;
+    color: #fff;
+    border: none;
+    padding: 0 16px;
+    height: 32px;
+    display: inline-flex;
+    align-items: center;
     border-radius: 4px;
-    font-weight: 500;
     text-decoration: none;
-    display: inline-block;
-    transition: background-color 0.2s;
 }
 
-.repo-btn-upload:hover {
-    background-color: #0056b3;
+.filter-btn.btn-primary {
+	background-color: #007bff;
+    color: #fff;
+    border: none;
+    padding: 0 16px;
+    height: 32px;
+    display: inline-flex;
+    align-items: center;
+    border-radius: 4px;
+    text-decoration: none;
 }
 
-/* 임시 필터 겉 감싸는 박스 구역 */
-.repo-filter-wrapper {
-    background-color: #f8f9fa;
-    border: 1px solid #dee2e6;
-    border-radius: 6px;
-    padding: 15px;
-    margin-bottom: 25px;
+.search-section {
+	border: 1px solid #dfe3f0;
+	border-radius: 8px;
+	background-color: #ffffff;
+	padding: 16px 18px;
+	margin-bottom: 16px;
 }
 
-/* 테이블을 감싸는 카드형 레이아웃 */
+.search-section .search-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: 12px;
+	margin-bottom: 12px;
+}
+
+.search-section .search-title {
+	font-size: 15px;
+	font-weight: 600;
+	color: #333333;
+}
+
+/* 우측 생성/추가 버튼
+   - 색상/기본 버튼 디자인은 buttons.css 기준
+   - 여기서는 필터 영역에 맞는 크기만 보정 */
+.search-section .search-action-btn {
+	min-width: 82px;
+	height: 34px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	padding: 0 12px;
+	font-size: 13px;
+	white-space: nowrap;
+	text-decoration: none;
+}
+
+/* 검색 필드 묶음 */
+.search-section .search-form-row {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+	gap: 10px 14px;
+	align-items: end;
+}
+
+/* label + input/select 한 세트 */
+.search-section .search-field {
+	display: flex;
+	flex-direction: column;
+	gap: 5px;
+}
+
+.search-section .search-field label {
+	font-size: 13px;
+	color: #333333;
+	font-weight: 500;
+}
+
+.search-section .search-field input, .search-section .search-field select
+	{
+	height: 32px;
+	border: 1px solid #d7dbe7;
+	border-radius: 5px;
+	padding: 0 10px;
+	font-size: 13px;
+	outline: none;
+	background-color: #ffffff;
+}
+
+.search-section .search-field input:focus, .search-section .search-field select:focus
+	{
+	border-color: #252ba3;
+}
+
+/* clean / apply 버튼 영역 */
+.search-section .search-btn-area {
+	display: flex;
+	gap: 8px;
+	justify-content: flex-start;
+	margin-top: 12px;
+}
+
+/* 필터 버튼
+   - 색상/기본 버튼 디자인은 buttons.css 기준
+   - 여기서는 크기만 보정 */
+.search-section .filter-btn {
+	min-width: 70px;
+	height: 32px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	padding: 0 12px;
+	font-size: 12px;
+	text-decoration: none;
+}
+
+.search-section .filter-btn:hover, .search-section .search-action-btn:hover
+	{
+	text-decoration: none;
+}
+
+/* 테이블 영역 */
 .repo-table-card {
-    background: #ffffff;
-    border: 1px solid #e9ecef;
-    border-radius: 8px;
-    padding: 10px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+	background: #fff;
+	border: 1px solid #e9ecef;
+	padding: 15px;
+	border-radius: 8px;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
 }
 
-/* 자료실 목록 테이블 메인 스타일 */
 .repo-list-table {
-    width: 100%;
-    margin: 0;
-    border-collapse: collapse;
+	width: 100%;
+	border-collapse: collapse;
 }
 
 .repo-list-table th {
-    padding: 14px 12px;
-    font-weight: 600;
-    color: #495057;
-    background-color: #f8f9fa;
-    border-bottom: 2px solid #dee2e6;
-    font-size: 14px;
+	padding: 12px;
+	background: #f8f9fa;
+	border-bottom: 2px solid #dee2e6;
+	font-size: 14px;
+	text-align: left;
+	color: #495057;
 }
 
 .repo-list-table td {
-    padding: 14px 12px;
-    color: #495057;
-    border-bottom: 1px solid #eee;
-    font-size: 14px;
-    vertical-align: middle;
+	padding: 12px;
+	border-bottom: 1px solid #eee;
+	font-size: 14px;
+	color: #495057;
 }
 
-/* 행 오버 효과 */
 .repo-list-table tbody tr:hover {
-    background-color: #fdfdfd;
+	background-color: #fdfdfd;
 }
 
-/* 데이터 없을 때의 스타일 */
-.repo-table-empty {
-    padding: 50px 0 !important;
-    text-align: center;
-    color: #adb5bd;
-    font-size: 15px;
-}
-
-/* 파일명 링크 텍스트 스타일 */
+/* 기타 요소 */
 .repo-file-link {
-    color: #212529;
-    font-weight: 500;
-    text-decoration: none;
-    transition: color 0.15s;
+	color: #212529;
+	font-weight: 500;
+	text-decoration: none;
 }
 
 .repo-file-link:hover {
-    color: #007bff;
-    text-decoration: underline;
+	color: #007bff;
+	text-decoration: underline;
 }
 
-/* Checksum 텍스트용 연한 회색 처리 */
 .repo-checksum {
-    font-size: 13px !important;
-    color: #6c757d !important;
-    word-break: break-all;
+	font-size: 13px;
+	color: #6c757d;
+	word-break: break-all;
 }
 
-/* 다운로드 이모지 버튼 효과 */
 .repo-download-icon {
-    font-size: 18px;
-    text-decoration: none;
-    display: inline-block;
-    transition: transform 0.15s;
+	color: #007bff;
+	text-decoration: none;
+	font-size: 18px;
 }
 
-.repo-download-icon:hover {
-    transform: scale(1.2);
+.repo-table-empty {
+	padding: 50px 0 !important;
+	text-align: center;
+	color: #adb5bd;
 }
 
-/* 정렬용 유틸리티 클래스 */
 .text-center {
-    text-align: center;
+	text-align: center;
+}
+
+/* 페이징 버튼 스타일 */
+.pagination a {
+	padding: 5px 12px;
+	border: 1px solid #dee2e6;
+	text-decoration: none;
+	color: #495057;
+	border-radius: 4px;
+}
+
+.pagination a.active {
+	background-color: #007bff;
+	color: white;
+	border-color: #007bff;
 }

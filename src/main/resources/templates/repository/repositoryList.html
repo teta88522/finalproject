@@ -1,87 +1,115 @@
 <!doctype html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{common/layouts/default_layout}">
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{common/layouts/default_layout}">
 <head>
 <meta charset="UTF-8">
-<link rel="stylesheet" th:href="@{/css/common-fliter.css}">
 <link rel="stylesheet" th:href="@{/css/repository/repositoryList.css}">
 </head>
 <body>
-<div layout:fragment="Content">
+	<div layout:fragment="Content">
+		<div class="repo-container">
+			<div class="repo-header">
+				<h2 class="repo-title">자료실</h2>
+				<a th:href="@{/repository/new}" class="repo-btn-upload">업로드</a>
+			</div>
 
-    <div class="project-container">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2 style="font-weight: 700; margin: 0; color: #111;">자료실</h2>
-            <a th:href="@{/repository/new}" class="btn-register" style="text-decoration: none; text-align: center; line-height: 40px;">업로드</a>
-        </div>
+			<div class="search-section">
+				<form th:action="@{/repository}" method="get">
+					<div class="search-form-row">
+						<div class="search-field">
+							<label>기간</label>
+							<div class="d-flex align-items-center">
+								<input type="date" name="startDate"
+									th:value="${param.startDate}"> <span class="mx-2">~</span>
+								<input type="date" name="endDate" th:value="${param.endDate}">
+							</div>
+						</div>
+						<div class="search-field">
+							<label>일감</label> <select name="projectId">
+								<option value="">전체</option>
+								<option th:each="project : ${projectList}"
+									th:value="${project.projectId}"
+									th:text="${project.projectName}"
+									th:selected="${#strings.toString(project.projectId) == #strings.toString(param.projectId)}">
+									일감</option>
+							</select>
+						</div>
+						<div class="search-field">
+							<label>제목</label> <input type="text" name="originalName"
+								th:value="${param.originalName}" placeholder="입력">
+						</div>
+						<div class="search-field">
+							<label>작성자</label> <input type="text" name="uploadUserId"
+								th:value="${param.uploadUserId}" placeholder="입력">
+						</div>
+					</div>
 
-        <div class="module-card mb-4" style="padding: 20px;">
-            <form th:action="@{/repository}" method="get">
-                <div class="row g-3 align-items-end">
-                    <div class="col-md-2">
-                        <div class="form-section-title" style="margin-bottom: 5px;">기간 (시작일)</div>
-                        <input type="date" class="form-line-control" name="startDate">
-                    </div>
-                    <div class="col-md-2">
-                        <div class="form-section-title" style="margin-bottom: 5px;">기간 (종료일)</div>
-                        <input type="date" class="form-line-control" name="endDate">
-                    </div>
-                    <div class="col-md-2">
-                        <div class="form-section-title" style="margin-bottom: 5px;">일감</div>
-                        <input type="text" class="form-line-control" name="fileCode" th:value="${searchVO.fileCode}" placeholder="일감 선택/입력">
-                    </div>
-                    <div class="col-md-2">
-                        <div class="form-section-title" style="margin-bottom: 5px;">제목</div>
-                        <input type="text" class="form-line-control" name="originalName" th:value="${searchVO.originalName}" placeholder="파일명 검색">
-                    </div>
-                    <div class="col-md-2">
-                        <div class="form-section-title" style="margin-bottom: 5px;">작성자</div>
-                        <input type="text" class="form-line-control" name="uploadUserId" th:value="${searchVO.uploadUserId}" placeholder="작성자 ID">
-                    </div>
-                    <div class="col-md-2 text-end">
-                        <a th:href="@{/repository}" class="btn-register" style="background: #6c757d; text-decoration: none; display: inline-block; text-align: center; line-height: 40px; margin-right: 5px;">clean</a>
-                        <button type="submit" class="btn-register" style="background: #007bff;">apply</button>
-                    </div>
-                </div>
-            </form>
-        </div>
+					<div class="search-btn-area">
+						<a th:href="@{/repository}" class="filter-btn btn-secondary">clean</a>
+						<button type="submit" class="filter-btn btn-primary">apply</button>
+					</div>
+				</form>
+			</div>
 
-        <div class="module-card" style="padding: 15px; overflow-x: auto;">
-            <table class="table" style="width: 100%; margin: 0; border-collapse: collapse;">
-                <thead>
-                    <tr style="border-bottom: 2px solid #dee2e6; background-color: #f8f9fa;">
-                        <th style="padding: 12px; font-weight: 600; width: 40%;">파일</th>
-                        <th style="padding: 12px; font-weight: 600; width: 15%;">날짜</th>
-                        <th style="padding: 12px; font-weight: 600; width: 10%;">크기</th>
-                        <th style="padding: 12px; font-weight: 600; width: 10%;">D/L</th>
-                        <th style="padding: 12px; font-weight: 600; width: 20%;">Checksum</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr th:if="${#lists.isEmpty(repositoryList)}">
-                        <td colspan="6" class="text-center" style="padding: 30px; color: #868e96;">조회된 자료가 없습니다.</td>
-                    </tr>
-                    <tr th:each="repo : ${repositoryList}" style="border-bottom: 1px solid #eee;">
-                        <td style="padding: 12px;">
-                            <a th:href="@{/repository/detail(fileId=${repo.fileId})}" th:text="${repo.originalName}" style="color: #333; font-weight: 500; text-decoration: none;"></a>
-                        </td>
-                        <td style="padding: 12px;" th:text="${#strings.substring(repo.uploadDate, 0, 16)}">2026-06-23 12:00</td>
-                        <td style="padding: 12px;"><span th:text="${repo.fileSize}"></span> Bytes</td>
-                        <td style="padding: 12px;">0</td>
-                        <td style="padding: 12px; font-size: 13px; color: #666;" th:text="${repo.fileCode}">SHA256:...</td>
-                        <td style="padding: 12px;" class="text-center">
-                            <a th:href="@{/repository/download(fileId=${repo.fileId})}" style="color: #007bff; text-decoration: none;">
-                                📥
-                            </a>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
+			<div class="repo-table-card">
+				<table class="repo-list-table">
+					<thead>
+						<tr>
+							<th>파일</th>
+							<th>날짜</th>
+							<th>크기</th>
+							<th>Checksum</th>
+							<th class="text-center">다운로드</th>
+							<th class="text-center"></th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr th:each="repo : ${repositoryList}">
+							<td><a
+								th:href="@{/repository/detail(fileId=${repo.fileId})}"
+								class="repo-file-link" th:text="${repo.originalName}">파일명</a></td>
+							<td
+								th:text="${#dates.format(repo.uploadDate, 'yyyy-MM-dd HH:mm')}"></td>
+							<td th:text="${repo.fileSizeText}"></td>
 
-</div>
+							<td class="repo-checksum" th:text="${repo.fileCode}"></td>
+							<td class="text-center"></td>
+
+							<td class="text-center" style="text-align: center !important;">
+								<a th:href="@{/repository/download(fileId=${repo.fileId})}"
+								class="repo-download-icon"
+								style="text-decoration: none; color: #007bff; font-weight: bold; display: inline-block;">↓</a>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+
+			<div class="pagination-area"
+				style="text-align: center; margin-top: 20px;">
+				<ul class="pagination"
+					style="list-style: none; display: flex; justify-content: center; gap: 10px;">
+
+					<li th:classappend="${!hasPrevious} ? 'disabled'"><a
+						th:href="@{/repository(page=${currentPage - 1}, startDate=${param.startDate}, endDate=${param.endDate}, projectId=${param.projectId}, originalName=${param.originalName}, uploadUserId=${param.uploadUserId})}">이전</a>
+					</li>
+
+					<li th:each="pageNum : ${#numbers.sequence(1, totalPages)}"><a
+						th:href="@{/repository(page=${pageNum}, startDate=${param.startDate}, endDate=${param.endDate}, projectId=${param.projectId}, originalName=${param.originalName}, uploadUserId=${param.uploadUserId})}"
+						th:text="${pageNum}"
+						th:classappend="${pageNum == currentPage} ? 'active'">1</a></li>
+
+					<li th:classappend="${!hasNext} ? 'disabled'"><a
+						th:href="@{/repository(page=${currentPage + 1}, startDate=${param.startDate}, endDate=${param.endDate}, projectId=${param.projectId}, originalName=${param.originalName}, uploadUserId=${param.uploadUserId})}">다음</a>
+					</li>
+
+				</ul>
+			</div>
+
+		</div>
+	</div>
+
 </body>
 
 </html>

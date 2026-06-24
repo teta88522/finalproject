@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{common/layouts/default_layout}">
+
+<head>
+<title>일감 유형 요약</title>
+<link rel="stylesheet" th:href="@{/css/common-ui.css}">
+<link rel="stylesheet" th:href="@{/css/issuetype/issuetype.css}">
+</head>
+
+<body>
+	<div layout:fragment="Content">
+
+		<div class="issuetype-summary-page">
+			<div class="container-fluid">
+
+				<div class="issuetype-summary-header">
+					<div>
+						<h3>일감 유형 요약</h3>
+						<p>선택한 일감 유형별 표준 항목 사용 여부를 비교합니다.</p>
+					</div>
+
+					<a th:href="@{/issuetype/list}"
+						class="btn btn-custon-rounded-four btn-default"> 돌아가기 </a>
+				</div>
+
+				<div th:if="${errorMessage}" class="page-message page-message-error"
+					th:text="${errorMessage}">일감 유형은 최대 5개까지만 선택할 수 있습니다.</div>
+
+				<div id="summarySelectError"
+					class="page-message page-message-error issuetype-summary-client-error">
+					일감 유형은 최대 5개까지만 선택할 수 있습니다.</div>
+
+				<div class="issuetype-summary-layout">
+
+					<form th:action="@{/issuetype/summary}" method="get"
+						class="issuetype-summary-left" id="issueTypeSummaryForm"
+						th:attr="data-max-select=${maxSelectCount != null ? maxSelectCount : 5}">
+
+						<div class="issuetype-summary-left-title">
+							<h4>일감 유형 선택</h4>
+							<p>비교할 일감 유형을 선택합니다. 최대 5개까지 선택할 수 있습니다.</p>
+						</div>
+
+						<div class="issuetype-summary-count">
+							<span id="summarySelectedCount"
+								th:with="limit=${maxSelectCount != null ? maxSelectCount : 5},
+									defaultCount=${#lists.size(issueTypeSelectList) > limit ? limit : #lists.size(issueTypeSelectList)},
+									displayCount=${selectedCount != null and selectedCount > 0 ? selectedCount : defaultCount}"
+								th:text="|선택 ${displayCount} / ${limit}|"> 선택 5 / 5 </span>
+						</div>
+
+						<div class="issuetype-summary-type-list">
+							<label th:each="issueType, stat : ${issueTypeSelectList}"
+								class="issuetype-summary-type-item"> <input
+								type="checkbox" name="issueTypeIdList"
+								class="issuetype-summary-checkbox"
+								th:value="${issueType.issueTypeId}"
+								th:checked="${(searchVO != null and searchVO.issueTypeIdList != null and searchVO.issueTypeIdList.contains(issueType.issueTypeId))
+										or ((searchVO == null or searchVO.issueTypeIdList == null or #lists.isEmpty(searchVO.issueTypeIdList))
+											and stat.index < (maxSelectCount != null ? maxSelectCount : 5))}">
+								<span th:text="${issueType.issueTypeName}">결함</span>
+							</label>
+
+							<div th:if="${#lists.isEmpty(issueTypeSelectList)}"
+								class="empty-row">등록된 일감 유형이 없습니다.</div>
+						</div>
+
+						<div class="issuetype-summary-actions">
+							<a th:href="@{/issuetype/summary}"
+								class="btn btn-custon-rounded-four btn-default"> clean </a>
+
+							<button type="submit"
+								class="btn btn-custon-rounded-four btn-primary">apply</button>
+						</div>
+					</form>
+
+					<div class="issuetype-summary-right">
+						<div class="issuetype-summary-card">
+							<div class="issuetype-summary-card-title">
+								<h4>표준 항목 비교</h4>
+								<p>최초 진입 시 앞에서부터 5개의 일감 유형을 비교합니다.</p>
+							</div>
+
+							<div class="issuetype-summary-table-scroll">
+								<table class="table table-bordered issuetype-summary-matrix">
+									<thead>
+										<tr>
+											<th>표준 항목</th>
+											<th th:each="issueType, stat : ${issueTypeSummaryList}"
+												th:if="${stat.index < (maxSelectCount != null ? maxSelectCount : 5)}"
+												th:text="${issueType.issueTypeName}">결함</th>
+										</tr>
+									</thead>
+
+									<tbody>
+										<tr th:if="${#lists.isEmpty(issueTypeSummaryList)}">
+											<td colspan="6" class="empty-row">조회된 일감 유형이 없습니다.</td>
+										</tr>
+
+										<tr th:unless="${#lists.isEmpty(issueTypeSummaryList)}">
+											<th>담당자</th>
+											<td th:each="issueType, stat : ${issueTypeSummaryList}"
+												th:if="${stat.index < (maxSelectCount != null ? maxSelectCount : 5)}">
+												<span class="issuetype-use-badge"
+												th:classappend="${issueType.assigneeYn == 'Y' ? ' issuetype-use-badge-on' : ' issuetype-use-badge-off'}"
+												th:text="${issueType.assigneeYn == 'Y' ? '사용' : '-'}">
+													사용 </span>
+											</td>
+										</tr>
+
+										<tr th:unless="${#lists.isEmpty(issueTypeSummaryList)}">
+											<th>마일스톤</th>
+											<td th:each="issueType, stat : ${issueTypeSummaryList}"
+												th:if="${stat.index < (maxSelectCount != null ? maxSelectCount : 5)}">
+												<span class="issuetype-use-badge"
+												th:classappend="${issueType.milestoneYn == 'Y' ? ' issuetype-use-badge-on' : ' issuetype-use-badge-off'}"
+												th:text="${issueType.milestoneYn == 'Y' ? '사용' : '-'}">
+													사용 </span>
+											</td>
+										</tr>
+
+										<tr th:unless="${#lists.isEmpty(issueTypeSummaryList)}">
+											<th>상위일감</th>
+											<td th:each="issueType, stat : ${issueTypeSummaryList}"
+												th:if="${stat.index < (maxSelectCount != null ? maxSelectCount : 5)}">
+												<span class="issuetype-use-badge"
+												th:classappend="${issueType.parentIssueYn == 'Y' ? ' issuetype-use-badge-on' : ' issuetype-use-badge-off'}"
+												th:text="${issueType.parentIssueYn == 'Y' ? '사용' : '-'}">
+													사용 </span>
+											</td>
+										</tr>
+
+										<tr th:unless="${#lists.isEmpty(issueTypeSummaryList)}">
+											<th>시작일</th>
+											<td th:each="issueType, stat : ${issueTypeSummaryList}"
+												th:if="${stat.index < (maxSelectCount != null ? maxSelectCount : 5)}">
+												<span class="issuetype-use-badge"
+												th:classappend="${issueType.startDateYn == 'Y' ? ' issuetype-use-badge-on' : ' issuetype-use-badge-off'}"
+												th:text="${issueType.startDateYn == 'Y' ? '사용' : '-'}">
+													사용 </span>
+											</td>
+										</tr>
+
+										<tr th:unless="${#lists.isEmpty(issueTypeSummaryList)}">
+											<th>완료기한</th>
+											<td th:each="issueType, stat : ${issueTypeSummaryList}"
+												th:if="${stat.index < (maxSelectCount != null ? maxSelectCount : 5)}">
+												<span class="issuetype-use-badge"
+												th:classappend="${issueType.dueDateYn == 'Y' ? ' issuetype-use-badge-on' : ' issuetype-use-badge-off'}"
+												th:text="${issueType.dueDateYn == 'Y' ? '사용' : '-'}">
+													사용 </span>
+											</td>
+										</tr>
+
+										<tr th:unless="${#lists.isEmpty(issueTypeSummaryList)}">
+											<th>소요시간</th>
+											<td th:each="issueType, stat : ${issueTypeSummaryList}"
+												th:if="${stat.index < (maxSelectCount != null ? maxSelectCount : 5)}">
+												<span class="issuetype-use-badge"
+												th:classappend="${issueType.estimatedHoursYn == 'Y' ? ' issuetype-use-badge-on' : ' issuetype-use-badge-off'}"
+												th:text="${issueType.estimatedHoursYn == 'Y' ? '사용' : '-'}">
+													사용 </span>
+											</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+						</div>
+					</div>
+
+				</div>
+
+			</div>
+		</div>
+
+		<script>
+			document
+					.addEventListener(
+							'DOMContentLoaded',
+							function() {
+								var form = document
+										.getElementById('issueTypeSummaryForm');
+
+								if (!form) {
+									return;
+								}
+
+								var maxSelectCount = parseInt(form
+										.getAttribute('data-max-select'), 10);
+
+								if (isNaN(maxSelectCount)
+										|| maxSelectCount <= 0) {
+									maxSelectCount = 5;
+								}
+
+								var checkboxList = Array.prototype.slice
+										.call(form
+												.querySelectorAll('.issuetype-summary-checkbox'));
+
+								var countArea = document
+										.getElementById('summarySelectedCount');
+								var errorArea = document
+										.getElementById('summarySelectError');
+
+								function getCheckedList() {
+									return checkboxList.filter(function(
+											checkbox) {
+										return checkbox.checked;
+									});
+								}
+
+								function updateCount() {
+									var checkedCount = getCheckedList().length;
+
+									if (countArea) {
+										countArea.textContent = '선택 '
+												+ checkedCount + ' / '
+												+ maxSelectCount;
+									}
+								}
+
+								function showError() {
+									if (errorArea) {
+										errorArea.classList.add('is-show');
+									}
+								}
+
+								function hideError() {
+									if (errorArea) {
+										errorArea.classList.remove('is-show');
+									}
+								}
+
+								if (getCheckedList().length === 0) {
+									checkboxList.slice(0, maxSelectCount)
+											.forEach(function(checkbox) {
+												checkbox.checked = true;
+											});
+								}
+
+								if (getCheckedList().length > maxSelectCount) {
+									getCheckedList().slice(maxSelectCount)
+											.forEach(function(checkbox) {
+												checkbox.checked = false;
+											});
+									showError();
+								}
+
+								checkboxList
+										.forEach(function(checkbox) {
+											checkbox
+													.addEventListener(
+															'change',
+															function() {
+																if (getCheckedList().length > maxSelectCount) {
+																	checkbox.checked = false;
+																	showError();
+																} else {
+																	hideError();
+																}
+
+																updateCount();
+															});
+										});
+
+								form
+										.addEventListener(
+												'submit',
+												function(event) {
+													if (getCheckedList().length > maxSelectCount) {
+														event.preventDefault();
+														showError();
+														updateCount();
+													}
+												});
+
+								updateCount();
+							});
+		</script>
+
+	</div>
+</body>
+</html>

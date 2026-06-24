@@ -38,6 +38,12 @@ public class ProjectServiceImpl implements ProjectService {
 		
 		return result;
 	}
+	
+	// 자료실에서 사용할 프로젝트 목록을 불러오기 위한 기능 구현
+	@Override
+	public List<ProjectVO> findAllProjects(){
+		return projectMapper.selectAllProjects();
+	}
 
 	//260623 고동현 프로젝트 리스트 관련 추가
 	//관리자
