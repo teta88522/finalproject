@@ -63,13 +63,13 @@ public class WorkflowVO {
 
 
     /*
-     * 상태전환 설정 화면 form 전송용
+     * 상태전환 설정 화면 form 전송용    -> 체크박스 선택항목 
      * 예: FROM_STATUS_ID|TO_STATUS_ID
      */
     private String transitionKey;
 
     private List<String> transitionKeyList;
 
-    // 상태 소유자 검증용
+    // 상태 소유자 검증용   -> 개발자 도구같은 것을 이용해 임의로 바꿀수 있기 때문 
     private List<String> statusIdList;
 }
