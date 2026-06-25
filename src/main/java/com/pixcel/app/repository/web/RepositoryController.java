@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.pixcel.app.project.service.ProjectService;
 import com.pixcel.app.repository.service.RepositoryService;
@@ -28,27 +29,28 @@ public class RepositoryController {
 	// 1. 자료실 전체 조회 (요청주소 : localhost:8080/repository)
 	@GetMapping
 	public String getRepositoryList(RepositoryVO searchVO, Model model) {
-		int amount = 5;
-	    if (searchVO.getPage() <= 0) searchVO.setPage(1);
-	    searchVO.setStartRow((searchVO.getPage() - 1) * amount + 1);
-	    searchVO.setEndRow(searchVO.getPage() * amount);
+		int amount = 10;
+		if (searchVO.getPage() <= 0)
+			searchVO.setPage(1);
+		searchVO.setStartRow((searchVO.getPage() - 1) * amount + 1);
+		searchVO.setEndRow(searchVO.getPage() * amount);
 
-	    // 1. 데이터 조회
-	    model.addAttribute("repositoryList", repositoryService.getRepositoryList(searchVO));
-	    
-	    // 2. 일감 목록 (Service를 통해 가져옴)
-	    model.addAttribute("projectList", projectService.findAllProjects());
+		// 1. 데이터 조회
+		model.addAttribute("repositoryList", repositoryService.getRepositoryList(searchVO));
 
-	    // 3. 페이징 계산 (DTO 없이 직접 계산)
-	    int total = repositoryService.getTotalCount(searchVO);
-	    int totalPages = (int) Math.ceil((double) total / amount);
-	    
-	    // 뷰에서 쓰기 편하게 model에 직접 담기
-	    model.addAttribute("currentPage", searchVO.getPage());
-	    model.addAttribute("totalPages", totalPages);
-	    model.addAttribute("hasPrevious", searchVO.getPage() > 1);
-	    model.addAttribute("hasNext", searchVO.getPage() < totalPages);
-	    
+		// 2. 일감 목록 (Service를 통해 가져옴)
+		model.addAttribute("projectList", projectService.findAllProjects());
+
+		// 3. 페이징 계산 (DTO 없이 직접 계산)
+		int total = repositoryService.getTotalCount(searchVO);
+		int totalPages = (int) Math.ceil((double) total / amount);
+
+		// 뷰에서 쓰기 편하게 model에 직접 담기
+		model.addAttribute("currentPage", searchVO.getPage());
+		model.addAttribute("totalPages", totalPages);
+		model.addAttribute("hasPrevious", searchVO.getPage() > 1);
+		model.addAttribute("hasNext", searchVO.getPage() < totalPages);
+
 		return "repository/repositoryList";
 	}
 
@@ -147,8 +149,21 @@ public class RepositoryController {
 	// 5-2. 자료실 파일 수정 처리 후 해당 유저의 목록으로 리다이렉트
 	@PostMapping("/edit")
 	public String edit(RepositoryVO repositoryVO,
-			@RequestParam(value = "uploadFile", required = false) MultipartFile uploadFile) {
-		repositoryService.modifyRepository(repositoryVO, uploadFile);
+			@RequestParam(value = "uploadFile", required = false) MultipartFile uploadFile,
+			@CookieValue(value = "userId", required = false) String userId, 
+			RedirectAttributes rttr) { // <--- 메시지를 화면으로 보낼 택배 상자
+		// 1. 서비스에 데이터와 userId를 같이 넘깁니다.
+		try {
+			repositoryService.modifyRepository(repositoryVO, uploadFile, userId);
+			
+			// 성공했을 경우
+			rttr.addFlashAttribute("msg", "success");
+			rttr.addFlashAttribute("message", "파일이 수정되었습니다!");
+		} catch (Exception e) {
+			// 실패했을 경우 (권한 없음 등...)
+			rttr.addFlashAttribute("msg", "error");
+			rttr.addFlashAttribute("message", e.getMessage());
+		}
 		return "redirect:/repository/detail?fileId=" + repositoryVO.getFileId();
 	}
 
@@ -161,23 +176,23 @@ public class RepositoryController {
 	}
 
 	@GetMapping("/download")
-	public ResponseEntity<org.springframework.core.io.Resource> downloadFile(@RequestParam String fileId) throws Exception {
-	    RepositoryVO fileInfo = repositoryService.getRepositoryDetail(fileId);
-	    
-	    String fullPath = fileInfo.getFilePath();
-	    
-	    File file = new File(fullPath);
+	public ResponseEntity<org.springframework.core.io.Resource> downloadFile(@RequestParam String fileId)
+			throws Exception {
+		RepositoryVO fileInfo = repositoryService.getRepositoryDetail(fileId);
 
-	    if (!file.exists()) {
-	        return ResponseEntity.notFound().build();
-	    }
+		String fullPath = fileInfo.getFilePath();
 
-	    org.springframework.core.io.Resource resource = new org.springframework.core.io.FileSystemResource(file);
-	    String encodedName = java.net.URLEncoder.encode(fileInfo.getOriginalName(), "UTF-8").replace("+", "%20");
-	    
-	    return ResponseEntity.ok()
-	            .header(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + encodedName + "\"")
-	            .body(resource);
+		File file = new File(fullPath);
+
+		if (!file.exists()) {
+			return ResponseEntity.notFound().build();
+		}
+
+		org.springframework.core.io.Resource resource = new org.springframework.core.io.FileSystemResource(file);
+		String encodedName = java.net.URLEncoder.encode(fileInfo.getOriginalName(), "UTF-8").replace("+", "%20");
+
+		return ResponseEntity.ok().header(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION,
+				"attachment; filename=\"" + encodedName + "\"").body(resource);
 	}
-	
+
 }

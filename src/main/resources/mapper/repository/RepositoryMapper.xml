@@ -17,37 +17,21 @@
 		<result property="fileVersion" column="file_version" />
 		<result property="fileUseYn" column="file_use_yn" />
 		<result property="connectAddress" column="connect_address" />
+		<result property="categoryName" column="categoryName" />
 	</resultMap>
 
-	<select id="selectRepositoryList" parameterType="RepositoryVO"
-		resultMap="repositoryMap">
-		SELECT * FROM (
-		SELECT rownum rn, A.* FROM (
-		SELECT * FROM attach_file
+	<select id="selectRepositoryList" parameterType="RepositoryVO" resultMap="repositoryMap">
+		SELECT A.*, C.note AS category_name
+		FROM attach_file A
+		LEFT JOIN common_code C ON A.file_code = C.code_id
+								AND C.code_name = 'OF'
 		<where>
-			file_use_yn = 'g001'
+			A.file_use_yn = 'g001'
 			<if test="projectId != null and projectId != ''">
-				AND project_id = #{projectId}
-			</if>
-			<if test="originalName != null and originalName != ''">
-				AND original_name LIKE '%' || #{originalName} || '%'
-			</if>
-			<if test="uploadUserId != null and uploadUserId != ''">
-				AND upload_user_id LIKE '%' || #{uploadUserId} || '%'
-			</if>
-			<if test="startDate != null and startDate != ''">
-				AND TO_CHAR(upload_date, 'YYYY-MM-DD') >= #{startDate}
-			</if>
-			<if test="endDate != null and endDate != ''">
-				AND TO_CHAR(upload_date, 'YYYY-MM-DD') <![CDATA[ <= ]]>
-				#{endDate}
+				AND A.project_id = #{projectId}
 			</if>
 		</where>
-		ORDER BY upload_date DESC
-		) A
-		WHERE rownum <![CDATA[ <= ]]>
-		#{endRow}
-		) WHERE rn >= #{startRow}
+		ORDER BY A.upload_date DESC
 	</select>
 
 	<select id="selectRepositoryTotalCount"
@@ -97,25 +81,10 @@
 
 	<select id="selectRepositoryDetail" parameterType="string"
 		resultMap="repositoryMap">
-		SELECT
-		file_id
-		, project_id
-		, version_id
-		, file_code
-		,
-		original_name
-		, stored_name
-		, file_path
-		, file_size
-		, upload_user_id
-		,
-		upload_date
-		, file_version
-		, file_use_yn
-		, connect_address
-		FROM
-		attach_file
-		WHERE file_id = #{fileId}
+		SELECT A.*, U.user_name AS user_name
+		FROM attach_file A
+		LEFT JOIN users U ON A.upload_user_id = U.user_id
+		WHERE A.file_id = #{fileId}
 	</select>
 
 	<insert id="insertRepository" parameterType="RepositoryVO">
@@ -161,7 +130,8 @@
 		, #{originalName}
 		,
 		#{storedName}
-		, #{filePath}
+		,
+		#{filePath}
 		, #{fileSize}
 		, #{uploadUserId}
 		<!-- uploaddate값을 직접 넣어서 보낸다면 그값을 사용하고, 만약 값을 안넣어서 보낸다면 오라클 현재 시간인 SYSDATE를 
@@ -191,6 +161,12 @@
 			<if test="fileUseYn != null">file_use_yn = #{fileUseYn},</if>
 			<if test="connectAddress != null">connect_address = #{connectAddress},</if>
 		</set>
+		WHERE file_id = #{fileId}
+	</update>
+
+	<update id="updateRepositoryUseYn">
+		UPDATE attach_file
+		SET file_use_yn = #{fileUseYn}
 		WHERE file_id = #{fileId}
 	</update>
 

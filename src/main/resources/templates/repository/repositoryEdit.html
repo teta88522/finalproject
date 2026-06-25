@@ -16,7 +16,9 @@
 
         <div class="repo-detail-card" style="padding: 40px; min-height: 450px;">
             <form th:action="@{/repository/edit}" method="post" enctype="multipart/form-data">
-    
+    			
+    			<input type="hidden" name="fileId" th:value="${repository.fileId}">
+    			
 			    <div class="repo-upload-zone" onclick="document.getElementById('uploadFile').click();">
 			        </div>
 			

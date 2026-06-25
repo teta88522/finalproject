@@ -18,7 +18,7 @@ public interface RepositoryService {
 	public int registerRepository(RepositoryVO repositoryVO, MultipartFile uploadFile);
 
 	// 5. 자료실 파일 수정
-	public int modifyRepository(RepositoryVO repositoryVO, MultipartFile uploadFile);
+	public int modifyRepository(RepositoryVO repositoryVO, MultipartFile uploadFile, String userId);
 
 	// 6. 자료실 파일 삭제
 	public int removeRepository(String fileId, String userId);

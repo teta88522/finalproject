@@ -1,8 +1,16 @@
 @charset "UTF-8";
 
+body {
+	overflow: hidden;
+	height: 100vh;
+}
+
 /* 레이아웃 */
 .repo-container {
 	padding: 10px 20px;
+	height: calc(100vh - 100px); /* 상단 네비게이션바 높이만큼 제외 */
+	display: flex;
+	flex-direction: column;
 }
 
 .repo-header {
@@ -30,26 +38,26 @@
 
 .filter-btn.btn-secondary {
 	background-color: #6c757d;
-    color: #fff;
-    border: none;
-    padding: 0 16px;
-    height: 32px;
-    display: inline-flex;
-    align-items: center;
-    border-radius: 4px;
-    text-decoration: none;
+	color: #fff;
+	border: none;
+	padding: 0 16px;
+	height: 32px;
+	display: inline-flex;
+	align-items: center;
+	border-radius: 4px;
+	text-decoration: none;
 }
 
 .filter-btn.btn-primary {
 	background-color: #007bff;
-    color: #fff;
-    border: none;
-    padding: 0 16px;
-    height: 32px;
-    display: inline-flex;
-    align-items: center;
-    border-radius: 4px;
-    text-decoration: none;
+	color: #fff;
+	border: none;
+	padding: 0 16px;
+	height: 32px;
+	display: inline-flex;
+	align-items: center;
+	border-radius: 4px;
+	text-decoration: none;
 }
 
 .search-section {
@@ -155,16 +163,19 @@
 
 /* 테이블 영역 */
 .repo-table-card {
+	flex-grow: 1;
+	overflow: hidden; /* 스크롤 방지 */
 	background: #fff;
 	border: 1px solid #e9ecef;
 	padding: 15px;
 	border-radius: 8px;
-	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+	display: flex;
+	flex-direction: column;
 }
 
 .repo-list-table {
 	width: 100%;
-	border-collapse: collapse;
+	table-layout: fixed;
 }
 
 .repo-list-table th {
@@ -177,10 +188,11 @@
 }
 
 .repo-list-table td {
-	padding: 12px;
-	border-bottom: 1px solid #eee;
+	padding: 8px 12px; /* 패딩을 약간 줄여 높이 확보 */
 	font-size: 14px;
-	color: #495057;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 
 .repo-list-table tbody tr:hover {
@@ -234,4 +246,12 @@
 	background-color: #007bff;
 	color: white;
 	border-color: #007bff;
+}
+
+.pagination li.disabled a {
+	pointer-events: none; /* 클릭 이벤트 무시 */
+	cursor: default; /* 커서 모양 변경 */
+	background-color: #e9ecef; /* 비활성화된 느낌의 배경색 */
+	color: #adb5bd; /* 비활성화된 글자색 */
+	border-color: #dee2e6;
 }
