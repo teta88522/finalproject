@@ -19,7 +19,7 @@ public class AppMenuController {
 
 	    model.addAttribute("menuType", "admin");
 
-	    return "codevalue/list";
+	    return "issuestatus/list";
 	}
 	
 	@GetMapping("/teams/list")

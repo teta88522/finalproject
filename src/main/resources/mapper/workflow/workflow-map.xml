@@ -157,6 +157,7 @@
 			from issue_status ts
 			where
 			ts.issue_status_id = wt.to_status_id
+			and ts.user_id = #{userId}
 			and ts.closed_yn = #{closedYn}
 			)
 		</if>

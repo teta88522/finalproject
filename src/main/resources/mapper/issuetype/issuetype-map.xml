@@ -206,7 +206,7 @@
 		and it.user_id = #{userId}
 		and
 		fs.use_yn = 'Y'
-		order by case fs.field_code ASC
+		order by case fs.field_code 
 		when 'i001' then 1
 		when
 		'i002' then 2
@@ -222,7 +222,7 @@
 		when 'DUE_DATE' then 5
 		when 'ESTIMATED_HOURS' then 6
 		else 99
-		end
+		end 
 	</select>
 
 	<!-- 일감유형에서 필수 처리된 항목 코드 조회 -->
@@ -249,7 +249,7 @@
 		and it.user_id = #{userId}
 		and
 		fs.required_yn = 'Y'
-		order by case fs.field_code ASC
+		order by case fs.field_code 
 		when 'i001' then 1
 		when
 		'i002' then 2
