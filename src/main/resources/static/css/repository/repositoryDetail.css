@@ -4,112 +4,137 @@
 
 /* 자료 상세조회 카드 스타일 [설계서 1번] */
 .repo-detail-card {
-    background: #ffffff;
-    border: 1px solid #e9ecef;
-    border-radius: 8px;
-    padding: 40px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
-    min-height: 380px;
+	background: #ffffff;
+	border: 1px solid #e9ecef;
+	border-radius: 8px;
+	padding: 40px;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+	min-height: 380px;
 }
 
 /* 우측 상단 메타 정보 영역 */
 .repo-meta-info {
-    text-align: right;
-    margin-bottom: 25px;
+	text-align: right;
+	margin-bottom: 25px;
 }
 
 .repo-meta-item {
-    font-size: 14px;
-    color: #666666;
-    margin-left: 20px;
+	font-size: 14px;
+	color: #666666;
+	margin-left: 20px;
 }
 
 /* 첨부파일 박스 */
 .repo-file-box {
-    border-top: 1px solid #f1f3f5;
-    padding-top: 30px;
-    margin-bottom: 15px;
+	border-top: 1px solid #f1f3f5;
+	padding-top: 30px;
+	margin-bottom: 15px;
 }
 
 .repo-file-label {
-    color: #868e96;
-    font-size: 13px;
-    font-weight: 600;
-    margin-bottom: 8px;
+	color: #868e96;
+	font-size: 13px;
+	font-weight: 600;
+	margin-bottom: 8px;
 }
 
 .repo-file-name {
-    font-size: 20px;
-    font-weight: 600;
-    color: #111111;
-    padding-left: 5px;
+	font-size: 20px;
+	font-weight: 600;
+	color: #111111;
+	padding-left: 5px;
 }
 
 /* 부가 메타 정보 */
 .repo-sub-info {
-    font-size: 13px;
-    color: #adb5bd;
-    margin-bottom: 50px;
-    padding-left: 5px;
+	font-size: 13px;
+	color: #adb5bd;
+	margin-bottom: 50px;
+	padding-left: 5px;
 }
 
 /* 하단 버튼 정렬 구역 [설계서 2,3,4,5번] */
 .repo-btn-group {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
+	display: flex;
+	justify-content: flex-end;
+	gap: 10px;
 }
 
 /* 공통 버튼 베이스 */
 .repo-btn {
-    background-color: #007bff;
-    color: #fff !important;
-    border: none;
-    padding: 0 16px;
-    height: 32px;
-    display: inline-flex;
-    align-items: center;
-    border-radius: 4px;
-    text-decoration: none;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background-color 0.2s;
+	background-color: #007bff;
+	color: #fff !important;
+	border: none;
+	padding: 0 16px;
+	height: 32px;
+	display: inline-flex;
+	align-items: center;
+	border-radius: 4px;
+	text-decoration: none;
+	font-size: 14px;
+	font-weight: 500;
+	cursor: pointer;
+	transition: background-color 0.2s;
 }
 
 /* 버튼별 고유 색상 정의 */
 .repo-btn-download {
-    background-color: #007bff;
+	background-color: #007bff;
 }
+
 .repo-btn-download:hover {
-    background-color: #343a40;
+	background-color: #343a40;
 }
 
 .repo-btn-list {
-    background-color: #007bff;
+	background-color: #007bff;
 }
+
 .repo-btn-list:hover {
-    background-color: #343a40;
+	background-color: #343a40;
 }
 
 .repo-btn-edit {
-    background-color: #007bff;
+	background-color: #007bff;
 }
+
 .repo-btn-edit:hover {
-    background-color: #343a40;
+	background-color: #343a40;
 }
 
 .repo-btn-delete {
-    background-color: #e03131; /* 레드 */
+	background-color: #e03131; /* 레드 */
 }
+
 .repo-btn-delete:hover {
-    background-color: #c92a2a;
+	background-color: #c92a2a;
 }
 
 /* 데이터 없음 예외 창 */
 .repo-table-empty {
-    text-align: center;
-    padding: 60px 0;
-    color: #868e96;
-    font-size: 16px;
+	text-align: center;
+	padding: 60px 0;
+	color: #868e96;
+	font-size: 16px;
+}
+
+/* 상단 메시지 스타일 */
+.page-message {
+	margin-bottom: 12px;
+	padding: 10px 12px;
+	border-radius: 6px;
+	font-size: 13px;
+	font-weight: 500;
+}
+
+.page-message-success {
+	border: 1px solid #d7eadf;
+	background: #f1faf5;
+	color: #1f7a45;
+}
+
+.page-message-error {
+	border: 1px solid #f1d1d1;
+	background: #fff5f5;
+	color: #c0392b;
 }

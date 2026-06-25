@@ -25,6 +25,8 @@ public class RepositoryVO {
 	private String filePath;
 
 	private long fileSize;
+	
+	private String categoryName;
 
 	public String getFileSizeText() {
 		if (fileSize == 0) {
@@ -43,6 +45,7 @@ public class RepositoryVO {
 	}
 
 	private String uploadUserId;
+	private String userName;
 	private Date uploadDate;
 	private String fileVersion;
 	private String fileUseYn;

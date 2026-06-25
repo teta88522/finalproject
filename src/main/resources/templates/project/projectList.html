@@ -31,8 +31,8 @@
 
 					<!-- 관리자만 생성/관리 버튼 노출 -->
 					<div class="search-action-area" th:if="${subscribeYn == 'Y'}">
-						<a th:href="@{/project/register}" class="search-action-btn"> 프로젝트
-							생성 </a> <a th:href="@{/project/manage}"
+						<a th:href="@{/project/register}" class="search-action-btn">
+							프로젝트 생성 </a> <a th:href="@{/project/manage}"
 							class="search-action-btn manage"> 프로젝트 관리 </a>
 					</div>
 				</div>
@@ -213,42 +213,43 @@
 
 		</div>
 
-<script>
-    function goProjectDetail(row) {
-        const projectId = row.dataset.projectId;
+		<script>
+			function goProjectDetail(row) {
+				const projectId = row.dataset.projectId;
 
-        if (!projectId) {
-            return;
-        }
+				if (!projectId) {
+					return;
+				}
 
-        location.href = "/project/" + encodeURIComponent(projectId);
-    }
+				location.href = "/project/" + encodeURIComponent(projectId);
+			}
 
-    function goProjectEdit(button) {
-        const projectId = button.dataset.projectId;
+			function goProjectEdit(button) {
+				const projectId = button.dataset.projectId;
 
-        if (!projectId) {
-            return;
-        }
+				if (!projectId) {
+					return;
+				}
 
-        location.href = "/project/update/" + encodeURIComponent(projectId);
-    }
+				location.href = "/project/update/"
+						+ encodeURIComponent(projectId);
+			}
 
-    function deleteProject(button) {
-        const projectId = button.dataset.projectId;
-        const projectName = button.dataset.projectName;
+			function deleteProject(button) {
+				const projectId = button.dataset.projectId;
+				const projectName = button.dataset.projectName;
 
-        if (!projectId) {
-            return;
-        }
+				if (!projectId) {
+					return;
+				}
 
-        if (!confirm("'" + projectName + "' 프로젝트를 삭제하시겠습니까?")) {
-            return;
-        }
+				if (!confirm("'" + projectName + "' 프로젝트를 삭제하시겠습니까?")) {
+					return;
+				}
 
-        console.log("삭제 대상 projectId =", projectId);
-    }
-</script>
+				console.log("삭제 대상 projectId =", projectId);
+			}
+		</script>
 
 	</div>
 </body>

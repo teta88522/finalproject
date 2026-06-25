@@ -19,6 +19,7 @@ public interface RepositoryMapper {
 
 	// 5. 자료실 파일 수정
 	public int updateRepository(RepositoryVO repositoryVO);
+	public int updateRepositoryUseYn(String fileId, String fileUseYn);
 
 	// 6. 자료실 파일 삭제
 	public int deleteRepository(String fileId);

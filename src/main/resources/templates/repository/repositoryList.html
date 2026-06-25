@@ -57,24 +57,25 @@
 					<thead>
 						<tr>
 							<th>파일</th>
+							<th>출처</th>
 							<th>날짜</th>
 							<th>크기</th>
-							<th>Checksum</th>
-							<th class="text-center">다운로드</th>
-							<th class="text-center"></th>
+							<th>다운로드</th>
 						</tr>
 					</thead>
 					<tbody>
 						<tr th:each="repo : ${repositoryList}">
 							<td><a
 								th:href="@{/repository/detail(fileId=${repo.fileId})}"
-								class="repo-file-link" th:text="${repo.originalName}">파일명</a></td>
+								class="repo-file-link" th:text="${repo.originalName}">파일명</a>
+							</td>
+
+							<td class="text-center" th:text="${repo.categoryName}"></td>
+
 							<td
 								th:text="${#dates.format(repo.uploadDate, 'yyyy-MM-dd HH:mm')}"></td>
-							<td th:text="${repo.fileSizeText}"></td>
 
-							<td class="repo-checksum" th:text="${repo.fileCode}"></td>
-							<td class="text-center"></td>
+							<td th:text="${repo.fileSizeText}"></td>
 
 							<td class="text-center" style="text-align: center !important;">
 								<a th:href="@{/repository/download(fileId=${repo.fileId})}"
@@ -82,17 +83,21 @@
 								style="text-decoration: none; color: #007bff; font-weight: bold; display: inline-block;">↓</a>
 							</td>
 						</tr>
+
+						<tr th:if="${repositoryList.size() < 10}"
+							th:each="i : ${#numbers.sequence(repositoryList.size() + 1, 10)}"
+							style="height: 45px;">
+							<td colspan="6">&nbsp;</td>
+						</tr>
 					</tbody>
 				</table>
 			</div>
 
 			<div class="pagination-area"
 				style="text-align: center; margin-top: 20px;">
-				<ul class="pagination"
-					style="list-style: none; display: flex; justify-content: center; gap: 10px;">
-
+				<ul class="pagination">
 					<li th:classappend="${!hasPrevious} ? 'disabled'"><a
-						th:href="@{/repository(page=${currentPage - 1}, startDate=${param.startDate}, endDate=${param.endDate}, projectId=${param.projectId}, originalName=${param.originalName}, uploadUserId=${param.uploadUserId})}">이전</a>
+						th:href="${hasPrevious} ? @{/repository(page=${currentPage - 1}, startDate=${param.startDate}, endDate=${param.endDate}, projectId=${param.projectId}, originalName=${param.originalName}, uploadUserId=${param.uploadUserId})} : 'javascript:void(0)'">이전</a>
 					</li>
 
 					<li th:each="pageNum : ${#numbers.sequence(1, totalPages)}"><a
@@ -101,12 +106,10 @@
 						th:classappend="${pageNum == currentPage} ? 'active'">1</a></li>
 
 					<li th:classappend="${!hasNext} ? 'disabled'"><a
-						th:href="@{/repository(page=${currentPage + 1}, startDate=${param.startDate}, endDate=${param.endDate}, projectId=${param.projectId}, originalName=${param.originalName}, uploadUserId=${param.uploadUserId})}">다음</a>
+						th:href="${hasNext} ? @{/repository(page=${currentPage + 1}, startDate=${param.startDate}, endDate=${param.endDate}, projectId=${param.projectId}, originalName=${param.originalName}, uploadUserId=${param.uploadUserId})} : 'javascript:void(0)'">다음</a>
 					</li>
-
 				</ul>
 			</div>
-
 		</div>
 	</div>
 

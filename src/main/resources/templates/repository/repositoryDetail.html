@@ -9,6 +9,12 @@
 <body>
 	<div layout:fragment="Content">
 
+		<div th:if="${message}"
+			th:classappend="${msg == 'success'} ? 'page-message-success' : 'page-message-error'"
+			class="page-message">
+			<span th:text="${message}"></span>
+		</div>
+
 		<div class="repo-container">
 			<div class="repo-header">
 				<h2 class="repo-title">자료실</h2>
@@ -18,10 +24,10 @@
 
 				<div th:if="${repository != null}">
 					<div class="repo-meta-info">
-						<span class="repo-meta-item"> 게시일자: <span
-							th:text="${#strings.substring(repository.uploadDate, 0, 10)}"></span>
-						</span> <span class="repo-meta-item"> 작성자: <span
-							th:text="${repository.uploadUserId}"></span>
+						<span class="repo-meta-item"> 게시일자: 
+						<span th:text="${#dates.format(repository.uploadDate, 'yyyy-MM-dd HH:mm')}"></span>
+						</span> <span class="repo-meta-item"> 작성자: 
+						<span th:text="${repository.userName}"></span>
 						</span>
 					</div>
 
@@ -33,6 +39,17 @@
 					<div class="repo-sub-info">
 						* 파일 버전: <span th:text="${repository.fileVersion}"></span> | 파일
 						크기: <span th:text="${repository.fileSize}"></span> Bytes
+					</div>
+
+					<div class="repo-preview"
+						style="margin-top: 20px; text-align: center;">
+						<img
+							th:if="${#strings.endsWith(repository.originalName.toLowerCase(), '.png') or 
+                 #strings.endsWith(repository.originalName.toLowerCase(), '.jpg') or 
+                 #strings.endsWith(repository.originalName.toLowerCase(), '.jpeg') or
+                 #strings.endsWith(repository.originalName.toLowerCase(), '.gif')}"
+							th:src="@{/repository/download(fileId=${repository.fileId})}"
+							style="max-width: 50%; height: auto; border: 1px solid #dee2e6; border-radius: 4px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); display: block; margin-left: 0; margin-right: auto;" />
 					</div>
 
 					<div class="repo-btn-group">

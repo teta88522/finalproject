@@ -65,8 +65,6 @@ public class ProjectController {
 		
 		List<ProjectVO> projectList;
 		//sout for test
-		System.out.println("현재 로그인 userId = [" + userId + "]");
-        System.out.println("현재 로그인 subscribeYn = [" + subscribeYn + "]");
 		
         //로그인 하지 않았거나, 쿠기가 없을 경우 기본 N으로 처리한다.
         if(subscribeYn == null || subscribeYn.equals("")) {
