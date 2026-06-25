@@ -11,8 +11,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.pixcel.app.commonfile.service.CommonFileService;
-import com.pixcel.app.commonfile.service.CommonFileUploadDTO;
+import com.pixcel.app.file.service.FileDTO;
+import com.pixcel.app.file.service.FileService;
 import com.pixcel.app.issues.service.IssuesService;
 import com.pixcel.app.issues.service.IssuesVO;
 
@@ -23,7 +23,7 @@ import lombok.RequiredArgsConstructor;
 public class IssuesController {
 
     private final IssuesService issuesService;
-    private final CommonFileService commonFileService;
+    private final FileService fileService;
 
     // 일감 메뉴 진입 시 오늘 구현 범위인 일감 등록 화면으로 이동한다.
     @GetMapping("/issues")
@@ -104,14 +104,14 @@ public class IssuesController {
             return 0;
         }
 
-        CommonFileUploadDTO uploadDTO = new CommonFileUploadDTO();
+        FileDTO uploadDTO = new FileDTO();
         uploadDTO.setProjectId(issue.getProjectId());
         uploadDTO.setVersionId(issue.getVersionId());
-        uploadDTO.setFileCode(CommonFileService.ISSUE_FILE_CODE);
+        uploadDTO.setFileCode("f001");
         uploadDTO.setUploadUserId(userId);
         uploadDTO.setConnectAddress(issue.getIssueId());
 
-        return commonFileService.uploadFiles(uploadFiles, uploadDTO);
+        return fileService.uploadFile(uploadFiles, uploadDTO);
     }
 
     private int countSelectedFiles(List<MultipartFile> files) {

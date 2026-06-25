@@ -162,4 +162,35 @@
         )
     </insert>
 
+
+<!-- 문서 카테고리 등록 -->
+    <insert id="insertCategory" parameterType="DocumentCategoryVO">
+
+        <selectKey keyProperty="documentCategoryId"
+           resultType="string"
+           order="BEFORE">
+    	SELECT
+        	'DOCUMENT_CATEGORY_'
+        	|| TO_CHAR(SYSDATE, 'YYMM')
+        	|| '_'
+        	|| LPAD(
+            	NVL(MAX(TO_NUMBER(SUBSTR(document_category_id, -4))), 0) + 1,
+            	4,
+            	'0'
+        	)
+    	FROM document_category
+    	WHERE document_category_id LIKE
+          'DOCUMENT_CATEGORY_' || TO_CHAR(SYSDATE, 'YYMM') || '_%'
+		</selectKey>
+
+        insert into document_category (
+            document_category_id,
+            project_id,
+            category_name
+        ) values (
+            #{documentCategoryId},
+            'PROJECT_ID_2606_0006',
+            #{categoryName}
+        )
+    </insert>
 </mapper>

@@ -1,6 +1,5 @@
 package com.pixcel.app.file.service;
 
-import org.springframework.format.annotation.DateTimeFormat;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -30,5 +29,4 @@ public class FileVO {
 	private int fileVersion;
 //	private String fileUseYn;
 	private String connectAddress;
-	private String fileIdentityKey;
 }

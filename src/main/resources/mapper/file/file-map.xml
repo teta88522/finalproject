@@ -11,9 +11,15 @@
   			AND connect_address = #{connectAddress}
   			AND original_name = #{originalName}
     </select>
-
-    <!-- 문서에 파일조회 -->
-    <select id="selectAll" parameterType="String" resultType="FileVO">
+    <!-- 파일 다음버전 업데이트 조회 -->
+    <select id="selectNextFileVersion" resultType="int">
+    SELECT NVL(MAX(file_version), 0) + 1
+    FROM attach_file
+    WHERE connect_address = #{connectAddress}
+    FOR UPDATE
+	</select>
+    <!-- 문서에 개별다운로드 -->
+    <select id="downloadAll" parameterType="String" resultType="FileVO">
         select
             file_id,
             project_id,
@@ -30,13 +36,31 @@
         from attach_file
         where connect_address = #{connectAddress}
     </select>
+    
+    <!-- 문서에 zip 다운로드 -->
+    <select id="downloadOne" parameterType="String" resultType="FileVO">
+        select
+            file_id,
+            project_id,
+            version_id,
+            file_code,
+            original_name,
+            stored_name,
+            file_path,
+            file_size,
+            upload_user_id,
+            upload_date,
+            file_version,
+            file_use_yn
+        from attach_file
+        where  file_id = #{fileId}
+    </select>
 
     <!-- 파일 등록 -->
     <insert id="insertFile" parameterType="FileVO">
         <selectKey keyProperty="fileId"
            resultType="string"
            order="BEFORE">
-
     SELECT
         'ATTACH_FILE_'
         || TO_CHAR(SYSDATE, 'YYMM')
@@ -68,9 +92,9 @@
             connect_address
         ) values (
             #{fileId},
-            'PROJECT_ID_2606_0006',
+            #{projectId},
             #{versionId},
-            'f001',
+            #{fileCode},
             #{originalName},
             #{storedName},
             #{filePath},
@@ -78,6 +102,39 @@
             #{uploadUserId},
             #{fileVersion},
             #{connectAddress}
+        )
+    </insert>
+    
+        <!-- 파일 다운로드 이력등록 -->
+    <insert id="insertDownloadHistory" parameterType="FileDownloadHistoryVO">
+        <selectKey keyProperty="downloadHistoryId"
+           resultType="string"
+           order="BEFORE">
+    	SELECT
+        	'FILE_DOWNLOAD_HISTORY_'
+        	|| TO_CHAR(SYSDATE, 'YYMM')
+        	|| '_'
+        	|| LPAD(
+            	NVL(
+            	    MAX(TO_NUMBER(SUBSTR(download_history_id, -4))),
+            	    0
+            	) + 1,
+            	4,
+            	'0'
+        	)
+    	FROM file_download_history
+    	WHERE download_history_id LIKE 'FILE_DOWNLOAD_HISTORY_' || TO_CHAR(SYSDATE, 'YYMM') || '_%'
+
+		</selectKey>
+
+        insert into file_download_history (
+        	download_history_id,
+            file_id,
+            download_user_id
+        ) values (
+        	#{downloadHistoryId},
+            #{fileId},
+            #{downloadUserId}
         )
     </insert>
 

@@ -1,10 +1,12 @@
 package com.pixcel.app.document.web;
 
+import java.io.IOException;
 import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,10 +23,12 @@ import com.pixcel.app.document.service.DocumentService;
 import com.pixcel.app.document.service.DocumentVO;
 import com.pixcel.app.file.service.FileDTO;
 import com.pixcel.app.file.service.FileService;
+import com.pixcel.app.file.service.FileVO;
 import com.pixcel.app.milestones.service.MilestoneSearchVO;
 import com.pixcel.app.milestones.service.MilestonesService;
 import com.pixcel.app.milestones.service.MilestonesVO;
 
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 
 @Controller
@@ -77,9 +81,9 @@ public class DocumentController {
     }
 	
 	@PostMapping("/add")
+	@Transactional
     public String documentAddProc(@CookieValue(value="userId", required =false)String userId, DocumentVO documentVO,  @RequestParam("files") List<MultipartFile> files) {
 		
-		FileDTO fileDTO = new FileDTO();
 		
 		logger.debug(documentVO.toString());
 		System.out.print(documentVO);
@@ -87,12 +91,17 @@ public class DocumentController {
 		documentService.addDocument(documentVO);
 		System.out.println(documentVO.getDocumentId());
 		
-		fileDTO.setProjectId(documentVO.getProjectId());
-		fileDTO.setVersionId(documentVO.getVersionId());
-		fileDTO.setUploadUserId(documentVO.getCreatedBy());
-		fileDTO.setConnectAddress(documentVO.getDocumentId());
+		
+		
+		
+		FileDTO uploadDTO = new FileDTO();
+		uploadDTO.setProjectId("PROJECT_ID_2606_0001");
+		uploadDTO.setVersionId(documentVO.getVersionId());
+		uploadDTO.setFileCode("f001");
+		uploadDTO.setUploadUserId(userId);
+		uploadDTO.setConnectAddress(documentVO.getDocumentId());
 
-		fileService.uploadFile(files, fileDTO);
+		fileService.uploadFile(files, uploadDTO);
 		
 		System.out.print(documentVO.getDocumentId() + "문서 등록");
         return "redirect:/document/list";
@@ -104,9 +113,20 @@ public class DocumentController {
 		System.out.println(documentId);
 	    DocumentVO docDetail = documentService.selectDetail(documentId);
 	    model.addAttribute("docDetail",docDetail);
-
+	    List<FileVO> fileList = fileService.selectAll(documentId);
+	    model.addAttribute("fileList",fileList);
         return "document/documentDetail";
     }
+	
+	@GetMapping("/detail/{documentId}/download")
+	public void downloadFileAll(@PathVariable String documentId,HttpServletResponse response, @CookieValue(value="userId", required =false)String userId) throws IOException{
+		fileService.downloadAll(documentId, response, userId);
+	}
+	
+	@GetMapping("/detail/{documentId}/{fileId}/download")
+	public void downloadFile(@PathVariable String fileId,HttpServletResponse response, @CookieValue(value="userId", required =false)String userId) throws IOException{
+		fileService.downloadOne(fileId, response, userId);
+	}
 	
 	
 	@GetMapping("/update")
@@ -117,6 +137,22 @@ public class DocumentController {
 	@GetMapping("/history")
     public String documentHistory() {
         return "document/documentHistory";
+    }
+	
+	@GetMapping("/addcategory")
+    public String documentAddCategory() {
+		
+        return "document/documentList";
+    }
+	
+	@PostMapping("/addcategory")
+    public String documentAddCategoryProc(DocumentCategoryVO documentCategoryVO) {
+		
+		
+		logger.debug(documentCategoryVO.toString());
+		documentService.insertCategory(documentCategoryVO);
+		
+        return "redirect:/document/list";
     }
 
 }

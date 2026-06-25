@@ -12,6 +12,7 @@ import com.pixcel.app.document.service.DocumentService;
 import com.pixcel.app.document.service.DocumentVO;
 
 @Service
+
 public class DocumentServiceImpl implements DocumentService{
 	
 	@Autowired
@@ -50,6 +51,11 @@ public class DocumentServiceImpl implements DocumentService{
 	@Override
 	public DocumentVO selectDetail(String documentId) {
 		return documentMapper.selectDetail(documentId);
+	}
+
+	@Override
+	public int insertCategory(DocumentCategoryVO documentCategoryVO) {
+		return documentMapper.insertCategory(documentCategoryVO);
 	}
 
 }

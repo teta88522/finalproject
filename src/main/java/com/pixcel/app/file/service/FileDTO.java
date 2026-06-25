@@ -12,8 +12,7 @@ import lombok.Setter;
 public class FileDTO {
 	private String projectId; // FK
 	private String versionId; // FK
-//	private String fileCode;
+	private String fileCode;
 	private String uploadUserId;
 	private String connectAddress;
-//	private String fileIdentityKey;
 }

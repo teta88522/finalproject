@@ -11,4 +11,5 @@ public interface DocumentService {
 	public List<DocumentVO> selectNoCategory();
 	public List<DocumentVO> selectCategorydoc(String categoryId);
 	public DocumentVO selectDetail(String documentId);
+	public int insertCategory(DocumentCategoryVO documentCategoryVO);
 }
