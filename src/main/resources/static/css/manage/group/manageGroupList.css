@@ -1,0 +1,366 @@
+.manage-group-page {
+    padding: 30px;
+    background-color: #f5f7fb;
+    min-height: calc(100vh - 80px);
+    box-sizing: border-box;
+}
+
+/* 상단 */
+.manage-page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 24px;
+}
+
+.manage-page-title {
+    margin: 0;
+    font-size: 28px;
+    font-weight: 700;
+    color: #222;
+}
+
+.manage-page-sub-title {
+    margin: 8px 0 0;
+    font-size: 14px;
+    color: #777;
+}
+
+.manage-user-info {
+    min-width: 220px;
+    padding: 14px 18px;
+    border-radius: 10px;
+    background-color: #fff;
+    border: 1px solid #e1e6ef;
+    box-shadow: 0 2px 8px rgba(20, 35, 60, 0.04);
+}
+
+.manage-user-info span {
+    display: block;
+    font-size: 12px;
+    color: #777;
+    margin-bottom: 6px;
+}
+
+.manage-user-info strong {
+    font-size: 15px;
+    color: #222;
+}
+
+/* 공통 섹션 */
+.search-section,
+.project-summary-section,
+.group-list-section {
+    background-color: #fff;
+    border: 1px solid #e1e6ef;
+    border-radius: 12px;
+    padding: 22px 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 2px 8px rgba(20, 35, 60, 0.04);
+}
+
+.section-title,
+.search-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #222;
+}
+
+.section-sub-text {
+    margin-top: 6px;
+    font-size: 13px;
+    color: #777;
+}
+
+/* 검색 */
+.search-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 18px;
+}
+
+.search-action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 36px;
+    padding: 0 14px;
+    border-radius: 6px;
+    background-color: #2f6fed;
+    border: 1px solid #2f6fed;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.search-action-btn:hover {
+    background-color: #245fd0;
+    border-color: #245fd0;
+    color: #fff;
+}
+
+.search-form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+}
+
+.search-field {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.search-field label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #555;
+}
+
+.search-field input,
+.search-field select {
+    height: 38px;
+    border: 1px solid #d7dde8;
+    border-radius: 6px;
+    padding: 0 10px;
+    font-size: 14px;
+    outline: none;
+    background-color: #fff;
+    box-sizing: border-box;
+}
+
+.search-field input:focus,
+.search-field select:focus {
+    border-color: #2f6fed;
+    box-shadow: 0 0 0 3px rgba(47, 111, 237, 0.12);
+}
+
+.search-btn-area {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 20px;
+}
+
+/* 버튼 */
+.btn-basic,
+.mini-btn {
+    border: 1px solid #d6dce8;
+    background-color: #fff;
+    color: #333;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: 0.15s;
+    font-size: 14px;
+    text-decoration: none;
+    box-sizing: border-box;
+}
+
+.btn-basic {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 36px;
+    padding: 0 18px;
+}
+
+.btn-basic.btn-primary {
+    background-color: #2f6fed;
+    border-color: #2f6fed;
+    color: #fff;
+}
+
+.btn-basic:hover,
+.mini-btn:hover {
+    background-color: #eef3ff;
+    border-color: #9bbcff;
+}
+
+.btn-basic.btn-primary:hover {
+    background-color: #245fd0;
+    border-color: #245fd0;
+}
+
+/* 프로젝트 칩 */
+.project-chip-wrap {
+    margin-top: 16px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.project-chip {
+    display: inline-flex;
+    align-items: center;
+    min-height: 32px;
+    padding: 0 12px;
+    border-radius: 999px;
+    background-color: #eef3ff;
+    color: #2f6fed;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.empty-project {
+    color: #888;
+    font-size: 14px;
+}
+
+/* 목록 */
+.list-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 18px;
+}
+
+.list-count {
+    font-size: 14px;
+    color: #666;
+}
+
+.list-count strong {
+    color: #2f6fed;
+    font-size: 16px;
+}
+
+/* 테이블 */
+.group-table-wrap {
+    width: 100%;
+    overflow-x: auto;
+    border: 1px solid #e2e7f0;
+    border-radius: 10px;
+}
+
+.group-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+.group-table thead {
+    background-color: #f1f4f9;
+}
+
+.group-table th {
+    height: 44px;
+    padding: 0 12px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #444;
+    text-align: left;
+    border-bottom: 1px solid #dfe5ef;
+    white-space: nowrap;
+}
+
+.group-table td {
+    height: 52px;
+    padding: 0 12px;
+    font-size: 14px;
+    color: #333;
+    border-bottom: 1px solid #edf0f5;
+    vertical-align: middle;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.group-table tbody tr:hover {
+    background-color: #f7faff;
+}
+
+.group-name-cell a {
+    color: #1f4fa3;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.group-name-cell a:hover {
+    text-decoration: underline;
+}
+
+.desc-cell {
+    color: #666;
+}
+
+.role-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 56px;
+    padding: 5px 9px;
+    border-radius: 999px;
+    background-color: #eaf1ff;
+    color: #2f6fed;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.group-action-cell {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+}
+
+.mini-btn {
+    padding: 7px 12px;
+    font-size: 13px;
+}
+
+.mini-btn.delete {
+    border-color: #f1b8b8;
+    color: #d93025;
+}
+
+.mini-btn.delete:hover {
+    background-color: #fff1f1;
+    border-color: #e58a8a;
+}
+
+.empty-row {
+    height: 90px !important;
+    text-align: center !important;
+    color: #888 !important;
+}
+
+@media (max-width: 900px) {
+    .search-form-row {
+        grid-template-columns: 1fr;
+    }
+
+    .group-table {
+        min-width: 1000px;
+    }
+}
+
+@media (max-width: 768px) {
+    .manage-group-page {
+        padding: 18px;
+    }
+
+    .manage-page-header {
+        flex-direction: column;
+        gap: 14px;
+    }
+
+    .manage-user-info {
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .search-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .list-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+}
