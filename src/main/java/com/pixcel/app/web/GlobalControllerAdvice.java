@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ModelAttribute;
 
 import jakarta.servlet.http.Cookie;
@@ -72,5 +73,10 @@ public class GlobalControllerAdvice {
                 }
             }
         }
+    }
+
+    @ExceptionHandler(LoginRequiredException.class)
+    public String handleLoginRequiredException() {
+        return "redirect:/login";
     }
 }

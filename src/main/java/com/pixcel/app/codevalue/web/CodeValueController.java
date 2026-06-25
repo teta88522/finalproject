@@ -13,6 +13,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.pixcel.app.codevalue.service.CodeValueService;
 import com.pixcel.app.codevalue.service.CodeValueVO;
+import com.pixcel.app.web.LoginRequiredException;
 
 import lombok.RequiredArgsConstructor;
 
@@ -196,7 +197,7 @@ public class CodeValueController {
 	private String getLoginUserId(String userId) {
 
 		if (userId == null || userId.trim().isEmpty()) {
-			throw new IllegalArgumentException("로그인 정보가 없습니다.");
+			throw new LoginRequiredException();
 		}
 
 		return userId;

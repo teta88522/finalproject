@@ -11,6 +11,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.pixcel.app.issuestatus.service.IssueStatusService;
 import com.pixcel.app.issuetype.service.IssueTypeService;
 import com.pixcel.app.issuetype.service.IssueTypeVO;
+import com.pixcel.app.web.LoginRequiredException;
 
 import lombok.RequiredArgsConstructor;
 
@@ -175,7 +176,7 @@ public class IssueTypeController {
 	private String getLoginUserId(String userId) {
 
 		if (userId == null || userId.trim().isEmpty()) {
-			throw new IllegalArgumentException("로그인 정보가 없습니다.");
+			throw new LoginRequiredException();
 		}
 
 		return userId;

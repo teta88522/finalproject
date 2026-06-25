@@ -1,0 +1,412 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{common/layouts/default_layout}">
+
+<head>
+    <meta charset="UTF-8">
+    <title>일감 등록</title>
+
+    <link rel="stylesheet" th:href="@{/css/common-ui.css}">
+    <link rel="stylesheet" th:href="@{/css/issues/issues.css}">
+</head>
+
+<body>
+<div layout:fragment="Content">
+
+    <div class="issues-create-page">
+        <div class="container-fluid">
+
+            <div class="issues-header">
+                <div>
+                    <h3>일감 등록</h3>
+                    <p>프로젝트에 필요한 일감을 등록합니다.</p>
+                </div>
+            </div>
+
+            <div th:if="${message}" class="page-message page-message-success">
+                <span th:text="${message}">일감이 등록되었습니다.</span>
+                <span th:if="${createdIssueId}" th:text="| (${createdIssueId})|"></span>
+            </div>
+
+            <div th:if="${fileWarning}"
+                 class="page-message page-message-info"
+                 th:text="${fileWarning}"></div>
+
+            <div th:if="${errorMessage}"
+                 class="page-message page-message-error"
+                 th:text="${errorMessage}"></div>
+
+            <div th:if="${#lists.isEmpty(projectList)}"
+                 class="page-message page-message-info">
+                참여 중인 프로젝트가 없습니다. 프로젝트 참여 후 일감을 등록할 수 있습니다.
+            </div>
+
+            <div th:if="${selectedProjectId == null and !#lists.isEmpty(projectList)}"
+                 class="page-message page-message-info">
+                일감을 등록할 프로젝트를 선택해주세요.
+            </div>
+
+            <div th:if="${selectedProjectId != null and #lists.isEmpty(versionList)}"
+                 class="page-message page-message-info">
+                선택 가능한 버전이 없습니다. 진행 중인 버전이 등록된 후 일감을 생성할 수 있습니다.
+            </div>
+
+            <div th:if="${selectedProjectId != null and #lists.isEmpty(priorityList)}"
+                 class="page-message page-message-info">
+                일감 우선순위 설정이 필요합니다. 프로젝트 관리자에게 문의해주세요.
+            </div>
+
+            <div th:each="setting : ${fieldSettingList}"
+                 class="field-setting-data"
+                 th:attr="data-issue-type-id=${setting.issueTypeId},
+                          data-field-code=${setting.fieldCode},
+                          data-use-yn=${setting.useYn},
+                          data-required-yn=${setting.requiredYn}"></div>
+
+            <form th:action="@{/issues/create}"
+                  th:object="${issue}"
+                  method="post"
+                  enctype="multipart/form-data"
+                  id="issueForm"
+                  class="issues-form">
+
+                <div class="issues-form-layout">
+
+                    <div class="issues-main-column">
+
+                        <div class="issues-card issues-main-card">
+                            <div class="issues-card-title">
+                                <h4>기본 정보</h4>
+                            </div>
+
+                            <div class="issues-top-grid">
+                                <div class="form-group">
+                                    <label for="projectId">프로젝트 <span class="required">*</span></label>
+                                    <select id="projectId"
+                                            th:field="*{projectId}"
+                                            class="form-control">
+                                        <option value="">선택</option>
+                                        <option th:each="project : ${projectList}"
+                                                th:value="${project.projectId}"
+                                                th:text="${project.projectName}">프로젝트명</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="issueTypeId">유형 <span class="required">*</span></label>
+                                    <select id="issueTypeId"
+                                            th:field="*{issueTypeId}"
+                                            class="form-control"
+                                            required>
+                                        <option value="">선택</option>
+                                        <option th:each="issueType : ${issueTypeList}"
+                                                th:value="${issueType.issueTypeId}"
+                                                th:text="${issueType.issueTypeName}">유형명</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="versionId">버전 <span class="required">*</span></label>
+                                    <select id="versionId"
+                                            th:field="*{versionId}"
+                                            class="form-control"
+                                            required>
+                                        <option value="">선택</option>
+                                        <option th:each="version : ${versionList}"
+                                                th:value="${version.versionId}"
+                                                th:text="${version.versionName}">버전명</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group dynamic-field"
+                                     data-field-code="MILESTONE">
+                                    <label for="milestoneId">
+                                        마일스톤 <span class="required dynamic-required">*</span>
+                                    </label>
+                                    <select id="milestoneId"
+                                            th:field="*{milestoneId}"
+                                            class="form-control">
+                                        <option value="">선택</option>
+                                        <option th:each="milestone : ${milestoneList}"
+                                                th:value="${milestone.milestoneId}"
+                                                th:attr="data-version-id=${milestone.versionId}"
+                                                th:text="${milestone.milestoneTitle}">마일스톤명</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="title">제목 <span class="required">*</span></label>
+                                <input type="text"
+                                       id="title"
+                                       th:field="*{title}"
+                                       class="form-control"
+                                       maxlength="255"
+                                       required>
+                            </div>
+
+                            <div class="form-group issues-description-group">
+                                <label for="description">설명</label>
+                                <textarea id="description"
+                                          th:field="*{description}"
+                                          class="form-control issues-description"
+                                          maxlength="1000"></textarea>
+                            </div>
+
+                            <div class="form-group">
+                                <label>첨부파일</label>
+                                <div class="issues-file-box common-file-upload"
+                                     data-file-input-id="issueFileInput"
+                                     data-file-list-id="issueFileList"
+                                     data-file-count-id="issueFileCount"
+                                     data-file-form-id="issueForm">
+                                    <div>
+                                        <label for="issueFileInput"
+                                               class="btn btn-custon-rounded-four btn-default issues-file-select">
+                                            파일 선택
+                                        </label>
+                                        <input type="file"
+                                               id="issueFileInput"
+                                               name="files"
+                                               multiple
+                                               class="issues-file-input">
+                                        <span id="issueFileCount"
+                                              class="issues-file-count">파일 0개</span>
+                                    </div>
+                                    <ul id="issueFileList" class="issues-file-list"></ul>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="issues-side-column">
+                        <div class="issues-card issues-side-card">
+                            <div class="issues-card-title">
+                                <h4>상세 설정</h4>
+                            </div>
+
+                            <div class="form-group dynamic-field"
+                                 data-field-code="START_DATE">
+                                <label for="startDate">
+                                    시작일 <span class="required dynamic-required">*</span>
+                                </label>
+                                <input type="date"
+                                       id="startDate"
+                                       th:field="*{startDate}"
+                                       class="form-control">
+                            </div>
+
+                            <div class="form-group dynamic-field"
+                                 data-field-code="DUE_DATE">
+                                <label for="dueDate">
+                                    완료일 <span class="required dynamic-required">*</span>
+                                </label>
+                                <input type="date"
+                                       id="dueDate"
+                                       th:field="*{dueDate}"
+                                       class="form-control">
+                            </div>
+
+                            <div class="form-group dynamic-field"
+                                 data-field-code="ESTIMATED_HOURS">
+                                <label for="estimatedHours">
+                                    추정시간 <span class="required dynamic-required">*</span>
+                                </label>
+                                <input type="number"
+                                       id="estimatedHours"
+                                       th:field="*{estimatedHours}"
+                                       class="form-control"
+                                       min="0"
+                                       max="99999"
+                                       step="1">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="settingCodeId">우선순위 <span class="required">*</span></label>
+                                <select id="settingCodeId"
+                                        th:field="*{settingCodeId}"
+                                        class="form-control"
+                                        required>
+                                    <option value="">선택</option>
+                                    <option th:each="priority : ${priorityList}"
+                                            th:value="${priority.settingCodeId}"
+                                            th:text="${priority.settingName}">우선순위</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="progressRate">진척도</label>
+                                <input type="number"
+                                       id="progressRate"
+                                       th:field="*{progressRate}"
+                                       class="form-control"
+                                       min="0"
+                                       max="100"
+                                       step="1">
+                            </div>
+
+                            <div class="form-group dynamic-field"
+                                 data-field-code="PARENT_ISSUE">
+                                <label for="parentIssueId">
+                                    상위일감 <span class="required dynamic-required">*</span>
+                                </label>
+                                <select id="parentIssueId"
+                                        th:field="*{parentIssueId}"
+                                        class="form-control">
+                                    <option value="">선택</option>
+                                    <option th:each="parentIssue : ${parentIssueList}"
+                                            th:value="${parentIssue.parentIssueId}"
+                                            th:text="|${parentIssue.parentIssueTitle} (${parentIssue.parentIssueId})|">상위일감</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group dynamic-field"
+                                 data-field-code="ASSIGNEE">
+                                <label for="assigneeId">
+                                    담당자 <span class="required dynamic-required">*</span>
+                                </label>
+                                <select id="assigneeId"
+                                        th:field="*{assigneeId}"
+                                        class="form-control">
+                                    <option value="">선택</option>
+                                    <option th:each="assignee : ${assigneeList}"
+                                            th:value="${assignee.assigneeId}"
+                                            th:text="${assignee.assigneeName}">담당자명</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="issues-form-actions">
+                    <a th:if="${selectedProjectId != null}"
+                       th:href="@{/project/{projectId}(projectId=${selectedProjectId})}"
+                       class="btn btn-custon-rounded-four btn-default">취소</a>
+                    <a th:if="${selectedProjectId == null}"
+                       th:href="@{/project/list}"
+                       class="btn btn-custon-rounded-four btn-default">취소</a>
+
+                    <button type="submit"
+                            class="btn btn-custon-rounded-four btn-primary"
+                            th:disabled="${selectedProjectId == null or #lists.isEmpty(issueTypeList) or #lists.isEmpty(versionList) or #lists.isEmpty(priorityList)}">
+                        등록
+                    </button>
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+
+    <script th:inline="javascript">
+        (function () {
+            document.body.classList.add('issues-create-body');
+
+            var projectSelect = document.getElementById('projectId');
+            var issueTypeSelect = document.getElementById('issueTypeId');
+            var versionSelect = document.getElementById('versionId');
+            var milestoneSelect = document.getElementById('milestoneId');
+            var settingMap = {};
+
+            document.querySelectorAll('.field-setting-data').forEach(function (item) {
+                var issueTypeId = item.getAttribute('data-issue-type-id');
+                var fieldCode = item.getAttribute('data-field-code');
+
+                if (!settingMap[issueTypeId]) {
+                    settingMap[issueTypeId] = {};
+                }
+
+                settingMap[issueTypeId][fieldCode] = {
+                    useYn: item.getAttribute('data-use-yn'),
+                    requiredYn: item.getAttribute('data-required-yn')
+                };
+            });
+
+            function setDisabled(group, disabled) {
+                group.querySelectorAll('input, select, textarea').forEach(function (input) {
+                    input.disabled = disabled;
+
+                    if (disabled) {
+                        input.required = false;
+                    }
+                });
+            }
+
+            function applyFieldSettings() {
+                var issueTypeId = issueTypeSelect ? issueTypeSelect.value : '';
+                var fields = settingMap[issueTypeId] || {};
+
+                document.querySelectorAll('.dynamic-field').forEach(function (group) {
+                    var fieldCode = group.getAttribute('data-field-code');
+                    var setting = fields[fieldCode];
+                    var isUsed = setting && setting.useYn === 'Y';
+                    var isRequired = isUsed && setting.requiredYn === 'Y';
+
+                    group.classList.toggle('is-hidden', !isUsed);
+                    group.querySelectorAll('.dynamic-required').forEach(function (mark) {
+                        mark.style.display = isRequired ? 'inline' : 'none';
+                    });
+
+                    setDisabled(group, !isUsed);
+
+                    if (isUsed) {
+                        group.querySelectorAll('input, select, textarea').forEach(function (input) {
+                            input.required = isRequired;
+                        });
+                    }
+                });
+
+                filterMilestoneOptions();
+            }
+
+            function filterMilestoneOptions() {
+                if (!milestoneSelect || !versionSelect) {
+                    return;
+                }
+
+                var versionId = versionSelect.value;
+                var selectedOption = milestoneSelect.options[milestoneSelect.selectedIndex];
+
+                Array.prototype.forEach.call(milestoneSelect.options, function (option) {
+                    if (!option.value) {
+                        option.hidden = false;
+                        return;
+                    }
+
+                    option.hidden = option.getAttribute('data-version-id') !== versionId;
+                });
+
+                if (selectedOption && selectedOption.hidden) {
+                    milestoneSelect.value = '';
+                }
+            }
+
+            if (projectSelect) {
+                projectSelect.addEventListener('change', function () {
+                    if (projectSelect.value) {
+                        window.location.href = '/issues/create?projectId=' + encodeURIComponent(projectSelect.value);
+                    } else {
+                        window.location.href = '/issues/create';
+                    }
+                });
+            }
+
+            if (issueTypeSelect) {
+                issueTypeSelect.addEventListener('change', applyFieldSettings);
+            }
+
+            if (versionSelect) {
+                versionSelect.addEventListener('change', filterMilestoneOptions);
+            }
+
+            applyFieldSettings();
+        })();
+    </script>
+    <script th:src="@{/js/commonfile/common-file-upload.js}"></script>
+
+</div>
+</body>
+</html>
