@@ -72,7 +72,12 @@
     		a.status_name,
     		a.start_date,
     		a.end_date,
-    		a.created_at
+    		a.created_at,
+    		NVL((
+            SELECT ROUND(AVG(PROGRESS_RATE)) 
+            FROM ISSUE 
+            WHERE MILESTONE_ID = a.MILESTONE_ID
+        ), 0) AS totalProgressRate
     	FROM milestone a
     	LEFT OUTER JOIN users b ON a.manager_id = b.user_id
     	WHERE a.milestone_id = #{milestoneId}
@@ -116,7 +121,7 @@
         
     </resultMap>
 
-    <select id="getMilestoneList" resultMap="MilestoneListMap" parameterType="MilestoneSearchVO">
+    <select id="getMilestoneList" resultMap="MilestoneListMap" parameterType="MilestonesVO">
         SELECT 
             -- 마일스톤 테이블 (M)
             M.MILESTONE_ID,

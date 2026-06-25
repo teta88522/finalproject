@@ -1,53 +1,67 @@
 document.addEventListener('DOMContentLoaded', function() {
     
-	// 3. 마일스톤 생성 버튼 클릭 시 등록 페이지로 이동
-	const btnCreateMilestone = document.getElementById('btnCreateMilestone');
-	if(btnCreateMilestone) {
-	    btnCreateMilestone.addEventListener('click', function() {
-	        console.log('마일스톤 생성 페이지로 이동합니다.');
-	        // 실제 프로젝트의 등록 화면 URL로 수정해 주세요. (예: /milestones/write 등)
-	        window.location.href = '/milestones/create'; 
-	    });
-	}
-	
-    // 1. 마일스톤 제목/헤더 클릭 시 상세 페이지로 이동
-    const milestoneHeaders = document.querySelectorAll('.clickable-milestone');
-    milestoneHeaders.forEach(header => {
+    // 1. 마일스톤 생성 버튼 이동
+    const btnCreateMilestone = document.getElementById('btnCreateMilestone');
+    if(btnCreateMilestone) {
+        btnCreateMilestone.addEventListener('click', () => window.location.href = '/milestones/create');
+    }
+    
+    // 2. 아코디언 기능 (마일스톤 헤더 클릭 시)
+    const headers = document.querySelectorAll('.toggle-accordion');
+    headers.forEach(header => {
         header.addEventListener('click', function(e) {
-            // 클릭된 곳이 상태 뱃지 같은 버튼류가 아닐 때만 이동
-            if(!e.target.classList.contains('status-badge')) {
-                // 부모 컨테이너(.milestone-item)에서 ID 추출
-                const milestoneItem = this.closest('.milestone-item');
-                const milestoneId = milestoneItem.getAttribute('data-milestone-id');
-                
-                if(milestoneId) {
-                    console.log(`마일스톤 ${milestoneId} 상세 페이지로 이동합니다.`);
-                    // 실제 프로젝트 경로에 맞게 수정하세요.
-                    window.location.href = `/milestones/detail?id=${milestoneId}`;
-                }
+            // "마일스톤 제목" 링크 자체를 클릭했을 때는 아코디언 동작 대신 페이지 이동 허용
+            if(e.target.classList.contains('no-accordion') || e.target.closest('.no-accordion')) {
+                return; 
             }
-        });
-    });
-
-    // 2. 하위 일감 항목 클릭 시 해당 일감 상세 페이지로 이동
-    const issueItems = document.querySelectorAll('.clickable-issue');
-    issueItems.forEach(issue => {
-        issue.addEventListener('click', function(e) {
-            // 맨 우측의 옵션 점 3개 아이콘 클릭 시 상세 페이지 이동 방지
-            if(!e.target.classList.contains('fa-ellipsis-v')) {
-                const issueId = this.getAttribute('data-issue-id');
-                
-                if(issueId) {
-                    console.log(`일감 ${issueId} 상세 페이지로 이동합니다.`);
-                    // 실제 프로젝트 경로에 맞게 수정하세요.
-                    window.location.href = `/issues/detail?id=${issueId}`;
-                }
+            
+            const item = this.closest('.milestone-item');
+            const body = item.querySelector('.milestone-body');
+            
+            // Toggle 로직
+            if(item.classList.contains('open')) {
+                body.style.display = 'none';
+                item.classList.remove('open');
             } else {
-                // 점 3개 아이콘 클릭 시 옵션 메뉴 열기 등의 로직
-                console.log('옵션 메뉴 열기');
-                e.stopPropagation(); // 부모(일감 항목) 클릭 이벤트 전파 차단
+                body.style.display = 'block';
+                item.classList.add('open');
             }
         });
     });
 
+    // 3. 🌟 동적 상태 색상 배정기 (Hash Palette)
+    // 보기 편안하고 디자인과 어울리는 색상들을 미리 정의해 둡니다.
+    const colorPalette = [
+        '#007bff', // Blue
+        '#28a745', // Green
+        '#e83e8c', // Pink
+        '#fd7e14', // Orange
+        '#6f42c1', // Purple
+        '#17a2b8', // Teal
+        '#dc3545', // Red
+        '#20c997', // Mint
+        '#6610f2'  // Indigo
+    ];
+
+    // 문자열을 해시(숫자)로 변환하는 함수
+    function getHashFromString(str) {
+        let hash = 0;
+        for (let i = 0; i < str.length; i++) {
+            hash += str.charCodeAt(i);
+        }
+        return hash;
+    }
+
+    // HTML에 렌더링된 모든 뱃지를 찾아서 색상을 칠합니다.
+    const badges = document.querySelectorAll('.dynamic-badge');
+    badges.forEach(badge => {
+        const statusName = badge.getAttribute('data-status');
+        if(statusName) {
+            // 상태 이름의 해시값을 구한 뒤, 팔레트 길이로 나눈 나머지를 인덱스로 사용
+            const colorIndex = getHashFromString(statusName) % colorPalette.length;
+            badge.style.backgroundColor = colorPalette[colorIndex];
+        } else {
+            badge.style.backgroundColor = '#6c757d'; // 상태가 없을 때 기본 회색
+        }
+    });
 });

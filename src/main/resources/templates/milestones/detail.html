@@ -41,15 +41,20 @@
             </div>
             
             <!-- 🌟 요청사항 반영: 진행률 바 (안전하게 0% 고정) -->
-            <div class="progress-wrapper">
-                <div class="progress-label-row">
-                    <span class="progress-title">현재 진행중인 일감의 목표</span>
-                    <span class="progress-percent">0%</span>
-                </div>
-                <div class="progress-bar-bg">
-                    <div class="progress-bar-fill" style="width: 0%;"></div>
-                </div>
-            </div>
+<div class="progress-wrapper">
+    <div class="progress-label-row">
+        <span class="progress-title">현재 진행중인 일감의 목표</span>
+        <span class="progress-percent" 
+              th:text="${milestone.totalProgressRate != null ? milestone.totalProgressRate + '%' : '0%'}">
+            0%
+        </span>
+    </div>
+    <div class="progress-bar-bg">
+        <div class="progress-bar-fill" 
+             th:style="'width: ' + ${milestone.totalProgressRate != null ? milestone.totalProgressRate : 0} + '%;'">
+        </div>
+    </div>
+</div>
         </div>
 
         <!-- ==========================================
