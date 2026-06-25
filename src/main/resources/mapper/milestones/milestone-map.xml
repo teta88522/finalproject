@@ -14,22 +14,34 @@
     WHERE p.PROJECT_ID = #{projectId}                
     </select>
         <!-- 키워드 검색과 버전 필터링을 동시에 수행하는 동적 쿼리입니다 -->
-	<select id="getIssueList" resultType="MilestonesIssueDTO">
+<select id="getIssueList" resultType="IssuesVO">
+
     SELECT 
-         i.ISSUE_ID      
-        ,i.TITLE        
-        ,i.VERSION_ID    
-        ,i.PROGRESS_RATE 
+         i.ISSUE_ID,
+         i.TITLE,
+         i.VERSION_ID,
+         i.PROGRESS_RATE,
+         g.status_name AS issueStatusName,
+         v.VERSION_NAME 
     FROM ISSUE i
-    WHERE (i.TITLE LIKE '%' || #{keyword} || '%' OR i.ISSUE_ID LIKE '%' || #{keyword} || '%')
-    <!--통합 검색창 기능입니다. 사용자가 검색어(keyword)를 입력하면, 일감의 제목에 그 글자가 들어가 있거나 혹은 일감 고유 번호(ID)에 그 숫자가 들어가 있는 것을 동시에 찾습니다.-->
-    <if test="versionId != null">
+    LEFT JOIN PROJECT_VERSION v ON i.VERSION_ID = v.VERSION_ID
+    LEFT JOIN ISSUE_STATUS g ON i.ISSUE_STATUS_ID = g.ISSUE_STATUS_ID
+    WHERE i.PROJECT_ID = #{projectId}
+      AND i.MILESTONE_ID IS NULL
+
+    <if test="keyword != null and keyword != ''">
+        AND (
+            i.TITLE LIKE '%' || #{keyword} || '%'
+            OR i.ISSUE_ID LIKE '%' || #{keyword} || '%'
+            OR v.VERSION_NAME LIKE '%' || #{keyword} || '%'
+        )
+    </if>
+
+    <if test="versionId != null and versionId != ''">
         AND i.VERSION_ID = #{versionId}
     </if>
-    <!--마일스톤을 새로 만들 때(아직 아무 일감도 안 골랐을 때)는 versionId가 없으므로 이 조건이 넘어가서 모든 버전의 일감이 다 보입니다!-->
-    AND i.MILESTONE_ID IS NULL
-    <!--이미 다른 마일스톤에 소속되어 일하고 있는 일감은 새로 만드는 마일스톤 검색 결과에서 원천 배제합니다.-->
-	</select>
+
+</select>
     
         <!-- 오라클 프로시저를 호출하여 마일스톤 정보를 저장합니다 -->
     <!-- statementType="CALLABLE"은 프로시저 호출 시 반드시 명시해야 합니다 -->
@@ -75,8 +87,8 @@
             #{statusCode}, 
             #{startDate}, 
             #{endDate}, 
-            #{versionId},
-            #{selectedIssueIds}
+            #{versionId,jdbcType=VARCHAR},
+            #{selectedIssueIds,jdbcType=VARCHAR}
         ) }
     </update>
     <delete id="deleteMilestone" statementType="CALLABLE" parameterType="MilestonesVO">
@@ -94,7 +106,7 @@
         <result property="managerName" column="MANAGER_NAME"/> <result property="statusCode" column="STATUS_CODE"/>
         <result property="totalProgressRate" column="TOTAL_PROGRESS_RATE"/>
 
-        <collection property="issueList" ofType="MilestonesIssueDTO">
+        <collection property="issueList" ofType="IssuesVO">
             <id property="issueId" column="ISSUE_ID"/>
             <result property="title" column="ISSUE_TITLE"/>
             <result property="issueStatusId" column="ISSUE_STATUS_ID"/>
@@ -156,14 +168,20 @@
         ORDER BY M.START_DATE DESC, I.ISSUE_ID ASC
     </select>
 
-    <select id="selectConnectedIssues" resultType="MilestonesIssueDTO">
+    <select id="selectConnectedIssues" resultType="IssuesVO">
         SELECT 
-        	 issue_id
-        	,title
-        	,version_id
-        	,progress_rate
-    	FROM ISSUE
-    	WHERE MILESTONE_ID = #{milestoneId}
+        	 i.issue_id
+        	,i.title
+        	,i.version_id
+        	,i.progress_rate
+        	,u.user_name AS assigneeName
+        	,v.version_name
+        	,g.status_name AS issueStatusName
+    	FROM ISSUE i
+    	LEFT JOIN PROJECT_VERSION v ON i.VERSION_ID = v.VERSION_ID
+    	LEFT JOIN ISSUE_STATUS g ON i.ISSUE_STATUS_ID = g.ISSUE_STATUS_ID
+        LEFT JOIN USERS u ON i.ASSIGNEE_ID = u.USER_ID 
+        WHERE i.MILESTONE_ID = #{milestoneId}
     </select>
     
 </mapper>

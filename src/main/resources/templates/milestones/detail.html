@@ -79,8 +79,8 @@
                         <tr th:if="${not #lists.isEmpty(issues)}" th:each="issue : ${issues}">
                             <td th:text="${issue.issueId}">IS-001</td>
                             <td th:text="${issue.title}">일감 제목</td>
-                            <td th:text="${issue.managerName}">담당자</td>
-                            <td><span class="status-badge status-todo" style="font-size: 11px; padding: 3px 8px;">상태</span></td>
+                            <td th:text="${issue.assigneeName}">담당자</td>
+                            <td th:text="${issue.issueStatusName}">상태</td>
                         </tr>
                         <tr th:unless="${not #lists.isEmpty(issues)}">
                             <td colspan="4" class="empty-row">현재 이 마일스톤에 연결된 일감이 없습니다.</td>

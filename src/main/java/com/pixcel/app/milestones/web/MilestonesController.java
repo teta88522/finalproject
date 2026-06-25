@@ -4,8 +4,9 @@ import com.pixcel.app.milestones.service.MilestonesService;
 import com.pixcel.app.milestones.service.MilestonesVO;
 
 import jakarta.servlet.http.HttpSession;
+
+import com.pixcel.app.issues.service.IssuesVO;
 import com.pixcel.app.milestones.service.MilestoneSearchVO;
-import com.pixcel.app.milestones.service.MilestonesIssueDTO;
 import com.pixcel.app.milestones.service.MilestonesMemberDTO;
 
 import lombok.RequiredArgsConstructor;
@@ -63,10 +64,13 @@ public class MilestonesController {
     //첫 번째 일감을 선택한 후에는 versionId가 넘어와서 해당 버전의 일감만 찾게 됩니다.
     @ResponseBody //데이터만 리턴할 때 사용 자바 객체(List)를 화면이 이해할 수 있는 JSON 문자열로 바꿔서 브라우저로 전송
     @GetMapping("/api/issues/search") //api사용 이유: JSON 같은 순수 데이터만 가져오려는 거구나
-    public List<MilestonesIssueDTO>searchIssue(
+    public List<IssuesVO>searchIssue(
     		@RequestParam("keyword")String keyword,
-    		@RequestParam(value="versionId",required = false) String versionId){
-    return milestonesService.getIssueList(keyword, versionId); //1. 서비스에 검색어와 버전ID를 넘겨서 조건에 맞는 일감 목록을 가져옵니다.
+    		@RequestParam(value="versionId",required = false) String versionId,
+    		HttpSession session){
+    String projectId = getProjectIdFromSession(session);
+     
+    return milestonesService.getIssueList(keyword, versionId, projectId); //1. 서비스에 검색어와 버전ID를 넘겨서 조건에 맞는 일감 목록을 가져옵니다.
     }
     
     //마일스톤 데이터 실제 저장
@@ -89,12 +93,13 @@ public class MilestonesController {
     	String projectId = getProjectIdFromSession(session);
         // SQL JOIN 문을 통해 담당자 이름(managerName)까지 한 번에 바인딩되어 넘어옵니다.
     	MilestonesVO detailVO = milestonesService.getMilestoneDetail(milestoneId, projectId);
-
+    	List<IssuesVO> connectedIssues = milestonesService.selectConnectedIssues(milestoneId);
         if (detailVO == null) {
             return "redirect:/milestones/list"; // 조회 실패 시 메인으로 리다이렉트
         }
-
+        
         model.addAttribute("milestone", detailVO);
+        model.addAttribute("issues", connectedIssues);
         return "milestones/detail"; 
     }
     
@@ -111,7 +116,7 @@ public class MilestonesController {
         }
     	
         List<MilestonesMemberDTO> managerList = milestonesService.getManagerList(projectId);
-        List<MilestonesIssueDTO> connectedIssues = milestonesService.getConnectedIssues(milestoneId);
+        List<IssuesVO> connectedIssues = milestonesService.selectConnectedIssues(milestoneId);
         // 3. 뷰(HTML)로 데이터 전달
         model.addAttribute("milestone", milestone);      // 수정 폼에 채워질 기존 데이터
         model.addAttribute("managerList", managerList);  // 담당자 선택 콤보박스 목록

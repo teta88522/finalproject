@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import com.pixcel.app.milestones.service.MilestonesIssueDTO;
+import com.pixcel.app.issues.service.IssuesVO;
 import com.pixcel.app.milestones.service.MilestonesVO;
 import com.pixcel.app.roadmap.mapper.RoadmapMapper;
 import com.pixcel.app.roadmap.service.RoadmapService;
@@ -60,7 +60,7 @@ public class RoadmapServicelmpl implements RoadmapService {
                         int milestoneCompletedIssues = 0;   // 마일스톤 개별 완료 일감 수
 
                         if (milestone.getIssueList() != null && !milestone.getIssueList().isEmpty()) {
-                            for (MilestonesIssueDTO issue : milestone.getIssueList()) {
+                            for (IssuesVO issue : milestone.getIssueList()) {
                                 
                                 // LEFT JOIN으로 인해 일감이 없는 빈 객체가 들어올 수 있으므로 ID 존재 여부 체크
                                 if (issue.getIssueId() != null) {

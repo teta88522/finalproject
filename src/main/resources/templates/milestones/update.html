@@ -9,8 +9,8 @@
     <link rel="stylesheet" th:href="@{/css/milestones/milestone-create.css}">
 </head>
 <body>
-	<div layout:fragment="Content" class="milestone-container">
-	   <div class="kiaalap-panel">
+    <div layout:fragment="Content" class="milestone-container">
+       <div class="kiaalap-panel">
         
         <div class="panel-header">
             <h2>마일스톤 수정</h2>
@@ -37,35 +37,35 @@
                                       th:text="${milestone.description}" placeholder="마일스톤의 목표와 상세 내용을 적어주세요."></textarea>
                         </div>
 
-						<div class="issue-section">
-						    <h3>일감 연결</h3>
-						    <div class="issue-search-group" style="position: relative;">
-						        <input type="text" id="issueSearchInput" class="form-control" autocomplete="off" placeholder="일감 제목 또는 번호 입력...">
-						        
-						        <ul id="searchDropdown" class="search-dropdown-menu" style="display: none;"></ul>
-						    </div>
+                        <div class="issue-section">
+                            <h3>일감 연결</h3>
+                            <div class="issue-search-group" style="position: relative;">
+                                <input type="text" id="issueSearchInput" class="form-control" autocomplete="off" placeholder="일감 제목 또는 버전 입력...">
+                                
+                                <ul id="searchDropdown" class="search-dropdown-menu" style="display: none;"></ul>
+                            </div>
                             
-							<div class="issue-list-container">
-							    <table class="table table-hover">
-							        <tbody id="issueListBody">
-							            <tr th:if="${not #lists.isEmpty(connectedIssues)}" th:each="issue : ${connectedIssues}">
-							                <td style="text-align: center;">
-							                    <input type="checkbox" class="issue-checkbox" 
-							                           th:value="${issue.issueId}" 
-							                           th:data-version-id="${issue.versionId}" checked>
-							                </td>
-							                <td th:text="|${issue.title} (${issue.issueId})|">일감 제목</td>
-							                <td style="text-align: center;" th:text="${issue.statusName}">상태</td>
-							            </tr>
-							            
-							            <tr th:if="${#lists.isEmpty(connectedIssues)}">
-							                <td colspan="3" class="empty-row" style="text-align: center; color: #999; padding: 30px 10px;">
-							                    현재 연결된 일감이 없습니다. 검색을 통해 추가하세요.
-							                </td>
-							            </tr>
-							        </tbody>
-							    </table>
-							</div>
+                            <div class="issue-list-container">
+                                <table class="table table-hover">
+                                    <tbody id="issueListBody">
+                                        <tr th:if="${not #lists.isEmpty(connectedIssues)}" th:each="issue : ${connectedIssues}">
+                                            <td style="text-align: center;">
+                                                <input type="checkbox" class="issue-checkbox" 
+                                                       th:value="${issue.issueId}" 
+                                                       th:data-version-id="${issue.versionId}" checked>
+                                            </td>
+                                            <td th:text="|${issue.title} (${issue.versionName})|">일감 제목</td>
+                                            <td style="text-align: center;"><span class="status-badge" th:text="${issue.issueStatusName}">상태</span></td>
+                                        </tr>
+                                        
+                                        <tr th:if="${#lists.isEmpty(connectedIssues)}">
+                                            <td colspan="3" class="empty-row" style="text-align: center; color: #999; padding: 30px 10px;">
+                                                현재 연결된 일감이 없습니다. 검색을 통해 추가하세요.
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
 
@@ -116,9 +116,7 @@
         </form>
 
     </div>
-	<script th:src="@{/js/milestones/milestone-form.js}"></script>
     <script th:src="@{/js/milestones/milestone-update.js}"></script>
 </div>
-
 </body>
 </html>

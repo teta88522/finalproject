@@ -1,124 +1,162 @@
-/* roadmap-list.css */
-
-/* 검색 폼 레이아웃 보정 */
-.filter-form {
-    display: flex;
-    gap: 20px;
-    align-items: center;
-    padding: 15px;
+/* --- 상단 컨트롤 및 헤더 --- */
+.list-header-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
 }
-.filter-group input[type="text"] {
-    padding: 8px;
-    border: 1px solid #ccc;
-    border-radius: 3px;
-    width: 250px;
+.list-header-controls h2 {
+  margin: 0;
+  font-size: 22px;
+  color: #333;
 }
 
-/* 로드맵 아이템 (1단) */
+/* --- 검색 필터 패널 --- */
+.filter-panel {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  background-color: #f9f9f9;
+  padding: 15px 20px;
+  border-radius: 5px;
+  border: 1px solid #ddd;
+  margin-bottom: 20px;
+}
+.filter-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.filter-group label {
+  font-weight: bold;
+  color: #555;
+  margin: 0;
+}
+.filter-control {
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  min-width: 150px;
+}
+#issueSearch {
+  width: 250px;
+}
+
+/* --- 상태 뱃지 --- */
+.status-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  font-size: 12px;
+  border-radius: 12px;
+  font-weight: bold;
+  color: #fff;
+  text-align: center;
+  min-width: 60px;
+}
+.status-planned { background-color: #6c757d; } /* 진행 예정 (회색) */
+.status-progress { background-color: #28a745; } /* 진행 중 (초록) */
+.status-done { background-color: #007bff; } /* 완료 (파랑) */
+
+/* --- 1단: 로드맵 --- */
 .roadmap-item {
-    margin-bottom: 20px;
-    transition: all 0.3s ease;
+  margin-bottom: 20px;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 5px;
+  transition: all 0.3s ease;
 }
 .roadmap-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 15px 20px;
-    cursor: pointer;
-    background-color: #fcfcfc;
-    border-bottom: 1px solid #eee;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  cursor: pointer;
+  background-color: #fcfcfc;
+  border-bottom: 1px solid #eee;
+  border-radius: 5px 5px 0 0;
 }
-.roadmap-header:hover {
-    background-color: #f5f7fa;
+.roadmap-header:hover { background-color: #f5f7fa; }
+.roadmap-header .title-area {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 .roadmap-header .title-area h3 {
-    display: inline-block;
-    margin: 0 15px 0 10px;
-    font-size: 18px;
+  margin: 0;
+  font-size: 18px;
+  font-weight: bold;
 }
 .badge-default {
-    background-color: #ffc107;
-    color: #000;
-    padding: 4px 8px;
-    font-size: 12px;
-    border-radius: 12px;
-    font-weight: bold;
-    margin-right: 10px;
+  background-color: #ffc107;
+  color: #000;
+  padding: 4px 8px;
+  font-size: 12px;
+  border-radius: 12px;
+  font-weight: bold;
 }
 
-/* 프로그레스 바 보정 */
-.progress {
-    background-color: #e9ecef;
-    border-radius: 10px;
-    height: 12px;
-    overflow: hidden;
-}
-.progress-bar {
-    background-color: #28a745; /* 초록색 막대 */
-    height: 100%;
-}
-.progress-text {
-    margin-left: 10px;
-    font-weight: bold;
-    color: #555;
-}
-.toggle-icon {
-    margin-left: 20px;
-    transition: transform 0.3s ease;
-}
-.roadmap-header.active .toggle-icon {
-    transform: rotate(180deg);
-}
-
-/* 마일스톤 (2단) */
-.roadmap-body {
-    padding: 20px;
-}
+/* --- 2단: 마일스톤 --- */
+.roadmap-body { padding: 20px; }
 .milestone-item {
-    border-left: 3px solid #006df0;
-    margin-bottom: 20px;
-    padding-left: 15px;
+  border-left: 3px solid #006df0;
+  margin-bottom: 20px;
+  padding-left: 15px;
 }
 .milestone-header {
-    display: flex;
-    justify-content: space-between;
-    background-color: #f9f9f9;
-    padding: 10px;
-    border-radius: 3px;
-    margin-bottom: 10px;
-    cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #f9f9f9;
+  padding: 10px 15px;
+  border-radius: 3px;
+  margin-bottom: 10px;
 }
-.milestone-header:hover {
-    background-color: #f1f1f1;
+.milestone-info {
+  display: flex;
+  align-items: center;
+  gap: 15px;
 }
 .m-title { font-weight: bold; font-size: 15px; }
-.m-date { color: #777; font-size: 13px; }
+.m-date {
+  color: #666;
+  font-size: 13px;
+}
 
-/* 일감 (3단) */
-.issue-list {
-    padding-left: 20px;
-}
+/* --- 3단: 일감 --- */
+.issue-list { padding-left: 20px; }
 .issue-item {
-    padding: 8px 10px;
-    border-bottom: 1px dashed #eee;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
+  padding: 10px 15px;
+  border-bottom: 1px dashed #eee;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #fff;
 }
-.issue-item:hover {
-    background-color: #fdfdfd;
+.issue-item:hover { background-color: #fdfdfd; }
+.issue-info-wrap {
+  display: flex;
+  align-items: center;
+  gap: 15px;
 }
-.issue-info i { margin-right: 8px; color: #888; }
-.issue-status {
-    font-size: 12px;
-    background: #eee;
-    padding: 2px 6px;
-    border-radius: 3px;
-    margin-right: 10px;
-}
+.issue-info { font-size: 14px; color: #333; }
+.issue-date { color: #888; font-size: 12px; }
 
 .empty-msg {
-    color: #999;
-    font-size: 13px;
-    padding: 10px 0;
+  color: #999;
+  font-size: 14px;
+  padding: 20px 0;
+  text-align: center;
+}
+
+/* --- 링크 호버 액션 --- */
+.title-link {
+  color: inherit;         /* 기본 글자색 유지 */
+  text-decoration: none;  /* 밑줄 제거 */
+  transition: color 0.2s; /* 부드러운 색상 전환 */
+}
+
+/* 마우스를 올리면 메인 파란색으로 변하고 밑줄 생성 */
+.hover-primary:hover {
+  color: #006df0;
+  text-decoration: underline;
 }

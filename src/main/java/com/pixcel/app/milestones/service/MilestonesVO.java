@@ -8,6 +8,7 @@ import java.util.List;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.pixcel.app.issues.service.IssuesVO;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -55,5 +56,5 @@ public class MilestonesVO {
     private String selectedIssueIds;
     
     private Integer totalProgressRate;          // 마일스톤 전체 진행률
-    private List<MilestonesIssueDTO> issueList; // 하위 일감 리스트
+    private List<IssuesVO> issueList; // 하위 일감 리스트
 }

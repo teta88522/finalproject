@@ -10,8 +10,9 @@ document.addEventListener("DOMContentLoaded", function() {
     const endDateInput = document.getElementById("endDate");
     const dateErrorDiv = document.getElementById("dateError");
 
-    // 장바구니와 버전 관리 (수정 화면은 기존 버전 값을 먼저 가져옴)
+    // [상태 관리 변수] (create.js 로직 적용)
     let selectedIssueIds = new Set();
+    let addedHistoryIds = new Set();  // 💡 한 번이라도 추가된 적 있는 일감 ID 목록
     let lockedVersionId = versionIdInput.value || null; 
     let searchTimeout = null; 
 
@@ -20,11 +21,14 @@ document.addEventListener("DOMContentLoaded", function() {
         const existingCheckboxes = document.querySelectorAll(".issue-checkbox");
         existingCheckboxes.forEach(checkbox => {
             if (checkbox.checked) {
-                selectedIssueIds.add(checkbox.value); 
+                const issueId = parseInt(checkbox.value) || checkbox.value; // 타입 방어
+                selectedIssueIds.add(issueId); 
+                addedHistoryIds.add(issueId); // 기존 데이터도 히스토리에 등록
             }
             checkbox.addEventListener('change', handleCheckboxChange);
         });
         updateHiddenInput();
+        updateCheckboxUI(); // 초기 UI 업데이트
     }
 
     // 일감 검색 API 호출 함수
@@ -41,7 +45,7 @@ document.addEventListener("DOMContentLoaded", function() {
             .catch(error => console.error("일감 조회 에러 :", error));
     }
 
-    // 검색창 타이핑 시
+    // 검색창 타이핑 시 (Debounce 적용)
     issueSearchInput.addEventListener("input", function() {
         clearTimeout(searchTimeout); 
         const keyword = this.value.trim();
@@ -54,7 +58,7 @@ document.addEventListener("DOMContentLoaded", function() {
         fetchAndShowIssues(keyword);
     });
 
-    // 드롭다운 렌더링
+    // [드롭다운 렌더링 함수] (create.js의 방어 로직 적용)
     function renderDropdown(data) {
         searchDropdown.innerHTML = ''; 
 
@@ -65,20 +69,34 @@ document.addEventListener("DOMContentLoaded", function() {
         }
 
         data.forEach(issue => {
-            if(selectedIssueIds.has(issue.issueId)) return;
-
             const li = document.createElement("li");
             li.className = "search-dropdown-item";
-            li.innerHTML = `
-                <strong>${issue.issueId}</strong> - ${issue.title}
-                <span class="badge badge-right" style="color: #0056b3;">${issue.statusName || '상태'}</span>
-            `;
-            
-            li.addEventListener("click", function() {
-                addIssueToTable(issue); 
-                searchDropdown.style.display = "none"; 
-                issueSearchInput.value = ""; 
-            });
+
+            // 💡 조건 1, 2 판별 (히스토리 포함 여부, 버전 불일치)
+            const isUsed = addedHistoryIds.has(issue.issueId) || addedHistoryIds.has(String(issue.issueId));
+            const isDifferentVersion = (lockedVersionId !== null && lockedVersionId !== "" && String(issue.versionId) !== String(lockedVersionId));
+
+            if (isUsed || isDifferentVersion) {
+                li.style.color = "#ccc";
+                li.style.cursor = "not-allowed";
+                
+                if (isUsed) {
+                    li.innerHTML = `<strong>${issue.versionName || '버전 없음'}</strong> - ${issue.title} <span style="font-size:0.85em; color:#e74c3c; margin-left:5px;">(이미 추가됨)</span>`;
+                } else {
+                    li.innerHTML = `<strong>${issue.versionName || '버전 없음'}</strong> - ${issue.title} <span style="font-size:0.85em; color:#e74c3c; margin-left:5px;">(버전 불일치)</span>`;
+                }
+            } else {
+                li.innerHTML = `
+                    <strong>${issue.versionName || '버전 없음'}</strong> - ${issue.title}
+                    <span class="badge badge-right" style="color: #0056b3;">${issue.issueStatusName || '미정'}</span>
+                `;
+                
+                li.addEventListener("click", function() {
+                    addIssueToTable(issue); 
+                    searchDropdown.style.display = "none"; 
+                    issueSearchInput.value = ""; 
+                });
+            }
 
             searchDropdown.appendChild(li);
         });
@@ -86,7 +104,7 @@ document.addEventListener("DOMContentLoaded", function() {
         searchDropdown.style.display = (searchDropdown.children.length > 0) ? "block" : "none";
     }
 
-    // 표에 일감 추가
+    // [표에 일감 추가 함수]
     function addIssueToTable(issue) {
         const emptyRow = document.querySelector("#issueListBody .empty-row");
         if (emptyRow) emptyRow.closest("tr").remove();
@@ -98,47 +116,78 @@ document.addEventListener("DOMContentLoaded", function() {
                        value="${issue.issueId}" 
                        data-version-id="${issue.versionId}" checked>
             </td>
-            <td>${issue.title} (${issue.issueId})</td>
-            <td style="text-align: center;"><span class="status-badge">${issue.statusName || '상태'}</span></td>
+            <td>${issue.title} (${issue.versionName})</td>
+            <td style="text-align: center;"><span class="status-badge">${issue.issueStatusName || '미정'}</span></td>
         `;
         
         issueListBody.prepend(tr);
 
         const newCheckbox = tr.querySelector(".issue-checkbox");
+        
         selectedIssueIds.add(issue.issueId);
+        addedHistoryIds.add(issue.issueId);
         
         if (!lockedVersionId) {
             lockedVersionId = issue.versionId;
-            versionIdInput.value = lockedVersionId;
+            if (versionIdInput) versionIdInput.value = lockedVersionId;
         }
         
         newCheckbox.addEventListener('change', handleCheckboxChange);
         updateHiddenInput(); 
+        updateCheckboxUI();
     }
 
-    // 체크박스 해제 처리
+    // [체크박스 상태 변경 로직]
     function handleCheckboxChange() {
-        const clickedIssueId = this.value;
+        const clickedIssueId = parseInt(this.value) || this.value; // 타입 방어
         const clickedVersionId = this.getAttribute("data-version-id");
 
         if (this.checked) {
             selectedIssueIds.add(clickedIssueId);
             if (!lockedVersionId) {
                 lockedVersionId = clickedVersionId;
-                versionIdInput.value = lockedVersionId;
+                if (versionIdInput) versionIdInput.value = lockedVersionId;
             }
         } else {
             selectedIssueIds.delete(clickedIssueId);
+            
             if (selectedIssueIds.size === 0) {
                 lockedVersionId = null;
-                versionIdInput.value = '';
+                if (versionIdInput) versionIdInput.value = '';
             }
         }
+        
         updateHiddenInput();
+        updateCheckboxUI(); 
     }
 
+    // 💡 표에 있는 모든 체크박스의 활성/비활성 상태 갱신 함수
+    function updateCheckboxUI() {
+        const allCheckboxes = document.querySelectorAll(".issue-checkbox");
+        
+        allCheckboxes.forEach(cb => {
+            const cbVersionId = cb.getAttribute("data-version-id");
+            const tr = cb.closest("tr"); 
+            
+            if (lockedVersionId !== null && String(cbVersionId) !== String(lockedVersionId)) {
+                cb.disabled = true;                
+                tr.style.color = "#ccc";           
+                tr.style.backgroundColor = "#f9f9f9"; 
+                tr.title = "현재 선택된 일감들과 버전이 달라 추가할 수 없습니다."; 
+            } else {
+                cb.disabled = false;
+                tr.style.color = "";
+                tr.style.backgroundColor = "";
+                tr.title = "";
+            }
+        });
+    }
+
+    // hidden input 태그에 값 동기화
     function updateHiddenInput() {
-        selectedIssueIdsInput.value = Array.from(selectedIssueIds).join(",");
+        if (selectedIssueIdsInput) {
+            selectedIssueIdsInput.value = Array.from(selectedIssueIds).join(",");
+        }
     }
 
     // 드롭다운 바깥 클릭 시 닫기

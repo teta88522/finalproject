@@ -4,7 +4,7 @@ import com.pixcel.app.milestones.service.MilestonesService;
 import com.pixcel.app.milestones.service.MilestonesVO;
 import com.pixcel.app.milestones.service.MilestoneSearchVO;
 import com.pixcel.app.milestones.service.MilestonesMemberDTO; // DTO 임포트 확인
-import com.pixcel.app.milestones.service.MilestonesIssueDTO;   // DTO 임포트 확인
+import com.pixcel.app.issues.service.IssuesVO;
 import com.pixcel.app.milestones.mapper.MilestonesMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -43,8 +43,8 @@ public class MilestonesServiceImpl implements MilestonesService {
 
     // 3. 일감 목록 조회
     @Override
-    public List<MilestonesIssueDTO> getIssueList(String keyword, String versionId) {
-        return milestonesMapper.getIssueList(keyword, versionId);
+    public List<IssuesVO> getIssueList(String keyword, String versionId, String projectId) {
+        return milestonesMapper.getIssueList(keyword, versionId, projectId);
     }
     // 4. 상세 조회
     @Override
@@ -74,7 +74,7 @@ public class MilestonesServiceImpl implements MilestonesService {
     
     //8. 등록된 일감목록
     @Override
-    public List<MilestonesIssueDTO> getConnectedIssues(String milestoneId) {
+    public List<IssuesVO> selectConnectedIssues(String milestoneId) {
         return milestonesMapper.selectConnectedIssues(milestoneId);
     }
 }
