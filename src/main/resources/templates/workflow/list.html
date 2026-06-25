@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{common/layouts/default_layout}">
+
+<head>
+<title>업무흐름</title>
+<link rel="stylesheet" th:href="@{/css/common-ui.css}">
+<link rel="stylesheet" th:href="@{/css/workflow/workflow.css}">
+</head>
+
+<body>
+	<div layout:fragment="Content">
+
+		<!-- ==============================
+		     업무흐름 전체조회 추가/수정
+		     세로: 일감유형
+		     가로: 역할
+		     셀 값: 상태전환 설정 개수
+		============================== -->
+		<div class="workflow-list-page">
+			<div class="container-fluid">
+
+				<div class="workflow-page-header">
+					<div>
+						<h3>업무흐름</h3>
+						<p>일감유형과 역할별 상태전환 설정 개수를 확인합니다.</p>
+					</div>
+
+					<div class="workflow-header-actions">
+						<a th:href="@{/workflow/transition}"
+							class="btn btn-custon-rounded-four btn-primary"> 상태전환 설정 </a> <a
+							th:href="@{/workflow/copy}"
+							class="btn btn-custon-rounded-four btn-default"> 업무흐름 복사 </a>
+					</div>
+				</div>
+
+				<div th:if="${#lists.isEmpty(issueTypeList)}"
+					class="page-message page-message-info">등록된 일감유형이 없습니다. 일감유형을
+					먼저 등록해주세요.</div>
+
+				<div th:if="${#lists.isEmpty(roleList)}"
+					class="page-message page-message-info">등록된 역할이 없습니다. 역할을 먼저
+					등록해주세요.</div>
+
+				<div class="workflow-summary-card">
+					<div class="workflow-summary-card-title">
+						<h4>업무흐름 전체조회</h4>
+						<p>교차 셀의 숫자는 해당 일감유형과 역할에 설정된 상태전환 개수입니다.</p>
+					</div>
+
+					<div
+						th:if="${!#lists.isEmpty(issueTypeList) and !#lists.isEmpty(roleList)}"
+						class="workflow-summary-table-wrap">
+
+						<table class="table table-bordered workflow-summary-table">
+							<thead>
+								<tr>
+									<th class="workflow-fixed-col">일감유형 \ 역할</th>
+
+									<th th:each="role : ${roleList}" th:text="${role.roleName}">
+										개발자</th>
+								</tr>
+							</thead>
+
+							<tbody>
+								<tr th:each="issueType : ${issueTypeList}">
+									<th class="workflow-fixed-col"
+										th:text="${issueType.issueTypeName}">결함</th>
+
+									<td th:each="role : ${roleList}"
+										th:with="transitionCount=${workflowCountMap.get(#strings.concat(issueType.issueTypeId, '|', role.roleId))}">
+										<!-- ==============================
+										     업무흐름 전체조회 수정
+										     상태전환 개수 클릭 시 해당 일감유형+역할 설정 화면으로 이동
+										     기본 전환(j003) 기준으로 진입
+													============================== --> <a
+										th:href="@{/workflow/transition(
+											issueTypeId=${issueType.issueTypeId},
+											roleId=${role.roleId},
+											applyTargetCode='j003'
+										)}"
+										class="workflow-count-badge workflow-count-link"
+										th:classappend="${transitionCount == null or transitionCount == 0} ? ' workflow-count-empty' : ''"
+										th:text="${transitionCount != null ? transitionCount : 0}">
+											0 </a>
+									</td>
+								</tr>
+							</tbody>
+						</table>
+
+					</div>
+				</div>
+
+			</div>
+		</div>
+		<!-- 업무흐름 전체조회 추가/수정 끝 -->
+
+	</div>
+</body>
+</html>

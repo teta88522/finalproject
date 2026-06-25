@@ -8,30 +8,45 @@ import com.pixcel.app.workflow.service.WorkflowVO;
 
 public interface WorkflowMapper {
 
-	// 현재 사용자가 소유한 일감유형 목록을 조회한다.
 	List<WorkflowVO> selectIssueTypeList(@Param("userId") String userId);
 
-	// 현재 관리자가 생성한 역할 목록을 조회한다.
 	List<WorkflowVO> selectRoleList(@Param("userId") String userId);
 
-	// 현재 사용자가 소유한 일감상태 목록을 조회한다.
 	List<WorkflowVO> selectIssueStatusList(WorkflowVO searchVO);
 
-	// 선택한 일감유형 + 역할 + 전환기준에 저장된 상태전환 목록을 조회한다.
 	List<String> selectSavedTransitionKeyList(WorkflowVO workflowVO);
 
-	// 선택한 일감유형이 현재 사용자의 소유인지 확인한다.
 	int countIssueTypeByUser(@Param("issueTypeId") String issueTypeId, @Param("userId") String userId);
 
-	// 선택한 역할이 현재 관리자가 생성한 역할인지 확인한다.
 	int countRole(@Param("roleId") String roleId, @Param("userId") String userId);
 
-	// 선택한 상태들이 현재 사용자의 소유인지 확인한다.
 	int countStatusByUser(@Param("userId") String userId, @Param("statusIdList") List<String> statusIdList);
 
-	// 기존 상태전환 설정을 삭제한다.
 	int deleteWorkflowTransition(WorkflowVO workflowVO);
 
-	// 상태전환 설정을 등록한다.
 	int insertWorkflowTransition(WorkflowVO workflowVO);
+
+	// ==============================
+	// 업무흐름 전체조회 추가
+	// 역할 x 일감유형별 상태전환 설정 개수 조회
+	// ==============================
+	List<WorkflowVO> selectWorkflowCountList(@Param("userId") String userId);
+	
+	// ==============================
+	// 업무흐름 복사 추가
+	// 원본 업무흐름 개수 확인
+	// ==============================
+	int countSourceWorkflowTransition(WorkflowVO workflowVO);
+
+	// ==============================
+	// 업무흐름 복사 추가
+	// 대상 업무흐름 삭제
+	// ==============================
+	int deleteTargetWorkflowTransitionForCopy(WorkflowVO workflowVO);
+
+	// ==============================
+	// 업무흐름 복사 추가
+	// 원본 업무흐름을 대상 조건으로 복사
+	// ==============================
+	int copyWorkflowTransition(WorkflowVO workflowVO);
 }

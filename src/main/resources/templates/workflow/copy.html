@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{common/layouts/default_layout}">
+
+<head>
+<title>업무흐름 복사</title>
+<link rel="stylesheet" th:href="@{/css/common-ui.css}">
+<link rel="stylesheet" th:href="@{/css/workflow/workflow.css}">
+</head>
+
+<body>
+	<div layout:fragment="Content">
+
+		<!-- ==============================
+		     업무흐름 복사 추가
+		     원본 일감유형+역할의 상태전환 설정을 대상 조건으로 복사
+		============================== -->
+		<div class="workflow-copy-page">
+			<div class="container-fluid">
+
+				<div class="workflow-page-header">
+					<div>
+						<h3>업무흐름 복사</h3>
+						<p>원본 일감유형과 역할의 상태전환 설정을 대상 일감유형과 역할로 복사합니다.</p>
+					</div>
+
+					<div class="workflow-header-actions">
+						<a th:href="@{/workflow/list}"
+							class="btn btn-custon-rounded-four btn-default"> 목록 </a>
+					</div>
+				</div>
+
+				<div th:if="${successMessage}"
+					class="page-message page-message-success"
+					th:text="${successMessage}">복사되었습니다.</div>
+
+				<div th:if="${errorMessage}" class="page-message page-message-error"
+					th:text="${errorMessage}">오류가 발생했습니다.</div>
+
+				<div th:if="${#lists.isEmpty(issueTypeList)}"
+					class="page-message page-message-info">등록된 일감유형이 없습니다. 일감유형을
+					먼저 등록해주세요.</div>
+
+				<div th:if="${#lists.isEmpty(roleList)}"
+					class="page-message page-message-info">등록된 역할이 없습니다. 역할을 먼저
+					등록해주세요.</div>
+
+				<form th:action="@{/workflow/copy}" method="post"
+					th:object="${workflowVO}" class="workflow-copy-form">
+
+					<div class="workflow-copy-card">
+
+						<div class="workflow-copy-card-title">
+							<h4>복사 조건</h4>
+							<p>대상에 기존 업무흐름 설정이 있으면 삭제 후 원본 설정으로 덮어씁니다.</p>
+						</div>
+
+						<div class="workflow-copy-grid">
+
+							<!-- 업무흐름 복사 추가: 원본 조건 -->
+							<div class="workflow-copy-box">
+								<div class="workflow-copy-box-title">
+									<h5>원본 업무흐름</h5>
+									<p>복사할 기준이 되는 일감유형과 역할입니다.</p>
+								</div>
+
+								<div class="workflow-copy-field">
+									<label for="sourceIssueTypeId">원본 일감유형</label> <select
+										id="sourceIssueTypeId" th:field="*{sourceIssueTypeId}">
+										<option value="">선택</option>
+										<option th:each="issueType : ${issueTypeList}"
+											th:value="${issueType.issueTypeId}"
+											th:text="${issueType.issueTypeName}">결함</option>
+									</select>
+								</div>
+
+								<div class="workflow-copy-field">
+									<label for="sourceRoleId">원본 역할</label> <select
+										id="sourceRoleId" th:field="*{sourceRoleId}">
+										<option value="">선택</option>
+										<option th:each="role : ${roleList}" th:value="${role.roleId}"
+											th:text="${role.roleName}">개발자</option>
+									</select>
+								</div>
+							</div>
+
+							<!-- 업무흐름 복사 추가: 대상 조건 -->
+							<div class="workflow-copy-box">
+								<div class="workflow-copy-box-title">
+									<h5>대상 업무흐름</h5>
+									<p>원본 설정을 복사해서 적용할 일감유형과 역할입니다.</p>
+								</div>
+
+								<div class="workflow-copy-field">
+									<label for="targetIssueTypeId">대상 일감유형</label> <select
+										id="targetIssueTypeId" th:field="*{targetIssueTypeId}">
+										<option value="">선택</option>
+										<option th:each="issueType : ${issueTypeList}"
+											th:value="${issueType.issueTypeId}"
+											th:text="${issueType.issueTypeName}">새기능</option>
+									</select>
+								</div>
+
+								<div class="workflow-copy-field">
+									<label for="targetRoleId">대상 역할</label> <select
+										id="targetRoleId" th:field="*{targetRoleId}">
+										<option value="">선택</option>
+										<option th:each="role : ${roleList}" th:value="${role.roleId}"
+											th:text="${role.roleName}">QA</option>
+									</select>
+								</div>
+							</div>
+
+						</div>
+
+						<!-- ==============================
+					     업무흐름 복사 추가/수정
+					     복사할 전환 기준 선택
+					============================== -->
+						<div class="workflow-copy-apply-box">
+							<div class="workflow-copy-box-title">
+								<h5>복사할 전환 기준</h5>
+								<p>선택한 전환 기준은 대상에도 같은 기준으로 복사됩니다.</p>
+							</div>
+
+							<div class="workflow-copy-apply-list">
+								<label class="workflow-copy-check-item"> <input
+									type="checkbox" name="copyApplyTargetCodeList" value="j003"
+									checked> <span>기본 전환</span>
+								</label> <label class="workflow-copy-check-item"> <input
+									type="checkbox" name="copyApplyTargetCodeList" value="j002">
+									<span>작성자일 때</span>
+								</label> <label class="workflow-copy-check-item"> <input
+									type="checkbox" name="copyApplyTargetCodeList" value="j001">
+									<span>담당자일 때</span>
+								</label>
+							</div>
+						</div>
+
+						<div class="workflow-copy-notice">
+							<strong>주의</strong> <span>복사 시 대상 업무흐름의 기존 상태전환 설정은 삭제되고
+								원본 설정으로 대체됩니다.</span>
+						</div>
+
+						<div class="workflow-form-actions">
+							<a th:href="@{/workflow/list}"
+								class="btn btn-custon-rounded-four btn-default"> 취소 </a>
+
+							<button type="submit"
+								class="btn btn-custon-rounded-four btn-primary"
+								th:disabled="${#lists.isEmpty(issueTypeList) or #lists.isEmpty(roleList)}">
+								복사</button>
+						</div>
+
+					</div>
+				</form>
+
+			</div>
+		</div>
+		<!-- 업무흐름 복사 추가 끝 -->
+
+	</div>
+</body>
+</html>

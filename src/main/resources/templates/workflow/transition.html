@@ -21,6 +21,15 @@
 						<h3>상태 전환 설정</h3>
 						<p>역할, 일감유형, 전환기준별로 허용할 상태 이동을 설정합니다.</p>
 					</div>
+
+					<!-- ==============================
+					     업무흐름 전체조회 수정
+					     상태전환설정 화면에서 전체조회 목록으로 이동
+					============================== -->
+					<div class="workflow-header-actions">
+						<a th:href="@{/workflow/list}"
+							class="btn btn-custon-rounded-four btn-default"> 목록 </a>
+					</div>
 				</div>
 
 				<div th:if="${successMessage}"
@@ -150,19 +159,34 @@
 					<div class="workflow-transition-card">
 
 						<div class="workflow-card-header">
-							<div>
+							<div class="workflow-card-title-area">
 								<h4>상태 전환 매트릭스</h4>
 								<p>세로축은 현재 상태 전체, 가로축은 완료여부 조건에 맞는 다음 상태입니다. 같은 상태로의 전환은 설정할
 									수 없습니다.</p>
 							</div>
 
-							<div class="workflow-legend">
-								<span class="workflow-legend-item"> <span
-									class="workflow-legend-box workflow-legend-open"></span> 미완료 상태
-								</span> <span class="workflow-legend-item"> <span
-									class="workflow-legend-box workflow-legend-closed"></span> 완료
-									상태
-								</span>
+							<div class="workflow-card-header-right">
+
+								<!-- ==============================
+								     상태전환 설정 편의기능 추가
+								     현재 화면에 보이는 모든 상태전환 체크박스 전체 선택/해제
+								============================== -->
+								<div class="workflow-select-tools">
+									<label class="workflow-select-all-label"> <input
+										type="checkbox" id="workflowAllCheck"> <span>전체선택</span>
+									</label>
+								</div>
+
+								<div class="workflow-legend">
+									<span class="workflow-legend-item"> <span
+										class="workflow-legend-box workflow-legend-open"></span> 미완료
+										상태
+									</span> <span class="workflow-legend-item"> <span
+										class="workflow-legend-box workflow-legend-closed"></span> 완료
+										상태
+									</span>
+								</div>
+
 							</div>
 						</div>
 
@@ -194,21 +218,45 @@
 									<tr>
 										<th class="workflow-fixed-col">현재 상태 \ 다음 상태</th>
 
-										<th th:each="toStatus : ${toStatusList}"><span
-											th:text="${toStatus.statusName}">진행</span> <span
-											th:if="${toStatus.closedYn == 'Y'}"
-											class="workflow-status-badge workflow-status-closed">
-												완료 </span></th>
+										<th th:each="toStatus : ${toStatusList}"
+											class="workflow-to-status-col">
+
+											<div class="workflow-to-status-header">
+												<div class="workflow-to-status-name">
+													<span th:text="${toStatus.statusName}">진행</span> <span
+														th:if="${toStatus.closedYn == 'Y'}"
+														class="workflow-status-badge workflow-status-closed">
+														완료 </span>
+												</div>
+											</div>
+
+										</th>
 									</tr>
 								</thead>
 
 								<tbody>
 									<tr th:each="fromStatus : ${fromStatusList}">
-										<th class="workflow-fixed-col"><span
-											th:text="${fromStatus.statusName}">신규</span> <span
-											th:if="${fromStatus.closedYn == 'Y'}"
-											class="workflow-status-badge workflow-status-closed">
-												완료 </span></th>
+										<th class="workflow-fixed-col">
+											<!-- ==============================
+											     상태전환 설정 편의기능 추가
+											     상태명 컬럼 안에 가로줄 전체선택 배치
+											============================== -->
+											<div class="workflow-from-status-header">
+												<div class="workflow-from-status-name">
+													<span th:text="${fromStatus.statusName}">신규</span> <span
+														th:if="${fromStatus.closedYn == 'Y'}"
+														class="workflow-status-badge workflow-status-closed">
+														완료 </span>
+												</div>
+
+												<label class="workflow-row-check-label"> <input
+													type="checkbox" class="workflow-row-check"
+													th:attr="data-row-key=${fromStatus.issueStatusId}">
+													<span>전체</span>
+												</label>
+											</div>
+
+										</th>
 
 										<td th:each="toStatus : ${toStatusList}"
 											th:classappend="${fromStatus.issueStatusId == toStatus.issueStatusId} ? ' workflow-disabled-cell' : ''">
@@ -218,9 +266,11 @@
 											class="workflow-self-mark"> - </span> <label
 											th:unless="${fromStatus.issueStatusId == toStatus.issueStatusId}"
 											class="workflow-check-label"> <input type="checkbox"
-												name="transitionKeyList"
+												name="transitionKeyList" class="workflow-transition-check"
+												th:attr="data-row-key=${fromStatus.issueStatusId}"
 												th:value="${#strings.concat(fromStatus.issueStatusId, '|', toStatus.issueStatusId)}"
 												th:checked="${savedTransitionKeyList.contains(#strings.concat(fromStatus.issueStatusId, '|', toStatus.issueStatusId))}">
+
 												<span class="workflow-check-ui"></span>
 										</label>
 										</td>
@@ -254,6 +304,155 @@
 
 			</div>
 		</div>
+
+		<!-- ==============================
+		     상태전환 설정 편의기능 추가
+		     전체선택 / 가로줄 전체선택 처리
+		============================== -->
+		<script>
+			document
+					.addEventListener(
+							'DOMContentLoaded',
+							function() {
+
+								const allCheck = document
+										.getElementById('workflowAllCheck');
+								const rowChecks = Array
+										.from(document
+												.querySelectorAll('.workflow-row-check'));
+								const transitionChecks = Array
+										.from(document
+												.querySelectorAll('.workflow-transition-check'));
+
+								function getEnabledTransitionChecks() {
+									return transitionChecks.filter(function(
+											check) {
+										return !check.disabled;
+									});
+								}
+
+								function getRowTransitionChecks(rowKey) {
+									return transitionChecks.filter(function(
+											check) {
+										return check.dataset.rowKey === rowKey
+												&& !check.disabled;
+									});
+								}
+
+								function updateRowCheck(rowKey) {
+									const rowTransitionChecks = getRowTransitionChecks(rowKey);
+									const rowCheck = rowChecks.find(function(
+											check) {
+										return check.dataset.rowKey === rowKey;
+									});
+
+									if (!rowCheck) {
+										return;
+									}
+
+									if (rowTransitionChecks.length === 0) {
+										rowCheck.checked = false;
+										rowCheck.indeterminate = false;
+										rowCheck.disabled = true;
+										return;
+									}
+
+									const checkedCount = rowTransitionChecks
+											.filter(function(check) {
+												return check.checked;
+											}).length;
+
+									rowCheck.disabled = false;
+									rowCheck.checked = checkedCount === rowTransitionChecks.length;
+									rowCheck.indeterminate = checkedCount > 0
+											&& checkedCount < rowTransitionChecks.length;
+								}
+
+								function updateAllCheck() {
+									if (!allCheck) {
+										return;
+									}
+
+									const enabledChecks = getEnabledTransitionChecks();
+
+									if (enabledChecks.length === 0) {
+										allCheck.checked = false;
+										allCheck.indeterminate = false;
+										allCheck.disabled = true;
+										return;
+									}
+
+									const checkedCount = enabledChecks
+											.filter(function(check) {
+												return check.checked;
+											}).length;
+
+									allCheck.disabled = false;
+									allCheck.checked = checkedCount === enabledChecks.length;
+									allCheck.indeterminate = checkedCount > 0
+											&& checkedCount < enabledChecks.length;
+								}
+
+								function updateAllRowChecks() {
+									rowChecks
+											.forEach(function(rowCheck) {
+												updateRowCheck(rowCheck.dataset.rowKey);
+											});
+								}
+
+								if (allCheck) {
+									allCheck
+											.addEventListener(
+													'change',
+													function() {
+														const enabledChecks = getEnabledTransitionChecks();
+
+														enabledChecks
+																.forEach(function(
+																		check) {
+																	check.checked = allCheck.checked;
+																});
+
+														allCheck.indeterminate = false;
+														updateAllRowChecks();
+													});
+								}
+
+								rowChecks
+										.forEach(function(rowCheck) {
+											rowCheck
+													.addEventListener(
+															'change',
+															function() {
+																const rowKey = rowCheck.dataset.rowKey;
+																const rowTransitionChecks = getRowTransitionChecks(rowKey);
+
+																rowTransitionChecks
+																		.forEach(function(
+																				check) {
+																			check.checked = rowCheck.checked;
+																		});
+
+																rowCheck.indeterminate = false;
+																updateAllCheck();
+															});
+										});
+
+								transitionChecks
+										.forEach(function(check) {
+											check
+													.addEventListener(
+															'change',
+															function() {
+																updateRowCheck(check.dataset.rowKey);
+																updateAllCheck();
+															});
+										});
+
+								updateAllRowChecks();
+								updateAllCheck();
+							});
+		</script>
 
 	</div>
 </body>

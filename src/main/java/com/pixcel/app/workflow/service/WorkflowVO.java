@@ -18,58 +18,76 @@ import lombok.ToString;
 @ToString
 public class WorkflowVO {
 
-    /*
-     * WORKFLOW_TRANSITION 컬럼
-     */
-    private String transitionId;
+	/*
+	 * WORKFLOW_TRANSITION 컬럼
+	 */
+	private String transitionId;
 
-    private String issueTypeId;
+	private String issueTypeId;
 
-    private String roleId;
+	private String roleId;
 
-    private String fromStatusId;
+	private String fromStatusId;
 
-    private String toStatusId;
+	private String toStatusId;
 
-    // j001: 담당자, j002: 작성자, j003: 기본
-    private String applyTargetCode;
+	// j001: 담당자, j002: 작성자, j003: 기본
+	private String applyTargetCode;
 
-    // 설정 생성자. 권한/소유자 판단 기준이 아니라 기록용이다.
-    private String createdBy;
+	// 설정 생성자. 권한/소유자 판단 기준이 아니라 기록용이다.
+	private String createdBy;
 
-    private Date createdAt;
+	private Date createdAt;
 
+	/*
+	 * 화면 / 소유자 검증용
+	 */
+	private String userId;
 
-    /*
-     * 화면 / 소유자 검증용
-     */
-    private String userId;
+	private String issueTypeName;
 
-    private String issueTypeName;
+	private String roleName;
 
-    private String roleName;
+	private String issueStatusId;
 
-    private String issueStatusId;
+	private String statusName;
 
-    private String statusName;
+	private String closedYn;
 
-    private String closedYn;
+	private String fromStatusName;
 
-    private String fromStatusName;
+	private String toStatusName;
 
-    private String toStatusName;
+	private String applyTargetName;
 
-    private String applyTargetName;
+	/*
+	 * 상태전환 설정 화면 form 전송용 -> 체크박스 선택항목 예: FROM_STATUS_ID|TO_STATUS_ID
+	 */
+	private String transitionKey;
 
+	private List<String> transitionKeyList;
 
-    /*
-     * 상태전환 설정 화면 form 전송용    -> 체크박스 선택항목 
-     * 예: FROM_STATUS_ID|TO_STATUS_ID
-     */
-    private String transitionKey;
+	// 상태 소유자 검증용 -> 개발자 도구같은 것을 이용해 임의로 바꿀수 있기 때문
+	private List<String> statusIdList;
 
-    private List<String> transitionKeyList;
+	// ==============================
+	// 업무흐름 전체조회 추가
+	// 역할 x 일감유형별 상태전환 설정 개수
+	// ==============================
+	private int transitionCount;
+	
+	// ==============================
+	// 업무흐름 복사 추가
+	// 복사할 전환 기준 목록
+	// j001: 담당자, j002: 작성자, j003: 기본
+	// ==============================
+	private List<String> copyApplyTargetCodeList;
+	
+	private String sourceIssueTypeId;
 
-    // 상태 소유자 검증용   -> 개발자 도구같은 것을 이용해 임의로 바꿀수 있기 때문 
-    private List<String> statusIdList;
+	private String sourceRoleId;
+
+	private String targetIssueTypeId;
+
+	private String targetRoleId;
 }

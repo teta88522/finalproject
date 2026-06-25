@@ -158,7 +158,8 @@
 			where
 			ts.issue_status_id = wt.to_status_id
 			and ts.user_id = #{userId}
-			and ts.closed_yn = #{closedYn}
+			and
+			ts.closed_yn = #{closedYn}
 			)
 		</if>
 	</delete>
@@ -192,7 +193,8 @@
 		apply_target_code,
 		created_by,
 		created_at
-		) values (
+		)
+		values (
 		#{transitionId},
 		#{issueTypeId},
 		#{roleId},
@@ -202,6 +204,162 @@
 		#{createdBy},
 		sysdate
 		)
+	</insert>
+
+	<!-- ============================== 업무흐름 전체조회 추가/수정 세로: 일감유형 가로: 역할 셀 값: 
+		해당 일감유형 + 역할에 설정된 상태전환 개수 ============================== -->
+	<select id="selectWorkflowCountList" resultType="WorkflowVO">
+		select
+		it.issue_type_id,
+		it.issue_type_name,
+		r.role_id,
+		r.role_name,
+		nvl(wc.transition_count, 0) as transition_count
+		from issue_type it
+		cross join role r
+		left join (
+		select
+		issue_type_id,
+		role_id,
+		count(*) as
+		transition_count
+		from workflow_transition
+		group by
+		issue_type_id,
+		role_id
+		) wc
+		on wc.issue_type_id = it.issue_type_id
+		and wc.role_id = r.role_id
+		where it.user_id = #{userId}
+		and r.created_by = #{userId}
+		order by
+		it.created_at asc,
+		it.issue_type_id asc,
+		r.role_name asc,
+		r.role_id asc
+	</select>
+	<!-- ============================== 업무흐름 복사 추가/수정 선택한 전환 기준에 해당하는 원본 업무흐름 
+		개수 확인 ============================== -->
+	<select id="countSourceWorkflowTransition"
+		parameterType="WorkflowVO" resultType="int">
+		select count(*)
+		from workflow_transition wt
+		join issue_type it
+		on
+		wt.issue_type_id = it.issue_type_id
+		join role r
+		on wt.role_id =
+		r.role_id
+		join issue_status fs
+		on wt.from_status_id = fs.issue_status_id
+		join issue_status ts
+		on wt.to_status_id = ts.issue_status_id
+		where
+		wt.issue_type_id = #{sourceIssueTypeId}
+		and wt.role_id =
+		#{sourceRoleId}
+		and wt.apply_target_code in
+		<foreach collection="copyApplyTargetCodeList"
+			item="applyTargetCode" open="(" separator="," close=")">
+			#{applyTargetCode}
+		</foreach>
+		and it.user_id = #{userId}
+		and r.created_by = #{userId}
+		and fs.user_id =
+		#{userId}
+		and ts.user_id = #{userId}
+	</select>
+
+
+	<!-- ============================== 업무흐름 복사 추가/수정 대상 업무흐름 중 선택한 전환 기준만 삭제 
+		============================== -->
+	<delete id="deleteTargetWorkflowTransitionForCopy"
+		parameterType="WorkflowVO">
+		delete from workflow_transition
+		where issue_type_id in (
+		select
+		issue_type_id
+		from issue_type
+		where issue_type_id = #{targetIssueTypeId}
+		and user_id = #{userId}
+		)
+		and role_id in (
+		select role_id
+		from role
+		where
+		role_id = #{targetRoleId}
+		and created_by = #{userId}
+		)
+		and
+		apply_target_code in
+		<foreach collection="copyApplyTargetCodeList"
+			item="applyTargetCode" open="(" separator="," close=")">
+			#{applyTargetCode}
+		</foreach>
+	</delete>
+
+
+	<!-- ============================== 업무흐름 복사 추가/수정 선택한 전환 기준만 원본에서 대상으로 복사 
+		============================== -->
+	<insert id="copyWorkflowTransition" parameterType="WorkflowVO">
+		insert into workflow_transition (
+		transition_id,
+		issue_type_id,
+		role_id,
+		from_status_id,
+		to_status_id,
+		apply_target_code,
+		created_by,
+		created_at
+		)
+		select
+		'WORKFLOW_TRANSITION_'
+		|| to_char(sysdate, 'YYMM')
+		|| '_'
+		|| lpad(
+		(
+		select nvl(max(to_number(substr(transition_id, -4))), 0)
+		from workflow_transition
+		where substr(transition_id, 1, 25) =
+		'WORKFLOW_TRANSITION_' || to_char(sysdate, 'YYMM') || '_'
+		) + row_number() over (order by wt.apply_target_code,
+		wt.transition_id),
+		4,
+		'0'
+		) as transition_id,
+		#{targetIssueTypeId},
+		#{targetRoleId},
+		wt.from_status_id,
+		wt.to_status_id,
+		wt.apply_target_code,
+		#{createdBy},
+		sysdate
+		from workflow_transition wt
+		join issue_type source_it
+		on wt.issue_type_id = source_it.issue_type_id
+		join role source_role
+		on wt.role_id = source_role.role_id
+		join issue_type target_it
+		on target_it.issue_type_id = #{targetIssueTypeId}
+		join role target_role
+		on target_role.role_id = #{targetRoleId}
+		join issue_status fs
+		on wt.from_status_id = fs.issue_status_id
+		join issue_status ts
+		on wt.to_status_id = ts.issue_status_id
+		where wt.issue_type_id = #{sourceIssueTypeId}
+		and wt.role_id = #{sourceRoleId}
+		and wt.apply_target_code in
+		<foreach collection="copyApplyTargetCodeList"
+			item="applyTargetCode" open="(" separator="," close=")">
+			#{applyTargetCode}
+		</foreach>
+		and source_it.user_id = #{userId}
+		and target_it.user_id = #{userId}
+		and source_role.created_by = #{userId}
+		and target_role.created_by = #{userId}
+		and fs.user_id = #{userId}
+		and ts.user_id = #{userId}
 	</insert>
 
 </mapper>

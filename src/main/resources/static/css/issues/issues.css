@@ -1,257 +1,260 @@
 @charset "UTF-8";
 
 .issues-create-page {
-    height: calc(100vh - 126px);
-    padding: 10px 0 8px;
-    overflow: hidden;
+	height: calc(100vh - 126px);
+	padding: 10px 0 8px;
+	overflow: hidden;
 }
 
 body.issues-create-body {
-    overflow: hidden;
+	overflow: hidden;
 }
 
 .issues-create-page .container-fluid {
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    min-height: 0;
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+	min-height: 0;
 }
 
 .issues-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 16px;
-    margin-bottom: 10px;
+	display: flex;
+	justify-content: space-between;
+	align-items: flex-start;
+	gap: 16px;
+	margin-bottom: 10px;
 }
 
 .issues-header h3 {
-    margin: 0 0 3px;
-    font-size: 22px;
-    font-weight: 700;
+	margin: 0 0 3px;
+	font-size: 22px;
+	font-weight: 700;
 }
 
 .issues-header p {
-    margin: 0;
-    color: #777;
-    font-size: 13px;
+	margin: 0;
+	color: #777;
+	font-size: 13px;
 }
 
 .issues-form {
-    flex: 1;
-    min-height: 0;
-    display: flex;
-    flex-direction: column;
+	flex: 1;
+	min-height: 0;
+	display: flex;
+	flex-direction: column;
 }
 
 .issues-form-layout {
-    flex: 1;
-    min-height: 0;
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) 310px;
-    gap: 12px;
-    align-items: stretch;
+	flex: 1;
+	min-height: 0;
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) 310px;
+	gap: 12px;
+	align-items: stretch;
 }
 
-.issues-main-column,
-.issues-side-column {
-    min-width: 0;
-    min-height: 0;
-    display: flex;
+.issues-main-column, .issues-side-column {
+	min-width: 0;
+	min-height: 0;
+	display: flex;
 }
 
 .issues-card {
-    width: 100%;
-    background: #fff;
-    border: 1px solid #e7e7e7;
-    border-radius: 8px;
-    padding: 12px 14px;
-    margin-bottom: 0;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+	width: 100%;
+	background: #fff;
+	border: 1px solid #e7e7e7;
+	border-radius: 8px;
+	padding: 12px 14px;
+	margin-bottom: 0;
+	box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
 }
 
-.issues-main-card,
-.issues-side-card {
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    min-height: 0;
+.issues-main-card, .issues-side-card {
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+	min-height: 0;
 }
 
 .issues-card-title {
-    flex: 0 0 auto;
-    margin-bottom: 8px;
-    padding-bottom: 7px;
-    border-bottom: 1px solid #eee;
+	flex: 0 0 auto;
+	margin-bottom: 8px;
+	padding-bottom: 7px;
+	border-bottom: 1px solid #eee;
 }
 
 .issues-card-title h4 {
-    margin: 0;
-    font-size: 17px;
-    font-weight: 600;
+	margin: 0;
+	font-size: 17px;
+	font-weight: 600;
 }
 
 .issues-top-grid {
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 8px;
+	display: grid;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	gap: 8px;
 }
 
 .form-group {
-    margin-bottom: 8px;
+	margin-bottom: 8px;
 }
 
 .form-group label {
-    margin-bottom: 4px;
-    font-size: 13px;
-    font-weight: 600;
+	margin-bottom: 4px;
+	font-size: 13px;
+	font-weight: 600;
 }
 
 .form-control {
-    height: 31px;
-    padding: 5px 10px;
-    font-size: 13px;
+	height: 31px;
+	padding: 5px 10px;
+	font-size: 13px;
 }
 
 .issues-description-group {
-    flex: 1;
-    min-height: 0;
-    display: flex;
-    flex-direction: column;
+	flex: 1;
+	min-height: 0;
+	display: flex;
+	flex-direction: column;
 }
 
 .issues-description {
-    flex: 1;
-    height: auto;
-    min-height: 210px;
-    resize: vertical;
+	flex: 1;
+	height: auto;
+	min-height: 210px;
+	resize: vertical;
 }
 
 .required {
-    color: #d9534f;
+	color: #d9534f;
 }
 
 .dynamic-field.is-hidden {
-    display: none;
+	display: none;
 }
 
 .field-setting-data {
-    display: none;
+	display: none;
 }
 
 .issues-file-box {
-    flex: 0 0 auto;
-    min-height: 34px;
-    border: 1px solid #d7dbe7;
-    border-radius: 6px;
-    padding: 8px 10px;
-    background: #fafafa;
+	flex: 0 0 auto;
+	min-height: 34px;
+	border: 1px solid #d7dbe7;
+	border-radius: 6px;
+	padding: 8px 10px;
+	background: #fafafa;
 }
 
 .issues-file-input {
-    display: none;
+	display: none;
 }
 
 .issues-file-select {
-    margin: 0;
-    padding: 5px 12px;
-    font-size: 13px;
+	margin: 0;
+	padding: 5px 12px;
+	font-size: 13px;
 }
 
 .issues-file-count {
-    margin-left: 10px;
-    color: #888;
-    font-size: 12px;
+	margin-left: 10px;
+	color: #888;
+	font-size: 12px;
 }
 
 .issues-file-list {
-    margin: 8px 0 0;
-    padding: 0;
-    list-style: none;
+	margin: 8px 0 0;
+	padding: 0;
+	list-style: none;
 }
 
 .issues-file-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 10px;
-    padding: 6px 0;
-    border-bottom: 1px solid #eee;
-    font-size: 12px;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: 10px;
+	padding: 6px 0;
+	border-bottom: 1px solid #eee;
+	font-size: 12px;
 }
 
 .issues-file-item:last-child {
-    border-bottom: 0;
+	border-bottom: 0;
 }
 
 .issues-file-name {
-    display: inline-flex;
-    align-items: center;
-    min-width: 0;
-    color: #555;
+	display: inline-flex;
+	align-items: center;
+	min-width: 0;
+	color: #555;
 }
 
 .issues-file-name small {
-    color: #888;
+	color: #888;
 }
 
 .issues-file-item button {
-    flex: 0 0 auto;
-    border: 1px solid #d7dbe7;
-    border-radius: 5px;
-    background: #fff;
-    color: #555;
-    font-size: 12px;
-    padding: 3px 8px;
+	flex: 0 0 auto;
+	border: 1px solid #d7dbe7;
+	border-radius: 5px;
+	background: #fff;
+	color: #555;
+	font-size: 12px;
+	padding: 3px 8px;
 }
 
 .issues-form-actions {
-    flex: 0 0 auto;
-    display: flex;
-    justify-content: flex-end;
-    gap: 6px;
-    margin-top: 8px;
-    margin-bottom: 0;
+	flex: 0 0 auto;
+	display: flex;
+	justify-content: flex-end;
+	gap: 6px;
+	margin-top: 8px;
+	margin-bottom: 0;
 }
 
 .issues-form-actions .btn {
-    padding: 5px 12px;
-    font-size: 13px;
+	padding: 5px 12px;
+	font-size: 13px;
 }
 
-@media (max-width: 1200px) {
-    .issues-form-layout {
-        grid-template-columns: minmax(0, 1fr) 300px;
-    }
-
-    .issues-top-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
+@media ( max-width : 1200px) {
+	.issues-form-layout {
+		grid-template-columns: minmax(0, 1fr) 300px;
+	}
+	.issues-top-grid {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
 }
 
-@media (max-width: 992px) {
-    body.issues-create-body {
-        overflow: auto;
-    }
-
-    .issues-create-page {
-        height: auto;
-        overflow: visible;
-    }
-
-    .issues-form-layout,
-    .issues-top-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .issues-description {
-        height: 220px;
-        min-height: 220px;
-    }
+@media ( max-width : 992px) {
+	body.issues-create-body {
+		overflow: auto;
+	}
+	.issues-create-page {
+		height: auto;
+		overflow: visible;
+	}
+	.issues-form-layout, .issues-top-grid {
+		grid-template-columns: 1fr;
+	}
+	.issues-description {
+		height: 220px;
+		min-height: 220px;
+	}
 }
 
-@media (max-width: 640px) {
-    .issues-header {
-        flex-direction: column;
-    }
+@media ( max-width : 640px) {
+	.issues-header {
+		flex-direction: column;
+	}
+}
+
+/* ==============================
+   일감 생성 URL 구조 수정
+   프로젝트는 URL 기준으로 고정 표시
+============================== */
+.issues-readonly-control {
+	background-color: #f7f8fb;
+	color: #555555;
+	cursor: default;
 }

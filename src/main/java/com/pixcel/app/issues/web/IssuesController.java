@@ -6,6 +6,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
@@ -15,6 +16,7 @@ import com.pixcel.app.commonfile.service.CommonFileService;
 import com.pixcel.app.commonfile.service.CommonFileUploadDTO;
 import com.pixcel.app.issues.service.IssuesService;
 import com.pixcel.app.issues.service.IssuesVO;
+import com.pixcel.app.web.LoginRequiredException;
 
 import lombok.RequiredArgsConstructor;
 
@@ -22,180 +24,165 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class IssuesController {
 
-    private final IssuesService issuesService;
-    private final CommonFileService commonFileService;
+	private final IssuesService issuesService;
+	private final CommonFileService commonFileService;
 
-    // 일감 메뉴 진입 시 오늘 구현 범위인 일감 등록 화면으로 이동한다.
-    @GetMapping("/issues")
-    public String issues(@CookieValue(value = "userId", required = false) String userId,
-                         @RequestParam(value = "projectId", required = false) String projectId,
-                         RedirectAttributes redirectAttributes) {
+	// ==============================
+	// 일감 생성 URL 구조 수정
+	// 프로젝트가 선택되지 않은 /issues 진입은 프로젝트 목록으로 보낸다.
+	// ==============================
+	@GetMapping("/issues")
+	public String issues() {
+		return "redirect:/project/list";
+	}
 
-        String loginUserId = getLoginUserId(userId);
-        String selectedProjectId = issuesService.getSelectedProjectId(projectId, loginUserId);
+	// ==============================
+	// 일감 생성 URL 구조 수정
+	// 프로젝트 상세 URL 기준으로 일감 등록 화면으로 이동한다.
+	// 예: /project/PROJECT_2606_0003/issues/create
+	// ==============================
+	@GetMapping("/project/{projectId}/issues/create")
+	public String issueCreateForm(@CookieValue(value = "userId", required = false) String userId,
+			@PathVariable("projectId") String projectId, Model model) {
 
-        if (selectedProjectId != null) {
-            redirectAttributes.addAttribute("projectId", selectedProjectId);
-        }
+		String loginUserId = getLoginUserId(userId);
 
-        return "redirect:/issues/create";
-    }
+		addCreateFormModel(model, loginUserId, projectId);
 
-    // 일감 등록 화면으로 이동한다.
-    @GetMapping("/issues/create")
-    public String issueCreateForm(@CookieValue(value = "userId", required = false) String userId,
-                                  @RequestParam(value = "projectId", required = false) String projectId,
-                                  Model model) {
+		return "issues/create";
+	}
 
-        String loginUserId = getLoginUserId(userId);
-        String selectedProjectId = issuesService.getSelectedProjectId(projectId, loginUserId);
+	// ==============================
+	// 일감 생성 URL 구조 수정
+	// URL의 projectId를 일감의 projectId로 강제 세팅한다.
+	// 화면 hidden 값이 조작되어도 URL 기준 projectId가 저장된다.
+	// ==============================
+	@PostMapping("/project/{projectId}/issues/create")
+	public String issueCreate(@CookieValue(value = "userId", required = false) String userId,
+			@PathVariable("projectId") String projectId, IssuesVO issue,
+			@RequestParam(value = "files", required = false) List<MultipartFile> files,
+			RedirectAttributes redirectAttributes) {
 
-        addCreateFormModel(model, loginUserId, selectedProjectId);
+		String loginUserId = getLoginUserId(userId);
 
-        return "issues/create";
-    }
+		issue.setProjectId(projectId);
 
-    // 신규 일감을 등록한다.
-    @PostMapping("/issues/create")
-    public String issueCreate(@CookieValue(value = "userId", required = false) String userId,
-                              IssuesVO issue,
-                              @RequestParam(value = "files", required = false) List<MultipartFile> files,
-                              RedirectAttributes redirectAttributes) {
+		try {
+			issuesService.createIssue(issue, loginUserId);
 
-        String loginUserId = getLoginUserId(userId);
+			int selectedFileCount = countSelectedFiles(files);
+			int uploadFileCount = uploadIssueFiles(issue, loginUserId, files);
 
-        try {
-            issuesService.createIssue(issue, loginUserId);
-            int selectedFileCount = countSelectedFiles(files);
-            int uploadFileCount = uploadIssueFiles(issue, loginUserId, files);
+			redirectAttributes.addFlashAttribute("message", "일감이 등록되었습니다.");
+			redirectAttributes.addFlashAttribute("createdIssueId", issue.getIssueId());
 
-            redirectAttributes.addFlashAttribute("message", "일감이 등록되었습니다.");
-            redirectAttributes.addFlashAttribute("createdIssueId", issue.getIssueId());
-            if (selectedFileCount > uploadFileCount) {
-                redirectAttributes.addFlashAttribute(
-                        "fileWarning",
-                        "일감은 등록되었지만 일부 첨부파일을 저장하지 못했습니다."
-                );
-            }
+			if (selectedFileCount > uploadFileCount) {
+				redirectAttributes.addFlashAttribute("fileWarning", "일감은 등록되었지만 일부 첨부파일을 저장하지 못했습니다.");
+			}
 
-            redirectAttributes.addAttribute("projectId", issue.getProjectId());
-            return "redirect:/issues/create";
+			return "redirect:/project/" + projectId + "/issues/create";
 
-        } catch (IllegalArgumentException e) {
-            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
-            redirectAttributes.addFlashAttribute("issue", issue);
-            redirectAttributes.addAttribute("projectId", issue.getProjectId());
+		} catch (IllegalArgumentException e) {
+			issue.setProjectId(projectId);
 
-            return "redirect:/issues/create";
-        }
-    }
+			redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+			redirectAttributes.addFlashAttribute("issue", issue);
 
-    // 기존 file 모듈은 건드리지 않고, issues 전용 commonfile 경로로 일감 첨부파일을 연결한다.
-    private int uploadIssueFiles(IssuesVO issue, String userId, List<MultipartFile> files) {
-        if (files == null || files.isEmpty()) {
-            return 0;
-        }
+			return "redirect:/project/" + projectId + "/issues/create";
+		}
+	}
 
-        List<MultipartFile> uploadFiles = files.stream()
-                .filter(file -> file != null && !file.isEmpty())
-                .toList();
+	// 기존 file 모듈은 건드리지 않고, issues 전용 commonfile 경로로 일감 첨부파일을 연결한다.
+	private int uploadIssueFiles(IssuesVO issue, String userId, List<MultipartFile> files) {
+		if (files == null || files.isEmpty()) {
+			return 0;
+		}
 
-        if (uploadFiles.isEmpty()) {
-            return 0;
-        }
+		List<MultipartFile> uploadFiles = files.stream().filter(file -> file != null && !file.isEmpty()).toList();
 
-        CommonFileUploadDTO uploadDTO = new CommonFileUploadDTO();
-        uploadDTO.setProjectId(issue.getProjectId());
-        uploadDTO.setVersionId(issue.getVersionId());
-        uploadDTO.setFileCode(CommonFileService.ISSUE_FILE_CODE);
-        uploadDTO.setUploadUserId(userId);
-        uploadDTO.setConnectAddress(issue.getIssueId());
+		if (uploadFiles.isEmpty()) {
+			return 0;
+		}
 
-        return commonFileService.uploadFiles(uploadFiles, uploadDTO);
-    }
+		CommonFileUploadDTO uploadDTO = new CommonFileUploadDTO();
+		uploadDTO.setProjectId(issue.getProjectId());
+		uploadDTO.setVersionId(issue.getVersionId());
+		uploadDTO.setFileCode("f001");
+		uploadDTO.setUploadUserId(userId);
+		uploadDTO.setConnectAddress(issue.getIssueId());
 
-    private int countSelectedFiles(List<MultipartFile> files) {
-        if (files == null || files.isEmpty()) {
-            return 0;
-        }
+		return commonFileService.uploadFiles(uploadFiles, uploadDTO);
+	}
 
-        return (int) files.stream()
-                .filter(file -> file != null && !file.isEmpty())
-                .count();
-    }
+	private int countSelectedFiles(List<MultipartFile> files) {
+		if (files == null || files.isEmpty()) {
+			return 0;
+		}
 
-    // 생성 화면에 필요한 목록 데이터를 담는다.
-    private void addCreateFormModel(Model model, String userId, String projectId) {
-        List<IssuesVO> projectList = issuesService.getProjectList(userId);
+		return (int) files.stream().filter(file -> file != null && !file.isEmpty()).count();
+	}
 
-        model.addAttribute("projectList", projectList);
-        model.addAttribute("projectId", projectId);
-        model.addAttribute("selectedProjectId", projectId);
+	// ==============================
+	// 일감 생성 URL 구조 수정
+	// 프로젝트 선택 목록을 제거하고 URL의 projectId 기준으로 화면 데이터를 구성한다.
+	// ==============================
+	private void addCreateFormModel(Model model, String userId, String projectId) {
+		IssuesVO projectInfo = issuesService.getProjectDetailForCreate(projectId, userId);
 
-        if (projectId == null) {
-            model.addAttribute("issueTypeList", List.of());
-            model.addAttribute("fieldSettingList", List.of());
-            model.addAttribute("versionList", List.of());
-            model.addAttribute("milestoneList", List.of());
-            model.addAttribute("priorityList", List.of());
-            model.addAttribute("assigneeList", List.of());
-            model.addAttribute("parentIssueList", List.of());
+		List<IssuesVO> issueTypeList = issuesService.getIssueTypeList(projectId, userId);
+		List<IssuesVO> versionList = issuesService.getVersionList(projectId, userId);
+		List<IssuesVO> priorityList = issuesService.getPriorityList(projectId, userId);
 
-            addEmptyIssueModel(model);
+		model.addAttribute("projectInfo", projectInfo);
+		model.addAttribute("projectId", projectId);
+		model.addAttribute("selectedProjectId", projectId);
+		model.addAttribute("issueTypeList", issueTypeList);
+		model.addAttribute("fieldSettingList", issuesService.getFieldSettingList(projectId, userId));
+		model.addAttribute("versionList", versionList);
+		model.addAttribute("milestoneList", issuesService.getMilestoneList(projectId, userId));
+		model.addAttribute("priorityList", priorityList);
+		model.addAttribute("assigneeList", issuesService.getAssigneeList(projectId, userId));
+		model.addAttribute("parentIssueList", issuesService.getParentIssueList(projectId, userId));
 
-            return;
-        }
+		if (!model.containsAttribute("issue")) {
+			IssuesVO issue = new IssuesVO();
+			issue.setProjectId(projectId);
+			issue.setProgressRate(0);
 
-        List<IssuesVO> issueTypeList = issuesService.getIssueTypeList(projectId, userId);
-        List<IssuesVO> versionList = issuesService.getVersionList(projectId, userId);
-        List<IssuesVO> priorityList = issuesService.getPriorityList(projectId, userId);
+			if (!issueTypeList.isEmpty()) {
+				issue.setIssueTypeId(issueTypeList.get(0).getIssueTypeId());
+			}
 
-        model.addAttribute("issueTypeList", issueTypeList);
-        model.addAttribute("fieldSettingList", issuesService.getFieldSettingList(projectId, userId));
-        model.addAttribute("versionList", versionList);
-        model.addAttribute("milestoneList", issuesService.getMilestoneList(projectId, userId));
-        model.addAttribute("priorityList", priorityList);
-        model.addAttribute("assigneeList", issuesService.getAssigneeList(projectId, userId));
-        model.addAttribute("parentIssueList", issuesService.getParentIssueList(projectId, userId));
+			if (!versionList.isEmpty()) {
+				issue.setVersionId(versionList.get(0).getVersionId());
+			}
 
-        if (!model.containsAttribute("issue")) {
-            IssuesVO issue = new IssuesVO();
-            issue.setProjectId(projectId);
-            issue.setProgressRate(0);
+			for (IssuesVO priority : priorityList) {
+				if ("Y".equals(priority.getDefaultYn())) {
+					issue.setSettingCodeId(priority.getSettingCodeId());
+					break;
+				}
+			}
 
-            if (!issueTypeList.isEmpty()) {
-                issue.setIssueTypeId(issueTypeList.get(0).getIssueTypeId());
-            }
+			model.addAttribute("issue", issue);
+			return;
+		}
 
-            if (!versionList.isEmpty()) {
-                issue.setVersionId(versionList.get(0).getVersionId());
-            }
+		Object issueObject = model.asMap().get("issue");
 
-            for (IssuesVO priority : priorityList) {
-                if ("Y".equals(priority.getDefaultYn())) {
-                    issue.setSettingCodeId(priority.getSettingCodeId());
-                    break;
-                }
-            }
+		if (issueObject instanceof IssuesVO) {
+			IssuesVO issue = (IssuesVO) issueObject;
+			issue.setProjectId(projectId);
+		}
+	}
 
-            model.addAttribute("issue", issue);
-        }
-    }
+	// 현재 로그인 사용자 ID를 반환한다.
+	private String getLoginUserId(String userId) {
 
-    private void addEmptyIssueModel(Model model) {
-        if (!model.containsAttribute("issue")) {
-            IssuesVO issue = new IssuesVO();
-            issue.setProgressRate(0);
-            model.addAttribute("issue", issue);
-        }
-    }
+		if (userId == null || userId.trim().isEmpty()) {
+			throw new LoginRequiredException();
+		}
 
-    // 현재 로그인 사용자 ID를 반환한다.
-    private String getLoginUserId(String userId) {
-        if (userId == null || userId.trim().isEmpty()) {
-            throw new IllegalArgumentException("로그인이 필요합니다.");
-        }
-
-        return userId;
-    }
+		return userId;
+	}
 }
