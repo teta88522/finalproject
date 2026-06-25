@@ -51,8 +51,8 @@ public class DocumentController {
 	@GetMapping("/list/{categoryId}")
     public String documentCategoryList(Model model, @CookieValue(value="userId", required =false)String userId, @PathVariable String categoryId) {
 		System.out.println(categoryId);
-	    
-	    List<DocumentVO> categorydocList = documentService.selectCategorydoc();
+	    List<DocumentVO> categorydocList = documentService.selectCategorydoc(categoryId);
+	    System.out.println(categorydocList.size());
 	    model.addAttribute("categorydocList",categorydocList);
         return "document/documentCategoryList";
     }
@@ -60,7 +60,7 @@ public class DocumentController {
 	@GetMapping("/add")
     public String documentAdd(Model model, @CookieValue(value="userId", required =false)String userId) {
 		MilestoneSearchVO vo = new MilestoneSearchVO();
-		vo.setProjectId("PROJECT_ID_2606_0001"); // 이거 필수
+		vo.setProjectId("PROJECT_ID_2606_0001");
 		List<MilestonesVO> milestoneList = milestonesService.getMilestoneList(vo);
 
 	    model.addAttribute("milestoneList", milestoneList);
@@ -97,6 +97,17 @@ public class DocumentController {
 		System.out.print(documentVO.getDocumentId() + "문서 등록");
         return "redirect:/document/list";
     }
+	
+	@GetMapping("/detail/{documentId}")
+    public String documentDetail(Model model, @CookieValue(value="userId", required =false)String userId, @PathVariable String documentId) {
+		
+		System.out.println(documentId);
+	    DocumentVO docDetail = documentService.selectDetail(documentId);
+	    model.addAttribute("docDetail",docDetail);
+
+        return "document/documentDetail";
+    }
+	
 	
 	@GetMapping("/update")
     public String documentUpdate() {

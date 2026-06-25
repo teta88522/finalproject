@@ -43,8 +43,13 @@ public class DocumentServiceImpl implements DocumentService{
 	}
 
 	@Override
-	public List<DocumentVO> selectCategorydoc() {
-		return documentMapper.selectCategorydoc();
+	public List<DocumentVO> selectCategorydoc(String categoryId) {
+		return documentMapper.selectCategorydoc(categoryId);
+	}
+
+	@Override
+	public DocumentVO selectDetail(String documentId) {
+		return documentMapper.selectDetail(documentId);
 	}
 
 }

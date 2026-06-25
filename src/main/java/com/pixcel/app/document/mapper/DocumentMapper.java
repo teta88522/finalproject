@@ -13,5 +13,6 @@ public interface DocumentMapper {
 	public List<DocumentHistoryVO> selectHistoryAll();
 	public List<DocumentCategoryVO> selectCategoryAll();
 	public List<DocumentVO> selectNoCategory();
-	public List<DocumentVO> selectCategorydoc();
+	public List<DocumentVO> selectCategorydoc(String categoryId);
+	public DocumentVO selectDetail(String documentId);
 }
