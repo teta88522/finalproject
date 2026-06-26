@@ -57,15 +57,10 @@
                           data-use-yn=${setting.useYn},
                           data-required-yn=${setting.requiredYn}"></div>
 
-				<!-- ==============================
-                 일감 생성 URL 구조 수정
-                 프로젝트는 URL의 projectId 기준으로 고정한다.
-                 프로젝트 선택 select는 제거한다.
-            ============================== -->
 				<form
 					th:action="@{/project/{projectId}/issues/create(projectId=${selectedProjectId})}"
 					th:object="${issue}" method="post" enctype="multipart/form-data"
-					id="issueForm" class="issues-form">
+					id="documentForm" class="issues-form">
 
 					<input type="hidden" th:field="*{projectId}">
 
@@ -86,8 +81,8 @@
 									</div>
 
 									<div class="form-group">
-										<label for="issueTypeId">유형 <span class="required">*</span></label>
-										<select id="issueTypeId" th:field="*{issueTypeId}"
+										<label for="issueTypeId"> 유형 <span class="required">*</span>
+										</label> <select id="issueTypeId" th:field="*{issueTypeId}"
 											class="form-control" required>
 											<option value="">선택</option>
 											<option th:each="issueType : ${issueTypeList}"
@@ -97,8 +92,8 @@
 									</div>
 
 									<div class="form-group">
-										<label for="versionId">버전 <span class="required">*</span></label>
-										<select id="versionId" th:field="*{versionId}"
+										<label for="versionId"> 버전 <span class="required">*</span>
+										</label> <select id="versionId" th:field="*{versionId}"
 											class="form-control" required>
 											<option value="">선택</option>
 											<option th:each="version : ${versionList}"
@@ -123,8 +118,8 @@
 								</div>
 
 								<div class="form-group">
-									<label for="title">제목 <span class="required">*</span></label> <input
-										type="text" id="title" th:field="*{title}"
+									<label for="title"> 제목 <span class="required">*</span>
+									</label> <input type="text" id="title" th:field="*{title}"
 										class="form-control" maxlength="255" required>
 								</div>
 
@@ -136,19 +131,17 @@
 
 								<div class="form-group">
 									<label>첨부파일</label>
-									<div class="issues-file-box common-file-upload"
-										data-file-input-id="issueFileInput"
-										data-file-list-id="issueFileList"
-										data-file-count-id="issueFileCount"
-										data-file-form-id="issueForm">
+
+									<div class="issues-file-box">
 										<div>
-											<label for="issueFileInput"
+											<label for="fileInput"
 												class="btn btn-custon-rounded-four btn-default issues-file-select">
-												파일 선택 </label> <input type="file" id="issueFileInput" name="files"
+												파일 선택 </label> <input type="file" id="fileInput" name="files"
 												multiple class="issues-file-input"> <span
-												id="issueFileCount" class="issues-file-count">파일 0개</span>
+												id="fileCount" class="issues-file-count">파일 0개</span>
 										</div>
-										<ul id="issueFileList" class="issues-file-list"></ul>
+
+										<ul id="fileList" class="issues-file-list"></ul>
 									</div>
 								</div>
 							</div>
@@ -186,8 +179,8 @@
 								</div>
 
 								<div class="form-group">
-									<label for="settingCodeId">우선순위 <span class="required">*</span></label>
-									<select id="settingCodeId" th:field="*{settingCodeId}"
+									<label for="settingCodeId"> 우선순위 <span class="required">*</span>
+									</label> <select id="settingCodeId" th:field="*{settingCodeId}"
 										class="form-control" required>
 										<option value="">선택</option>
 										<option th:each="priority : ${priorityList}"
@@ -211,7 +204,8 @@
 										<option value="">선택</option>
 										<option th:each="parentIssue : ${parentIssueList}"
 											th:value="${parentIssue.parentIssueId}"
-											th:text="|${parentIssue.parentIssueTitle} (${parentIssue.parentIssueId})|">상위일감</option>
+											th:text="|${parentIssue.parentIssueTitle} (${parentIssue.parentIssueId})|">
+											상위일감</option>
 									</select>
 								</div>
 
@@ -233,8 +227,8 @@
 
 					<div class="issues-form-actions">
 						<a
-							th:href="@{/project/{projectId}(projectId=${selectedProjectId})}"
-							class="btn btn-custon-rounded-four btn-default">취소</a>
+							th:href="@{/project/{projectId}/issues(projectId=${selectedProjectId})}"
+							class="btn btn-custon-rounded-four btn-default"> 취소 </a>
 
 						<button type="submit"
 							class="btn btn-custon-rounded-four btn-primary"
@@ -304,6 +298,7 @@
 
 										group.classList.toggle('is-hidden',
 												!isUsed);
+
 										group
 												.querySelectorAll(
 														'.dynamic-required')
@@ -368,7 +363,6 @@
 				applyFieldSettings();
 			})();
 		</script>
-		<script th:src="@{/js/commonfile/common-file-upload.js}"></script>
 
 	</div>
 </body>

@@ -19,9 +19,27 @@
         from document
     </select>
     
-    <!-- 문서에 파일조회 -->
+    <select id="selectHistoryAll" resultType="DocumentHistoryVO">
+        select
+        	h.document_history_id,
+            h.document_id,
+            h.created_by,
+            u.user_name,
+            h.title,
+            h.description,
+            h.status_code,
+            h.status_name,
+            h.created_at,
+            h.document_version_id
+        from document_history h
+        LEFT JOIN users u ON h.created_by = u.user_id
+        WHERE h.document_id = #{documentId}
+    </select>
+    
+    <!-- 문서에 카테고리 없는 파일조회 -->
     <select id="selectNoCategory" resultType="DocumentVO">
         select
+        	count(*) over() as total_cnt,
             d.document_id,
             d.project_id,
             d.document_category_id,
@@ -41,9 +59,10 @@
         LEFT JOIN project_version v ON d.version_id = v.version_id
         LEFT JOIN users u ON d.created_by = u.user_id
         WHERE document_category_id IS NULL
+        AND project_id = #{projectId}
     </select>
     
-    <!-- 문서에 파일조회 -->
+    <!-- 문서에 카테고리있는 파일 목록조회 -->
     <select id="selectCategorydoc" resultType="DocumentVO">
         select
             d.document_id,
@@ -69,7 +88,7 @@
         WHERE d.document_category_id = #{documentCategoryId}
     </select>
     
-    <!-- 문서에 파일조회 -->
+    <!-- 문서에 파일 상세 조회 -->
     <select id="selectDetail" resultType="DocumentVO">
         select
             d.document_id,
@@ -95,7 +114,35 @@
         WHERE d.document_id = #{documentId}
     </select>
     
-    <!-- 문서에 파일조회 -->
+    <!-- 문서에 파일 상세 조회 -->
+    <select id="selectHistoryDetail" resultType="DocumentVO">
+        select
+            d.document_id,
+            d.project_id,
+            d.document_category_id,
+            c.category_name,
+            d.version_id,
+            v.version_name,
+            d.milestone_id,
+            m.title as milestone_title,
+            d.created_by,
+            u.user_name,
+            h.title,
+            h.description,
+            d.setting_code_id,
+            d.status_code,
+            d.status_name,
+            h.document_version_id
+        from document d
+        LEFT JOIN milestone m ON d.milestone_id = m.milestone_id
+        LEFT JOIN project_version v ON d.version_id = v.version_id
+        LEFT JOIN users u ON d.created_by = u.user_id
+        LEFT JOIN document_category c ON d.document_category_id = c.document_category_id
+        LEFT JOIN document_history h ON d.document_id = h.document_id
+        WHERE h.document_history_id = #{documentHistoryId}
+    </select>
+    
+    <!-- 문서에 카테고리 조회 -->
     <select id="selectCategoryAll" resultType="DocumentCategoryVO">
         select
         	count(*) over() as total_cnt,
@@ -103,6 +150,7 @@
             project_id,
             category_name
         from document_category
+        WHERE project_id = #{projectId}
     </select>
 
 
@@ -145,7 +193,7 @@
             
         ) values (
             #{documentId},
-            'PROJECT_ID_2606_0006',
+            #{projectId},
             #{documentCategoryId},
             #{versionId},
             #{milestoneId},
@@ -189,8 +237,87 @@
             category_name
         ) values (
             #{documentCategoryId},
-            'PROJECT_ID_2606_0006',
+            #{projectId},
             #{categoryName}
         )
     </insert>
+    
+    <!-- 문서 등록 -->
+    <insert id="insertDocumentHistory" parameterType="DocumentHistoryVO">
+
+        <selectKey keyProperty="documentHistoryId"
+           resultType="string"
+           order="BEFORE">
+    	SELECT
+        	'DOCUMENT_HISTORY_'
+        	|| TO_CHAR(SYSDATE, 'YYMM')
+        	|| '_'
+        	|| LPAD(
+            	NVL(MAX(TO_NUMBER(SUBSTR(document_history_id, -4))), 0) + 1,
+            	4,
+            	'0'
+        	)
+    	FROM document_history
+    	WHERE document_history_id LIKE
+          'DOCUMENT_HISTORY_' || TO_CHAR(SYSDATE, 'YYMM') || '_%'
+		</selectKey>
+
+        insert into document_history (
+        	document_history_id,
+            document_id,
+            created_by,
+            title,
+            description,
+            <if test="statusCode != null and statusCode != ''">
+            status_code,
+            </if>
+            <if test="statusName != null and statusName != ''">
+            status_name,
+            </if>
+            document_version_id
+            
+        ) values (
+        	#{documentHistoryId},
+            #{documentId},
+            #{createdBy},
+            #{title},
+            #{description},
+            <if test="statusCode != null and statusCode != ''">
+				#{statusCode},
+			</if>
+            <if test="statusName != null and statusName != ''">
+				#{statusName},
+			</if>
+            #{documentVersionId}
+        )
+    </insert>
+    
+    <!-- 파일 다음버전 업데이트 조회 -->
+    <select id="selectNextDocumentVersion" resultType="int">
+    SELECT NVL(MAX(document_version_id), 0) + 1 AS next_version
+    FROM document
+    WHERE document_id = #{documentId}
+	</select>
+    
+    <!-- 문서 수정 -->
+    <update id="updateDocument" parameterType="DocumentVO">
+    UPDATE document
+    <set>
+        created_by = #{createdBy},
+        title = #{title},
+        description = #{description},
+
+        <if test="statusCode != null and statusCode != ''">
+            status_code = #{statusCode},
+        </if>
+
+        <if test="statusName != null and statusName != ''">
+            status_name = #{statusName},
+        </if>
+
+        document_version_id = #{documentVersionId}
+    </set>
+
+    WHERE document_id = #{documentId}
+</update>
 </mapper>

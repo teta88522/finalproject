@@ -17,5 +17,7 @@ public interface FileMapper {
             @Param("projectId") String projectId,
             @Param("connectAddress") String connectAddress,
             @Param("originalName") String originalName);
-	public int selectNextFileVersion( String connectAddress);
+	public int selectNextFileVersion( @Param("projectId") String projectId,
+            @Param("connectAddress") String connectAddress,
+            @Param("originalName") String originalName);
 }

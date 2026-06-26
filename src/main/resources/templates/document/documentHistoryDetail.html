@@ -1,0 +1,146 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{common/layouts/default_layout}">
+<head>
+<meta charset="UTF-8">
+</head>
+<body>
+<div layout:fragment="Content">
+<div class="container-fluid" style="height:calc(100vh - 130px); display:flex; flex-direction:column; padding-bottom:24px;">
+    <div style="background:#fff; border-radius:12px; box-shadow:0 2px 12px rgba(0,0,0,0.08); padding:24px; flex:1; display:flex; flex-direction:column; overflow:hidden;">
+ 
+        <!-- 헤더 고정 -->
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-shrink:0;">
+            <h4 style="margin:0; font-size:16px; font-weight:500; color:#333;">
+                <span style="color:#bbb; margin:0 6px;">&gt;&gt;</span>
+                <span th:text="${docDetail.title}"></span>
+            </h4>
+            <div>
+                <!-- ① 비활성 이력 -->
+                <button type="button" class="btn btn-default btn-custon-three btn-custon-rounded-four" style="font-size:13px; padding:6px 16px; margin-left:4px;">
+                    <i class="fa fa-history" style="margin-right:5px;"></i> 비활성 이력
+                </button>
+                <!-- ② 비활성 -->
+                <button type="button" class="btn btn-warning btn-custon-three btn-custon-rounded-four" style="font-size:13px; padding:6px 16px; margin-left:4px;">
+                    <i class="fa fa-ban" style="margin-right:5px;"></i> 비활성
+                </button>
+            </div>
+        </div>
+ 
+        <!-- 내용 스크롤 -->
+        <div style="flex:1; overflow-y:auto;">
+            <div style="border:1px solid #eef0f3; border-radius:8px; overflow:hidden;">
+ 
+                <!-- 제목 -->
+                <div style="display:flex; align-items:center; border-bottom:1px solid #f3f4f6; padding:12px 16px;">
+                    <label style="width:120px; font-size:13px; color:#888; font-weight:500; margin:0;">제목</label>
+                    <span style="flex:1; font-size:13px; color:#333;" th:text="${docDetail.title}"></span>
+                </div>
+ 
+                <!-- 마일스톤 -->
+                <div style="display:flex; align-items:center; border-bottom:1px solid #f3f4f6; padding:12px 16px;">
+                    <label style="width:120px; font-size:13px; color:#888; font-weight:500; margin:0;">마일스톤</label>
+                    <span style="flex:1; font-size:13px; color:#333;">
+                        <span style="color:#888;">마일스톤 : </span>
+                        <span th:text="${docDetail.milestoneTitle}"></span>
+                    </span>
+                </div>
+ 
+                <!-- 설명 -->
+                <div style="display:flex; align-items:flex-start; border-bottom:1px solid #f3f4f6; padding:12px 16px;">
+                    <label style="width:120px; font-size:13px; color:#888; font-weight:500; margin:0; padding-top:4px;">설명</label>
+                    <span style="flex:1; font-size:13px; color:#333; white-space:pre-line; line-height:1.75;"
+                          th:text="${docDetail.description}"></span>
+                </div>
+ 
+                <!-- 첨부파일 -->
+                <div style="display:flex; align-items:flex-start; border-bottom:1px solid #f3f4f6; padding:12px 16px; background:#f8f9fb;">
+                    <label style="width:120px; font-size:13px; color:#888; font-weight:500; margin:0; padding-top:4px;">첨부파일</label>
+                    <div style="flex:1;">
+                        <!-- 첨부파일 목록 -->
+                        <ul style="list-style:none; padding:0; margin:0; font-size:12px; color:#666;">
+                            <li 
+                                style="display:flex; align-items:center; justify-content:space-between; padding:5px 8px; background:#fff; border:1px solid #eee; border-radius:4px; margin-bottom:4px;"  th:each="file : ${fileList}" th:value="${file.fileId}">
+                                <span>
+                                    <i class="fa fa-file-o" style="margin-right:6px; color:#4a6cf7;"></i>
+                                    <span th:text="${file.originalName}" ></span>
+                                    <span th:text="'v' + ${file.fileVersion}"></span>
+                                </span>
+                                <a class="btn btn-default btn-custon-three btn-custon-rounded-four btn-xs" th:href="@{/document/detail/{documentId}/{fileId}/download(
+        									documentId=${docDetail.documentId},
+        									fileId=${file.fileId})}">
+                                    <i class="fa fa-download"></i>
+                                </a>
+                            </li>
+                            <li 
+                                style="font-size:12px; color:#aaa; padding:4px 0;">
+                                첨부된 파일이 없습니다.
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+ 
+                <!-- 연결된 파일 목록 -->
+                <div style="display:flex; align-items:flex-start; padding:12px 16px;">
+                    <label style="width:120px; font-size:13px; color:#888; font-weight:500; margin:0; padding-top:4px;">연결된 파일 목록</label>
+                    <ul style="flex:1; list-style:none; padding:0; margin:0; font-size:13px; color:#555;">
+                        <li style="padding:4px 0; border-bottom:1px dashed #f0f0f0;"
+                                    >
+                            <i class="fa fa-link" style="margin-right:6px; color:#aaa; font-size:12px;"></i>
+                            <span></span>
+                        </li>
+                    </ul>
+                </div>
+ 
+            </div>
+        </div>
+ 
+        <!-- 하단 버튼 바 -->
+        <div style="display:flex; justify-content:flex-end; gap:6px; padding-top:16px; border-top:1px solid #f0f0f0; flex-shrink:0; margin-top:4px;">
+            <!-- ④ 다운로드 이력 -->
+            <button type="button" class="btn btn-default btn-custon-three btn-custon-rounded-four" style="font-size:13px; padding:6px 16px;">
+                <i class="fa fa-history" style="margin-right:5px;"></i> 다운로드 이력
+            </button>
+            <!-- ⑤ 파일 다운로드 -->
+            <a class="btn btn-info btn-custon-three btn-custon-rounded-four"
+   					style="font-size:13px; padding:6px 16px;"
+   					th:href="@{/document/detail/{documentId}/download(documentId=${docDetail.documentId})}">
+
+    			<i class="fa fa-download" style="margin-right:5px;"></i>
+    			파일 다운로드
+			</a>
+            <!-- ⑥ 목록 -->
+            <a th:href="@{/document/list}" class="btn btn-default btn-custon-three btn-custon-rounded-four" style="font-size:13px; padding:6px 16px;">
+                <i class="fa fa-list" style="margin-right:5px;"></i> 목록
+            </a>
+            <!-- ⑦ 수정 -->
+            <a th:href="@{/document/update/{id}(id=${docDetail.documentId})}" class="btn btn-primary btn-custon-three btn-custon-rounded-four" style="font-size:13px; padding:6px 16px;">
+                <i class="fa fa-pencil" style="margin-right:5px;"></i> 수정
+            </a>
+            <!-- ⑧ 삭제 -->
+            <button type="button" class="btn btn-danger btn-custon-three btn-custon-rounded-four" style="font-size:13px; padding:6px 16px;" onclick="confirmDelete()">
+                <i class="fa fa-trash" style="margin-right:5px;"></i> 삭제
+            </button>
+        </div>
+ 
+    </div>
+</div>
+ 
+<script th:inline="javascript">
+    function confirmDelete() {
+        if (confirm('정말 삭제하시겠습니까?')) {
+            const documentId = /*[[${docDetail.documentId}]]*/ '';
+            fetch('/document/delete/' + documentId, { method: 'POST' })
+                .then(res => {
+                    if (res.ok) window.location.href = '/document/list';
+                    else alert('삭제 중 오류가 발생했습니다.');
+                });
+        }
+    }
+</script>
+
+</div>
+</body>
+
+</html>

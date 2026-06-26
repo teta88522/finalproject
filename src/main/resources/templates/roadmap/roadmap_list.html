@@ -1,132 +1,137 @@
 <!doctype html>
-<html
-  xmlns:th="http://www.thymeleaf.org"
-  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-  layout:decorate="~{common/layouts/default_layout}"
->
-  <head>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{common/layouts/default_layout}">
+<head>
     <meta charset="UTF-8" />
     <title>로드맵(버전) 목록</title>
     <link rel="stylesheet" th:href="@{/css/milestones/milestone-common.css}" />
     <link rel="stylesheet" th:href="@{/css/roadmap/roadmap-list.css}" />
-  </head>
-  <body>
-    <div layout:fragment="Content">
-      <div class="kiaalap-wrapper milestone-container">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
+</head>
+<body>
+<div layout:fragment="Content">
+    <div class="kiaalap-wrapper">
         <script th:if="${errorMessage}">
-          alert("[[${errorMessage}]]");
+            alert("[[${errorMessage}]]");
         </script>
-        <div class="list-header-controls">
-          <a th:href="@{/roadmap/roadmap_create}" class="btn btn-primary">
-            ➕ 버전 추가
-          </a>
 
-          <button type="button" id="btnToggleCompleted" class="btn btn-default">
-            🔒 완료된 버전 닫기
-          </button>
+        <div class="kiaalap-panel main-box">
+            
+            <div class="main-header">
+                <h2>로드맵</h2>
+                <button type="button" class="btn btn-default" id="btnSettings">
+                    <i class="fas fa-cog"></i> 설정
+                </button>
+            </div>
+
+            <hr class="section-divider" />
+
+            <div class="filter-section">
+                <h3>로드맵 필터</h3>
+                <div class="js-filter-row">
+                    <div class="js-filter-group">
+                        <label><i class="fas fa-code-branch"></i> 로드맵</label>
+                        <select id="roadmapFilter">
+                            <option value="">전체 로드맵</option>
+                        </select>
+                    </div>
+                    <div class="js-filter-group">
+                        <label><i class="fas fa-cube"></i> 마일스톤</label>
+                        <select id="milestoneFilter">
+                            <option value="">전체 마일스톤</option>
+                        </select>
+                    </div>
+                    <div class="js-filter-group search-group">
+                        <label><i class="fas fa-search"></i> 일감 검색</label>
+                        <input type="text" id="issueSearch" placeholder="일감 제목 입력..." autocomplete="off" />
+                    </div>
+                </div>
+            </div>
+
+            <hr class="section-divider" />
+
+            <div class="list-section">
+                <h3>로드맵 목록</h3>
+                <div class="roadmap-list-area" id="roadmapListArea">
+                    <div th:if="${#lists.isEmpty(roadmapList)}" class="empty-msg">
+                        생성된 로드맵(버전)이 없습니다.
+                    </div>
+
+                    <div class="roadmap-item" 
+                         th:each="roadmap : ${roadmapList}" 
+                         th:data-roadmap-id="${roadmap.versionId}">
+                        
+                        <div class="roadmap-item-header toggle-accordion">
+							
+                            <div class="title-area">
+                                <span class="toggle-icon"><i class="fas fa-chevron-down"></i></span>
+                                <span th:if="${roadmap.defaultYn == 'Y'}" class="badge-default">★ 기본</span>
+                                <h4 style="margin:0; font-size: 17px; font-weight: 500;">
+                                    <a th:href="@{/roadmap/roadmap_detail(versionId=${roadmap.versionId})}" class="title-link no-accordion" th:text="${roadmap.versionName}">1.0.0</a>
+                                </h4>
+								<span class="status-badge"
+								      th:classappend="${roadmap.statusCode == 'k001' ? 'status-k001' : (roadmap.statusCode == 'k002' ? 'status-k002' : 'status-k003')}"
+								      th:text="${roadmap.statusCode == 'k001' ? '진행 예정' : (roadmap.statusCode == 'k002' ? '진행 중' : '완료')}">
+								</span>
+                            </div>
+                            </div>
+							<div class="roadmap-body" style="display: none;">
+							    <div class="milestone-block" th:each="milestone : ${roadmap.milestoneList}" th:if="${milestone != null}">
+							        
+							        <div class="milestone-sub-header" 
+							             th:if="${milestone.milestoneId != null and !milestone.milestoneId.startsWith('UNASSIGNED')}">
+							            <div class="m-title-area">
+							                <i class="fas fa-cube" style="color:#006df0; margin-right:5px;"></i>
+							                <a th:href="@{/milestones/detail(id=${milestone.milestoneId})}" class="title-link hover-primary" th:text="${milestone.title}">마일스톤 타이틀</a>
+							                
+							                <span class="status-badge" style="margin-left:12px;"
+							                      th:if="${milestone.statusCode != null}"
+							                      th:classappend="${milestone.statusCode == 'L001' ? 'status-l001' : (milestone.statusCode == 'L002' ? 'status-l002' : (milestone.statusCode == 'L003' ? 'status-l003' : ''))}"
+							                      th:text="${milestone.statusCode == 'L001' ? '진행예정' : (milestone.statusCode == 'L002' ? '진행중' : (milestone.statusCode == 'L003' ? '완료' : milestone.statusCode))}">
+							                </span>
+							            </div>
+							            <div class="m-date-area" th:if="${milestone.startDate != null}">
+							                <i class="far fa-calendar-alt"></i> <span th:text="${milestone.startDate}"></span> ~ <span th:text="${milestone.endDate}"></span>
+							            </div>
+							        </div>
+
+							        <div class="milestone-sub-header" 
+							             th:if="${milestone.milestoneId != null and milestone.milestoneId.startsWith('UNASSIGNED')}" 
+							             style="background-color: #f1f3f5; border: 1px border #ccc;">
+							            <div class="m-title-area">
+							                <i class="fas fa-inbox" style="color:#888; margin-right:8px;"></i>
+							                <span style="color: #555; font-weight: bold;">미지정 일감</span>
+							            </div>
+							        </div>
+
+									<div class="issue-list" th:if="${milestone.issueList != null}">
+									    <div class="issue-item" th:each="issue : ${milestone.issueList}" th:if="${issue.issueId != null}">
+									        <div class="issue-main" style="display: flex; align-items: center; gap: 10px;">
+									            <a th:href="@{/issues/detail(id=${issue.issueId})}" 
+									               class="issue-title hover-primary js-issue-title" 
+									               th:text="${issue.title}" style="text-decoration:none; color:#333;">일감 제목</a>
+									            <span class="status-badge dynamic-badge" 
+									                  th:data-status="${issue.issueStatusName}" 
+									                  th:text="${issue.issueStatusName}">상태</span>
+									        </div>
+									        
+									        <div class="issue-meta" style="display: flex; gap: 15px; font-size: 13px; color: #777;">
+									            <span class="meta-item"><i class="fas fa-user"></i> [[${issue.assigneeName}]]</span>
+									            <span class="meta-item"><i class="far fa-calendar-alt"></i> [[${issue.dueDate}]]</span>
+									            <span class="meta-item progress-rate" style="font-weight:bold;">[[${issue.progressRate}]]%</span>
+									        </div>
+									    </div>
+									</div>
+							        
+							    </div>
+							</div>
+                    </div>
+                </div>
+            </div>
         </div>
-
-        <div class="kiaalap-panel filter-panel">
-          <div class="filter-group">
-            <label for="statusFilter">상태 :</label>
-            <select id="statusFilter" class="filter-control">
-              <option value="">전체</option>
-              <option value="k001">진행 예정</option>
-              <option value="k002">진행 중</option>
-              <option value="k003">완료</option>
-            </select>
-          </div>
-          <div class="filter-group">
-            <label for="versionSearch">버전 :</label>
-            <input
-              type="text"
-              id="versionSearch"
-              class="filter-control"
-              placeholder="검색어 입력"
-            />
-          </div>
-        </div>
-
-        <div class="kiaalap-panel table-panel">
-          <table class="roadmap-table">
-            <thead>
-              <tr>
-                <th style="width: 20%">버전명</th>
-                <th style="width: 15%">기본 버전</th>
-                <th style="width: 35%">설명</th>
-                <th style="width: 15%">상태</th>
-                <th style="width: 15%">관리</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr th:if="${#lists.isEmpty(roadmapList)}">
-                <td colspan="5" class="empty-state">
-                  생성된 로드맵(버전)이 없습니다.
-                </td>
-              </tr>
-
-              <tr th:each="roadmap : ${roadmapList}">
-                <td>
-                  <a
-                    th:href="@{#}"
-                    class="version-link"
-                    th:text="${roadmap.versionName}"
-                    >v1.0.0 출시</a
-                  >
-                </td>
-
-                <td>
-                  <span
-                    th:if="${roadmap.defaultYn == 'Y'}"
-                    class="badge-default"
-                    >★ 기본</span
-                  >
-                  <span
-                    th:unless="${roadmap.defaultYn == 'Y'}"
-                    style="color: #ccc"
-                    >-</span
-                  >
-                </td>
-
-                <td class="text-ellipsis" th:text="${roadmap.description}">
-                  설명 내용이 들어갑니다.
-                </td>
-
-                <td>
-                  <span
-                    th:if="${roadmap.statusCode == 'k001'}"
-                    class="status-badge status-todo"
-                    >진행 예정</span
-                  >
-                  <span
-                    th:if="${roadmap.statusCode == 'k002'}"
-                    class="status-badge"
-                    >진행 중</span
-                  >
-                  <span
-                    th:if="${roadmap.statusCode == 'k003'}"
-                    class="status-badge status-done"
-                    >완료</span
-                  >
-                </td>
-
-                <td>
-                  <a
-                    th:href="@{/roadmap/roadmap_update(versionId=${roadmap.versionId})}"
-                    class="btn btn-sm"
-                    th:classappend="${roadmap.statusCode == 'k003'} ? 'btn-disabled' : 'btn-default'"
-                    th:attr="onclick=${roadmap.statusCode == 'k003'} ? 'return false;' : ''"
-                    th:style="${roadmap.statusCode == 'k003'} ? 'pointer-events: none; background-color: #ccc; border-color: #ccc; color: #fff;' : ''"
-                  >
-                    관리
-                  </a>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-      <script th:src="@{/js/roadmap/roadmap-list.js}"></script>
     </div>
-  </body>
+    <script th:src="@{/js/roadmap/roadmap-list.js}"></script>
+</div>
+</body>
 </html>

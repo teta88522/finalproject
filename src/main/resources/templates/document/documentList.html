@@ -26,7 +26,7 @@
     					</button>
 
     					<a
-        					th:href="@{/document/add}"
+        					th:href="@{/project/{projectId}/document/add(projectId=${projectId})}"
         					style="display:flex; align-items:center; gap:6px; font-size:13px; padding:6px 14px; border:1px solid #ddd; border-radius:6px; background:#fff; color:#555; cursor:pointer; text-decoration:none;">
         					<i class="fa fa-plus" style="font-size:11px;"></i>
         					새 문서
@@ -53,7 +53,7 @@
                                     <td style="padding:10px 12px;"><input type="checkbox"></td>
                                     <td style="padding:10px 12px;" >
                                         <i class="fa fa-folder" style="margin-right:7px; color:#f0ad4e;"></i>
-                                        <a th:href="@{/document/list/{categoryId}(categoryId=${category.documentCategoryId})}" style="color:#333; text-decoration:none; font-weight:500;" th:text="${category.categoryName}"></a>
+                                        <a th:href="@{/project/{projectId}/document/list/{categoryId}(projectId=${projectId},categoryId=${category.documentCategoryId})}" style="color:#333; text-decoration:none; font-weight:500;" th:text="${category.categoryName}"></a>
                                     </td>
                                     <td style="padding:10px 12px; color:#bbb;">—</td>
                                     <td style="padding:10px 12px; color:#bbb;">—</td>
@@ -81,9 +81,9 @@
                                 </tr>
                             </tbody>
                             <tfoot>
-                                <tr style="background:#f8f9fb;" th:each="codeValue : ${codeValueList}">
+                                <tr style="background:#f8f9fb;">
                                     <td colspan="8" style="padding:10px 12px; font-size:12px; color:#aaa;">
-                                        폴더 : [[${codeValue.total_cnt}]]  문서 : 1
+                                        폴더 : <span th:text="${total}"></span> 문서 : <span th:text="${noTotal}"></span>
                                     </td>
                                 </tr>
                             </tfoot>
@@ -99,7 +99,7 @@
     <div class="modal-content" style="border-radius:20px; overflow:hidden; border:none;">
 
       <!-- form 추가 -->
-      <form th:action="@{/document/addcategory}" method="post">
+      <form th:action=@{/project/{projectId}/document/addcategory(projectId=${projectId})} method="post">
 
         <!-- 헤더 -->
         <div style="background:#1a6fe8; padding:18px 24px; display:flex; align-items:center; justify-content:space-between;">

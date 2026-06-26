@@ -1,0 +1,360 @@
+/* 전체 컨테이너 및 레이아웃 */
+.roadmap-container {
+  padding: 24px;
+  font-family: "Noto Sans KR", sans-serif;
+  color: #333;
+}
+
+.roadmap-header {
+  background: #fff;
+  padding: 20px 24px;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  margin-bottom: 24px;
+}
+
+.title-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.title-group h2 {
+  margin: 0;
+  font-size: 20px;
+}
+
+.status-badge {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+/* 2단 레이아웃 분할 */
+.roadmap-content {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+}
+
+.left-panel {
+  flex: 7;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 20px;
+}
+
+.right-panel {
+  flex: 3;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* 마일스톤 아코디언 디자인 */
+.milestone-item {
+  border: 1px solid #eee;
+  border-radius: 6px;
+  margin-bottom: 12px;
+  overflow: hidden;
+}
+
+.milestone-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  background-color: #f9f9f9;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.milestone-header:hover {
+  background-color: #f1f1f1;
+}
+
+.milestone-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+}
+
+.toggle-icon {
+  font-size: 12px;
+  color: #888;
+  transition: transform 0.3s;
+}
+.toggle-icon.open {
+  transform: rotate(90deg);
+}
+
+.milestone-stats {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 14px;
+}
+
+.progress-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.progress-bg {
+  width: 100px;
+  height: 8px;
+  background: #e0e0e0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  background: #2196f3;
+}
+
+/* 일감 테이블 */
+.issue-container {
+  padding: 0 16px 16px 16px;
+  background: #fff;
+}
+
+.issue-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 12px;
+  font-size: 13px;
+}
+
+.issue-table th,
+.issue-table td {
+  padding: 12px 8px;
+  border-bottom: 1px solid #f0f0f0;
+  text-align: left;
+}
+
+.issue-table th {
+  color: #666;
+  font-weight: 500;
+  background: #fafafa;
+}
+
+.issue-status {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 12px;
+  background: #f0f0f0;
+  font-size: 12px;
+}
+
+.text-gray {
+  color: #999;
+}
+
+/* 차트 카드 디자인 */
+.chart-card {
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 20px;
+}
+
+.chart-card h3 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  font-size: 16px;
+}
+
+.chart-wrapper {
+  position: relative;
+  width: 100%;
+  height: 200px;
+  display: flex;
+  justify-content: center;
+}
+
+.chart-center-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  font-size: 24px;
+  font-weight: bold;
+  pointer-events: none;
+}
+
+/* --- 헤더 Description 스타일 --- */
+.title-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px; /* 제목과 설명 사이 간격 */
+}
+
+.title-row h2 {
+  margin: 0;
+  font-size: 20px;
+}
+
+.roadmap-desc {
+  margin: 0;
+  font-size: 14px;
+  color: #666;
+}
+
+/* --- 로드맵 총 진행률 (첫 번째 카드) 스타일 --- */
+.progress-layout {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 10px;
+}
+
+.huge-percent {
+  font-size: 48px;
+  font-weight: bold;
+  color: #3b82f6; /* 파란색 통일 */
+  line-height: 1;
+  margin-bottom: 12px;
+}
+
+.progress-breakdown {
+  font-size: 13px;
+  color: #888;
+}
+
+.progress-breakdown .divider {
+  margin: 0 6px;
+  color: #e0e0e0;
+}
+
+/* 첫 번째 차트 크기 작게 고정 */
+.small-chart {
+  width: 120px !important;
+  height: 120px !important;
+  max-width: 120px;
+}
+
+/* --- 일감 상태별 분포 (두 번째 카드) 커스텀 범례 스타일 --- */
+.status-layout {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+/* 두 번째 차트 크기는 약간 더 크게 (원하시는 대로 조절 가능) */
+.status-layout .chart-wrapper {
+  width: 160px;
+  height: 160px;
+  max-width: 160px;
+  flex-shrink: 0;
+
+
+}
+
+/* JS로 생성될 커스텀 범례 리스트 디자인 */
+.custom-legend {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  font-size: 13px;
+  color: #333;
+}
+
+.legend-color {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-right: 8px;
+}
+
+.legend-label {
+  flex: 1;
+}
+
+.legend-value {
+  color: #666;
+  margin-left: 8px;
+}
+
+/* --- 최상단 공통 헤더 (로드맵 목록 스타일) --- */
+.main-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 15px;
+}
+
+.main-header h2 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 500;
+    color: #333;
+}
+
+.section-divider {
+    border: 0;
+    border-top: 1px solid #e5e5e5;
+}
+
+/* 버튼 컨테이너 */
+.header-actions {
+    display: flex;
+    gap: 10px;
+}
+
+/* 목록으로 버튼 */
+.btn-list {
+    display: inline-block;
+    padding: 8px 16px;
+    background-color: #fff;
+    border: 1px solid #d9d9d9;
+    border-radius: 4px;
+    color: #333;
+    font-size: 14px;
+    text-decoration: none;
+    transition: all 0.2s;
+    cursor: pointer;
+}
+
+.btn-list:hover {
+    background-color: #f5f5f5;
+}
+
+/* 완료 버튼 (기본 파란색) */
+.btn-complete {
+    display: inline-block;
+    padding: 8px 16px;
+    background-color: #3b82f6; 
+    border: 1px solid #3b82f6;
+    border-radius: 4px;
+    color: #fff;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-complete:hover:not(:disabled) {
+    background-color: #2563eb;
+}
+
+/* 완료 버튼이 비활성화(disabled) 상태일 때 - 회색 처리 */
+.btn-complete:disabled {
+    background-color: #cccccc;
+    border-color: #cccccc;
+    cursor: not-allowed;
+    color: #fff;
+}

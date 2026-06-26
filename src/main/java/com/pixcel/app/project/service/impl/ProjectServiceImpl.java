@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.pixcel.app.project.mapper.ProjectMapper;
 import com.pixcel.app.project.service.ProjectMemberVO;
+import com.pixcel.app.project.service.ProjectModulesVO;
 import com.pixcel.app.project.service.ProjectRoleVO;
 import com.pixcel.app.project.service.ProjectService;
 import com.pixcel.app.project.service.ProjectVO;
@@ -174,6 +175,11 @@ public class ProjectServiceImpl implements ProjectService {
 		resultMap.put("message", "구성원 삭제가 성공하였습니다.");
 		
 		return resultMap;
+	}
+
+	@Override
+	public List<ProjectModulesVO> selectAllModuleProjects() {
+		return null;
 	}
 
 }

@@ -1,0 +1,70 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{common/layouts/default_layout}">
+<head>
+<meta charset="UTF-8">
+</head>
+<body>
+<div layout:fragment="Content">
+<div class="product-status mg-b-15">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="product-status-wrap" style="background:#fff; border-radius:12px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); padding:20px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                        <h4 style="margin:0; font-size:16px; font-weight:500; color:#333;">문서 관리</h4>
+                        <button style="display:flex; align-items:center; gap:6px; font-size:13px; padding:6px 14px; border:1px solid #ddd; border-radius:6px; background:#fff; color:#555; cursor:pointer;">
+                            <i class="fa fa-plus" style="font-size:11px;" th:herf="@{/document/documentAdd}"></i> 새 문서
+                        </button>
+                    </div>
+                    <div class="asset-inner" style="border:1px solid #eef0f3; border-radius:8px; overflow:hidden;">
+                        <table class="table table-hover" style="margin:0; font-size:13px;">
+                            <thead>
+                                <tr style="background:#f8f9fb;">
+                                    <th style="width:36px; border-bottom:1px solid #eef0f3; padding:10px 12px;"><input type="checkbox"></th>
+                                    <th style="border-bottom:1px solid #eef0f3; padding:10px 12px; color:#888; font-weight:500;">타이틀</th>
+                                    <th style="border-bottom:1px solid #eef0f3; padding:10px 12px; color:#888; font-weight:500;">활성</th>
+                                    <th style="border-bottom:1px solid #eef0f3; padding:10px 12px; color:#888; font-weight:500;">크기</th>
+                                    <th style="border-bottom:1px solid #eef0f3; padding:10px 12px; color:#888; font-weight:500;">변경일시</th>
+                                    <th style="border-bottom:1px solid #eef0f3; padding:10px 12px; color:#888; font-weight:500;">버전</th>
+                                    <th style="border-bottom:1px solid #eef0f3; padding:10px 12px; color:#888; font-weight:500;">마일스톤</th>
+                                    <th style="border-bottom:1px solid #eef0f3; padding:10px 12px; color:#888; font-weight:500;">작성자</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="history : ${historydocList}" th:value="${history.documentId}">
+                                    <td style="padding:10px 12px;"><input type="checkbox"></td>
+                                    <td style="padding:10px 12px;">
+                                        <i class="fa fa-file-text-o" style="margin-right:7px; color:#7b8cde;"></i>
+                                        <a th:href="@{/document/historydetail/{documentHistoryId}(documentHistoryId=${history.documentHistoryId})}" style="color:#333; text-decoration:none; font-weight:500;" th:text="${history.title}"></a>
+                                    </td>
+                                    <td style="padding:10px 12px;">
+                                        <span style="font-size:11px; padding:3px 9px; background:#eef2ff; color:#5566cc; border-radius:20px;" th:text="${history.statusName}"></span>
+                                    </td>
+                                    <td style="padding:10px 12px; color:#777;">—</td>
+                                    <td style="padding:10px 12px; color:#777;">—</td>
+                                    <td style="padding:10px 12px; color:#777;" th:text="${history.documentVersionId}"></td>
+                                    <td style="padding:10px 12px; color:#777;">—</td>
+                                    <td style="padding:10px 12px; color:#777;" th:text="${history.userName}"></td>
+                                </tr>
+                            </tbody>
+                            <tfoot>
+                                <tr style="background:#f8f9fb;" th:each="codeValue : ${codeValueList}">
+                                    <td colspan="8" style="padding:10px 12px; font-size:12px; color:#aaa;">
+                                        폴더 : [[${codeValue.total_cnt}]] &nbsp;·&nbsp; 문서 : 1
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</div>
+</body>
+
+</html>

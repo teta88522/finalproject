@@ -1,111 +1,169 @@
-/* roadmap-list.css */
+/* =========================================
+   1. 메인 레이아웃 및 헤더
+========================================= */
+.main-box {
+    padding: 30px 40px;
+    border-radius: 4px;
+    background-color: #ffffff;
+    border: 1px solid #e5e6e7;
+}
 
-/* 상단 컨트롤 영역 (추가 버튼, 닫기 버튼 양끝 정렬) */
-.list-header-controls {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+.main-header {
+    display: flex; justify-content: space-between; align-items: center;
     margin-bottom: 20px;
 }
+.main-header h2 { margin: 0; font-size: 24px; font-weight: 600; color: #333; }
 
-/* 필터 패널 영역 */
-.filter-panel {
-    padding: 15px 20px;
-    background-color: #ffffff; /* 공통 패널 배경색 */
-    display: flex;
-    gap: 20px; /* 요소 간격 */
-    align-items: center;
-    border: 1px solid #e1e4e8;
+.section-divider { border: 0; border-top: 1px solid #eee; margin: 25px 0; }
+
+.filter-section h3, .list-section h3 {
+    font-size: 16px; font-weight: 600; color: #333;
+    margin-top: 0; margin-bottom: 15px;
 }
 
-.filter-group {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 14px;
-    color: #333;
+/* =========================================
+   2. JS 프론트 필터 영역 
+========================================= */
+.js-filter-row { 
+    display: flex; flex-wrap: wrap; gap: 20px; 
+    background-color: #fcfcfc; padding: 20px; 
+    border-radius: 4px; border: 1px solid #e5e6e7; 
+}
+.js-filter-group { 
+    display: flex; flex-direction: column; gap: 8px; 
+    flex: 1; min-width: 180px; 
+}
+.js-filter-group label { font-size: 13px; font-weight: 600; color: #555; }
+.js-filter-group select, .js-filter-group input[type="text"] { 
+    width: 100%; padding: 9px 12px; border: 1px solid #ccc; 
+    border-radius: 3px; font-size: 13px; outline: none; transition: 0.2s;
+}
+.js-filter-group select:focus, .js-filter-group input[type="text"]:focus { border-color: #006df0; }
+.search-group { flex: 2; } 
+
+/* =========================================
+   3. 로드맵 아이템 (1단: 아코디언 헤더)
+========================================= */
+.empty-msg { 
+    text-align: center; padding: 50px; color: #999; 
+    border: 1px dashed #ccc; border-radius: 4px; 
 }
 
-.filter-control {
-    padding: 6px 10px;
-    border: 1px solid #ccc;
-    border-radius: 3px;
-    font-size: 13px;
-}
-.filter-control:focus {
-    border-color: #006df0;
-    outline: none;
+.roadmap-item { 
+    background-color: #ffffff; border: 1px solid #e5e6e7; 
+    border-radius: 4px; margin-bottom: 20px; overflow: hidden; 
 }
 
-/* 테이블 패널 영역 (패딩 없이 꽉 차게) */
-.table-panel {
-    padding: 0; 
-    overflow: hidden;
+.roadmap-item-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 18px 25px; background-color: #fdfdfd; cursor: pointer;
+    border-bottom: 1px solid transparent; transition: background 0.2s;
+}
+.roadmap-item-header:hover { background-color: #f5f7f9; }
+.roadmap-item.open .roadmap-item-header { border-bottom: 1px solid #eee; background-color: #fff; }
+
+.title-area { display: flex; align-items: center; gap: 12px; }
+.toggle-icon { font-size: 14px; color: #888; transition: transform 0.3s; width: 15px; }
+.roadmap-item.open .toggle-icon { transform: rotate(-180deg); }
+
+.badge-default { 
+    background: #fff3cd; border: 1px solid #ffeeba; color: #856404; 
+    font-size: 12px; padding: 3px 8px; border-radius: 12px; font-weight: bold; 
 }
 
-/* 테이블 스타일 */
-.roadmap-table {
-    width: 100%;
-    border-collapse: collapse;
-    background-color: #fff;
+.title-link { text-decoration: none; color: #222; }
+.title-link:hover, .hover-primary:hover { color: #006df0; text-decoration: underline; }
+
+/* =========================================
+   4. 마일스톤 블록 (2단)
+========================================= */
+.roadmap-body { padding: 25px; }
+
+.milestone-block {
+    margin-bottom: 25px;
+    border-left: 3px solid #006df0; 
+    padding-left: 20px; /* 마일스톤 안쪽 여백 넓게 */
+}
+.milestone-block:last-child { margin-bottom: 0; }
+
+.milestone-sub-header {
+    display: flex; justify-content: space-between; align-items: center;
+    background-color: #f9f9f9; padding: 15px 20px; border-radius: 4px;
+    border: 1px solid #eee;
+    margin-bottom: 15px;
+}
+.m-title-area { display: flex; align-items: center; font-size: 15px; font-weight: 600; gap: 8px;}
+.m-date-area { font-size: 13px; color: #666; }
+
+/* =========================================
+   5. 하위 일감 리스트 (3단: issue-info-wrap 기준)
+========================================= */
+.issue-list { 
+    border: 1px solid #e5e6e7; 
+    border-radius: 4px; 
+    background: #fff; 
 }
 
-.roadmap-table th, .roadmap-table td {
-    padding: 14px 20px;
-    text-align: left;
-    border-bottom: 1px solid #eeeeee;
-    font-size: 14px;
+.issue-item { 
+    display: flex; justify-content: space-between; align-items: center; 
+    padding: 15px 20px; /* 일감 위아래 여백 확보 */
+    border-bottom: 1px solid #f1f1f1; 
+}
+.issue-item:last-child { border-bottom: none; }
+.issue-item:hover { background-color: #fcfcfc; }
+
+/* 💡 작성하신 HTML 구조에 맞춘 좌측(뱃지+제목) 레이아웃 */
+.issue-info-wrap { 
+    display: flex; 
+    align-items: center; 
+    gap: 12px; /* 뱃지와 제목 사이 간격 */
+}
+.issue-title { 
+    font-size: 14px; color: #333; font-weight: 500; 
 }
 
-.roadmap-table th {
-    background-color: #f8f9fa;
-    font-weight: 600;
-    color: #555;
-    border-bottom: 2px solid #e1e4e8;
+/* 💡 작성하신 HTML 구조에 맞춘 우측(담당자, 날짜, 진행률) 레이아웃 */
+.issue-meta-data { 
+    display: flex; 
+    align-items: center; 
+    gap: 20px; /* 각 정보 사이의 넉넉한 간격 */
+    font-size: 13px; color: #666; 
 }
+.meta-item i { margin-right: 5px; color: #aaa; }
+.progress-rate { font-weight: bold; color: #006df0; min-width: 35px; text-align: right; }
 
-.roadmap-table tbody tr:hover {
-    background-color: #f1f8ff; /* 마우스 오버 시 연한 파란색 배경 */
-}
-
-/* 데이터 없을 때 */
-.empty-state {
-    text-align: center !important;
-    padding: 40px !important;
-    color: #888;
-}
-
-/* 버전명 링크 스타일 */
-.version-link {
-    color: #006df0; /* 공통 파란색 */
-    font-weight: bold;
-    text-decoration: none;
-}
-.version-link:hover {
-    text-decoration: underline;
-}
-
-/* 설명 등 긴 텍스트 자르기 */
-.text-ellipsis {
-    max-width: 250px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-/* 특별 표시: 기본 버전 뱃지 (노란색 강조) */
-.badge-default {
-    background-color: #ffb822; /* 쨍한 노란주황색 */
-    color: #ffffff;
-    padding: 4px 10px;
-    border-radius: 12px;
-    font-size: 12px;
-    font-weight: bold;
+/* =========================================
+   6. 상태 뱃지 공통 스타일 (둥근 알약 통일)
+========================================= */
+/* 로드맵, 마일스톤, 일감 뱃지 모두 적용 */
+.status-badge, .dynamic-badge { 
+    padding: 4px 10px; 
+    border-radius: 12px !important; /* 강제 둥근 모서리 */
+    color: #fff; 
+    font-size: 12px; 
+    font-weight: 600; 
+    min-width: 75px; 
+    text-align: center; 
     display: inline-block;
 }
 
-/* 작은 버튼 (관리 버튼 용) */
-.btn-sm {
-    padding: 5px 12px;
-    font-size: 12px;
+/* 마일스톤 고정 색상 */
+.status-l001 { background-color: #999999 !important; } /* 진행예정 (회색) */
+.status-l002 { background-color: #006DF0 !important; } /* 진행중 (파랑) */
+.status-l003 { background-color: #65b12d !important; } /* 완료 (빨강) */
+
+.status-k001 { background-color: #999999 !important; } /* 진행예정 - 회색 */
+.status-k002 { background-color: #006DF0 !important; } /* 진행중 - 파란색 */
+.status-k003 { background-color: #65b12d !important; } /* 완료 - 초록색 */
+
+/* ㄴ 모양 스타일 */
+.tree-branch {
+    font-family: monospace; /* 고정폭 글꼴로 모양 유지 */
+    color: #adb5bd;        /* 살짝 연한 회색 */
+    font-weight: bold;
+    margin-right: 8px;     /* 제목과의 간격 */
+    display: inline-block;
+    width: 15px;           /* 모양의 고정 너비 */
+    text-align: center;
 }
+

@@ -1,0 +1,29 @@
+{
+  "name": "finalproject",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/KDT-final-project-1/finalproject.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/KDT-final-project-1/finalproject/issues"
+  },
+  "homepage": "https://github.com/KDT-final-project-1/finalproject#readme",
+  "dependencies": {
+    "@tiptap/core": "^3.27.1",
+    "@tiptap/extension-collaboration": "^3.27.1",
+    "@tiptap/extension-collaboration-caret": "^3.27.1",
+    "@tiptap/starter-kit": "^3.27.1",
+    "y-websocket": "^3.0.0",
+    "yjs": "^13.6.31"
+  }
+}

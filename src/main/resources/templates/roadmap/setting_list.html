@@ -1,0 +1,132 @@
+<!doctype html>
+<html
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  layout:decorate="~{common/layouts/default_layout}"
+>
+  <head>
+    <meta charset="UTF-8" />
+    <title>로드맵(버전) 목록</title>
+    <link rel="stylesheet" th:href="@{/css/milestones/milestone-common.css}" />
+    <link rel="stylesheet" th:href="@{/css/roadmap/setting-list.css}" />
+  </head>
+  <body>
+    <div layout:fragment="Content">
+      <div class="kiaalap-wrapper milestone-container">
+        <script th:if="${errorMessage}">
+          alert("[[${errorMessage}]]");
+        </script>
+        <div class="list-header-controls">
+          <a th:href="@{/roadmap/setting_create}" class="btn btn-primary">
+            ➕ 버전 추가
+          </a>
+
+          <button type="button" id="btnToggleCompleted" class="btn btn-default">
+            🔒 완료된 버전 닫기
+          </button>
+        </div>
+
+        <div class="kiaalap-panel filter-panel">
+          <div class="filter-group">
+            <label for="statusFilter">상태 :</label>
+            <select id="statusFilter" class="filter-control">
+              <option value="">전체</option>
+              <option value="k001">진행 예정</option>
+              <option value="k002">진행 중</option>
+              <option value="k003">완료</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label for="versionSearch">버전 :</label>
+            <input
+              type="text"
+              id="versionSearch"
+              class="filter-control"
+              placeholder="검색어 입력"
+            />
+          </div>
+        </div>
+
+        <div class="kiaalap-panel table-panel">
+          <table class="roadmap-table">
+            <thead>
+              <tr>
+                <th style="width: 20%">버전명</th>
+                <th style="width: 15%">기본 버전</th>
+                <th style="width: 35%">설명</th>
+                <th style="width: 15%">상태</th>
+                <th style="width: 15%">관리</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:if="${#lists.isEmpty(roadmapList)}">
+                <td colspan="5" class="empty-state">
+                  생성된 로드맵(버전)이 없습니다.
+                </td>
+              </tr>
+
+              <tr th:each="roadmap : ${roadmapList}">
+                <td>
+                  <a
+                    th:href="@{#}"
+                    class="version-link"
+                    th:text="${roadmap.versionName}"
+                    >v1.0.0 출시</a
+                  >
+                </td>
+
+                <td>
+                  <span
+                    th:if="${roadmap.defaultYn == 'Y'}"
+                    class="badge-default"
+                    >★ 기본</span
+                  >
+                  <span
+                    th:unless="${roadmap.defaultYn == 'Y'}"
+                    style="color: #ccc"
+                    >-</span
+                  >
+                </td>
+
+                <td class="text-ellipsis" th:text="${roadmap.description}">
+                  설명 내용이 들어갑니다.
+                </td>
+
+                <td>
+                  <span
+                    th:if="${roadmap.statusCode == 'k001'}"
+                    class="status-badge status-todo"
+                    >진행 예정</span
+                  >
+                  <span
+                    th:if="${roadmap.statusCode == 'k002'}"
+                    class="status-badge"
+                    >진행 중</span
+                  >
+                  <span
+                    th:if="${roadmap.statusCode == 'k003'}"
+                    class="status-badge status-done"
+                    >완료</span
+                  >
+                </td>
+
+                <td>
+                  <a
+                    th:href="@{/roadmap/setting_update(versionId=${roadmap.versionId})}"
+                    class="btn btn-sm"
+                    th:classappend="${roadmap.statusCode == 'k003'} ? 'btn-disabled' : 'btn-default'"
+                    th:attr="onclick=${roadmap.statusCode == 'k003'} ? 'return false;' : ''"
+                    th:style="${roadmap.statusCode == 'k003'} ? 'pointer-events: none; background-color: #ccc; border-color: #ccc; color: #fff;' : ''"
+                  >
+                    관리
+                  </a>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <script th:src="@{/js/roadmap/setting-list.js}"></script>
+    </div>
+  </body>
+</html>

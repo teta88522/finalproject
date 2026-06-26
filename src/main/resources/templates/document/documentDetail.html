@@ -65,6 +65,7 @@
                                 <span>
                                     <i class="fa fa-file-o" style="margin-right:6px; color:#4a6cf7;"></i>
                                     <span th:text="${file.originalName}" ></span>
+                                    <span th:text="'v' + ${file.fileVersion}"></span>
                                 </span>
                                 <a class="btn btn-default btn-custon-three btn-custon-rounded-four btn-xs" th:href="@{/document/detail/{documentId}/{fileId}/download(
         									documentId=${docDetail.documentId},
@@ -82,7 +83,11 @@
  
                 <!-- 연결된 파일 목록 -->
                 <div style="display:flex; align-items:flex-start; padding:12px 16px;">
-                    <label style="width:120px; font-size:13px; color:#888; font-weight:500; margin:0; padding-top:4px;">연결된 파일 목록</label>
+                    <label style="width:120px; font-size:13px; color:#888; font-weight:500; margin:0; padding-top:4px;">연결된 문서 목록</label>
+                    <!-- ⑥ 목록 -->
+            		<a th:href="@{/document/historylist/{documentId}(documentId=${docDetail.documentId})}" class="btn btn-default btn-custon-three btn-custon-rounded-four" style="font-size:13px; padding:6px 16px;">
+                		<i class="fa fa-list" style="margin-right:5px;"></i> 바로가기
+            		</a>
                     <ul style="flex:1; list-style:none; padding:0; margin:0; font-size:13px; color:#555;">
                         <li style="padding:4px 0; border-bottom:1px dashed #f0f0f0;"
                                     >
@@ -114,7 +119,7 @@
                 <i class="fa fa-list" style="margin-right:5px;"></i> 목록
             </a>
             <!-- ⑦ 수정 -->
-            <a th:href="@{/document/edit/{id}(id=${docDetail.documentId})}" class="btn btn-primary btn-custon-three btn-custon-rounded-four" style="font-size:13px; padding:6px 16px;">
+            <a th:href="@{/document/update/{id}(id=${docDetail.documentId})}" class="btn btn-primary btn-custon-three btn-custon-rounded-four" style="font-size:13px; padding:6px 16px;">
                 <i class="fa fa-pencil" style="margin-right:5px;"></i> 수정
             </a>
             <!-- ⑧ 삭제 -->
@@ -126,18 +131,6 @@
     </div>
 </div>
  
-<script th:inline="javascript">
-    function confirmDelete() {
-        if (confirm('정말 삭제하시겠습니까?')) {
-            const documentId = /*[[${docDetail.documentId}]]*/ '';
-            fetch('/document/delete/' + documentId, { method: 'POST' })
-                .then(res => {
-                    if (res.ok) window.location.href = '/document/list';
-                    else alert('삭제 중 오류가 발생했습니다.');
-                });
-        }
-    }
-</script>
 
 </div>
 </body>

@@ -1,0 +1,167 @@
+<!doctype html>
+<html
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  layout:decorate="~{common/layouts/default_layout}"
+>
+  <head>
+    <meta charset="UTF-8" />
+    <title>로드맵 상세</title>
+    <link rel="stylesheet" th:href="@{/css/roadmap/roadmap-detail.css}" />
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  </head>
+  <body>
+    <div layout:fragment="Content" class="roadmap-container">
+    
+    <!--헤더-->
+	 <div class="main-header">
+	        <h2>로드맵 상세보기</h2>
+	        <div class="header-actions">
+	            <a th:href="@{/roadmap/roadmap_list}" class="btn-list">목록으로</a>
+	            <button type="button" id="btnCompleteRoadmap" class="btn-complete" disabled>완료</button>
+	        </div>
+	    </div>
+	    <hr class="section-divider" style="margin-bottom: 24px;" />   
+    
+      <div class="roadmap-header">
+  <div class="title-row">
+    <h2 th:text="${roadmap.versionName}">로드맵타이틀</h2>
+    <span
+      class="status-badge"
+      th:classappend="${roadmap.statusCode == 'k001' ? 'status-k001' : (roadmap.statusCode == 'k002' ? 'status-k002' : 'status-k003')}"
+      th:text="${roadmap.statusCode == 'k001' ? '진행 예정' : (roadmap.statusCode == 'k002' ? '진행 중' : '완료')}"
+    ></span>
+  </div>
+  <p class="roadmap-desc" th:text="${roadmap.description}">상세보기</p>
+</div>
+
+      <div class="roadmap-content">
+        <div class="left-panel">
+          <h3>마일스톤 / 일감 / 소요시간</h3>
+          <div class="milestone-list">
+            <div
+              class="milestone-item"
+              th:each="milestone : ${roadmap.milestoneList}"
+            >
+              <div class="milestone-header" onclick="toggleMilestone(this)">
+                <div class="milestone-info">
+                  <span class="toggle-icon">▶</span>
+                  <span class="milestone-title" th:text="${milestone.title}"
+                    >마일스톤 제목</span
+                  >
+                </div>
+                <div class="milestone-stats">
+                  <span class="time-stat">
+                    <span
+                      th:text="${milestone.totalEstimateHours != null ? milestone.totalEstimateHours : 0} + 'h'"
+                    ></span>
+                    /
+                    <span
+                      th:text="${milestone.totalHours != null ? milestone.totalHours : 0} + 'h'"
+                    ></span>
+                  </span>
+                  <div class="progress-wrap">
+                    <div class="progress-bg">
+                      <div
+                        class="progress-bar"
+                        th:style="'width:' + ${milestone.totalProgressRate} + '%'"
+                      ></div>
+                    </div>
+                    <span
+                      class="progress-text"
+                      th:text="${milestone.totalProgressRate} + '%'"
+                      >0%</span
+                    >
+                  </div>
+                </div>
+              </div>
+
+              <div class="issue-container" style="display: none">
+                <table class="issue-table">
+                  <thead>
+                    <tr>
+                      <th>일감명</th>
+                      <th>담당자</th>
+                      <th>상태</th>
+                      <th>예상시간</th>
+                      <th>실제시간</th>
+                      <th>진척도</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr th:each="issue : ${milestone.issueList}">
+                      <td th:text="${issue.title}">일감명</td>
+                      <td th:text="${issue.assigneeName != null ? issue.assigneeName : '미정'}">담당자명</td>
+                      <td>
+                        <span
+                          class="issue-status"
+                          th:text="${issue.issueStatusName}"
+                          >상태</span>
+                      </td>
+                      <td
+                        th:text="${issue.estimatedHours != null ? issue.estimatedHours + 'h' : '0h'}"
+                      >
+                        0h
+                      </td>
+                      <td
+                        th:text="${issue.hours != null ? issue.hours + 'h' : '0h'}"
+                      >
+                        0h
+                      </td>
+                      <td th:text="${(issue.progressRate ?: 0) + '%'}">0%</td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(milestone.issueList)}">
+                      <td colspan="6" style="text-align: center; color: #999">
+                        등록된 일감이 없습니다.
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+<div class="right-panel">
+  <div class="chart-card">
+    <div class="chart-header-row">
+      <h3>로드맵 총 진행률</h3>
+    </div>
+    <div class="progress-layout">
+      <div class="progress-info">
+        <div class="huge-percent" id="mainProgressText">0%</div>
+        <div class="progress-breakdown" id="progressBreakdownText">
+          완료 0% <span class="divider">|</span> 진행중 0% <span class="divider">|</span> 예정 0%
+        </div>
+      </div>
+      <div class="chart-wrapper small-chart">
+        <canvas id="progressChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+          <div class="chart-card mt-20">
+    <h3>일감 상태별 분포</h3>
+    <div class="status-layout">
+      <div class="chart-wrapper">
+        <canvas id="statusChart"></canvas>
+        <div class="chart-center-text">
+          <span id="totalIssueCount">0</span>개<br />
+          <span style="font-size: 12px; color: #666">전체 일감</span>
+        </div>
+      </div>
+      <div id="customLegend" class="custom-legend"></div>
+    </div>
+  </div>
+</div>
+</div>
+      <script th:inline="javascript">
+        /*<![CDATA[*/
+        const roadmapData = /*[[${roadmap}]]*/ {};
+        /*]]>*/
+      </script>
+      <script th:src="@{/js/roadmap/roadmap-detail.js}"></script>
+    </div>
+  </body>
+</html>

@@ -10,6 +10,11 @@ public interface ProjectService {
 	// 자료실에서 사용할 프로젝트 목록을 가져오는 메서드
 	List<ProjectVO> findAllProjects();
 	
+	
+	// 류송지 추가
+	// 프로젝트 모듈 관련
+	public List<ProjectModulesVO> selectAllModuleProjects();
+	
 	//260623 고동현 추가 프로젝트 리스트관련
 	//관리자 본인이 생성한 프로젝트 리스트 조회
 	public List<ProjectVO> selectMyCreatedProjectList(String userId);

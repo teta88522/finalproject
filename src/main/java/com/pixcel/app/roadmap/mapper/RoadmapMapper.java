@@ -12,7 +12,8 @@ public interface RoadmapMapper {
 	public void insertVersion(RoadmapVO roadmap);
 	public List<RoadmapVO> getRoadmapList(RoadmapVO roadmapVO);
 	public int updateRoadmap(RoadmapVO roadmapVO);
-	public RoadmapVO getRoadmapDetail(@Param("versionId") String versionId, @Param("projectId") String projectId);
+	public RoadmapVO getsettingDetail(@Param("versionId") String versionId, @Param("projectId") String projectId);
 	public int deleteRoadmap(@Param("versionId") String versionId, @Param("projectId") String projectId);
 	public List<RoadmapVO> getRoadmapFull(String projectId);
+	public RoadmapVO getRoadmapDetail(@Param("versionId") String versionId, @Param("projectId") String projectId);
 }

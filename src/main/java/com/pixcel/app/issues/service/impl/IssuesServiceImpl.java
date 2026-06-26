@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,14 +27,24 @@ public class IssuesServiceImpl implements IssuesService {
 	private static final String FIELD_DUE_DATE = "DUE_DATE";
 	private static final String FIELD_ESTIMATED_HOURS = "ESTIMATED_HOURS";
 
-	// 현재 사용자가 접근 가능한 프로젝트 목록을 조회한다.
+	private static final String PERMISSION_ISSUE_CREATE_CODE = "p008";
+	private static final String PERMISSION_ISSUE_CREATE_NAME = "일감 추가";
+
+	private static final String PERMISSION_ISSUE_DELETE_CODE = "p010";
+	private static final String PERMISSION_ISSUE_DELETE_NAME = "일감 삭제";
+
+	private static final String PERMISSION_MILESTONE_CREATE_CODE = "p005";
+	private static final String PERMISSION_MILESTONE_CREATE_NAME = "마일스톤 생성";
+
+	// 페이징
+	private static final int ISSUE_PAGE_SIZE = 10;
+
 	@Override
 	public List<IssuesVO> getProjectList(String userId) {
 		validateUserId(userId);
 		return issuesMapper.selectProjectList(userId);
 	}
 
-	// 요청 프로젝트가 없으면 첫 번째 접근 가능 프로젝트 ID를 반환한다.
 	@Override
 	public String getSelectedProjectId(String requestedProjectId, String userId) {
 		validateUserId(userId);
@@ -46,65 +57,143 @@ public class IssuesServiceImpl implements IssuesService {
 		return requestedProjectId;
 	}
 
-	// ==============================
-	// 일감 생성 URL 구조 수정
-	// URL의 projectId 기준으로 프로젝트 접근 권한을 검증하고 프로젝트 정보를 반환한다.
-	// ==============================
 	@Override
-	public IssuesVO getProjectDetailForCreate(String projectId, String userId) {
+	public IssuesVO getProjectDetail(String projectId, String userId) {
 		return validateProjectAccess(projectId, userId);
 	}
 
-	// 일감 생성 화면의 일감유형 목록을 조회한다.
+	@Override
+	public List<IssuesVO> getIssueList(String projectId, IssuesVO searchVO, String userId) {
+		validateProjectAccess(projectId, userId);
+
+		if (searchVO == null) {
+			searchVO = new IssuesVO();
+		}
+
+		searchVO.setProjectId(projectId);
+		trimSearchCondition(searchVO);
+		applyPaging(searchVO);
+
+		int totalCount = issuesMapper.countIssueList(searchVO);
+		int totalPage = (int) Math.ceil((double) totalCount / ISSUE_PAGE_SIZE);
+
+		searchVO.setTotalCount(totalCount);
+		searchVO.setTotalPage(totalPage);
+
+		if (totalPage > 0 && searchVO.getPage() > totalPage) {
+			searchVO.setPage(totalPage);
+			setPagingRange(searchVO);
+		}
+
+		return issuesMapper.selectIssueList(searchVO);
+	}
+
+	@Override
+	public List<IssuesVO> getIssueStatusList(String projectId, String userId) {
+		validateProjectAccess(projectId, userId);
+		return issuesMapper.selectIssueStatusList(projectId);
+	}
+
+	@Override
+	public boolean canCreateIssue(String projectId, String userId) {
+		validateProjectAccess(projectId, userId);
+
+		return hasProjectPermission(projectId, userId, PERMISSION_ISSUE_CREATE_CODE, PERMISSION_ISSUE_CREATE_NAME);
+	}
+
+	@Override
+	public boolean canCreateMilestone(String projectId, String userId) {
+		validateProjectAccess(projectId, userId);
+
+		return hasProjectPermission(projectId, userId, PERMISSION_MILESTONE_CREATE_CODE,
+				PERMISSION_MILESTONE_CREATE_NAME);
+	}
+
+	@Override
+	public boolean canDeleteIssue(String projectId, String userId) {
+		validateProjectAccess(projectId, userId);
+
+		return hasProjectPermission(projectId, userId, PERMISSION_ISSUE_DELETE_CODE, PERMISSION_ISSUE_DELETE_NAME);
+	}
+
+	@Override
+	@Transactional
+	public void deleteIssue(String projectId, String issueId, String userId) {
+		validateProjectAccess(projectId, userId);
+
+		if (isBlank(issueId)) {
+			throw new IllegalArgumentException("삭제할 일감 정보가 없습니다.");
+		}
+
+		if (!canDeleteIssue(projectId, userId)) {
+			throw new IllegalArgumentException("일감 삭제 권한이 없습니다.");
+		}
+
+		if (issuesMapper.countChildIssue(projectId, issueId) > 0) {
+			throw new IllegalArgumentException("다른 일감의 상위일감으로 사용 중인 일감은 삭제할 수 없습니다.");
+		}
+
+		try {
+			int deleteCount = issuesMapper.deleteIssue(projectId, issueId);
+
+			if (deleteCount == 0) {
+				throw new IllegalArgumentException("삭제할 일감이 없습니다.");
+			}
+		} catch (DataIntegrityViolationException e) {
+			throw new IllegalArgumentException("연결된 데이터가 있는 일감은 삭제할 수 없습니다.");
+		}
+	}
+
+	@Override
+	public IssuesVO getProjectDetailForCreate(String projectId, String userId) {
+		IssuesVO project = validateProjectAccess(projectId, userId);
+		validateCreatePermission(projectId, userId);
+
+		return project;
+	}
+
 	@Override
 	public List<IssuesVO> getIssueTypeList(String projectId, String userId) {
 		validateProjectAccess(projectId, userId);
 		return issuesMapper.selectIssueTypeList(projectId);
 	}
 
-	// 일감유형별 표준 항목 설정 목록을 조회한다.
 	@Override
 	public List<IssuesVO> getFieldSettingList(String projectId, String userId) {
 		validateProjectAccess(projectId, userId);
 		return issuesMapper.selectFieldSettingListByProject(projectId);
 	}
 
-	// 생성 가능한 버전 목록을 조회한다.
 	@Override
 	public List<IssuesVO> getVersionList(String projectId, String userId) {
 		validateProjectAccess(projectId, userId);
 		return issuesMapper.selectVersionList(projectId);
 	}
 
-	// 생성 가능한 마일스톤 목록을 조회한다.
 	@Override
 	public List<IssuesVO> getMilestoneList(String projectId, String userId) {
 		validateProjectAccess(projectId, userId);
 		return issuesMapper.selectMilestoneList(projectId);
 	}
 
-	// 일감 우선순위 코드값 목록을 조회한다.
 	@Override
 	public List<IssuesVO> getPriorityList(String projectId, String userId) {
 		validateProjectAccess(projectId, userId);
 		return issuesMapper.selectPriorityList(projectId);
 	}
 
-	// 프로젝트 담당자 후보 목록을 조회한다.
 	@Override
 	public List<IssuesVO> getAssigneeList(String projectId, String userId) {
 		validateProjectAccess(projectId, userId);
 		return issuesMapper.selectAssigneeList(projectId);
 	}
 
-	// 상위일감 후보 목록을 조회한다.
 	@Override
 	public List<IssuesVO> getParentIssueList(String projectId, String userId) {
 		validateProjectAccess(projectId, userId);
 		return issuesMapper.selectParentIssueList(projectId);
 	}
 
-	// 신규 일감을 등록한다.
 	@Override
 	@Transactional
 	public void createIssue(IssuesVO issue, String userId) {
@@ -134,10 +223,12 @@ public class IssuesServiceImpl implements IssuesService {
 		validateProgressRate(issue);
 		validateDynamicFields(issue);
 
+		issuesMapper.selectProjectForUpdate(issue.getProjectId());
+		issue.setIssueNo(issuesMapper.selectNextIssueNo(issue.getProjectId()));
+
 		issuesMapper.insertIssue(issue);
 	}
 
-	// 프로젝트 접근 가능 여부를 검증한다.
 	private IssuesVO validateProjectAccess(String projectId, String userId) {
 		validateUserId(userId);
 
@@ -154,16 +245,31 @@ public class IssuesServiceImpl implements IssuesService {
 		return project;
 	}
 
-	// 일감 추가 권한을 검증한다.
 	private void validateCreatePermission(String projectId, String userId) {
-		int permissionCount = issuesMapper.countIssueCreatePermission(projectId, userId);
-
-		if (permissionCount == 0) {
+		if (!hasProjectPermission(projectId, userId, PERMISSION_ISSUE_CREATE_CODE, PERMISSION_ISSUE_CREATE_NAME)) {
 			throw new IllegalArgumentException("일감 추가 권한이 없습니다.");
 		}
 	}
 
-	// 기본 필수값을 검증한다.
+	private boolean hasProjectPermission(String projectId, String userId, String permissionCode,
+			String permissionName) {
+
+		validateUserId(userId);
+
+		if (isBlank(projectId)) {
+			throw new IllegalArgumentException("프로젝트를 선택해주세요.");
+		}
+
+		String checkedPermissionCode = trimToNull(permissionCode);
+		String checkedPermissionName = trimToNull(permissionName);
+
+		if (checkedPermissionCode == null && checkedPermissionName == null) {
+			throw new IllegalArgumentException("확인할 권한 정보가 없습니다.");
+		}
+
+		return issuesMapper.countProjectPermission(projectId, userId, checkedPermissionCode, checkedPermissionName) > 0;
+	}
+
 	private void validateBasicIssue(IssuesVO issue) {
 		if (issue == null) {
 			throw new IllegalArgumentException("등록할 일감 정보가 없습니다.");
@@ -190,7 +296,6 @@ public class IssuesServiceImpl implements IssuesService {
 		}
 	}
 
-	// 선택한 버전이 생성 가능한 상태인지 검증한다.
 	private void validateVersion(String projectId, String versionId) {
 		int versionCount = issuesMapper.countVersionForCreate(projectId, versionId);
 
@@ -199,7 +304,6 @@ public class IssuesServiceImpl implements IssuesService {
 		}
 	}
 
-	// 선택한 우선순위 코드값을 검증한다.
 	private void validatePriority(String projectId, String settingCodeId) {
 		int priorityCount = issuesMapper.countPriorityForProject(projectId, settingCodeId);
 
@@ -208,7 +312,6 @@ public class IssuesServiceImpl implements IssuesService {
 		}
 	}
 
-	// 제목/설명 길이를 검증한다.
 	private void validateLength(IssuesVO issue) {
 		if (issue.getTitle().length() > 255) {
 			throw new IllegalArgumentException("제목은 255자 이하로 입력해주세요.");
@@ -219,7 +322,6 @@ public class IssuesServiceImpl implements IssuesService {
 		}
 	}
 
-	// 진척도 값을 검증한다.
 	private void validateProgressRate(IssuesVO issue) {
 		if (issue.getProgressRate() == null) {
 			issue.setProgressRate(0);
@@ -230,7 +332,6 @@ public class IssuesServiceImpl implements IssuesService {
 		}
 	}
 
-	// 일감유형의 표준 항목 설정에 따라 동적 필드를 검증한다.
 	private void validateDynamicFields(IssuesVO issue) {
 		Map<String, IssuesVO> fieldSettingMap = getFieldSettingMap(issue.getIssueTypeId());
 
@@ -346,6 +447,43 @@ public class IssuesServiceImpl implements IssuesService {
 	private boolean isFieldRequired(Map<String, IssuesVO> fieldSettingMap, String fieldCode) {
 		IssuesVO fieldSetting = fieldSettingMap.get(fieldCode);
 		return fieldSetting != null && "Y".equals(fieldSetting.getRequiredYn());
+	}
+
+	private void trimSearchCondition(IssuesVO searchVO) {
+		searchVO.setKeyword(trimToNull(searchVO.getKeyword()));
+		searchVO.setIssueTypeId(trimToNull(searchVO.getIssueTypeId()));
+		searchVO.setVersionId(trimToNull(searchVO.getVersionId()));
+		searchVO.setIssueStatusId(trimToNull(searchVO.getIssueStatusId()));
+		searchVO.setSettingCodeId(trimToNull(searchVO.getSettingCodeId()));
+		searchVO.setAssigneeId(trimToNull(searchVO.getAssigneeId()));
+		searchVO.setIssueNoSort(normalizeIssueNoSort(searchVO.getIssueNoSort()));
+	}
+
+	private void applyPaging(IssuesVO searchVO) {
+		if (searchVO.getPage() == null || searchVO.getPage() < 1) {
+			searchVO.setPage(1);
+		}
+
+		searchVO.setPageSize(ISSUE_PAGE_SIZE);
+		setPagingRange(searchVO);
+	}
+
+	private void setPagingRange(IssuesVO searchVO) {
+		int page = searchVO.getPage();
+		int pageSize = searchVO.getPageSize();
+
+		searchVO.setStartRow((page - 1) * pageSize + 1);
+		searchVO.setEndRow(page * pageSize);
+	}
+
+	private String normalizeIssueNoSort(String issueNoSort) {
+		String sort = trimToNull(issueNoSort);
+
+		if ("asc".equalsIgnoreCase(sort)) {
+			return "asc";
+		}
+
+		return "desc";
 	}
 
 	private void validateUserId(String userId) {

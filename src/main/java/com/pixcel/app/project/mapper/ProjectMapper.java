@@ -6,6 +6,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import com.pixcel.app.project.service.ProjectMemberVO;
+import com.pixcel.app.project.service.ProjectModulesVO;
 import com.pixcel.app.project.service.ProjectRoleVO;
 import com.pixcel.app.project.service.ProjectVO;
 
@@ -20,6 +21,9 @@ public interface ProjectMapper {
 	// 자료실 관련
 	public List<ProjectVO> selectAllProjects();
 	
+	// 류송지 추가
+	// 프로젝트 모듈 관련
+	public List<ProjectModulesVO> selectAllModuleProjects();
 	//260623 고동현 프로젝트 리스트 관련추가
 	//관리자
 	public List<ProjectVO> selectMyCreatedProjectList(@Param("userId") String userId);

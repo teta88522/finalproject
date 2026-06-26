@@ -40,15 +40,13 @@
             							<ul class="nav navbar-nav mai-top-nav">
                                         	
                                             <li class="nav-item">
-                                                <a th:href="@{/dashboard/list}">프로젝트</a>
+                                                <a th:href="@{/project/list}">프로젝트</a>
                                             </li>
-                                            <li class="nav-item">
-                                                <a th:href="@{/about}" class="nav-link">일감</a>
-                                            </li>
+                                            
 
                                             <!-- subscribeYn = Y 이면 관리 탭 표시 -->
     										<li class="nav-item" th:if="${subscribeYn == 'Y'}">
-    											<a th:href="@{/admin/list}">관리</a>
+    											<a th:href="@{/issuetype/list}">관리</a>
 											</li>
 
                                         </ul>

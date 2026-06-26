@@ -395,4 +395,17 @@
 		FROM project
 		ORDER BY project_name ASC
 	</select>
+	
+	
+	<select id="selectProjectModules"
+		resultType="ProjectModulesVO">
+
+		SELECT
+		project_module_id
+		project_id
+		module_code
+		FROM project_module
+		WHERE project_id = #{projectId}
+
+	</select>
 </mapper>

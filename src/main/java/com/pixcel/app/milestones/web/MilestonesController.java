@@ -6,7 +6,6 @@ import com.pixcel.app.milestones.service.MilestonesVO;
 import jakarta.servlet.http.HttpSession;
 
 import com.pixcel.app.issues.service.IssuesVO;
-import com.pixcel.app.milestones.service.MilestoneSearchVO;
 import com.pixcel.app.milestones.service.MilestonesMemberDTO;
 
 import lombok.RequiredArgsConstructor;
@@ -155,13 +154,10 @@ public class MilestonesController {
     
     //목록
     @GetMapping("/list")
-    public String getMilestoneList(@ModelAttribute MilestoneSearchVO searchVO, Model model, HttpSession session) {
-    	String projectId = getProjectIdFromSession(session);
-        searchVO.setProjectId(projectId);
-    	log.info("검색 조건 searchVO 확인: {}", searchVO);
-        List<MilestonesVO> milestoneList = milestonesService.getMilestoneList(searchVO); //서비스(Impl)를 호출해서 마일스톤 목록 데이터를 가져옵니다.
-        model.addAttribute("milestoneList", milestoneList); //화면에서 사용할 model에 데이터를 담아줌
-        model.addAttribute("searchVO", searchVO); 
+    public String getMilestoneList(Model model, HttpSession session) {
+        String projectId = getProjectIdFromSession(session);
+        List<MilestonesVO> milestoneList = milestonesService.getMilestoneList(projectId);
+        model.addAttribute("milestoneList", milestoneList);
         return "milestones/list";
     }
     

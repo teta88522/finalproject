@@ -7,9 +7,10 @@ import org.springframework.stereotype.Service;
 @Service
 public interface RoadmapService {
 	public String insertRoadmap(RoadmapVO roadmap);
-	public List<RoadmapVO> getRoadmapList(RoadmapVO roadmapVO);
+	public List<RoadmapVO> getSettingList(RoadmapVO roadmapVO);
 	public int updateRoadmap(RoadmapVO roadmapVO);
-	public RoadmapVO getRoadmapDetail(String versionId, String projectId);
+	public RoadmapVO getsettingDetail(String versionId, String projectId);
 	public int deleteRoadmap(String versionId, String projectId);
 	List<RoadmapVO> getRoadmapFull(String projectId);
+	public RoadmapVO getRoadmapDetail(String versionId, String projectId);
 }
