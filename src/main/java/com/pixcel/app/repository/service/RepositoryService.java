@@ -25,4 +25,7 @@ public interface RepositoryService {
 	
 	// 7. 
 	public int getTotalCount(RepositoryVO searchVO);
+	
+	// 프로젝트 구성원인지 확인하는 메서드
+	public boolean isProjectMember(String projectId, String userId);
 }

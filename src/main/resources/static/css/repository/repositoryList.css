@@ -255,3 +255,23 @@ body {
 	color: #adb5bd; /* 비활성화된 글자색 */
 	border-color: #dee2e6;
 }
+
+/* 페이징 ul 스타일 */
+.pagination {
+	list-style: none; /* 점 모양 제거 */
+	padding: 0;
+	display: flex;
+	justify-content: center;
+	gap: 5px; /* 버튼 사이 간격 */
+}
+
+/* <li> 태그 스타일 (기본) */
+.pagination li {
+	display: inline-block;
+}
+
+/* 일반 페이지 버튼 호버 효과 */
+.pagination a:hover:not(.active):not([style*="pointer-events: none"]) {
+	background-color: #f8f9fa;
+	border-color: #dee2e6;
+}

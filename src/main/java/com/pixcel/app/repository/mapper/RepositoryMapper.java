@@ -2,6 +2,8 @@ package com.pixcel.app.repository.mapper;
 
 import java.util.List;
 
+import org.apache.ibatis.annotations.Param;
+
 import com.pixcel.app.repository.service.RepositoryVO;
 
 public interface RepositoryMapper {
@@ -26,4 +28,8 @@ public interface RepositoryMapper {
 	
 	// 7. 페이징용
 	public int selectRepositoryTotalCount(RepositoryVO searcVO);
+	
+	public String selectMyRecentProjectId(@Param("userId") String userId);
+	
+	public int isProjectMember(@Param("projectId") String projectId, @Param("userId") String userId);
 }
