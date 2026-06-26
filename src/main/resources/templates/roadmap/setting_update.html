@@ -9,7 +9,7 @@
     <title>버전(로드맵) 수정</title>
 
     <link rel="stylesheet" th:href="@{/css/milestones/milestone-common.css}" />
-    <link rel="stylesheet" th:href="@{/css/roadmap/version-form.css}" />
+    <link rel="stylesheet" th:href="@{/css/roadmap/setting-create.css}" />
   </head>
   <body>
     <div layout:fragment="Content">
@@ -30,7 +30,7 @@
 
             <form
               id="versionUpdateForm"
-              th:action="@{/roadmap/roadmap_update}"
+              th:action="@{/roadmap/setting_update}"
               method="POST"
               novalidate
             >
@@ -112,7 +112,7 @@
                   <button
                     type="button"
                     class="btn btn-default"
-                    onclick="location.href = '/roadmap/roadmap_list'"
+                    onclick="location.href = '/roadmap/setting_list'"
                   >
                     목록으로
                   </button>
@@ -130,7 +130,7 @@
 
             <form
               id="versionDeleteForm"
-              th:action="@{/roadmap/roadmap_delete}"
+              th:action="@{/roadmap/setting_delete}"
               method="POST"
               style="display: none"
             >
@@ -144,7 +144,7 @@
         </div>
       </div>
 
-      <script th:src="@{/js/roadmap/roadmap-update.js}"></script>
+      <script th:src="@{/js/roadmap/setting-update.js}"></script>
     </div>
   </body>
 </html>

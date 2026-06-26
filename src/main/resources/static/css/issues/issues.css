@@ -1,5 +1,43 @@
 @charset "UTF-8";
 
+/* ==============================
+   일감 공통
+============================== */
+.issues-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: flex-start;
+	gap: 16px;
+	margin-bottom: 8px;
+}
+
+.issues-header h3 {
+	margin: 0 0 3px;
+	font-size: 22px;
+	font-weight: 700;
+}
+
+.issues-header p {
+	margin: 0;
+	color: #777777;
+	font-size: 13px;
+}
+
+.required {
+	color: #d9534f;
+}
+
+.dynamic-field.is-hidden {
+	display: none;
+}
+
+.field-setting-data {
+	display: none;
+}
+
+/* ==============================
+   일감 생성
+============================== */
 .issues-create-page {
 	height: calc(100vh - 126px);
 	padding: 10px 0 8px;
@@ -15,26 +53,6 @@ body.issues-create-body {
 	display: flex;
 	flex-direction: column;
 	min-height: 0;
-}
-
-.issues-header {
-	display: flex;
-	justify-content: space-between;
-	align-items: flex-start;
-	gap: 16px;
-	margin-bottom: 10px;
-}
-
-.issues-header h3 {
-	margin: 0 0 3px;
-	font-size: 22px;
-	font-weight: 700;
-}
-
-.issues-header p {
-	margin: 0;
-	color: #777;
-	font-size: 13px;
 }
 
 .issues-form {
@@ -61,7 +79,7 @@ body.issues-create-body {
 
 .issues-card {
 	width: 100%;
-	background: #fff;
+	background: #ffffff;
 	border: 1px solid #e7e7e7;
 	border-radius: 8px;
 	padding: 12px 14px;
@@ -80,7 +98,7 @@ body.issues-create-body {
 	flex: 0 0 auto;
 	margin-bottom: 8px;
 	padding-bottom: 7px;
-	border-bottom: 1px solid #eee;
+	border-bottom: 1px solid #eeeeee;
 }
 
 .issues-card-title h4 {
@@ -95,20 +113,26 @@ body.issues-create-body {
 	gap: 8px;
 }
 
-.form-group {
+.issues-create-page .form-group {
 	margin-bottom: 8px;
 }
 
-.form-group label {
+.issues-create-page .form-group label {
 	margin-bottom: 4px;
 	font-size: 13px;
 	font-weight: 600;
 }
 
-.form-control {
+.issues-create-page .form-control {
 	height: 31px;
 	padding: 5px 10px;
 	font-size: 13px;
+}
+
+.issues-readonly-control {
+	background-color: #f7f8fb;
+	color: #555555;
+	cursor: default;
 }
 
 .issues-description-group {
@@ -123,18 +147,6 @@ body.issues-create-body {
 	height: auto;
 	min-height: 210px;
 	resize: vertical;
-}
-
-.required {
-	color: #d9534f;
-}
-
-.dynamic-field.is-hidden {
-	display: none;
-}
-
-.field-setting-data {
-	display: none;
 }
 
 .issues-file-box {
@@ -158,11 +170,11 @@ body.issues-create-body {
 
 .issues-file-count {
 	margin-left: 10px;
-	color: #888;
+	color: #888888;
 	font-size: 12px;
 }
 
-.issues-file-list {
+.issues-file-list, .issues-file-box #fileList {
 	margin: 8px 0 0;
 	padding: 0;
 	list-style: none;
@@ -174,7 +186,7 @@ body.issues-create-body {
 	align-items: center;
 	gap: 10px;
 	padding: 6px 0;
-	border-bottom: 1px solid #eee;
+	border-bottom: 1px solid #eeeeee;
 	font-size: 12px;
 }
 
@@ -186,21 +198,32 @@ body.issues-create-body {
 	display: inline-flex;
 	align-items: center;
 	min-width: 0;
-	color: #555;
+	color: #555555;
 }
 
 .issues-file-name small {
-	color: #888;
+	color: #888888;
 }
 
-.issues-file-item button {
+.issues-file-item button, .issues-file-box #fileList button {
 	flex: 0 0 auto;
 	border: 1px solid #d7dbe7;
 	border-radius: 5px;
-	background: #fff;
-	color: #555;
+	background: #ffffff;
+	color: #555555;
 	font-size: 12px;
 	padding: 3px 8px;
+	cursor: pointer;
+}
+
+.issues-file-item button:hover, .issues-file-box #fileList button:hover
+	{
+	background: #f5f6fa;
+}
+
+.issues-file-box #fileList li {
+	font-size: 12px;
+	color: #555555;
 }
 
 .issues-form-actions {
@@ -217,6 +240,396 @@ body.issues-create-body {
 	font-size: 13px;
 }
 
+/* ==============================
+   일감 전체조회 - 화면 고정
+============================== */
+body.issues-list-body {
+	overflow: hidden;
+}
+
+.issues-list-page {
+	height: calc(100vh - 126px);
+	padding: 6px 0;
+	overflow: hidden;
+}
+
+.issues-list-page .container-fluid {
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+	min-height: 0;
+}
+
+.issues-list-page .issues-header {
+	flex: 0 0 auto;
+	margin-bottom: 6px;
+}
+
+.issues-list-page .issues-header h3 {
+	font-size: 20px;
+}
+
+.issues-list-page .issues-header p {
+	font-size: 12px;
+}
+
+.issues-list-actions {
+	display: flex;
+	justify-content: flex-end;
+	align-items: center;
+	gap: 6px;
+	flex-wrap: wrap;
+}
+
+.issues-list-actions .btn {
+	min-width: 96px;
+	height: 32px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	padding: 0 12px;
+	font-size: 13px;
+	text-decoration: none;
+}
+
+.issues-list-actions .btn[disabled] {
+	opacity: 0.55;
+	cursor: not-allowed;
+}
+
+/* ==============================
+   일감 전체조회 - 검색조건
+============================== */
+.issues-search-section {
+	flex: 0 0 auto;
+	margin-bottom: 8px;
+	padding: 10px 14px;
+}
+
+.issues-search-section .search-header {
+	margin-bottom: 8px;
+}
+
+.search-section .issues-search-row {
+	display: grid;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	gap: 8px 12px;
+	align-items: end;
+}
+
+.issues-date-range {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	width: 100%;
+}
+
+.issues-date-range input {
+	flex: 1;
+	min-width: 0;
+}
+
+.issues-date-separator {
+	flex: 0 0 auto;
+	color: #888888;
+	font-size: 12px;
+}
+
+/* ==============================
+   일감 전체조회 - 테이블
+============================== */
+.issues-table-card {
+	flex: 1 1 auto;
+	min-height: 0;
+	background: #ffffff;
+	border: 1px solid #e7e7e7;
+	border-radius: 8px;
+	padding: 0;
+	box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+	overflow-x: auto;
+	overflow-y: hidden;
+}
+
+.issues-list-table {
+	width: 100%;
+	min-width: 1080px;
+	margin-bottom: 0;
+	table-layout: fixed;
+	border-collapse: collapse;
+}
+
+.issues-list-table col.col-issue-no {
+	width: 6%;
+}
+
+.issues-list-table col.col-issue-type {
+	width: 8%;
+}
+
+.issues-list-table col.col-version {
+	width: 9%;
+}
+
+.issues-list-table col.col-title {
+	width: 14%;
+}
+
+.issues-list-table col.col-status {
+	width: 8%;
+}
+
+.issues-list-table col.col-priority {
+	width: 8%;
+}
+
+.issues-list-table col.col-assignee {
+	width: 8%;
+}
+
+.issues-list-table col.col-progress {
+	width: 9%;
+}
+
+.issues-list-table col.col-date {
+	width: 17%;
+}
+
+.issues-list-table col.col-hours {
+	width: 6%;
+}
+
+.issues-list-table col.col-manage {
+	width: 7%;
+}
+
+.issues-list-table thead th {
+	height: 31px;
+	padding: 5px 5px;
+	background: #f4f6fb;
+	border-bottom: 1px solid #e1e5f0;
+	font-size: 12px;
+	font-weight: 600;
+	color: #333333;
+	text-align: center;
+	vertical-align: middle;
+	white-space: nowrap;
+}
+
+.issues-list-table tbody td {
+	height: 34px;
+	padding: 4px 5px;
+	border-bottom: 1px solid #f0f1f5;
+	font-size: 12px;
+	color: #444444;
+	text-align: center;
+	vertical-align: middle;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	line-height: 1.25;
+}
+
+.issues-list-table tbody tr:last-child td {
+	border-bottom: 0;
+}
+
+.issues-list-table tbody tr:hover {
+	background-color: #f8f9ff;
+}
+
+/* 식별번호 정렬 */
+.issue-no-sort-header {
+	padding-left: 3px !important;
+	padding-right: 3px !important;
+}
+
+.issue-sort-link {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 3px;
+	color: #333333;
+	text-decoration: none;
+}
+
+.issue-sort-link:hover, .issue-sort-link:focus {
+	color: #252ba3;
+	text-decoration: none;
+}
+
+.issue-sort-mark {
+	font-size: 10px;
+	line-height: 1;
+	color: #252ba3;
+}
+
+/* 셀 공통 */
+.cell-text {
+	display: block;
+	width: 100%;
+	margin: 0 auto;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.issues-title-cell {
+	text-align: left !important;
+}
+
+.issues-title-cell .strong-text, .issues-title-cell .ellipsis-text {
+	display: block;
+	width: 100%;
+	padding-left: 4px;
+	color: #333333;
+	font-weight: 600;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.issue-no-cell {
+	padding-left: 3px !important;
+	padding-right: 3px !important;
+}
+
+.issue-no-badge {
+	display: inline-block;
+	min-width: 48px;
+	padding: 3px 5px;
+	border-radius: 4px;
+	color: #ffffff;
+	font-size: 12px;
+	font-weight: 600;
+	line-height: 1.2;
+	text-align: center;
+}
+
+.issue-no-badge.is-open {
+	background-color: #28a745;
+}
+
+.issue-no-badge.is-closed {
+	background-color: #d9534f;
+}
+
+/* 진척도 */
+.issues-progress-cell {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 6px;
+	width: 100%;
+}
+
+.issues-progress {
+	width: 54px;
+	height: 9px;
+	background-color: #dde0ea;
+	border-radius: 10px;
+	overflow: hidden;
+}
+
+.issues-progress-bar {
+	height: 100%;
+	background-color: #6c757d;
+	border-radius: 10px;
+}
+
+.issues-progress-text {
+	flex: 0 0 30px;
+	font-size: 11px;
+	color: #555555;
+	line-height: 1;
+	text-align: left;
+}
+
+/* 날짜 */
+.issues-date-cell {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 4px;
+	width: 100%;
+	font-size: 12px;
+	color: #555555;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+/* 관리 */
+.issues-row-btn {
+	height: 24px;
+	min-width: 46px;
+	padding: 0 8px;
+	font-size: 12px;
+	line-height: 22px;
+}
+
+.issues-no-action {
+	color: #999999;
+	font-size: 12px;
+}
+
+/* ==============================
+   페이징
+============================== */
+.issues-pagination {
+	flex: 0 0 auto;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	min-height: 30px;
+	padding: 6px 2px 0;
+}
+
+
+.issues-page-links {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 4px;
+	flex-wrap: wrap;
+}
+
+.issues-page-btn {
+	min-width: 28px;
+	height: 28px;
+	padding: 0 8px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	border: 1px solid #d7dbe7;
+	border-radius: 5px;
+	background: #ffffff;
+	color: #444444;
+	font-size: 12px;
+	text-decoration: none;
+}
+
+.issues-page-btn:hover, .issues-page-btn:focus {
+	border-color: #252ba3;
+	color: #252ba3;
+	text-decoration: none;
+}
+
+.issues-page-btn.is-active {
+	border-color: #252ba3;
+	background: #252ba3;
+	color: #ffffff;
+	font-weight: 600;
+}
+
+.issues-page-btn.is-disabled {
+	background: #f5f6fa;
+	color: #aaaaaa;
+	cursor: default;
+}
+
+/* ==============================
+   반응형
+============================== */
 @media ( max-width : 1200px) {
 	.issues-form-layout {
 		grid-template-columns: minmax(0, 1fr) 300px;
@@ -227,10 +640,10 @@ body.issues-create-body {
 }
 
 @media ( max-width : 992px) {
-	body.issues-create-body {
+	body.issues-create-body, body.issues-list-body {
 		overflow: auto;
 	}
-	.issues-create-page {
+	.issues-create-page, .issues-list-page {
 		height: auto;
 		overflow: visible;
 	}
@@ -241,20 +654,39 @@ body.issues-create-body {
 		height: 220px;
 		min-height: 220px;
 	}
+	.search-section .issues-search-row {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+	.issues-table-card {
+		overflow-x: auto;
+	}
 }
 
 @media ( max-width : 640px) {
 	.issues-header {
 		flex-direction: column;
 	}
-}
-
-/* ==============================
-   일감 생성 URL 구조 수정
-   프로젝트는 URL 기준으로 고정 표시
-============================== */
-.issues-readonly-control {
-	background-color: #f7f8fb;
-	color: #555555;
-	cursor: default;
+	.issues-list-actions {
+		width: 100%;
+		justify-content: flex-start;
+	}
+	.issues-list-actions .btn {
+		flex: 1;
+	}
+	.search-section .issues-search-row {
+		grid-template-columns: 1fr;
+	}
+	.issues-date-range {
+		flex-direction: column;
+		align-items: stretch;
+	}
+	.issues-date-separator {
+		text-align: center;
+	}
+	.issues-form-actions {
+		justify-content: stretch;
+	}
+	.issues-form-actions .btn, .issues-form-actions button {
+		flex: 1;
+	}
 }

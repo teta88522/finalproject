@@ -17,21 +17,25 @@
 		<result property="fileVersion" column="file_version" />
 		<result property="fileUseYn" column="file_use_yn" />
 		<result property="connectAddress" column="connect_address" />
-		<result property="categoryName" column="categoryName" />
+		<result property="categoryName" column="category_name" />
 	</resultMap>
 
 	<select id="selectRepositoryList" parameterType="RepositoryVO" resultMap="repositoryMap">
-		SELECT A.*, C.note AS category_name
-		FROM attach_file A
-		LEFT JOIN common_code C ON A.file_code = C.code_id
-								AND C.code_name = 'OF'
-		<where>
-			A.file_use_yn = 'g001'
-			<if test="projectId != null and projectId != ''">
-				AND A.project_id = #{projectId}
-			</if>
-		</where>
-		ORDER BY A.upload_date DESC
+		SELECT * FROM (
+			SELECT ROWNUM AS rn, A.* FROM(
+				SELECT AT.*, C.note AS category_name
+				FROM attach_file AT
+				LEFT JOIN common_code C ON AT.file_code = C.code_id
+				<where>
+					AT.file_use_yn = 'g001'
+					<if test="projectId != null and projectId != ''">
+						AND AT.project_id = #{projectId}
+					</if>
+				</where>
+				ORDER BY AT.upload_date DESC
+			) A
+		)
+		WHERE rn BETWEEN #{startRow} AND #{endRow}
 	</select>
 
 	<select id="selectRepositoryTotalCount"
@@ -85,6 +89,25 @@
 		FROM attach_file A
 		LEFT JOIN users U ON A.upload_user_id = U.user_id
 		WHERE A.file_id = #{fileId}
+	</select>
+	
+	<select id="selectMyRecentProjectId" parameterType="String" resultType="String">
+		SELECT project_id
+		FROM (
+			SELECT pm.project_id
+			FROM project_member pm
+			WHERE pm.user_id = #{userId}
+			ORDER BY pm.joined_at DESC
+		)
+		WHERE ROWNUM = 1
+	</select>
+	
+	<select id="isProjectMember" parameterType="map" resultType="int">
+		SELECT COUNT(*)
+		FROM project_member pm
+		JOIN team_member tm ON pm.team_member_id = tm.team_member_id
+		WHERE pm.project_id = #{projectId}
+		AND tm.user_id = #{userId}
 	</select>
 
 	<insert id="insertRepository" parameterType="RepositoryVO">

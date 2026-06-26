@@ -70,7 +70,7 @@
 								class="repo-file-link" th:text="${repo.originalName}">파일명</a>
 							</td>
 
-							<td class="text-center" th:text="${repo.categoryName}"></td>
+							<td class="repo-checksum" th:text="${repo.categoryName}"></td>
 
 							<td
 								th:text="${#dates.format(repo.uploadDate, 'yyyy-MM-dd HH:mm')}"></td>

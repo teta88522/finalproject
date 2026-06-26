@@ -54,6 +54,10 @@ public class MilestonesVO {
     
     private String managerName;
     private String selectedIssueIds;
+    private String versionName;
+    
+    private String totalEstimateHours;
+    private String totalHours;
     
     private Integer totalProgressRate;          // 마일스톤 전체 진행률
     private List<IssuesVO> issueList; // 하위 일감 리스트

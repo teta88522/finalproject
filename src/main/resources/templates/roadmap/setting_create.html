@@ -9,7 +9,7 @@
     <title>새 버전(로드맵) 생성</title>
 
     <link rel="stylesheet" th:href="@{/css/milestones/milestone-common.css}" />
-    <link rel="stylesheet" th:href="@{/css/roadmap/version-form.css}" />
+    <link rel="stylesheet" th:href="@{/css/roadmap/setting-create.css}" />
   </head>
   <body>
     <div layout:fragment="Content">
@@ -22,7 +22,7 @@
           <div class="panel-body">
             <form
               id="versionCreateForm"
-              th:action="@{/roadmap/roadmap_create}"
+              th:action="@{/roadmap/setting_create}"
               method="POST"
               novalidate
             >
@@ -99,7 +99,7 @@
         </div>
       </div>
 
-      <script th:src="@{/js/roadmap/version-create.js}"></script>
+      <script th:src="@{/js/roadmap/setting-create.js}"></script>
     </div>
   </body>
 </html>

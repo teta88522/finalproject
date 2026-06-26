@@ -3,337 +3,595 @@
 
 <mapper namespace="com.pixcel.app.issues.mapper.IssuesMapper">
 
-    <!-- 현재 사용자가 접근 가능한 프로젝트 목록 조회 -->
-    <select id="selectProjectList" resultType="IssuesVO">
-        select distinct
-            p.project_id,
-            p.project_name,
-            p.owner_id,
-            p.created_at
-        from project p
-        where p.owner_id = #{userId}
-           or exists (
-                select 1
-                from project_member pm
-                join team_member tm
-                  on pm.team_member_id = tm.team_member_id
-                where pm.project_id = p.project_id
-                  and tm.user_id = #{userId}
-           )
-        order by created_at desc, project_name
-    </select>
+	<!-- ============================== 프로젝트 공통 ============================== -->
 
-    <!-- 현재 사용자가 접근 가능한 프로젝트 단건 조회 -->
-    <select id="selectProjectDetailForUser" resultType="IssuesVO">
-        select
-            p.project_id,
-            p.project_name,
-            p.owner_id
-        from project p
-        where p.project_id = #{projectId}
-          and (
-                p.owner_id = #{userId}
-             or exists (
-                    select 1
-                    from project_member pm
-                    join team_member tm
-                      on pm.team_member_id = tm.team_member_id
-                    where pm.project_id = p.project_id
-                      and tm.user_id = #{userId}
-                )
-          )
-    </select>
+	<select id="selectProjectList" resultType="IssuesVO">
+		select distinct
+		p.project_id,
+		p.project_name,
+		p.owner_id,
+		p.created_at
+		from project p
+		where p.owner_id = #{userId}
+		or exists (
+		select 1
+		from project_member pm
+		join team_member tm
+		on pm.team_member_id = tm.team_member_id
+		where
+		pm.project_id = p.project_id
+		and tm.user_id = #{userId}
+		)
+		order by
+		p.created_at desc, p.project_name
+	</select>
 
-    <!-- 프로젝트 생성자이거나 일감 추가 권한이 있는지 확인 -->
-    <select id="countIssueCreatePermission" resultType="int">
-        select count(*)
-        from project p
-        where p.project_id = #{projectId}
-          and (
-                p.owner_id = #{userId}
-             or exists (
-                    select 1
-                    from project_member pm
-                    join team_member tm
-                      on pm.team_member_id = tm.team_member_id
-                    join role_permission rp
-                      on pm.role_id = rp.role_id
-                    join permission perm
-                      on rp.permission_id = perm.permission_id
-                    where pm.project_id = p.project_id
-                      and tm.user_id = #{userId}
-                      and perm.permission_code = 'p008'
-                )
-          )
-    </select>
+	<select id="selectProjectDetailForUser" resultType="IssuesVO">
+		select
+		p.project_id,
+		p.project_name,
+		p.owner_id
+		from project p
+		where p.project_id
+		= #{projectId}
+		and (
+		p.owner_id = #{userId}
+		or exists (
+		select 1
+		from
+		project_member pm
+		join team_member tm
+		on pm.team_member_id =
+		tm.team_member_id
+		where pm.project_id = p.project_id
+		and tm.user_id =
+		#{userId}
+		)
+		)
+	</select>
 
-    <!-- 프로젝트에 적용된 일감유형 목록 조회 -->
-    <select id="selectIssueTypeList" resultType="IssuesVO">
-        select
-            it.issue_type_id,
-            it.issue_type_name,
-            it.initial_status_id,
-            ist.status_name as initial_status_name
-        from issue_type_project itp
-        join issue_type it
-          on itp.issue_type_id = it.issue_type_id
-        join issue_status ist
-          on it.initial_status_id = ist.issue_status_id
-        where itp.project_id = #{projectId}
-        order by it.created_at asc, it.issue_type_id asc
-    </select>
+	<select id="countProjectPermission" resultType="int">
+		select count(*)
+		from project p
+		where p.project_id = #{projectId}
+		and (
+		p.owner_id =
+		#{userId}
+		or exists (
+		select 1
+		from project_member pm
+		join team_member tm
+		on pm.team_member_id = tm.team_member_id
+		join role_permission rp
+		on
+		pm.role_id = rp.role_id
+		join permission perm
+		on rp.permission_id =
+		perm.permission_id
+		where pm.project_id = p.project_id
+		and tm.user_id =
+		#{userId}
+		and (
+		(
+		#{permissionCode, jdbcType=VARCHAR} is not null
+		and
+		perm.permission_code = #{permissionCode, jdbcType=VARCHAR}
+		)
+		or (
+		#{permissionName, jdbcType=VARCHAR} is not null
+		and
+		perm.permission_name = #{permissionName, jdbcType=VARCHAR}
+		)
+		)
+		)
+		)
+	</select>
 
-    <!-- 생성에 사용할 일감유형 상세 조회 -->
-    <select id="selectIssueTypeDetailForCreate" resultType="IssuesVO">
-        select
-            it.issue_type_id,
-            it.issue_type_name,
-            it.initial_status_id,
-            ist.status_name as initial_status_name
-        from issue_type_project itp
-        join issue_type it
-          on itp.issue_type_id = it.issue_type_id
-        join issue_status ist
-          on it.initial_status_id = ist.issue_status_id
-        where itp.project_id = #{projectId}
-          and it.issue_type_id = #{issueTypeId}
-    </select>
+	<select id="selectProjectForUpdate" resultType="string">
+		select project_id
+		from project
+		where project_id = #{projectId}
+		for update
+	</select>
 
-    <!-- 프로젝트에 적용된 일감유형별 표준 항목 설정 목록 조회 -->
-    <select id="selectFieldSettingListByProject" resultType="IssuesVO">
-        select
-            itp.issue_type_id,
-            fs.field_setting_id,
-            case fs.field_code
-                when 'i001' then 'ASSIGNEE'
-                when 'i002' then 'MILESTONE'
-                when 'i003' then 'PARENT_ISSUE'
-                when 'i004' then 'START_DATE'
-                when 'i005' then 'DUE_DATE'
-                when 'i006' then 'ESTIMATED_HOURS'
-                else fs.field_code
-            end as field_code,
-            fs.use_yn,
-            fs.required_yn
-        from issue_type_project itp
-        join issue_type_field_setting fs
-          on itp.issue_type_id = fs.issue_type_id
-        where itp.project_id = #{projectId}
-        order by itp.issue_type_id,
-            case fs.field_code
-                when 'i001' then 1
-                when 'i002' then 2
-                when 'i003' then 3
-                when 'i004' then 4
-                when 'i005' then 5
-                when 'i006' then 6
-                else 99
-            end
-    </select>
+	<select id="selectNextIssueNo" resultType="int">
+		select
+		nvl(max(issue_no), 0) + 1
+		from issue
+		where project_id = #{projectId}
+	</select>
 
-    <!-- 일감유형의 표준 항목 설정 목록 조회 -->
-    <select id="selectFieldSettingListByIssueType" resultType="IssuesVO">
-        select
-            fs.issue_type_id,
-            fs.field_setting_id,
-            case fs.field_code
-                when 'i001' then 'ASSIGNEE'
-                when 'i002' then 'MILESTONE'
-                when 'i003' then 'PARENT_ISSUE'
-                when 'i004' then 'START_DATE'
-                when 'i005' then 'DUE_DATE'
-                when 'i006' then 'ESTIMATED_HOURS'
-                else fs.field_code
-            end as field_code,
-            fs.use_yn,
-            fs.required_yn
-        from issue_type_field_setting fs
-        where fs.issue_type_id = #{issueTypeId}
-        order by
-            case fs.field_code
-                when 'i001' then 1
-                when 'i002' then 2
-                when 'i003' then 3
-                when 'i004' then 4
-                when 'i005' then 5
-                when 'i006' then 6
-                else 99
-            end
-    </select>
+	<!-- 페이징 -->
+	<sql id="issueListWhere">
+		where i.project_id = #{projectId}
 
-    <!-- 생성 가능한 버전 목록 조회: 종료 상태(k003)는 제외 -->
-    <select id="selectVersionList" resultType="IssuesVO">
-        select
-            version_id,
-            version_name,
-            status_code as version_status_code,
-            default_yn
-        from project_version
-        where project_id = #{projectId}
-          and status_code != 'k003'
-        order by default_yn desc, created_at desc, version_id asc
-    </select>
+		<if test="issueTypeId != null and issueTypeId != ''">
+			and i.issue_type_id = #{issueTypeId}
+		</if>
 
-    <!-- 생성 가능한 마일스톤 목록 조회: 종료 상태(k003) 버전에 속한 마일스톤은 제외 -->
-    <select id="selectMilestoneList" resultType="IssuesVO">
-        select
-            m.milestone_id,
-            m.title as milestone_title,
-            m.version_id
-        from milestone m
-        join project_version v
-          on m.version_id = v.version_id
-         and m.project_id = v.project_id
-        where m.project_id = #{projectId}
-          and v.status_code != 'k003'
-        order by m.start_date asc, m.milestone_id asc
-    </select>
+		<if test="versionId != null and versionId != ''">
+			and i.version_id = #{versionId}
+		</if>
 
-    <!-- 프로젝트 소유자가 관리하는 일감 우선순위 코드값 목록 조회 -->
-    <select id="selectPriorityList" resultType="IssuesVO">
-        select
-            sc.setting_code_id,
-            sc.setting_name,
-            sc.default_yn
-        from setting_code sc
-        join project p
-          on sc.user_id = p.owner_id
-        where p.project_id = #{projectId}
-          and sc.setting_group_name = 'g002'
-        order by sc.default_yn desc, sc.setting_code_id asc
-    </select>
+		<if test="keyword != null and keyword != ''">
+			and lower(i.title) like '%' || lower(#{keyword}) || '%'
+		</if>
 
-    <!-- 프로젝트 구성원 목록을 담당자 후보로 조회 -->
-    <select id="selectAssigneeList" resultType="IssuesVO">
-        select distinct
-            u.user_id as assignee_id,
-            u.user_name as assignee_name
-        from project_member pm
-        join team_member tm
-          on pm.team_member_id = tm.team_member_id
-        join users u
-          on tm.user_id = u.user_id
-        where pm.project_id = #{projectId}
-        order by assignee_name, assignee_id
-    </select>
+		<if test="issueStatusId != null and issueStatusId != ''">
+			and i.issue_status_id = #{issueStatusId}
+		</if>
 
-    <!-- 같은 프로젝트 안의 일감 목록을 상위일감 후보로 조회 -->
-    <select id="selectParentIssueList" resultType="IssuesVO">
-        select
-            issue_id as parent_issue_id,
-            title as parent_issue_title
-        from issue
-        where project_id = #{projectId}
-        order by created_at asc, issue_id asc
-    </select>
+		<if test="settingCodeId != null and settingCodeId != ''">
+			and i.setting_code_id = #{settingCodeId}
+		</if>
 
-    <!-- 선택한 버전이 생성 가능한 버전인지 확인 -->
-    <select id="countVersionForCreate" resultType="int">
-        select count(*)
-        from project_version
-        where project_id = #{projectId}
-          and version_id = #{versionId}
-          and status_code != 'k003'
-    </select>
+		<if test="assigneeId != null and assigneeId != ''">
+			and i.assignee_id = #{assigneeId}
+		</if>
 
-    <!-- 선택한 우선순위가 프로젝트 소유자의 코드값인지 확인 -->
-    <select id="countPriorityForProject" resultType="int">
-        select count(*)
-        from setting_code sc
-        join project p
-          on sc.user_id = p.owner_id
-        where p.project_id = #{projectId}
-          and sc.setting_group_name = 'g002'
-          and sc.setting_code_id = #{settingCodeId}
-    </select>
+		<if test="progressRate != null">
+			and i.progress_rate = #{progressRate}
+		</if>
 
-    <!-- 선택한 마일스톤이 프로젝트와 버전에 속하는지 확인 -->
-    <select id="countMilestoneForCreate" resultType="int">
-        select count(*)
-        from milestone m
-        join project_version v
-          on m.version_id = v.version_id
-         and m.project_id = v.project_id
-        where m.project_id = #{projectId}
-          and m.version_id = #{versionId}
-          and m.milestone_id = #{milestoneId}
-          and v.status_code != 'k003'
-    </select>
+		<if test="startDate != null">
+			and trunc(i.start_date) <![CDATA[>=]]>
+			#{startDate}
+		</if>
 
-    <!-- 선택한 담당자가 프로젝트 구성원인지 확인 -->
-    <select id="countAssigneeForProject" resultType="int">
-        select count(*)
-        from project_member pm
-        join team_member tm
-          on pm.team_member_id = tm.team_member_id
-        where pm.project_id = #{projectId}
-          and tm.user_id = #{assigneeId}
-    </select>
+		<if test="dueDate != null">
+			and trunc(i.due_date) <![CDATA[<=]]>
+			#{dueDate}
+		</if>
+	</sql>
 
-    <!-- 선택한 상위일감이 같은 프로젝트 일감인지 확인 -->
-    <select id="countParentIssueForProject" resultType="int">
-        select count(*)
-        from issue
-        where project_id = #{projectId}
-          and issue_id = #{parentIssueId}
-    </select>
+	<select id="countIssueList" parameterType="IssuesVO"
+		resultType="int">
+		select count(*)
+		from issue i
+		<include refid="issueListWhere" />
+	</select>
 
-    <!-- 신규 일감 등록 -->
-    <insert id="insertIssue" parameterType="IssuesVO">
-        <selectKey keyProperty="issueId" resultType="string" order="BEFORE">
-            select
-                'ISSUE_'
-                || to_char(sysdate, 'YYMM')
-                || '_'
-                || lpad(
-                    nvl(max(to_number(substr(issue_id, -4))), 0) + 1,
-                    4,
-                    '0'
-                )
-            from issue
-            where substr(issue_id, 1, 11) =
-                  'ISSUE_' || to_char(sysdate, 'YYMM') || '_'
-        </selectKey>
+	<!-- ============================== 일감 전체조회 ============================== -->
 
-        insert into issue (
-            issue_id,
-            project_id,
-            milestone_id,
-            version_id,
-            issue_type_id,
-            issue_status_id,
-            setting_code_id,
-            assignee_id,
-            author_id,
-            title,
-            description,
-            start_date,
-            due_date,
-            estimated_hours,
-            progress_rate,
-            created_at,
-            updated_at,
-            parent_issue_id
-        ) values (
-            #{issueId},
-            #{projectId},
-            #{milestoneId, jdbcType=VARCHAR},
-            #{versionId},
-            #{issueTypeId},
-            #{issueStatusId},
-            #{settingCodeId},
-            #{assigneeId, jdbcType=VARCHAR},
-            #{authorId},
-            #{title},
-            #{description, jdbcType=VARCHAR},
-            nvl(#{startDate, jdbcType=DATE}, sysdate),
-            #{dueDate, jdbcType=DATE},
-            nvl(#{estimatedHours, jdbcType=INTEGER}, 0),
-            nvl(#{progressRate, jdbcType=INTEGER}, 0),
-            sysdate,
-            null,
-            #{parentIssueId, jdbcType=VARCHAR}
-        )
-    </insert>
+	<select id="selectIssueList" parameterType="IssuesVO"
+		resultType="IssuesVO">
+		select *
+		from (
+		select
+		rownum as row_no,
+		issue_list.*
+		from (
+		select
+		i.issue_id,
+		i.issue_no,
+		'#' || lpad(to_char(i.issue_no), 4, '0') as display_issue_no,
+		i.issue_type_id,
+		it.issue_type_name,
+		i.version_id,
+		v.version_name,
+		i.title,
+		i.issue_status_id,
+		ist.status_name as issue_status_name,
+		ist.closed_yn,
+		i.setting_code_id,
+		sc.setting_name,
+		i.assignee_id,
+		assignee.user_name as assignee_name,
+		i.progress_rate,
+		i.start_date,
+		i.due_date,
+		i.estimated_hours,
+		i.project_id,
+		p.project_name,
+		i.author_id,
+		author.user_name as author_name,
+		i.created_at,
+		i.updated_at,
+		i.milestone_id,
+		m.title as milestone_title,
+		i.parent_issue_id,
+		parent_issue.title as parent_issue_title
+		from issue i
+		join project p
+		on i.project_id = p.project_id
+		left join issue_type it
+		on i.issue_type_id = it.issue_type_id
+		left join issue_status ist
+		on i.issue_status_id = ist.issue_status_id
+		left join setting_code sc
+		on i.setting_code_id = sc.setting_code_id
+		left join users assignee
+		on i.assignee_id = assignee.user_id
+		left join users author
+		on i.author_id = author.user_id
+		left join project_version v
+		on i.version_id = v.version_id
+		and i.project_id = v.project_id
+		left join milestone m
+		on i.milestone_id = m.milestone_id
+		and i.project_id = m.project_id
+		left join issue parent_issue
+		on i.parent_issue_id = parent_issue.issue_id
+		and i.project_id = parent_issue.project_id
+
+		<include refid="issueListWhere" />
+
+		<choose>
+			<when test='issueNoSort != null and issueNoSort.equals("asc")'>
+				order by i.issue_no asc
+			</when>
+			<otherwise>
+				order by i.issue_no desc
+			</otherwise>
+		</choose>
+		) issue_list
+		where rownum <![CDATA[<=]]>
+		#{endRow}
+		)
+		where row_no <![CDATA[>=]]>
+		#{startRow}
+	</select>
+
+	<select id="selectIssueStatusList" resultType="IssuesVO">
+		select
+		ist.issue_status_id,
+		ist.status_name as issue_status_name,
+		ist.closed_yn
+		from issue_status ist
+		join project p
+		on ist.user_id =
+		p.owner_id
+		where p.project_id = #{projectId}
+		order by
+		ist.issue_status_id asc
+	</select>
+
+	<!-- ============================== 일감 생성 / 조회 공통 선택 목록 ============================== -->
+
+	<select id="selectIssueTypeList" resultType="IssuesVO">
+		select
+		it.issue_type_id,
+		it.issue_type_name,
+		it.initial_status_id,
+		ist.status_name as initial_status_name
+		from issue_type_project itp
+		join
+		issue_type it
+		on itp.issue_type_id = it.issue_type_id
+		join issue_status
+		ist
+		on it.initial_status_id = ist.issue_status_id
+		where itp.project_id =
+		#{projectId}
+		order by it.created_at asc, it.issue_type_id asc
+	</select>
+
+	<select id="selectIssueTypeDetailForCreate"
+		resultType="IssuesVO">
+		select
+		it.issue_type_id,
+		it.issue_type_name,
+		it.initial_status_id,
+		ist.status_name as initial_status_name
+		from
+		issue_type_project itp
+		join issue_type it
+		on itp.issue_type_id =
+		it.issue_type_id
+		join issue_status ist
+		on it.initial_status_id =
+		ist.issue_status_id
+		where itp.project_id = #{projectId}
+		and
+		it.issue_type_id = #{issueTypeId}
+	</select>
+
+	<select id="selectFieldSettingListByProject"
+		resultType="IssuesVO">
+		select
+		itp.issue_type_id,
+		fs.field_setting_id,
+		case
+		fs.field_code
+		when 'i001' then 'ASSIGNEE'
+		when 'i002' then 'MILESTONE'
+		when 'i003' then 'PARENT_ISSUE'
+		when 'i004' then 'START_DATE'
+		when
+		'i005' then 'DUE_DATE'
+		when 'i006' then 'ESTIMATED_HOURS'
+		else
+		fs.field_code
+		end as field_code,
+		fs.use_yn,
+		fs.required_yn
+		from
+		issue_type_project itp
+		join issue_type_field_setting fs
+		on
+		itp.issue_type_id = fs.issue_type_id
+		where itp.project_id =
+		#{projectId}
+		order by itp.issue_type_id,
+		case fs.field_code
+		when 'i001'
+		then 1
+		when 'i002' then 2
+		when 'i003' then 3
+		when 'i004' then 4
+		when
+		'i005' then 5
+		when 'i006' then 6
+		else 99
+		end
+	</select>
+
+	<select id="selectFieldSettingListByIssueType"
+		resultType="IssuesVO">
+		select
+		fs.issue_type_id,
+		fs.field_setting_id,
+		case
+		fs.field_code
+		when 'i001' then 'ASSIGNEE'
+		when 'i002' then 'MILESTONE'
+		when 'i003' then 'PARENT_ISSUE'
+		when 'i004' then 'START_DATE'
+		when
+		'i005' then 'DUE_DATE'
+		when 'i006' then 'ESTIMATED_HOURS'
+		else
+		fs.field_code
+		end as field_code,
+		fs.use_yn,
+		fs.required_yn
+		from
+		issue_type_field_setting fs
+		where fs.issue_type_id = #{issueTypeId}
+		order by
+		case fs.field_code
+		when 'i001' then 1
+		when 'i002' then 2
+		when
+		'i003' then 3
+		when 'i004' then 4
+		when 'i005' then 5
+		when 'i006' then 6
+		else 99
+		end
+	</select>
+
+	<select id="selectVersionList" resultType="IssuesVO">
+		select
+		version_id,
+		version_name,
+		status_code as version_status_code,
+		default_yn
+		from
+		project_version
+		where project_id = #{projectId}
+		and status_code !=
+		'k003'
+		order by default_yn desc, created_at desc, version_id asc
+	</select>
+
+	<select id="selectMilestoneList" resultType="IssuesVO">
+		select
+		m.milestone_id,
+		m.title as milestone_title,
+		m.version_id
+		from milestone m
+		join project_version v
+		on m.version_id = v.version_id
+		and m.project_id =
+		v.project_id
+		where m.project_id = #{projectId}
+		and v.status_code !=
+		'k003'
+		order by m.start_date asc, m.milestone_id asc
+	</select>
+
+	<select id="selectPriorityList" resultType="IssuesVO">
+		select
+		sc.setting_code_id,
+		sc.setting_name,
+		sc.default_yn
+		from setting_code sc
+		join project p
+		on sc.user_id = p.owner_id
+		where p.project_id =
+		#{projectId}
+		and sc.setting_group_name = 'g002'
+		order by sc.default_yn
+		desc, sc.setting_code_id asc
+	</select>
+
+	<select id="selectAssigneeList" resultType="IssuesVO">
+		select distinct
+		x.assignee_id,
+		x.assignee_name
+		from (
+		select
+		u.user_id as assignee_id,
+		u.user_name as assignee_name
+		from project_member pm
+		join team_member tm
+		on pm.team_member_id = tm.team_member_id
+		join users u
+		on tm.user_id =
+		u.user_id
+		where pm.project_id = #{projectId}
+
+		union
+
+		select
+		owner_user.user_id as assignee_id,
+		owner_user.user_name as
+		assignee_name
+		from project p
+		join users owner_user
+		on p.owner_id =
+		owner_user.user_id
+		where p.project_id = #{projectId}
+		) x
+		order by
+		x.assignee_name, x.assignee_id
+	</select>
+
+	<select id="selectParentIssueList" resultType="IssuesVO">
+		select
+		issue_id as
+		parent_issue_id,
+		title as parent_issue_title
+		from issue
+		where project_id
+		= #{projectId}
+		order by created_at asc, issue_id asc
+	</select>
+
+	<!-- ============================== 일감 생성 검증 ============================== -->
+
+	<select id="countVersionForCreate" resultType="int">
+		select count(*)
+		from project_version
+		where project_id = #{projectId}
+		and version_id =
+		#{versionId}
+		and status_code != 'k003'
+	</select>
+
+	<select id="countPriorityForProject" resultType="int">
+		select count(*)
+		from setting_code sc
+		join project p
+		on sc.user_id = p.owner_id
+		where
+		p.project_id = #{projectId}
+		and sc.setting_group_name = 'g002'
+		and
+		sc.setting_code_id = #{settingCodeId}
+	</select>
+
+	<select id="countMilestoneForCreate" resultType="int">
+		select count(*)
+		from milestone m
+		join project_version v
+		on m.version_id = v.version_id
+		and m.project_id = v.project_id
+		where m.project_id = #{projectId}
+		and
+		m.version_id = #{versionId}
+		and m.milestone_id = #{milestoneId}
+		and
+		v.status_code != 'k003'
+	</select>
+
+	<select id="countAssigneeForProject" resultType="int">
+		select count(*)
+		from project p
+		where p.project_id = #{projectId}
+		and (
+		p.owner_id =
+		#{assigneeId}
+		or exists (
+		select 1
+		from project_member pm
+		join team_member
+		tm
+		on pm.team_member_id = tm.team_member_id
+		where pm.project_id =
+		p.project_id
+		and tm.user_id = #{assigneeId}
+		)
+		)
+	</select>
+
+	<select id="countParentIssueForProject" resultType="int">
+		select
+		count(*)
+		from issue
+		where project_id = #{projectId}
+		and issue_id =
+		#{parentIssueId}
+	</select>
+
+	<!-- ============================== 일감 CUD ============================== -->
+
+	<insert id="insertIssue" parameterType="IssuesVO">
+		<selectKey keyProperty="issueId" resultType="string"
+			order="BEFORE">
+			select
+			'ISSUE_'
+			|| to_char(sysdate, 'YYMM')
+			|| '_'
+			|| lpad(
+			nvl(max(to_number(substr(issue_id, -4))), 0) + 1,
+			4,
+			'0'
+			)
+			from issue
+			where substr(issue_id, 1, 11) =
+			'ISSUE_' || to_char(sysdate, 'YYMM')
+			|| '_'
+		</selectKey>
+
+		insert into issue (
+		issue_id,
+		issue_no,
+		project_id,
+		milestone_id,
+		version_id,
+		issue_type_id,
+		issue_status_id,
+		setting_code_id,
+		assignee_id,
+		author_id,
+		title,
+		description,
+		start_date,
+		due_date,
+		estimated_hours,
+		progress_rate,
+		created_at,
+		updated_at,
+		parent_issue_id
+		) values (
+		#{issueId},
+		#{issueNo},
+		#{projectId},
+		#{milestoneId, jdbcType=VARCHAR},
+		#{versionId},
+		#{issueTypeId},
+		#{issueStatusId},
+		#{settingCodeId},
+		#{assigneeId, jdbcType=VARCHAR},
+		#{authorId},
+		#{title},
+		#{description,
+		jdbcType=VARCHAR},
+		nvl(#{startDate, jdbcType=DATE}, sysdate),
+		#{dueDate, jdbcType=DATE},
+		nvl(#{estimatedHours, jdbcType=INTEGER}, 0),
+		nvl(#{progressRate, jdbcType=INTEGER}, 0),
+		sysdate,
+		null,
+		#{parentIssueId, jdbcType=VARCHAR}
+		)
+	</insert>
+
+	<select id="countChildIssue" resultType="int">
+		select count(*)
+		from
+		issue
+		where project_id = #{projectId}
+		and parent_issue_id = #{issueId}
+	</select>
+
+	<delete id="deleteIssue">
+		delete from issue
+		where project_id = #{projectId}
+		and
+		issue_id = #{issueId}
+	</delete>
 
 </mapper>

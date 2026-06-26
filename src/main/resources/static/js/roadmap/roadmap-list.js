@@ -1,76 +1,142 @@
-document.addEventListener("DOMContentLoaded", function () {
-  const btnToggleCompleted = document.getElementById("btnToggleCompleted");
-  const statusFilter = document.getElementById("statusFilter");
-  const versionSearch = document.getElementById("versionSearch");
-  const tableRows = document.querySelectorAll(".roadmap-table tbody tr");
+document.addEventListener('DOMContentLoaded', function() {
+    
+    // 1. 설정 버튼 클릭 이벤트 (원하는 링크로 수정하세요)
+    const btnSettings = document.getElementById('btnSettings');
+    if(btnSettings) {
+        btnSettings.addEventListener('click', () => {
+            console.log('설정 페이지로 이동합니다.');
+            window.location.href = '/roadmap/setting_list';
+        });
+    }
 
-  // 1. 완료된 버전 닫기/보기 토글 기능
-  let isCompletedHidden = false;
-
-  if (btnToggleCompleted) {
-    btnToggleCompleted.addEventListener("click", function () {
-      isCompletedHidden = !isCompletedHidden; // 상태 뒤집기
-
-      // 버튼 텍스트 변경
-      this.innerHTML = isCompletedHidden
-        ? "🔓 완료된 버전 보기"
-        : "🔒 완료된 버전 닫기";
-
-      applyFilters(); // 필터 재적용
+    // 2. 아코디언 토글 로직
+    const headers = document.querySelectorAll('.toggle-accordion');
+    headers.forEach(header => {
+        header.addEventListener('click', function(e) {
+            // 텍스트 링크 클릭 시 펴지지 않고 페이지 이동 허용
+            if(e.target.classList.contains('no-accordion') || e.target.closest('.no-accordion')) return;
+            
+            const item = this.closest('.roadmap-item');
+            const body = item.querySelector('.roadmap-body');
+            
+            if(item.classList.contains('open')) {
+                body.style.display = 'none';
+                item.classList.remove('open');
+            } else {
+                body.style.display = 'block';
+                item.classList.add('open');
+            }
+        });
     });
-  }
 
-  // 2. 상태 선택(Select) 및 검색어(Input) 입력 시 즉시 필터링
-  if (statusFilter) {
-    statusFilter.addEventListener("change", applyFilters);
-  }
-  if (versionSearch) {
-    // 타이핑할 때마다 즉시 검색되도록 input 이벤트 사용
-    versionSearch.addEventListener("input", applyFilters);
-  }
-
-  // 3. 필터링 핵심 로직
-  function applyFilters() {
-    // 데이터가 없다는 빈 행(empty-state)이 있으면 로직 실행 안 함
-    if (tableRows.length === 1 && tableRows[0].querySelector(".empty-state"))
-      return;
-
-    const selectedStatusValue = statusFilter.value; // "k001", "k002", "k003"
-    const searchKeyword = versionSearch.value.trim().toLowerCase();
-
-    tableRows.forEach((row) => {
-      // 각 행(Row)의 데이터 가져오기
-      const versionName = row
-        .querySelector(".version-link")
-        .innerText.toLowerCase();
-
-      // 상태 뱃지 확인 (th:if 로직에 의해 생성된 뱃지 텍스트로 판단)
-      const statusBadge = row.querySelector(".status-badge");
-      const statusText = statusBadge ? statusBadge.innerText : "";
-
-      let rowStatusCode = "";
-      if (statusText === "진행 예정") rowStatusCode = "a001";
-      else if (statusText === "진행 중") rowStatusCode = "a002";
-      else if (statusText === "완료") rowStatusCode = "a003";
-
-      // 조건 검사
-      // 1) 완료된 버전 닫기 버튼이 켜져 있는데, 이 행이 완료(a003) 상태인가?
-      const isHiddenByToggle = isCompletedHidden && rowStatusCode === "a003";
-
-      // 2) 선택한 상태 필터와 일치하는가? (전체면 통과)
-      const isStatusMatch =
-        selectedStatusValue === "" || selectedStatusValue === rowStatusCode;
-
-      // 3) 검색어가 버전에 포함되어 있는가? (빈칸이면 통과)
-      const isSearchMatch =
-        searchKeyword === "" || versionName.includes(searchKeyword);
-
-      // 3가지 조건 중 하나라도 숨겨야 할 조건이면 숨김, 아니면 보여줌
-      if (isHiddenByToggle || !isStatusMatch || !isSearchMatch) {
-        row.style.display = "none";
-      } else {
-        row.style.display = "";
-      }
+    // 3. 동적 상태 색상 배정기 (Hash Palette)
+    const colorPalette = ['#007bff', '#28a745', '#e83e8c', '#fd7e14', '#6f42c1', '#17a2b8', '#dc3545', '#20c997'];
+    
+    function getHashFromString(str) {
+        if (!str) return 0;
+        let hash = 0;
+        for (let i = 0; i < str.length; i++) hash += str.charCodeAt(i);
+        return hash;
+    }
+    
+    document.querySelectorAll('.dynamic-badge').forEach(badge => {
+        const statusName = badge.getAttribute('data-status');
+        if(statusName) {
+            const colorIndex = getHashFromString(statusName) % colorPalette.length;
+            badge.style.backgroundColor = colorPalette[colorIndex];
+        } else {
+            badge.style.backgroundColor = '#6c757d';
+        }
     });
-  }
+
+    // ==========================================
+    // 4. 실시간 프론트엔드 필터링 로직
+    // ==========================================
+    const roadmapItems = document.querySelectorAll('.roadmap-item');
+    const selRoadmap = document.getElementById('roadmapFilter');
+    const selMilestone = document.getElementById('milestoneFilter');
+    const inputIssue = document.getElementById('issueSearch');
+
+    // 화면 데이터를 읽어 드롭다운(로드맵, 마일스톤) 옵션 자동 세팅
+    const uniqueRoadmaps = new Set();
+    const uniqueMilestones = new Set();
+
+    roadmapItems.forEach(item => {
+        const rName = item.querySelector('.title-link').innerText.trim();
+        uniqueRoadmaps.add(rName);
+
+        const mLinks = item.querySelectorAll('.m-title-area .title-link');
+        mLinks.forEach(m => uniqueMilestones.add(m.innerText.trim()));
+    });
+
+    uniqueRoadmaps.forEach(v => selRoadmap.add(new Option(v, v)));
+    uniqueMilestones.forEach(m => selMilestone.add(new Option(m, m)));
+
+    // 필터 실행 함수
+    function applyFilters() {
+        const valRoadmap = selRoadmap.value;
+        const valMilestone = selMilestone.value;
+        const valSearch = inputIssue.value.toLowerCase().trim();
+
+        roadmapItems.forEach(item => {
+            const rName = item.querySelector('.title-link').innerText.trim();
+            
+            // 1차 필터: 로드맵 드롭다운 매칭
+            let isRoadmapMatch = true;
+            if(valRoadmap && rName !== valRoadmap) isRoadmapMatch = false;
+
+            let hasMatchingMilestoneOrIssue = false;
+            
+            // 2차 필터: 하위 마일스톤 & 일감 검색 매칭
+            const milestones = item.querySelectorAll('.milestone-block');
+            milestones.forEach(mBlock => {
+                const mName = mBlock.querySelector('.m-title-area .title-link').innerText.trim();
+                let isMilestoneMatch = true;
+                if (valMilestone && mName !== valMilestone) isMilestoneMatch = false;
+
+                const issues = mBlock.querySelectorAll('.issue-item');
+                let hasMatchingIssue = false;
+
+                issues.forEach(issue => {
+                    const iTitle = issue.querySelector('.js-issue-title').innerText.toLowerCase();
+                    if(valSearch === "" || iTitle.includes(valSearch)) {
+                        issue.style.display = 'flex';
+                        hasMatchingIssue = true;
+                    } else {
+                        issue.style.display = 'none';
+                    }
+                });
+
+                // 마일스톤 매칭 여부 최종 결정
+                if (isMilestoneMatch && (valSearch === "" || hasMatchingIssue)) {
+                    mBlock.style.display = 'block';
+                    hasMatchingMilestoneOrIssue = true;
+                } else {
+                    mBlock.style.display = 'none';
+                }
+            });
+
+            // 검색어 혹은 마일스톤 필터가 활성화된 경우, 하위에 일치하는 게 없으면 로드맵도 숨김
+            if(valMilestone !== "" || valSearch !== "") {
+                if (!hasMatchingMilestoneOrIssue) isRoadmapMatch = false;
+            }
+
+            // 최종 렌더링
+            if(isRoadmapMatch) {
+                item.style.display = 'block';
+                // 검색어나 마일스톤 필터가 작동 중이면 아코디언 자동으로 열기
+                if((valMilestone !== "" || valSearch !== "") && !item.classList.contains('open')) {
+                    item.querySelector('.roadmap-body').style.display = 'block';
+                    item.classList.add('open');
+                }
+            } else {
+                item.style.display = 'none';
+            }
+        });
+    }
+
+    // 이벤트 리스너 등록
+    selRoadmap.addEventListener('change', applyFilters);
+    selMilestone.addEventListener('change', applyFilters);
+    inputIssue.addEventListener('input', applyFilters); // 타이핑 즉시 필터링
 });

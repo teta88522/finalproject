@@ -6,7 +6,6 @@ import org.apache.ibatis.annotations.Param;
 
 import com.pixcel.app.milestones.service.MilestonesMemberDTO;
 import com.pixcel.app.issues.service.IssuesVO;
-import com.pixcel.app.milestones.service.MilestoneSearchVO;
 import com.pixcel.app.milestones.service.MilestonesVO;
 
 @Mapper
@@ -29,7 +28,7 @@ public interface MilestonesMapper {
 	
 	public int deleteMilestone(String mileStoneId);	  //마일스톤 삭제
 	
-    public List<MilestonesVO> getMilestoneList(MilestoneSearchVO searchVO);
+    public List<MilestonesVO> getMilestoneList(String projectId);
     
     public List<IssuesVO> selectConnectedIssues(String milestoneId);
 }

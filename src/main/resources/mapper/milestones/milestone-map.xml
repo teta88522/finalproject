@@ -72,8 +72,15 @@
     		a.status_name,
     		a.start_date,
     		a.end_date,
-    		a.created_at
+    		v.version_name,
+    		a.created_at,
+    		NVL((
+            SELECT ROUND(AVG(PROGRESS_RATE)) 
+            FROM ISSUE 
+            WHERE MILESTONE_ID = a.MILESTONE_ID
+        ), 0) AS totalProgressRate
     	FROM milestone a
+    	LEFT JOIN PROJECT_VERSION v ON a.VERSION_ID = v.VERSION_ID
     	LEFT OUTER JOIN users b ON a.manager_id = b.user_id
     	WHERE a.milestone_id = #{milestoneId}
     </select>
@@ -98,73 +105,56 @@
     </delete>
     
     <resultMap id="MilestoneListMap" type="MilestonesVO">
-        
         <id property="milestoneId" column="MILESTONE_ID"/>
         <result property="title" column="MILESTONE_TITLE"/>
         <result property="startDate" column="START_DATE"/>
         <result property="endDate" column="END_DATE"/>
-        <result property="managerName" column="MANAGER_NAME"/> <result property="statusCode" column="STATUS_CODE"/>
+        <result property="managerName" column="MANAGER_NAME"/> 
+        <result property="statusCode" column="STATUS_CODE"/>
+        <result property="versionName" column="VERSION_NAME"/>
         <result property="totalProgressRate" column="TOTAL_PROGRESS_RATE"/>
 
         <collection property="issueList" ofType="IssuesVO">
             <id property="issueId" column="ISSUE_ID"/>
             <result property="title" column="ISSUE_TITLE"/>
-            <result property="issueStatusId" column="ISSUE_STATUS_ID"/>
-            <result property="description" column="ISSUE_DESCRIPTION"/>
+            <result property="issueStatusName" column="ISSUE_STATUS_NAME"/> 
+            <result property="assigneeName" column="ASSIGNEE_NAME"/> 
+            <result property="dueDate" column="DUE_DATE"/>
             <result property="progressRate" column="ISSUE_PROGRESS_RATE"/>
         </collection>
-        
     </resultMap>
 
-    <select id="getMilestoneList" resultMap="MilestoneListMap" parameterType="MilestoneSearchVO">
+    <select id="getMilestoneList" resultMap="MilestoneListMap" parameterType="string">
         SELECT 
-            -- 마일스톤 테이블 (M)
             M.MILESTONE_ID,
             M.TITLE AS MILESTONE_TITLE,
             M.START_DATE,
             M.END_DATE,
             M.STATUS_CODE,
-            
-            -- 유저 테이블 (U)에서 실제 담당자 이름 가져오기 ⭐️
+            V.VERSION_NAME,
             U.USER_NAME AS MANAGER_NAME, 
             
-            -- 마일스톤 전체 진행률 (하위 일감들의 평균 진척도 계산)
-            NVL((
-                SELECT ROUND(AVG(PROGRESS_RATE)) 
-                FROM ISSUE 
-                WHERE MILESTONE_ID = M.MILESTONE_ID
-            ), 0) AS TOTAL_PROGRESS_RATE,
+            NVL((SELECT ROUND(AVG(PROGRESS_RATE)) 
+                 FROM ISSUE 
+                 WHERE MILESTONE_ID = M.MILESTONE_ID), 0) AS TOTAL_PROGRESS_RATE,
 
-            -- 일감 테이블 (I)
+            -- 하위 일감 정보
             I.ISSUE_ID,
             I.TITLE AS ISSUE_TITLE,
-            I.ISSUE_STATUS_ID,
-            I.DESCRIPTION AS ISSUE_DESCRIPTION,
-            I.PROGRESS_RATE AS ISSUE_PROGRESS_RATE
+            I.PROGRESS_RATE AS ISSUE_PROGRESS_RATE,
+            I.DUE_DATE,
+            G.STATUS_NAME AS ISSUE_STATUS_NAME, 
+            U2.USER_NAME AS ASSIGNEE_NAME       
             
         FROM MILESTONE M
+        LEFT OUTER JOIN PROJECT_VERSION V ON M.VERSION_ID = V.VERSION_ID
         LEFT OUTER JOIN USERS U ON M.MANAGER_ID = U.USER_ID  
         LEFT OUTER JOIN ISSUE I ON M.MILESTONE_ID = I.MILESTONE_ID
-        <where>
-        	AND M.PROJECT_ID = #{projectId}
-            <if test="startDate != null and startDate != '' and endDate != null and endDate != ''">
-                AND M.START_DATE <![CDATA[>=]]> TO_DATE(#{startDate}, 'YYYY-MM-DD')
-                AND M.END_DATE <![CDATA[<=]]> TO_DATE(#{endDate}, 'YYYY-MM-DD')
-            </if>
-            
-            <if test="title != null and title != ''">
-                AND M.TITLE LIKE '%' || #{title} || '%'
-            </if>
-            
-            <if test="managerName != null and managerName != ''">
-    			AND U.USER_NAME LIKE '%' || #{managerName} || '%'
-			</if>
-            
-            <if test="statusCode != null and statusCode != ''">
-                AND M.STATUS_CODE = #{statusCode}
-            </if>
-        </where>
+        -- 여기서부터 하위 일감 관련 조인 추가
+        LEFT OUTER JOIN ISSUE_STATUS G ON I.ISSUE_STATUS_ID = G.ISSUE_STATUS_ID
+        LEFT OUTER JOIN USERS U2 ON I.ASSIGNEE_ID = U2.USER_ID
         
+        WHERE M.PROJECT_ID = #{projectId}       
         ORDER BY M.START_DATE DESC, I.ISSUE_ID ASC
     </select>
 

@@ -28,5 +28,5 @@ public class MilestoneSearchVO {
     private String managerName;
     private String statusCode;
     private String projectId;
-
+    
 }
