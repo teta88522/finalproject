@@ -9,8 +9,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.pixcel.app.project.service.ProjectMemberVO;
-import com.pixcel.app.project.service.ProjectService;
+//import com.pixcel.app.project.service.ProjectMemberVO;
+//import com.pixcel.app.project.service.ProjectService;
 import com.pixcel.app.repository.mapper.RepositoryMapper;
 import com.pixcel.app.repository.service.RepositoryService;
 import com.pixcel.app.repository.service.RepositoryVO;
@@ -22,7 +22,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor // lombok을 이용해 RepositoryMapper의 생성자 주입을 자동으로 처리
 public class RepositoryServiceImpl implements RepositoryService {
 	private final RepositoryMapper repositoryMapper;
-	private final ProjectService projectService;
+//	private final ProjectService projectService;
 
 	// 파일이 저장될 서버 경로 (임시지정)
 	@Value("${file.dir}")
@@ -45,18 +45,29 @@ public class RepositoryServiceImpl implements RepositoryService {
 	public RepositoryVO getRepositoryDetail(String fileId) {
 		return repositoryMapper.selectRepositoryDetail(fileId);
 	}
-
+	
 	// 4. 자료실 파일 등록
 	@Override
 	public int registerRepository(RepositoryVO repositoryVO, MultipartFile uploadFile) {
+		
+//		if(!isProjectMember(repositoryVO.getProjectId(), repositoryVO.getUploadUserId())) {
+//			throw new SecurityException("해당 프로젝트의 구성원이 아닙니다. 파일 업로드가 불가능합니다.");
+//		}
+		
+		// 방어 코드: 프로젝트ID가 없으면 강제로 기본값을 주거나 에러를 처리
+	    if (repositoryVO.getProjectId() == null || repositoryVO.getProjectId().isEmpty()) {
+	        // 방법 A: 강제로 지정 (예: 기본 프로젝트ID가 있다면)
+	        // repositoryVO.setProjectId("P001");
+	        
+	        // 방법 B: 예외를 발생시켜 어디서 비어있는지 명확히 확인
+	        throw new RuntimeException("프로젝트 ID가 전달되지 않았습니다. 폼 데이터를 확인하세요.");
+	    }
 
-		// 파일 드롭존이나 첨부파일을 통해 파일이 넘어왔을 대만 처리함
-		if (uploadFile != null && !uploadFile.isEmpty()) {
-			handleFileUpload(repositoryVO, uploadFile);
-		}
-
-		// 파일 업로드 로직이나 다중 비즈니스 처리가 필요하면 이곳에서 작성
-		return repositoryMapper.insertRepository(repositoryVO);
+	    if(uploadFile != null && !uploadFile.isEmpty()) {
+	        handleFileUpload(repositoryVO, uploadFile);
+	    }
+	    
+	    return repositoryMapper.insertRepository(repositoryVO);
 	}
 
 	// 5. 자료실 파일 수정
@@ -67,11 +78,11 @@ public class RepositoryServiceImpl implements RepositoryService {
 	    RepositoryVO oldData = repositoryMapper.selectRepositoryDetail(repositoryVO.getFileId());
 	    
 	    // 2. 권한 체크 (이건 필수!)
-	    List<ProjectMemberVO> members = projectService.selectProjectMemberList(oldData.getProjectId());
-	    boolean isMember = members.stream().anyMatch(member -> member.getUserId().equals(userId));
-	    if (!isMember) {
-	        throw new RuntimeException("프로젝트 구성원만 수정할 수 있습니다.");
-	    }
+//	    List<ProjectMemberVO> members = projectService.selectProjectMemberList(oldData.getProjectId());
+//	    boolean isMember = members.stream().anyMatch(member -> member.getUserId().equals(userId));
+//	    if (!isMember) {
+//	        throw new RuntimeException("프로젝트 구성원만 수정할 수 있습니다.");
+//	    }
 
 	    // 3. 기존 파일 죽이기
 	    repositoryMapper.updateRepositoryUseYn(repositoryVO.getFileId(), "N");
@@ -124,6 +135,13 @@ public class RepositoryServiceImpl implements RepositoryService {
 	@Override
 	public int getTotalCount(RepositoryVO searchVO) {
 		return repositoryMapper.selectRepositoryTotalCount(searchVO);
+	}
+
+	@Override
+	public boolean isProjectMember(String projectId, String userId) {
+	    int count = repositoryMapper.isProjectMember(projectId, userId);
+	    
+	    return count > 0;
 	}
 
 }

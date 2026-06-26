@@ -1,64 +1,77 @@
 <!doctype html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{common/layouts/default_layout}">
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{common/layouts/default_layout}">
 <head>
 <meta charset="UTF-8">
 <link rel="stylesheet" th:href="@{/css/repository/repositoryNew.css}">
 </head>
 <body>
-<div layout:fragment="Content">
+	<div layout:fragment="Content">
 
-    <div class="repo-container">
-        <div class="repo-header">
-            <h2 class="repo-title">자료실</h2>
-        </div>
+		<div class="repo-container">
 
-        <div class="repo-detail-card" style="padding: 40px; min-height: 450px;">
-            <form th:action="@{/repository/new}" method="post" enctype="multipart/form-data" th:object="${repository}">
-                
-                <input type="hidden" name="projectId" th:value="${repository.projectId}">
-			    <input type="hidden" name="versionId" th:value="${repository.versionId}">
-			    <input type="hidden" name="fileVersion" th:value="${repository.fileVersion}">
+			<div th:if="${message}"
+				th:classappend="${msg == 'success'} ? 'page-message-success' : 'page-message-error'"
+				class="page-message">
+				<span th:text="${message}"></span>
+			</div>
 
-                <div class="repo-upload-zone" onclick="document.getElementById('uploadFile').click();">
-                
-                    <div class="repo-upload-inner">
-                        <p class="repo-upload-text">파일을 여기에 끌어다 놓거나 파일 선택부분을 직접 선택해주세요</p>
-                        <button type="button" class="repo-btn repo-btn-download" style="margin-top: 15px;"> 파일 업로드</button>
-                    </div>
-                    <input type="file" id="uploadFile" name="uploadFile" style="display: none;" onchange="updateFileName(this);">
-                </div>
+			<div class="repo-header">
+				<h2 class="repo-title">자료실</h2>
+			</div>
 
-                <div class="repo-file-list-box">
-                    <div class="repo-file-item">
-                        <input type="text" id="displayFileName" class="repo-file-name-input" placeholder="파일이름" readonly>
-                        <button type="button" class="repo-file-clear-btn" onclick="clearFile();">×</button>
-                    </div>
-                </div>
+			<div class="repo-detail-card"
+				style="padding: 40px; min-height: 450px;">
+				<form th:action="@{/repository/new}" method="post"
+					enctype="multipart/form-data" th:object="${repository}">
 
-                <div class="repo-btn-group" style="margin-top: 40px;">
-                    <button type="submit" class="repo-btn repo-btn-download">등록</button>
-                </div>
-            </form>
-        </div>
-    </div>
+					<input type="hidden" name="projectId" th:value="${repository.projectId}"> 
+					<input type="hidden" name="versionId" th:value="${repository.versionId}">
 
-    <script>
-        function updateFileName(input) {
-            const displayInput = document.getElementById('displayFileName');
-            if (input.files && input.files.length > 0) {
-                displayInput.value = input.files[0].name;
-            }
-        }
+					<div class="repo-upload-zone"
+						onclick="document.getElementById('uploadFile').click();">
+						<div class="repo-upload-inner">
+							<p class="repo-upload-text">파일을 여기에 끌어다 놓거나 파일 선택부분을 직접
+								선택해주세요</p>
+							<button type="button" class="repo-btn repo-btn-download"
+								style="margin-top: 15px;">파일 업로드</button>
+						</div>
+						<input type="file" id="uploadFile" name="uploadFile"
+							style="display: none;" onchange="updateFileName(this);">
+					</div>
 
-        function clearFile() {
-            document.getElementById('uploadFile').value = "";
-            document.getElementById('displayFileName').value = "";
-        }
-    </script>
+					<div class="repo-file-list-box">
+						<div class="repo-file-item">
+							<input type="text" id="displayFileName"
+								class="repo-file-name-input" placeholder="파일이름" readonly>
+							<button type="button" class="repo-file-clear-btn"
+								onclick="clearFile();">×</button>
+						</div>
+					</div>
 
-</div>
+					<div class="repo-btn-group" style="margin-top: 40px;">
+						<button type="submit" class="repo-btn repo-btn-download">등록</button>
+					</div>
+				</form>
+			</div>
+		</div>
+
+		<script>
+			function updateFileName(input) {
+				const displayInput = document.getElementById('displayFileName');
+				if (input.files && input.files.length > 0) {
+					displayInput.value = input.files[0].name;
+				}
+			}
+
+			function clearFile() {
+				document.getElementById('uploadFile').value = "";
+				document.getElementById('displayFileName').value = "";
+			}
+		</script>
+
+	</div>
 </body>
 
 </html>

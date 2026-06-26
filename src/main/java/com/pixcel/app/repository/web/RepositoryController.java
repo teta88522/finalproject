@@ -101,38 +101,15 @@ public class RepositoryController {
 	// 4-2. 자료실 파일 등록 처리 후 해당 유저의 목록으로 리다이렉트(요청 주소 : localhost:8080/repository/new)
 	@PostMapping("/new")
 	public String create(RepositoryVO repositoryVO, @RequestParam("uploadFile") MultipartFile uploadFile,
-			@CookieValue(value = "userId", required = false) String userId) {
+			@CookieValue(value = "userId", required = false) String userId, RedirectAttributes rttr) {
 
-		if (userId != null) {
-			repositoryVO.setUploadUserId(userId);
-		} else {
-			return "redirect:/login";
-		}
+		// 1. 세션에서 가져온 사용자 ID 설정
+		repositoryVO.setUploadUserId(userId);
 
-		// 주소창에 파라미터가 없어서 누락된 경우, 테스트용 디폴트 ID를 강제로 꽂아줍니다
-		if (repositoryVO.getProjectId() == null || repositoryVO.getProjectId().isEmpty()) {
-			repositoryVO.setProjectId("PROJECT_ID_2606_0007");
-		}
-		if (repositoryVO.getVersionId() == null || repositoryVO.getVersionId().isEmpty()) {
-			repositoryVO.setVersionId("VERSION_ID_2606_0001");
-		}
+		// 2. 만약 repositoryVO.getProjectId()가 null이라면 에러 방지를 위해 기본값 혹은 로직 추가 가능
+		// (hidden 필드에서 넘어온 값이 여기서 바인딩되어야 합니다)
 
-		// 2. 파일 코드 누락시 디폴트
-		if (repositoryVO.getFileCode() == null || repositoryVO.getFileCode().isEmpty()) {
-			repositoryVO.setFileCode("FILE_" + System.currentTimeMillis());
-		}
-		// 3. 파일 버전
-		if (repositoryVO.getFileVersion() == null || repositoryVO.getFileVersion().isEmpty()) {
-			repositoryVO.setFileVersion("1");
-		}
-		// 4. 파일 사용 여부
-		if (repositoryVO.getFileUseYn() == null || repositoryVO.getFileUseYn().isEmpty()) {
-			repositoryVO.setFileUseYn("g001");
-		}
-		// 5. 외부 연결 주소
-		if (repositoryVO.getConnectAddress() == null) {
-			repositoryVO.setConnectAddress("-");
-		}
+		System.out.println("DEBUG - 최종 저장될 VO: " + repositoryVO.toString()); // 이 로그로 값 확인 가능
 
 		repositoryService.registerRepository(repositoryVO, uploadFile);
 		return "redirect:/repository/detail?fileId=" + repositoryVO.getFileId();
@@ -150,12 +127,12 @@ public class RepositoryController {
 	@PostMapping("/edit")
 	public String edit(RepositoryVO repositoryVO,
 			@RequestParam(value = "uploadFile", required = false) MultipartFile uploadFile,
-			@CookieValue(value = "userId", required = false) String userId, 
-			RedirectAttributes rttr) { // <--- 메시지를 화면으로 보낼 택배 상자
+			@CookieValue(value = "userId", required = false) String userId, RedirectAttributes rttr) { // <--- 메시지를 화면으로
+																										// 보낼 택배 상자
 		// 1. 서비스에 데이터와 userId를 같이 넘깁니다.
 		try {
 			repositoryService.modifyRepository(repositoryVO, uploadFile, userId);
-			
+
 			// 성공했을 경우
 			rttr.addFlashAttribute("msg", "success");
 			rttr.addFlashAttribute("message", "파일이 수정되었습니다!");
@@ -179,11 +156,10 @@ public class RepositoryController {
 	public ResponseEntity<org.springframework.core.io.Resource> downloadFile(@RequestParam String fileId)
 			throws Exception {
 		RepositoryVO fileInfo = repositoryService.getRepositoryDetail(fileId);
+		if (fileInfo == null)
+			return ResponseEntity.notFound().build();
 
-		String fullPath = fileInfo.getFilePath();
-
-		File file = new File(fullPath);
-
+		File file = new File(fileInfo.getFilePath());
 		if (!file.exists()) {
 			return ResponseEntity.notFound().build();
 		}
@@ -191,8 +167,10 @@ public class RepositoryController {
 		org.springframework.core.io.Resource resource = new org.springframework.core.io.FileSystemResource(file);
 		String encodedName = java.net.URLEncoder.encode(fileInfo.getOriginalName(), "UTF-8").replace("+", "%20");
 
-		return ResponseEntity.ok().header(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION,
-				"attachment; filename=\"" + encodedName + "\"").body(resource);
+		return ResponseEntity.ok()
+				.header(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION,
+						"attachment; filename=\"" + encodedName + "\"")
+				.header(org.springframework.http.HttpHeaders.CONTENT_TYPE, "application/octet-stream").body(resource);
 	}
 
 }

@@ -19,7 +19,8 @@ public class RepositoryVO {
 	private String fileId;
 	private String projectId;
 	private String versionId;
-	private String fileCode;
+	@Builder.Default
+	private String fileCode = "f009";
 	private String originalName;
 	private String storedName;
 	private String filePath;
@@ -47,10 +48,14 @@ public class RepositoryVO {
 	private String uploadUserId;
 	private String userName;
 	private Date uploadDate;
-	private String fileVersion;
-	private String fileUseYn;
-	private String connectAddress;
+	@Builder.Default
+	private String fileVersion = "1";
+	@Builder.Default
+	private String fileUseYn = "g001";
+	@Builder.Default
+	private String connectAddress = "-";
 	
+	@Builder.Default		// page라는 필드를 사용할 때 어떻게 할지 명확하게 해주는 어노테이션.
 	private int page = 1;	// 현재 페이지
 	private int startRow;	// 시작 행
 	private int endRow;		// 끝 행

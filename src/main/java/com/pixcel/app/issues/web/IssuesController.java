@@ -19,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 public class IssuesController {
 	private final IssuesService issuesService;
 	private final FileService fileService;
+
 	// ==============================
 	// 일감 생성 URL 구조 수정
 	// 프로젝트가 선택되지 않은 /issues 진입은 프로젝트 목록으로 보낸다.
