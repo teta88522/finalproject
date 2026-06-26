@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.pixcel.app.testcase.mapper.TestCaseMapper">
+
+    <!-- 테스트 생성 화면용 테스트케이스 총 개수 -->
+	<select id="selectTestCaseCount"
+     	   parameterType="com.pixcel.app.testcase.service.TestCaseSearchVO"
+        	resultType="int">
+
+    	SELECT
+        	COUNT(*)
+    	FROM test_case tc
+    	JOIN project_version pv
+        	ON tc.version_id = pv.version_id
+    	WHERE pv.project_id = #{projectId}
+
+    	<if test="versionId != null and versionId != ''">
+        	AND tc.version_id = #{versionId}
+    	</if>
+
+    	<if test="testTypeCode != null and testTypeCode != ''">
+        	AND tc.test_type_code = #{testTypeCode}
+    	</if>
+
+    	<if test="statusCode != null and statusCode != ''">
+        	AND tc.status_code = #{statusCode}
+    	</if>
+
+    	<if test="priorityCode != null and priorityCode != ''">
+        	AND tc.priority_code = #{priorityCode}
+    	</if>
+
+    	<if test="title != null and title != ''">
+        	AND tc.title LIKE '%' || #{title} || '%'
+    	</if>
+
+	</select>
+
+
+    <!-- 테스트 생성 화면용 테스트케이스 목록 페이징 -->
+	<select id="selectTestCaseList"
+        	parameterType="com.pixcel.app.testcase.service.TestCaseSearchVO"
+        	resultType="com.pixcel.app.testcase.service.TestCaseVO">
+
+    	SELECT
+        	test_case_id AS "testCaseId",
+        	version_id AS "versionId",
+        	version_name AS "versionName",
+        	title AS "title",
+        	test_type_code AS "testTypeCode",	
+        	test_type_name AS "testTypeName",	
+        	status_code AS "statusCode",
+        	status_name AS "statusName",
+        	priority_code AS "priorityCode",
+        	priority_name AS "priorityName",
+        	pre_condition AS "preCondition",
+        	expected_result AS "expectedResult",
+        	description AS "description",
+        	exe_enviroment AS "exeEnviroment",
+        	created_by AS "createdBy",
+        	created_by_name AS "createdByName",
+        	created_at AS "createdAt",
+	        updated_at AS "updatedAt"
+    	FROM (
+        	SELECT
+            	inner_query.*,
+            	ROWNUM AS row_no
+        	FROM (
+            	SELECT
+                	tc.test_case_id,
+                	tc.version_id,
+                	pv.version_name,
+                	tc.title,
+                	tc.test_type_code,
+                	test_type.note AS test_type_name,
+                	tc.status_code,
+                	status.note AS status_name,
+                	tc.priority_code,
+                	priority.note AS priority_name,
+                	tc.pre_condition,
+                	tc.expected_result,
+                	tc.description,
+                	tc.exe_enviroment,
+                	tc.created_by,
+                	creator.user_name AS created_by_name,
+                	TO_CHAR(tc.created_at, 'YYYY-MM-DD') AS created_at,
+                	TO_CHAR(tc.updated_at, 'YYYY-MM-DD') AS updated_at
+            	FROM test_case tc
+            	JOIN project_version pv
+                	ON tc.version_id = pv.version_id
+            	LEFT JOIN common_code test_type
+                	ON tc.test_type_code = test_type.code_id
+               	AND test_type.code_name = '0D'
+            	LEFT JOIN common_code status
+	                ON tc.status_code = status.code_id
+               	AND status.code_name = '0G'
+            	LEFT JOIN common_code priority
+                	ON tc.priority_code = priority.code_id
+               	AND priority.code_name = '0C'
+            	LEFT JOIN users creator
+                	ON tc.created_by = creator.user_id
+            	WHERE pv.project_id = #{projectId}
+
+            	<if test="versionId != null and versionId != ''">
+                	AND tc.version_id = #{versionId}
+            	</if>
+
+            	<if test="testTypeCode != null and testTypeCode != ''">
+                	AND tc.test_type_code = #{testTypeCode}
+            	</if>
+
+            	<if test="statusCode != null and statusCode != ''">
+                	AND tc.status_code = #{statusCode}
+            	</if>
+
+            	<if test="priorityCode != null and priorityCode != ''">
+        	        AND tc.priority_code = #{priorityCode}
+    	        </if>
+
+	            <if test="title != null and title != ''">
+        	        AND tc.title LIKE '%' || #{title} || '%'
+    	        </if>
+
+	            ORDER BY
+                	tc.created_at DESC,
+            	    tc.test_case_id DESC
+        	) inner_query
+        	WHERE ROWNUM &lt;= #{endRow}
+    	)
+    	WHERE row_no &gt;= #{startRow}
+
+	</select>
+
+</mapper>

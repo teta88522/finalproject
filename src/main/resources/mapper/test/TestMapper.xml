@@ -1,0 +1,530 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.pixcel.app.test.mapper.TestMapper">
+
+    <!-- 관리자 테스트 요약 -->
+    <select id="selectAdminTestSummary"
+            parameterType="com.pixcel.app.test.service.TestSearchVO"
+            resultType="com.pixcel.app.test.service.TestSummaryVO">
+
+        SELECT
+            COUNT(*) AS "totalCount",
+            SUM(CASE WHEN t.status_code = 'a001' THEN 1 ELSE 0 END) AS "expectedCount",
+            SUM(CASE WHEN t.status_code = 'a002' THEN 1 ELSE 0 END) AS "progressCount",
+            SUM(CASE WHEN t.status_code = 'a003' THEN 1 ELSE 0 END) AS "endCount"
+        FROM test t
+        JOIN project_version pv
+            ON t.version_id = pv.version_id
+        JOIN project p
+            ON pv.project_id = p.project_id
+        LEFT JOIN users assignee
+            ON t.assignee_id = assignee.user_id
+        WHERE p.project_id = #{projectId}
+          AND p.owner_id = #{loginUserId}
+
+        <if test="projectName != null and projectName != ''">
+            AND p.project_name LIKE '%' || #{projectName} || '%'
+        </if>
+
+        <if test="versionName != null and versionName != ''">
+            AND pv.version_name LIKE '%' || #{versionName} || '%'
+        </if>
+
+        <if test="teamName != null and teamName != ''">
+            AND t.team_name LIKE '%' || #{teamName} || '%'
+        </if>
+
+        <if test="title != null and title != ''">
+            AND t.title LIKE '%' || #{title} || '%'
+        </if>
+
+        <if test="statusCode != null and statusCode != ''">
+            AND t.status_code = #{statusCode}
+        </if>
+
+        <if test="testTypeCode != null and testTypeCode != ''">
+            AND t.test_type_code = #{testTypeCode}
+        </if>
+
+        <if test="priorityCode != null and priorityCode != ''">
+            AND t.priority_code = #{priorityCode}
+        </if>
+
+        <if test="assigneeName != null and assigneeName != ''">
+            AND assignee.user_name LIKE '%' || #{assigneeName} || '%'
+        </if>
+
+    </select>
+
+
+    <!-- 관리자 테스트 목록 -->
+    <select id="selectAdminTestList"
+            parameterType="com.pixcel.app.test.service.TestSearchVO"
+            resultType="com.pixcel.app.test.service.TestVO">
+
+        SELECT
+            t.test_id AS "testId",
+            t.version_id AS "versionId",
+            pv.project_id AS "projectId",
+            p.project_name AS "projectName",
+            pv.version_name AS "versionName",
+            t.title AS "title",
+            t.priority_code AS "priorityCode",
+            priority.note AS "priorityName",
+            t.test_type_code AS "testTypeCode",
+            test_type.note AS "testTypeName",
+            t.status_code AS "statusCode",
+            status.note AS "statusName",
+            t.assignee_id AS "assigneeId",
+            assignee.user_name AS "assigneeName",
+            assignee.login_id AS "assigneeLoginId",
+            t.created_by AS "createdBy",
+            creator.user_name AS "createdByName",
+            creator.login_id AS "createdByLoginId",
+            t.description AS "description",
+            TO_CHAR(t.start_date, 'YYYY-MM-DD') AS "startDate",
+            TO_CHAR(t.end_date, 'YYYY-MM-DD') AS "endDate",
+            TO_CHAR(t.created_at, 'YYYY-MM-DD') AS "createdAt",
+            TO_CHAR(t.updated_at, 'YYYY-MM-DD') AS "updatedAt",
+            t.team_name AS "teamName",
+
+            NVL(tc_count.total_case_count, 0) AS "totalCaseCount",
+            NVL(ex_count.execution_count, 0) AS "executionCount",
+            NVL(ex_count.success_count, 0) AS "successCount",
+            NVL(ex_count.fail_count, 0) AS "failCount",
+            NVL(ex_count.hold_count, 0) AS "holdCount",
+            NVL(ex_count.progress_count, 0) AS "progressCount",
+
+            CASE
+                WHEN NVL(tc_count.total_case_count, 0) = 0 THEN 0
+                ELSE ROUND((NVL(ex_count.execution_count, 0) / tc_count.total_case_count) * 100)
+            END AS "progressRate"
+
+        FROM test t
+        JOIN project_version pv
+            ON t.version_id = pv.version_id
+        JOIN project p
+            ON pv.project_id = p.project_id
+
+        LEFT JOIN common_code status
+            ON t.status_code = status.code_id
+           AND status.code_name = '0A'
+
+        LEFT JOIN common_code priority
+            ON t.priority_code = priority.code_id
+           AND priority.code_name = '0C'
+
+        LEFT JOIN common_code test_type
+            ON t.test_type_code = test_type.code_id
+           AND test_type.code_name = '0D'
+
+        LEFT JOIN users assignee
+            ON t.assignee_id = assignee.user_id
+
+        LEFT JOIN users creator
+            ON t.created_by = creator.user_id
+
+        LEFT JOIN (
+            SELECT
+                test_id,
+                COUNT(*) AS total_case_count
+            FROM test_case_mapping
+            GROUP BY test_id
+        ) tc_count
+            ON t.test_id = tc_count.test_id
+
+        LEFT JOIN (
+            SELECT
+                tcm.test_id,
+                COUNT(te.execution_id) AS execution_count,
+                SUM(CASE WHEN te.result_status_code = 'a003' THEN 1 ELSE 0 END) AS success_count,
+                SUM(CASE WHEN te.result_status_code = 'a004' THEN 1 ELSE 0 END) AS fail_count,
+                SUM(CASE WHEN te.result_status_code = 'a005' THEN 1 ELSE 0 END) AS hold_count,
+                SUM(CASE WHEN te.result_status_code = 'a002' THEN 1 ELSE 0 END) AS progress_count
+            FROM test_case_mapping tcm
+            LEFT JOIN test_execution te
+                ON tcm.mapping_id = te.mapping_id
+            GROUP BY tcm.test_id
+        ) ex_count
+            ON t.test_id = ex_count.test_id
+
+        WHERE p.project_id = #{projectId}
+          AND p.owner_id = #{loginUserId}
+
+        <if test="projectName != null and projectName != ''">
+            AND p.project_name LIKE '%' || #{projectName} || '%'
+        </if>
+
+        <if test="versionName != null and versionName != ''">
+            AND pv.version_name LIKE '%' || #{versionName} || '%'
+        </if>
+
+        <if test="teamName != null and teamName != ''">
+            AND t.team_name LIKE '%' || #{teamName} || '%'
+        </if>
+
+        <if test="title != null and title != ''">
+            AND t.title LIKE '%' || #{title} || '%'
+        </if>
+
+        <if test="statusCode != null and statusCode != ''">
+            AND t.status_code = #{statusCode}
+        </if>
+
+        <if test="testTypeCode != null and testTypeCode != ''">
+            AND t.test_type_code = #{testTypeCode}
+        </if>
+
+        <if test="priorityCode != null and priorityCode != ''">
+            AND t.priority_code = #{priorityCode}
+        </if>
+
+        <if test="assigneeName != null and assigneeName != ''">
+            AND assignee.user_name LIKE '%' || #{assigneeName} || '%'
+        </if>
+
+        ORDER BY
+            t.created_at DESC,
+            t.test_id DESC
+
+    </select>
+
+
+    <!-- 일반 사용자 테스트 요약 -->
+    <select id="selectUserTestSummary"
+            parameterType="com.pixcel.app.test.service.TestSearchVO"
+            resultType="com.pixcel.app.test.service.TestSummaryVO">
+
+        SELECT
+            COUNT(*) AS "totalCount",
+            SUM(CASE WHEN t.status_code = 'a001' THEN 1 ELSE 0 END) AS "expectedCount",
+            SUM(CASE WHEN t.status_code = 'a002' THEN 1 ELSE 0 END) AS "progressCount",
+            SUM(CASE WHEN t.status_code = 'a003' THEN 1 ELSE 0 END) AS "endCount"
+        FROM test t
+        JOIN project_version pv
+            ON t.version_id = pv.version_id
+        JOIN project p
+            ON pv.project_id = p.project_id
+        LEFT JOIN users assignee
+            ON t.assignee_id = assignee.user_id
+        WHERE p.project_id = #{projectId}
+
+        <if test="projectName != null and projectName != ''">
+            AND p.project_name LIKE '%' || #{projectName} || '%'
+        </if>
+
+        <if test="versionName != null and versionName != ''">
+            AND pv.version_name LIKE '%' || #{versionName} || '%'
+        </if>
+
+        <if test="teamName != null and teamName != ''">
+            AND t.team_name LIKE '%' || #{teamName} || '%'
+        </if>
+
+        <if test="title != null and title != ''">
+            AND t.title LIKE '%' || #{title} || '%'
+        </if>
+
+        <if test="statusCode != null and statusCode != ''">
+            AND t.status_code = #{statusCode}
+        </if>
+
+        <if test="testTypeCode != null and testTypeCode != ''">
+            AND t.test_type_code = #{testTypeCode}
+        </if>
+
+        <if test="priorityCode != null and priorityCode != ''">
+            AND t.priority_code = #{priorityCode}
+        </if>
+
+        <if test="assigneeName != null and assigneeName != ''">
+            AND assignee.user_name LIKE '%' || #{assigneeName} || '%'
+        </if>
+
+    </select>
+
+
+    <!-- 일반 사용자 테스트 목록 -->
+    <select id="selectUserTestList"
+            parameterType="com.pixcel.app.test.service.TestSearchVO"
+            resultType="com.pixcel.app.test.service.TestVO">
+
+        SELECT
+            t.test_id AS "testId",
+            t.version_id AS "versionId",
+            pv.project_id AS "projectId",
+            p.project_name AS "projectName",
+            pv.version_name AS "versionName",
+            t.title AS "title",
+            t.priority_code AS "priorityCode",
+            priority.note AS "priorityName",
+            t.test_type_code AS "testTypeCode",
+            test_type.note AS "testTypeName",
+            t.status_code AS "statusCode",
+            status.note AS "statusName",
+            t.assignee_id AS "assigneeId",
+            assignee.user_name AS "assigneeName",
+            assignee.login_id AS "assigneeLoginId",
+            t.created_by AS "createdBy",
+            creator.user_name AS "createdByName",
+            creator.login_id AS "createdByLoginId",
+            t.description AS "description",
+            TO_CHAR(t.start_date, 'YYYY-MM-DD') AS "startDate",
+            TO_CHAR(t.end_date, 'YYYY-MM-DD') AS "endDate",
+            TO_CHAR(t.created_at, 'YYYY-MM-DD') AS "createdAt",
+            TO_CHAR(t.updated_at, 'YYYY-MM-DD') AS "updatedAt",
+            t.team_name AS "teamName",
+
+            NVL(tc_count.total_case_count, 0) AS "totalCaseCount",
+            NVL(ex_count.execution_count, 0) AS "executionCount",
+            NVL(ex_count.success_count, 0) AS "successCount",
+            NVL(ex_count.fail_count, 0) AS "failCount",
+            NVL(ex_count.hold_count, 0) AS "holdCount",
+            NVL(ex_count.progress_count, 0) AS "progressCount",
+
+            CASE
+                WHEN NVL(tc_count.total_case_count, 0) = 0 THEN 0
+                ELSE ROUND((NVL(ex_count.execution_count, 0) / tc_count.total_case_count) * 100)
+            END AS "progressRate"
+
+        FROM test t
+        JOIN project_version pv
+            ON t.version_id = pv.version_id
+        JOIN project p
+            ON pv.project_id = p.project_id
+
+        LEFT JOIN common_code status
+            ON t.status_code = status.code_id
+           AND status.code_name = '0A'
+
+        LEFT JOIN common_code priority
+            ON t.priority_code = priority.code_id
+           AND priority.code_name = '0C'
+
+        LEFT JOIN common_code test_type
+            ON t.test_type_code = test_type.code_id
+           AND test_type.code_name = '0D'
+
+        LEFT JOIN users assignee
+            ON t.assignee_id = assignee.user_id
+
+        LEFT JOIN users creator
+            ON t.created_by = creator.user_id
+
+        LEFT JOIN (
+            SELECT
+                test_id,
+                COUNT(*) AS total_case_count
+            FROM test_case_mapping
+            GROUP BY test_id
+        ) tc_count
+            ON t.test_id = tc_count.test_id
+
+        LEFT JOIN (
+            SELECT
+                tcm.test_id,
+                COUNT(te.execution_id) AS execution_count,
+                SUM(CASE WHEN te.result_status_code = 'a003' THEN 1 ELSE 0 END) AS success_count,
+                SUM(CASE WHEN te.result_status_code = 'a004' THEN 1 ELSE 0 END) AS fail_count,
+                SUM(CASE WHEN te.result_status_code = 'a005' THEN 1 ELSE 0 END) AS hold_count,
+                SUM(CASE WHEN te.result_status_code = 'a002' THEN 1 ELSE 0 END) AS progress_count
+            FROM test_case_mapping tcm
+            LEFT JOIN test_execution te
+                ON tcm.mapping_id = te.mapping_id
+            GROUP BY tcm.test_id
+        ) ex_count
+            ON t.test_id = ex_count.test_id
+
+        WHERE p.project_id = #{projectId}
+
+        <if test="projectName != null and projectName != ''">
+            AND p.project_name LIKE '%' || #{projectName} || '%'
+        </if>
+
+        <if test="versionName != null and versionName != ''">
+            AND pv.version_name LIKE '%' || #{versionName} || '%'
+        </if>
+
+        <if test="teamName != null and teamName != ''">
+            AND t.team_name LIKE '%' || #{teamName} || '%'
+        </if>
+
+        <if test="title != null and title != ''">
+            AND t.title LIKE '%' || #{title} || '%'
+        </if>
+
+        <if test="statusCode != null and statusCode != ''">
+            AND t.status_code = #{statusCode}
+        </if>
+
+        <if test="testTypeCode != null and testTypeCode != ''">
+            AND t.test_type_code = #{testTypeCode}
+        </if>
+
+        <if test="priorityCode != null and priorityCode != ''">
+            AND t.priority_code = #{priorityCode}
+        </if>
+
+        <if test="assigneeName != null and assigneeName != ''">
+            AND assignee.user_name LIKE '%' || #{assigneeName} || '%'
+        </if>
+
+        ORDER BY
+            t.created_at DESC,
+            t.test_id DESC
+
+    </select>
+
+
+    <!-- 프로젝트 버전 목록 -->
+    <select id="selectProjectVersionList"
+            parameterType="string"
+            resultType="com.pixcel.app.test.service.TestVO">
+
+        SELECT
+            pv.version_id AS "versionId",
+            pv.project_id AS "projectId",
+            pv.version_name AS "versionName"
+        FROM project_version pv
+        WHERE pv.project_id = #{projectId}
+        ORDER BY
+            pv.default_yn DESC,
+            pv.created_at DESC
+
+    </select>
+
+
+    <!-- 테스트 담당자 목록 -->
+    <select id="selectTestAssigneeList"
+            parameterType="string"
+            resultType="com.pixcel.app.test.service.TestUserVO">
+
+        SELECT DISTINCT
+            u.user_id AS "userId",
+            u.login_id AS "loginId",
+            u.user_name AS "userName"
+        FROM project_member pm
+        JOIN team_member tm
+            ON pm.team_member_id = tm.team_member_id
+        JOIN users u
+            ON tm.user_id = u.user_id
+        WHERE pm.project_id = #{projectId}
+        ORDER BY
+            u.user_name ASC,
+            u.login_id ASC
+
+    </select>
+
+
+    <!-- 프로젝트 그룹 목록 -->
+    <select id="selectProjectGroupList"
+            parameterType="string"
+            resultType="com.pixcel.app.test.service.TestGroupVO">
+
+        SELECT DISTINCT
+            pg.project_group_id AS "groupId",
+            pg.group_name AS "groupName"
+        FROM project_member pm
+        JOIN project_group pg
+            ON pm.project_group_id = pg.project_group_id
+        WHERE pm.project_id = #{projectId}
+          AND pm.project_group_id IS NOT NULL
+        ORDER BY
+            pg.group_name ASC
+
+    </select>
+
+
+    <!-- 테스트 ID 생성 후 테스트 등록 -->
+    <insert id="insertTest"
+            parameterType="com.pixcel.app.test.service.TestVO">
+
+        <selectKey keyProperty="testId"
+                   resultType="string"
+                   order="BEFORE">
+            SELECT
+                'TEST_' || TO_CHAR(SYSDATE, 'YYYYMM') || '_' ||
+                LPAD(
+                    NVL((
+                        SELECT MAX(TO_NUMBER(SUBSTR(test_id, -4))) + 1
+                        FROM test
+                        WHERE test_id LIKE 'TEST_' || TO_CHAR(SYSDATE, 'YYYYMM') || '_%'
+                    ), 1),
+                    4,
+                    '0'
+                )
+            FROM dual
+        </selectKey>
+
+        INSERT INTO test (
+            test_id,
+            version_id,
+            title,
+            priority_code,
+            test_type_code,
+            status_code,
+            assignee_id,
+            description,
+            start_date,
+            end_date,
+            created_by,
+            created_at,
+            updated_at,
+            team_name
+        ) VALUES (
+            #{testId},
+            #{versionId},
+            #{title},
+            #{priorityCode},
+            #{testTypeCode},
+            #{statusCode},
+            #{assigneeId},
+            #{description},
+            TO_DATE(#{startDate}, 'YYYY-MM-DD'),
+            TO_DATE(#{endDate}, 'YYYY-MM-DD'),
+            #{createdBy},
+            SYSDATE,
+            NULL,
+            #{teamName}
+        )
+
+    </insert>
+
+
+    <!-- 테스트 - 테스트케이스 매핑 등록 -->
+    <insert id="insertTestCaseMapping"
+            parameterType="com.pixcel.app.test.service.TestVO">
+
+        INSERT INTO test_case_mapping (
+            mapping_id,
+            test_id,
+            test_case_id,
+            sort_order
+        )
+        <foreach collection="testCaseIds"
+                 item="testCaseId"
+                 index="index"
+                 separator="UNION ALL">
+            SELECT
+                'TCM_' || TO_CHAR(SYSDATE, 'YYYYMM') || '_' ||
+                LPAD(
+                    NVL((
+                        SELECT MAX(TO_NUMBER(SUBSTR(mapping_id, -4)))
+                        FROM test_case_mapping
+                        WHERE mapping_id LIKE 'TCM_' || TO_CHAR(SYSDATE, 'YYYYMM') || '_%'
+                    ), 0) + #{index} + 1,
+                    4,
+                    '0'
+                ) AS mapping_id,
+                #{testId} AS test_id,
+                #{testCaseId} AS test_case_id,
+                #{index} + 1 AS sort_order
+            FROM dual
+        </foreach>
+
+    </insert>
+
+</mapper>

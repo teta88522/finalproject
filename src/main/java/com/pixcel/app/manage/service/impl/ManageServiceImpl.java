@@ -53,7 +53,7 @@ public class ManageServiceImpl implements ManageService {
 		}
 		
 		//같은 프로젝트에서 동일 그룹명 방지
-		int duplicateCount = manageMapper.selectManageGroupDuplicateCount(manageGroupVO.getProjectId(), manageGroupVO.getProjectName());
+		int duplicateCount = manageMapper.selectManageGroupDuplicateCount(manageGroupVO.getProjectId(), manageGroupVO.getGroupName());
 		
 		if(duplicateCount > 0) {
 			resultMap.put("result", false);

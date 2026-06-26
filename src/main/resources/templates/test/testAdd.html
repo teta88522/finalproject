@@ -1,0 +1,631 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{common/layouts/default_layout}">
+<head>
+<meta charset="UTF-8">
+<title>테스트 생성</title>
+
+<link rel="stylesheet" th:href="@{/css/test/testAdd.css}">
+</head>
+
+<body>
+<div layout:fragment="Content">
+
+    <div class="test-create-wrap">
+
+        <div class="page-title-area">
+            <h2>테스트 생성</h2>
+        </div>
+
+        <form th:action="@{/project/{projectId}/tests/add(projectId=${projectId})}"
+              method="post"
+              th:object="${testVO}"
+              id="testCreateForm">
+
+            <!-- =========================
+                 기본 정보
+            ========================== -->
+            <section class="box-section basic-section">
+                <div class="box-title">기본 정보</div>
+
+                <div class="basic-form">
+
+                    <div class="form-row first-row">
+                        <label for="title">테스트 명</label>
+                        <input type="text"
+                               id="title"
+                               th:field="*{title}"
+                               placeholder="테스트 제목을 입력"
+                               maxlength="255"
+                               required>
+                    </div>
+
+                    <div class="form-row grid-row">
+
+                        <label for="assigneeId">담당자</label>
+                        <select id="assigneeId"
+                                th:field="*{assigneeId}"
+                                required>
+                            <option value="">담당자 선택</option>
+                            <option th:each="user : ${assigneeList}"
+                                    th:value="${user.userId}"
+                                    th:text="${user.userName + ' (' + user.loginId + ')'}">
+                                담당자
+                            </option>
+                        </select>
+
+                        <label for="priorityCode">우선순위</label>
+                        <select id="priorityCode"
+                                th:field="*{priorityCode}"
+                                required>
+                            <option value="c002">보통</option>
+                            <option value="c001">높음</option>
+                            <option value="c003">낮음</option>
+                        </select>
+                    </div>
+
+                    <div class="form-row grid-row">
+                        <label for="versionId">버전</label>
+                        <select id="versionId"
+                                th:field="*{versionId}"
+                                required>
+                            <option value="">현재 버전 선택</option>
+                            <option th:each="version : ${versionList}"
+                                    th:value="${version.versionId}"
+                                    th:text="${version.versionName}">
+                                1.0.0
+                            </option>
+                        </select>
+
+						<label for="teamName">그룹</label>
+						<select id="teamName"
+        							th:field="*{teamName}"
+        							required>
+    						<option value="">그룹 선택</option>
+    						<option th:each="group : ${groupList}"
+            						th:value="${group.groupName}"
+            						th:text="${group.groupName}">
+        							그룹명
+    						</option>
+						</select>
+
+                        <label for="retryNo">재수행차수</label>
+                        <input type="number"
+                               id="retryNo"
+                               value="0"
+                               readonly>
+                    </div>
+
+                    <!-- TEST 테이블 NOT NULL 기본값 -->
+                    <input type="hidden" th:field="*{testTypeCode}">
+                    <input type="hidden" th:field="*{statusCode}">
+                    <input type="hidden" th:field="*{startDate}">
+                    <input type="hidden" th:field="*{endDate}">
+
+                </div>
+            </section>
+
+            <!-- =========================
+                 메인 영역
+            ========================== -->
+            <div class="main-create-grid">
+
+                <!-- 왼쪽 : 테스트 케이스 선택 -->
+                <section class="box-section case-left-section">
+                    <div class="box-title">테스트 케이스 선택</div>
+
+                    <div class="case-search-row">
+                        <label for="caseTypeCode">유형</label>
+                        <select id="caseTypeCode">
+                            <option value="">전체</option>
+                            <option value="d001" th:selected="${testCaseSearchVO.testTypeCode == 'd001'}">기능 테스트</option>
+                            <option value="d002" th:selected="${testCaseSearchVO.testTypeCode == 'd002'}">UI/UX 테스트</option>
+                            <option value="d003" th:selected="${testCaseSearchVO.testTypeCode == 'd003'}">성능 테스트</option>
+                            <option value="d004" th:selected="${testCaseSearchVO.testTypeCode == 'd004'}">보안 테스트</option>
+                            <option value="d005" th:selected="${testCaseSearchVO.testTypeCode == 'd005'}">데이터 테스트</option>
+                            <option value="d006" th:selected="${testCaseSearchVO.testTypeCode == 'd006'}">기타</option>
+                        </select>
+
+                        <label for="caseStatusCode">상태</label>
+                        <select id="caseStatusCode">
+                        	<option value="g001" th:selected="${testCaseSearchVO.statusCode == 'g001'}">활성</option>
+                            <option value="g002" th:selected="${testCaseSearchVO.statusCode == 'g002'}">비활성</option>
+                        </select>
+
+                        <label for="caseTitle">제목</label>
+                        <input type="text"
+                               id="caseTitle"
+                               th:value="${testCaseSearchVO.title}"
+                               placeholder="테스트 케이스 명으로 검색">
+
+                        <button type="button"
+                                class="case-search-btn"
+                                id="caseSearchBtn">
+                            검색
+                        </button>
+                    </div>
+
+                    <div class="case-table-box">
+                        <table class="case-table">
+                            <thead>
+                                <tr>
+                                    <th class="check-col">
+                                        <input type="checkbox" id="allCheck">
+                                    </th>
+                                    <th>제목</th>
+                                    <th>유형</th>
+                                    <th>우선순위</th>
+                                    <th>상태</th>
+                                    <th>버전</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                <tr th:if="${testCaseList == null or #lists.isEmpty(testCaseList)}">
+                                    <td colspan="6" class="empty-row">
+                                        조회된 테스트 케이스가 없습니다.
+                                    </td>
+                                </tr>
+
+                                <tr th:each="testCase : ${testCaseList}"
+                                    class="case-row"
+                                    th:data-case-id="${testCase.testCaseId}"
+                                    th:data-title="${testCase.title}"
+                                    th:data-type="${testCase.testTypeName}"
+                                    th:data-priority="${testCase.priorityName}"
+                                    th:data-status="${testCase.statusName}"
+                                    th:data-version="${testCase.versionName}"
+                                    th:data-expected="${testCase.expectedResult}">
+
+                                    <td class="check-col">
+                                        <input type="checkbox"
+                                               class="case-check"
+                                               th:value="${testCase.testCaseId}">
+                                    </td>
+
+                                    <td th:text="${testCase.title}">테스트 케이스 제목</td>
+                                    <td th:text="${testCase.testTypeName}">기능 테스트</td>
+
+                                    <td th:text="${testCase.priorityName}"
+                                        th:classappend="${testCase.priorityCode == 'c001' ? ' priority-high' : (testCase.priorityCode == 'c003' ? ' priority-low' : '')}">
+                                        보통
+                                    </td>
+
+                                    <td th:text="${testCase.statusName}">활성</td>
+                                    <td th:text="${testCase.versionName}">1.0.0</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- 실제 페이징 -->
+                    <div class="paging-area"
+                         th:if="${testCaseSearchVO != null and testCaseSearchVO.totalPage > 0}">
+
+                        <a class="page-btn"
+                           th:classappend="${testCaseSearchVO.page <= 1} ? ' disabled'"
+                           th:href="@{/project/{projectId}/tests/new(
+                                projectId=${projectId},
+                                page=${testCaseSearchVO.page - 1},
+                                size=${testCaseSearchVO.size},
+                                versionId=${testCaseSearchVO.versionId},
+                                testTypeCode=${testCaseSearchVO.testTypeCode},
+                                statusCode=${testCaseSearchVO.statusCode},
+                                priorityCode=${testCaseSearchVO.priorityCode},
+                                title=${testCaseSearchVO.title}
+                           )}">
+                            이전
+                        </a>
+
+                        <a th:each="pageNo : ${#numbers.sequence(1, testCaseSearchVO.totalPage)}"
+                           class="page-btn"
+                           th:classappend="${pageNo == testCaseSearchVO.page} ? ' active'"
+                           th:href="@{/project/{projectId}/tests/new(
+                                projectId=${projectId},
+                                page=${pageNo},
+                                size=${testCaseSearchVO.size},
+                                versionId=${testCaseSearchVO.versionId},
+                                testTypeCode=${testCaseSearchVO.testTypeCode},
+                                statusCode=${testCaseSearchVO.statusCode},
+                                priorityCode=${testCaseSearchVO.priorityCode},
+                                title=${testCaseSearchVO.title}
+                           )}"
+                           th:text="${pageNo}">
+                            1
+                        </a>
+
+                        <a class="page-btn"
+                           th:classappend="${testCaseSearchVO.page >= testCaseSearchVO.totalPage} ? ' disabled'"
+                           th:href="@{/project/{projectId}/tests/new(
+                                projectId=${projectId},
+                                page=${testCaseSearchVO.page + 1},
+                                size=${testCaseSearchVO.size},
+                                versionId=${testCaseSearchVO.versionId},
+                                testTypeCode=${testCaseSearchVO.testTypeCode},
+                                statusCode=${testCaseSearchVO.statusCode},
+                                priorityCode=${testCaseSearchVO.priorityCode},
+                                title=${testCaseSearchVO.title}
+                           )}">
+                            다음
+                        </a>
+
+                    </div>
+                </section>
+
+                <!-- 오른쪽 패널 -->
+                <div class="right-panel">
+
+                    <!-- 선택된 테스트 케이스 -->
+                    <section class="box-section selected-section">
+                        <div class="box-title">
+                            선택된 테스트 케이스(<span id="selectedTitleCount">0</span>)
+                        </div>
+
+                        <div class="selected-table-box">
+                            <table class="selected-table">
+                                <thead>
+                                    <tr>
+                                        <th>제목</th>
+                                        <th>유형</th>
+                                        <th>우선순위</th>
+                                        <th>기대결과</th>
+                                        <th>삭제</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody id="selectedCaseBody">
+                                    <tr>
+                                        <td colspan="5" class="empty-row">
+                                            선택된 테스트 케이스가 없습니다.
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+
+                    <!-- 요약 -->
+                    <section class="box-section summary-section">
+                        <div class="box-title">테스트 생성 요약</div>
+
+                        <div class="summary-card-row">
+                            <div class="summary-item">
+                                <span>선택 케이스 수</span>
+                                <strong id="selectedCaseCount">0개</strong>
+                            </div>
+
+                            <div class="summary-item">
+                                <span>생성 대상 그룹</span>
+                                <strong id="summaryTeam">-</strong>
+                            </div>
+
+                            <div class="summary-item">
+                                <span>테스트 담당자</span>
+                                <strong id="summaryAssignee">-</strong>
+                            </div>
+                        </div>
+
+                        <textarea id="description"
+                                  th:field="*{description}"
+                                  maxlength="255"
+                                  placeholder="테스트의 목적, 범위, 특이사항 등을 입력하세요(선택)"></textarea>
+                    </section>
+
+					<div id="selectedHiddenInputs"></div>
+                    <div class="btn-area">
+                        <a th:href="@{/project/{projectId}/tests(projectId=${projectId})}"
+                           class="btn-cancel">
+                            취소
+                        </a>
+
+                        <button type="submit" class="btn-save">
+                            저장
+                        </button>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </form>
+
+    </div>
+
+    <script th:inline="javascript">
+    document.addEventListener('DOMContentLoaded', function () {
+
+        const projectId = /*[[${projectId}]]*/ '';
+
+        const storageKey = 'selectedTestCases_' + projectId;
+
+        const caseSearchBtn = document.getElementById('caseSearchBtn');
+        const caseTypeCode = document.getElementById('caseTypeCode');
+        const caseStatusCode = document.getElementById('caseStatusCode');
+        const caseTitle = document.getElementById('caseTitle');
+
+        const caseChecks = document.querySelectorAll('.case-check');
+        const allCheck = document.getElementById('allCheck');
+
+        const selectedCaseBody = document.getElementById('selectedCaseBody');
+        const selectedCaseCount = document.getElementById('selectedCaseCount');
+        const selectedTitleCount = document.getElementById('selectedTitleCount');
+        const selectedHiddenInputs = document.getElementById('selectedHiddenInputs');
+
+        const teamName = document.getElementById('teamName');
+        const assigneeId = document.getElementById('assigneeId');
+        const summaryTeam = document.getElementById('summaryTeam');
+        const summaryAssignee = document.getElementById('summaryAssignee');
+
+        const testCreateForm = document.getElementById('testCreateForm');
+
+        function getSelectedCases() {
+            const saved = sessionStorage.getItem(storageKey);
+
+            if (saved == null || saved === '') {
+                return {};
+            }
+
+            try {
+                return JSON.parse(saved);
+            } catch (e) {
+                return {};
+            }
+        }
+
+        function saveSelectedCases(selectedCases) {
+            sessionStorage.setItem(storageKey, JSON.stringify(selectedCases));
+        }
+
+        function clearSelectedCases() {
+            sessionStorage.removeItem(storageKey);
+        }
+
+        function moveSearchPage() {
+            const params = new URLSearchParams();
+
+            params.set('page', '1');
+            params.set('size', '10');
+
+            if (caseTypeCode.value !== '') {
+                params.set('testTypeCode', caseTypeCode.value);
+            }
+
+            if (caseStatusCode.value !== '') {
+                params.set('statusCode', caseStatusCode.value);
+            }
+
+            if (caseTitle.value.trim() !== '') {
+                params.set('title', caseTitle.value.trim());
+            }
+
+            location.href = '/project/' + projectId + '/tests/new?' + params.toString();
+        }
+
+        function updateSummaryText() {
+            summaryTeam.textContent = teamName.value.trim() === '' ? '-' : teamName.value.trim();
+
+            const selectedOption = assigneeId.options[assigneeId.selectedIndex];
+
+            if (selectedOption && selectedOption.value !== '') {
+                summaryAssignee.textContent = selectedOption.text;
+            } else {
+                summaryAssignee.textContent = '-';
+            }
+        }
+
+        function getPriorityClass(priority) {
+            if (priority === '높음' || priority === '상') {
+                return 'priority-high';
+            }
+
+            if (priority === '낮음' || priority === '하') {
+                return 'priority-low';
+            }
+
+            return '';
+        }
+
+        function syncCurrentPageCheckboxes() {
+            const selectedCases = getSelectedCases();
+
+            caseChecks.forEach(function (checkbox) {
+                if (selectedCases[checkbox.value] != null) {
+                    checkbox.checked = true;
+                } else {
+                    checkbox.checked = false;
+                }
+            });
+
+            syncAllCheckState();
+        }
+
+        function syncAllCheckState() {
+            if (!allCheck) {
+                return;
+            }
+
+            if (caseChecks.length === 0) {
+                allCheck.checked = false;
+                return;
+            }
+
+            let checkedCount = 0;
+
+            caseChecks.forEach(function (checkbox) {
+                if (checkbox.checked) {
+                    checkedCount++;
+                }
+            });
+
+            allCheck.checked = checkedCount === caseChecks.length;
+        }
+
+        function updateHiddenInputs() {
+            const selectedCases = getSelectedCases();
+
+            selectedHiddenInputs.innerHTML = '';
+
+            Object.keys(selectedCases).forEach(function (caseId) {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'testCaseIds';
+                input.value = caseId;
+
+                selectedHiddenInputs.appendChild(input);
+            });
+        }
+
+        function updateSelectedTable() {
+            const selectedCases = getSelectedCases();
+            const selectedIds = Object.keys(selectedCases);
+
+            selectedCaseBody.innerHTML = '';
+
+            if (selectedIds.length === 0) {
+                selectedCaseBody.innerHTML =
+                    '<tr><td colspan="5" class="empty-row">선택된 테스트 케이스가 없습니다.</td></tr>';
+            } else {
+                selectedIds.forEach(function (caseId) {
+                    const item = selectedCases[caseId];
+
+                    const title = item.title || '-';
+                    const type = item.type || '-';
+                    const priority = item.priority || '-';
+                    const expected = item.expected || '-';
+
+                    const tr = document.createElement('tr');
+
+                    tr.innerHTML =
+                        '<td title="' + title + '">' + title + '</td>' +
+                        '<td title="' + type + '">' + type + '</td>' +
+                        '<td class="' + getPriorityClass(priority) + '" title="' + priority + '">' + priority + '</td>' +
+                        '<td title="' + expected + '">' + expected + '</td>' +
+                        '<td><button type="button" class="delete-selected-btn" data-case-id="' + caseId + '">삭제</button></td>';
+
+                    selectedCaseBody.appendChild(tr);
+                });
+            }
+
+            selectedCaseCount.textContent = selectedIds.length + '개';
+            selectedTitleCount.textContent = selectedIds.length;
+
+            updateHiddenInputs();
+
+            const deleteButtons = document.querySelectorAll('.delete-selected-btn');
+
+            deleteButtons.forEach(function (button) {
+                button.addEventListener('click', function () {
+                    const caseId = this.dataset.caseId;
+
+                    const selectedCases = getSelectedCases();
+                    delete selectedCases[caseId];
+
+                    saveSelectedCases(selectedCases);
+
+                    caseChecks.forEach(function (checkbox) {
+                        if (checkbox.value === caseId) {
+                            checkbox.checked = false;
+                        }
+                    });
+
+                    syncAllCheckState();
+                    updateSelectedTable();
+                });
+            });
+        }
+
+        function addCaseToStorage(checkbox) {
+            const row = checkbox.closest('tr');
+
+            const selectedCases = getSelectedCases();
+
+            selectedCases[checkbox.value] = {
+                caseId: checkbox.value,
+                title: row.dataset.title || '-',
+                type: row.dataset.type || '-',
+                priority: row.dataset.priority || '-',
+                status: row.dataset.status || '-',
+                version: row.dataset.version || '-',
+                expected: row.dataset.expected || '-'
+            };
+
+            saveSelectedCases(selectedCases);
+        }
+
+        function removeCaseFromStorage(checkbox) {
+            const selectedCases = getSelectedCases();
+
+            delete selectedCases[checkbox.value];
+
+            saveSelectedCases(selectedCases);
+        }
+
+        if (caseSearchBtn) {
+            caseSearchBtn.addEventListener('click', moveSearchPage);
+        }
+
+        if (caseTitle) {
+            caseTitle.addEventListener('keyup', function (event) {
+                if (event.key === 'Enter') {
+                    moveSearchPage();
+                }
+            });
+        }
+
+        caseChecks.forEach(function (checkbox) {
+            checkbox.addEventListener('change', function () {
+                if (checkbox.checked) {
+                    addCaseToStorage(checkbox);
+                } else {
+                    removeCaseFromStorage(checkbox);
+                }
+
+                syncAllCheckState();
+                updateSelectedTable();
+            });
+        });
+
+        if (allCheck) {
+            allCheck.addEventListener('change', function () {
+                caseChecks.forEach(function (checkbox) {
+                    checkbox.checked = allCheck.checked;
+
+                    if (checkbox.checked) {
+                        addCaseToStorage(checkbox);
+                    } else {
+                        removeCaseFromStorage(checkbox);
+                    }
+                });
+
+                updateSelectedTable();
+            });
+        }
+
+        teamName.addEventListener('keyup', updateSummaryText);
+        teamName.addEventListener('change', updateSummaryText);
+        assigneeId.addEventListener('change', updateSummaryText);
+
+        testCreateForm.addEventListener('submit', function () {
+            updateHiddenInputs();
+
+            const selectedCases = getSelectedCases();
+
+            if (Object.keys(selectedCases).length === 0) {
+                alert('테스트 케이스를 1개 이상 선택하세요.');
+                event.preventDefault();
+                return false;
+            }
+
+            clearSelectedCases();
+        });
+
+        syncCurrentPageCheckboxes();
+        updateSelectedTable();
+        updateSummaryText();
+    });
+</script>
+
+</div>
+</body>
+</html>
