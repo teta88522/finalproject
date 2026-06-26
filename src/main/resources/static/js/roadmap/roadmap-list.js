@@ -90,7 +90,9 @@ document.addEventListener('DOMContentLoaded', function() {
             // 2차 필터: 하위 마일스톤 & 일감 검색 매칭
             const milestones = item.querySelectorAll('.milestone-block');
             milestones.forEach(mBlock => {
-                const mName = mBlock.querySelector('.m-title-area .title-link').innerText.trim();
+				const mTitleEl = mBlock.querySelector('.m-title-area .title-link');
+				// 2. 요소가 있으면 텍스트를 가져오고, 없으면(미지정 영역이면) "미지정 일감"으로 처리
+				const mName = mTitleEl ? mTitleEl.innerText.trim() : "미지정 일감";
                 let isMilestoneMatch = true;
                 if (valMilestone && mName !== valMilestone) isMilestoneMatch = false;
 
