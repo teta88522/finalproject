@@ -4,16 +4,46 @@ import java.util.List;
 
 public interface IssuesService {
 
+	// ==============================
+	// 프로젝트 공통
+	// ==============================
+
 	// 현재 사용자가 접근 가능한 프로젝트 목록을 조회한다.
 	List<IssuesVO> getProjectList(String userId);
 
-	// 요청 프로젝트가 없으면 첫 번째 접근 가능 프로젝트 ID를 반환한다.
+	// 요청 프로젝트가 있으면 접근 권한 검증 후 projectId를 반환한다.
 	String getSelectedProjectId(String requestedProjectId, String userId);
 
-	// ==============================
-	// 일감 생성 URL 구조 수정
 	// 프로젝트 상세를 조회하고 접근 권한을 검증한다.
+	IssuesVO getProjectDetail(String projectId, String userId);
+
 	// ==============================
+	// 일감 전체조회
+	// ==============================
+
+	// 프로젝트 기준 일감 목록을 조회한다.
+	List<IssuesVO> getIssueList(String projectId, IssuesVO searchVO, String userId);
+
+	// 일감 상태 필터 목록을 조회한다.
+	List<IssuesVO> getIssueStatusList(String projectId, String userId);
+
+	// 일감 생성 권한 여부를 조회한다.
+	boolean canCreateIssue(String projectId, String userId);
+
+	// 마일스톤 생성 권한 여부를 조회한다.
+	boolean canCreateMilestone(String projectId, String userId);
+
+	// 일감 삭제 권한 여부를 조회한다.
+	boolean canDeleteIssue(String projectId, String userId);
+
+	// 일감 전체조회에서 선택한 일감을 삭제한다.
+	void deleteIssue(String projectId, String issueId, String userId);
+
+	// ==============================
+	// 일감 생성
+	// ==============================
+
+	// 일감 생성 화면용 프로젝트 상세를 조회한다.
 	IssuesVO getProjectDetailForCreate(String projectId, String userId);
 
 	// 일감 생성 화면의 일감유형 목록을 조회한다.

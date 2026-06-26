@@ -1,0 +1,365 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{common/layouts/default_layout}">
+
+<head>
+<meta charset="UTF-8">
+<title>일감 전체조회</title>
+
+<link rel="stylesheet" th:href="@{/css/common-ui.css}">
+<link rel="stylesheet" th:href="@{/css/common-filter.css}">
+<link rel="stylesheet" th:href="@{/css/issues/issues.css}">
+</head>
+
+<body>
+	<div layout:fragment="Content">
+
+		<div class="issues-list-page">
+			<div class="container-fluid">
+
+				<div class="issues-header">
+					<div>
+						<h3>일감 전체조회</h3>
+						<p>
+							<span th:text="${projectInfo.projectName}">프로젝트명</span> 프로젝트의 일감을
+							조회합니다.
+						</p>
+					</div>
+
+					<div class="issues-list-actions">
+						<a th:if="${canCreateMilestone}"
+							th:href="@{/project/{projectId}/milestones/create(projectId=${selectedProjectId})}"
+							class="btn btn-custon-rounded-four btn-default"> 마일스톤 생성 </a>
+
+						<button th:unless="${canCreateMilestone}" type="button"
+							class="btn btn-custon-rounded-four btn-default" disabled
+							title="마일스톤 생성 권한이 없습니다.">마일스톤 생성</button>
+
+						<a th:if="${canCreateIssue}"
+							th:href="@{/project/{projectId}/issues/create(projectId=${selectedProjectId})}"
+							class="btn btn-custon-rounded-four btn-primary"> 일감 생성 </a>
+
+						<button th:unless="${canCreateIssue}" type="button"
+							class="btn btn-custon-rounded-four btn-primary" disabled
+							title="일감 생성 권한이 없습니다.">일감 생성</button>
+					</div>
+				</div>
+
+				<div th:if="${message}" class="page-message page-message-success"
+					th:text="${message}"></div>
+
+				<div th:if="${errorMessage}" class="page-message page-message-error"
+					th:text="${errorMessage}"></div>
+
+				<div class="search-section issues-search-section">
+					<div class="search-header">
+						<div class="search-title">검색조건</div>
+					</div>
+
+					<form
+						th:action="@{/project/{projectId}/issues(projectId=${selectedProjectId})}"
+						method="get">
+
+						<input type="hidden" name="page" value="1"> <input
+							type="hidden" name="issueNoSort"
+							th:value="${searchVO.issueNoSort}">
+
+						<div class="search-form-row issues-search-row">
+
+							<div class="search-field">
+								<label for="issueTypeId">유형</label> <select id="issueTypeId"
+									name="issueTypeId">
+									<option value="">전체</option>
+									<option th:each="issueType : ${issueTypeList}"
+										th:value="${issueType.issueTypeId}"
+										th:text="${issueType.issueTypeName}"
+										th:selected="${issueType.issueTypeId == searchVO.issueTypeId}">
+										유형</option>
+								</select>
+							</div>
+
+							<div class="search-field">
+								<label for="versionId">버전</label> <select id="versionId"
+									name="versionId">
+									<option value="">전체</option>
+									<option th:each="version : ${versionList}"
+										th:value="${version.versionId}"
+										th:text="${version.versionName}"
+										th:selected="${version.versionId == searchVO.versionId}">
+										버전</option>
+								</select>
+							</div>
+
+							<div class="search-field">
+								<label for="keyword">제목</label> <input type="text" id="keyword"
+									name="keyword" th:value="${searchVO.keyword}" placeholder="제목">
+							</div>
+
+							<div class="search-field">
+								<label for="issueStatusId">상태</label> <select id="issueStatusId"
+									name="issueStatusId">
+									<option value="">전체</option>
+									<option th:each="status : ${issueStatusList}"
+										th:value="${status.issueStatusId}"
+										th:text="${status.issueStatusName}"
+										th:selected="${status.issueStatusId == searchVO.issueStatusId}">
+										상태</option>
+								</select>
+							</div>
+
+							<div class="search-field">
+								<label for="settingCodeId">우선순위</label> <select
+									id="settingCodeId" name="settingCodeId">
+									<option value="">전체</option>
+									<option th:each="priority : ${priorityList}"
+										th:value="${priority.settingCodeId}"
+										th:text="${priority.settingName}"
+										th:selected="${priority.settingCodeId == searchVO.settingCodeId}">
+										우선순위</option>
+								</select>
+							</div>
+
+							<div class="search-field">
+								<label for="assigneeId">담당자</label> <select id="assigneeId"
+									name="assigneeId">
+									<option value="">전체</option>
+									<option th:each="assignee : ${assigneeList}"
+										th:value="${assignee.assigneeId}"
+										th:text="${assignee.assigneeName}"
+										th:selected="${assignee.assigneeId == searchVO.assigneeId}">
+										담당자</option>
+								</select>
+							</div>
+
+							<div class="search-field">
+								<label for="progressRate">진척도</label> <input type="number"
+									id="progressRate" name="progressRate" min="0" max="100"
+									step="1" th:value="${searchVO.progressRate}"
+									placeholder="0~100">
+							</div>
+
+							<div class="search-field issues-date-field">
+								<label>날짜</label>
+								<div class="issues-date-range">
+									<input type="date" id="startDate" name="startDate"
+										th:value="${searchVO.startDate}"> <span
+										class="issues-date-separator">~</span> <input type="date"
+										id="dueDate" name="dueDate" th:value="${searchVO.dueDate}">
+								</div>
+							</div>
+
+						</div>
+
+						<div class="search-btn-area">
+							<a
+								th:href="@{/project/{projectId}/issues(projectId=${selectedProjectId})}"
+								class="btn btn-custon-rounded-four btn-default filter-btn">
+								clean </a>
+
+							<button type="submit"
+								class="btn btn-custon-rounded-four btn-primary filter-btn">
+								apply</button>
+						</div>
+					</form>
+				</div>
+
+				<div class="issues-table-card">
+					<table class="table table-hover issues-list-table">
+						<colgroup>
+							<col class="col-issue-no">
+							<col class="col-issue-type">
+							<col class="col-version">
+							<col class="col-title">
+							<col class="col-status">
+							<col class="col-priority">
+							<col class="col-assignee">
+							<col class="col-progress">
+							<col class="col-date">
+							<col class="col-hours">
+							<col class="col-manage">
+						</colgroup>
+
+						<thead>
+							<tr>
+								<th class="issue-no-sort-header"><a class="issue-sort-link"
+									th:href="@{/project/{projectId}/issues(
+											projectId=${selectedProjectId},
+											page=1,
+											issueTypeId=${searchVO.issueTypeId},
+											versionId=${searchVO.versionId},
+											keyword=${searchVO.keyword},
+											issueStatusId=${searchVO.issueStatusId},
+											settingCodeId=${searchVO.settingCodeId},
+											assigneeId=${searchVO.assigneeId},
+											progressRate=${searchVO.progressRate},
+											startDate=${searchVO.startDate},
+											dueDate=${searchVO.dueDate},
+											issueNoSort=${searchVO.issueNoSort == 'asc' ? 'desc' : 'asc'}
+										)}">
+										식별번호 <span class="issue-sort-mark"
+										th:text="${searchVO.issueNoSort == 'asc'} ? '▲' : '▼'">
+											▼ </span>
+								</a></th>
+								<th>유형</th>
+								<th>버전</th>
+								<th>제목</th>
+								<th>상태</th>
+								<th>우선순위</th>
+								<th>담당자</th>
+								<th>진척도</th>
+								<th>날짜</th>
+								<th>추정시간</th>
+								<th>관리</th>
+							</tr>
+						</thead>
+
+						<tbody>
+							<tr th:if="${#lists.isEmpty(issueList)}">
+								<td colspan="11" class="empty-row">조회된 일감이 없습니다.</td>
+							</tr>
+
+							<tr th:each="issue : ${issueList}">
+								<td class="issue-no-cell"><span class="issue-no-badge"
+									th:classappend="${issue.closedYn == 'Y'} ? ' is-closed' : ' is-open'"
+									th:text="${issue.displayIssueNo}"> #0001 </span></td>
+
+								<td><span class="cell-text"
+									th:text="${issue.issueTypeName != null ? issue.issueTypeName : '-'}">
+										유형 </span></td>
+
+								<td><span class="cell-text"
+									th:text="${issue.versionName != null ? issue.versionName : '-'}">
+										버전 </span></td>
+
+								<td class="issues-title-cell"><span
+									class="strong-text ellipsis-text" th:text="${issue.title}">
+										제목 </span></td>
+
+								<td><span class="cell-text"
+									th:text="${issue.issueStatusName != null ? issue.issueStatusName : '-'}">
+										상태 </span></td>
+
+								<td><span class="cell-text"
+									th:text="${issue.settingName != null ? issue.settingName : '-'}">
+										우선순위 </span></td>
+
+								<td><span class="cell-text"
+									th:text="${issue.assigneeName != null ? issue.assigneeName : '-'}">
+										담당자 </span></td>
+
+								<td>
+									<div class="issues-progress-cell">
+										<div class="issues-progress">
+											<div class="issues-progress-bar"
+												th:style="|width: ${issue.progressRate != null ? issue.progressRate : 0}%;|"></div>
+										</div>
+
+										<span class="issues-progress-text"> <span
+											th:text="${issue.progressRate != null ? issue.progressRate : 0}">0</span>%
+										</span>
+									</div>
+								</td>
+
+								<td>
+									<div class="issues-date-cell">
+										<span
+											th:text="${issue.startDate != null ? issue.startDate : '-'}">시작일</span>
+										<span class="issues-date-separator">~</span> <span
+											th:text="${issue.dueDate != null ? issue.dueDate : '-'}">완료기한</span>
+									</div>
+								</td>
+
+								<td><span class="cell-text"
+									th:text="${issue.estimatedHours != null ? issue.estimatedHours : 0}">
+										0 </span></td>
+
+								<td>
+									<form th:if="${canDeleteIssue}"
+										th:action="@{/project/{projectId}/issues/{issueId}/delete(projectId=${selectedProjectId}, issueId=${issue.issueId})}"
+										method="post" class="inline-form"
+										onsubmit="return confirm('선택한 일감을 삭제하시겠습니까?');">
+										<button type="submit"
+											class="btn btn-custon-rounded-four btn-danger issues-row-btn">
+											삭제</button>
+									</form> <span th:unless="${canDeleteIssue}" class="issues-no-action">-</span>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+
+				<div class="issues-pagination"
+					th:if="${searchVO.totalPage != null and searchVO.totalPage > 0}">
+
+					<div class="issues-page-links">
+
+						<span th:if="${searchVO.page <= 1}"
+							class="issues-page-btn is-disabled"> 이전 </span> <a
+							th:if="${searchVO.page > 1}" class="issues-page-btn"
+							th:href="@{/project/{projectId}/issues(
+								projectId=${selectedProjectId},
+								page=${searchVO.page - 1},
+								issueTypeId=${searchVO.issueTypeId},
+								versionId=${searchVO.versionId},
+								keyword=${searchVO.keyword},
+								issueStatusId=${searchVO.issueStatusId},
+								settingCodeId=${searchVO.settingCodeId},
+								assigneeId=${searchVO.assigneeId},
+								progressRate=${searchVO.progressRate},
+								startDate=${searchVO.startDate},
+								dueDate=${searchVO.dueDate},
+								issueNoSort=${searchVO.issueNoSort}
+							)}">
+							이전 </a> <a
+							th:each="pageNo : ${#numbers.sequence(1, searchVO.totalPage)}"
+							class="issues-page-btn"
+							th:classappend="${pageNo == searchVO.page} ? ' is-active'"
+							th:href="@{/project/{projectId}/issues(
+								projectId=${selectedProjectId},
+								page=${pageNo},
+								issueTypeId=${searchVO.issueTypeId},
+								versionId=${searchVO.versionId},
+								keyword=${searchVO.keyword},
+								issueStatusId=${searchVO.issueStatusId},
+								settingCodeId=${searchVO.settingCodeId},
+								assigneeId=${searchVO.assigneeId},
+								progressRate=${searchVO.progressRate},
+								startDate=${searchVO.startDate},
+								dueDate=${searchVO.dueDate},
+								issueNoSort=${searchVO.issueNoSort}
+							)}"
+							th:text="${pageNo}"> 1 </a> <span
+							th:if="${searchVO.page >= searchVO.totalPage}"
+							class="issues-page-btn is-disabled"> 다음 </span> <a
+							th:if="${searchVO.page < searchVO.totalPage}"
+							class="issues-page-btn"
+							th:href="@{/project/{projectId}/issues(
+								projectId=${selectedProjectId},
+								page=${searchVO.page + 1},
+								issueTypeId=${searchVO.issueTypeId},
+								versionId=${searchVO.versionId},
+								keyword=${searchVO.keyword},
+								issueStatusId=${searchVO.issueStatusId},
+								settingCodeId=${searchVO.settingCodeId},
+								assigneeId=${searchVO.assigneeId},
+								progressRate=${searchVO.progressRate},
+								startDate=${searchVO.startDate},
+								dueDate=${searchVO.dueDate},
+								issueNoSort=${searchVO.issueNoSort}
+							)}">
+							다음 </a>
+
+					</div>
+				</div>
+
+			</div>
+		</div>
+
+		<script>
+			document.body.classList.add('issues-list-body');
+		</script>
+
+	</div>
+</body>
+</html>
