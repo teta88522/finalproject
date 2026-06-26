@@ -62,8 +62,16 @@ public class FileServiceImpl implements FileService{
 	                }
 					String projectId =  req.getProjectId();
 					String connectAddress = req.getConnectAddress();
-					
-					int nextVersion = fileMapper.selectNextFileVersion(connectAddress);
+//					int maxVersion = fileMapper.selectMaxVersion(
+//					        req.getProjectId(),
+//					        req.getConnectAddress(),
+//					        originName
+//					);
+//
+//					int nextVersion = maxVersion + 1;
+					int nextVersion = fileMapper.selectNextFileVersion(req.getProjectId(),
+			        req.getConnectAddress(),
+					        originName);
 					
 					String uuid = UUID.randomUUID().toString();
 					String saveName  = uuid + "_" + originName;
@@ -82,7 +90,7 @@ public class FileServiceImpl implements FileService{
 					vo.setUploadUserId(req.getUploadUserId());
 					vo.setFileVersion(nextVersion);
 					vo.setConnectAddress(connectAddress);
-					
+					System.out.print(vo);
 					fileMapper.insertFile(vo);
 					
 					count++;

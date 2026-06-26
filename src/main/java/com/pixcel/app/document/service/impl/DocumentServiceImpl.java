@@ -29,11 +29,6 @@ public class DocumentServiceImpl implements DocumentService{
 	}
 
 	@Override
-	public List<DocumentHistoryVO> findHistoryAll() {
-		return documentMapper.selectHistoryAll();
-	}
-
-	@Override
 	public List<DocumentCategoryVO> selectCategoryAll() {
 		return documentMapper.selectCategoryAll();
 	}
@@ -57,5 +52,35 @@ public class DocumentServiceImpl implements DocumentService{
 	public int insertCategory(DocumentCategoryVO documentCategoryVO) {
 		return documentMapper.insertCategory(documentCategoryVO);
 	}
+
+	@Override
+	public int addDocumentHistory(DocumentHistoryVO documentHistoryVO) {
+		return documentMapper.insertDocumentHistory(documentHistoryVO);
+	}
+
+	@Override
+	public int selectNextDocumentVersion(String documentId) {
+		return documentMapper.selectNextDocumentVersion(documentId);
+	}
+
+	@Override
+	public int updateDocument(DocumentVO documentVO) {
+		return documentMapper.updateDocument(documentVO);
+	}
+
+	@Override
+	public List<DocumentHistoryVO> selectHistoryAll(String documentId) {
+		// TODO Auto-generated method stub
+		return documentMapper.selectHistoryAll(documentId);
+	}
+
+	@Override
+	public DocumentVO selectHistoryDetail(String documentHistoryId) {
+		// TODO Auto-generated method stub
+		return documentMapper.selectHistoryDetail(documentHistoryId);
+	}
+
+
+
 
 }

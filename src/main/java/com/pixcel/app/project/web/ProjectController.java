@@ -21,7 +21,7 @@ import com.pixcel.app.project.service.ProjectService;
 import com.pixcel.app.project.service.ProjectVO;
 
 @Controller
-@RequestMapping("/project")	// 비동기(JSON) 데이터 통신을 위한 컨트롤러 선언
+//@RequestMapping("/project")	// 비동기(JSON) 데이터 통신을 위한 컨트롤러 선언
 // 프로젝트 관련 기본 URL 경로 설정 (/API는 안붙였는데 나중에 오류 생기면 추가하기)
 public class ProjectController {
 	
@@ -34,7 +34,7 @@ public class ProjectController {
 	 * @return 등록 성공한 행(row)의 총 개수
 	 */
 	
-	@GetMapping("/register")
+	@GetMapping("/project/register")
 	public String registerForm(Model model, @CookieValue(value = "userId", required = false) String userId) {
 		model.addAttribute("userId", userId);
 		// src/main/resources/templates/project/register.html 파일을 찾아감
@@ -42,7 +42,7 @@ public class ProjectController {
 	}
 	
 	// 프로젝트 등록 실행 (데이터 저장 처리)
-	@PostMapping("/register")
+	@PostMapping("/project/register")
 	@ResponseBody
 	public int registerProject(ProjectVO projectVO, @CookieValue(value = "userId", required = false) String userId) {
 		if (projectVO.getOwnerId() == null || projectVO.getOwnerId().isEmpty()) {
@@ -59,7 +59,7 @@ public class ProjectController {
 	// 일반이용자 = subscribeYn = N
 	// 일반이용자일 경우 - 본인이 소속된 프로젝트가 조회된다. 프로젝트 생성 및 관리 버튼은 미노출된다.
 	
-	@GetMapping("/list")
+	@GetMapping("/project/list")
 	public String projectListForm(Model model, @CookieValue(value = "userId", required=false)String userId,
 											   @CookieValue(value="subscribeYn", required=false)String subscribeYn) {
 		
@@ -87,7 +87,7 @@ public class ProjectController {
 	}
 	
 	//상세페이지 껍데기만 생성해뒀음 추후 수정필요
-	@GetMapping("/{projectId}")
+	@GetMapping("/projectdetail/{projectId}")
 	public String projectDetail(@PathVariable String projectId,
 								@CookieValue(value = "subscribeYn",required = false) String subscribeYn,
 								Model model) {
@@ -100,7 +100,7 @@ public class ProjectController {
 	}
 	
 	//프로젝트 설정 - 구성원 목록조회
-	@GetMapping("/{projectId}/settings/members")
+	@GetMapping("/project/{projectId}/settings/members")
 	public String projectMemberSetting(@PathVariable String projectId,
 									   @CookieValue(value ="subscribeYn", required = false)String subscribeYn,
 									   Model model) {
@@ -122,7 +122,7 @@ public class ProjectController {
 	}
 	
 	//구성원 추가 페이지
-	@GetMapping("/{projectId}/settings/members/new")
+	@GetMapping("/project/{projectId}/settings/members/new")
 	public String projectMemberAddForm(@PathVariable String projectId,
 	                                   @CookieValue(value = "subscribeYn", required = false) String subscribeYn,
 	                                   Model model) {
@@ -147,7 +147,7 @@ public class ProjectController {
 	}
 
 	//구성원 추가 기능
-	@PostMapping("/{projectId}/settings/members/add")
+	@PostMapping("/project/{projectId}/settings/members/add")
 	public String insertProjectMember(@PathVariable String projectId,
 	                                  ProjectMemberVO projectMemberVO,
 	                                  @CookieValue(value = "subscribeYn", required = false) String subscribeYn,
@@ -168,7 +168,7 @@ public class ProjectController {
 	}
 	
 	//멤버 권한 수정 페이지
-	@GetMapping("/{projectId}/settings/members/{projectMemberId}/update")
+	@GetMapping("/project/{projectId}/settings/members/{projectMemberId}/update")
 	public String projectMemberUpdateForm(@PathVariable String projectId,
 										  @PathVariable String projectMemberId,
 										  @CookieValue(value="subscribeYn",required = false) String subscribeYn,
@@ -193,7 +193,7 @@ public class ProjectController {
 	}
 	
 	//멤버 권한 수정
-	@PostMapping("/{projectId}/settings/members/update")
+	@PostMapping("/project/{projectId}/settings/members/update")
 	public String updateProjectMemberRole(@PathVariable String projectId,
 	                                      ProjectMemberVO projectMemberVO,
 	                                      @CookieValue(value = "subscribeYn", required = false) String subscribeYn,
@@ -215,7 +215,7 @@ public class ProjectController {
 	}
 
 	//구성원 삭제
-	@PostMapping("/{projectId}/settings/members/delete")
+	@PostMapping("/project/{projectId}/settings/members/delete")
 	public String deleteProjectMember(@PathVariable String projectId,
 	                                  @RequestParam String projectMemberId,
 	                                  @CookieValue(value = "subscribeYn", required = false) String subscribeYn,

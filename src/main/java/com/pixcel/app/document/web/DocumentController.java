@@ -19,6 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.pixcel.app.codevalue.service.CodeValueService;
 import com.pixcel.app.codevalue.service.CodeValueVO;
 import com.pixcel.app.document.service.DocumentCategoryVO;
+import com.pixcel.app.document.service.DocumentHistoryVO;
 import com.pixcel.app.document.service.DocumentService;
 import com.pixcel.app.document.service.DocumentVO;
 import com.pixcel.app.file.service.FileDTO;
@@ -84,7 +85,7 @@ public class DocumentController {
 	@Transactional
     public String documentAddProc(@CookieValue(value="userId", required =false)String userId, DocumentVO documentVO,  @RequestParam("files") List<MultipartFile> files) {
 		
-		
+		int versionId = documentService.selectNextDocumentVersion(documentVO.getDocumentId());
 		logger.debug(documentVO.toString());
 		System.out.print(documentVO);
 		documentVO.setCreatedBy(userId);
@@ -92,6 +93,14 @@ public class DocumentController {
 		System.out.println(documentVO.getDocumentId());
 		
 		
+		
+		DocumentHistoryVO documentHistoryVO = new DocumentHistoryVO();
+		documentHistoryVO.setDocumentId(documentVO.getDocumentId());
+		documentHistoryVO.setCreatedBy(documentVO.getCreatedBy());
+		documentHistoryVO.setTitle(documentVO.getTitle());
+		documentHistoryVO.setDescription(documentVO.getDescription());
+		documentHistoryVO.setDocumentVersionId(versionId);
+		documentService.addDocumentHistory(documentHistoryVO);
 		
 		
 		FileDTO uploadDTO = new FileDTO();
@@ -129,14 +138,74 @@ public class DocumentController {
 	}
 	
 	
-	@GetMapping("/update")
-    public String documentUpdate() {
+	@GetMapping("/update/{documentId}")
+    public String documentUpdate(Model model, @CookieValue(value="userId", required =false)String userId, @PathVariable String documentId) {
+		System.out.println(documentId);
+	    DocumentVO docDetail = documentService.selectDetail(documentId);
+	    model.addAttribute("docDetail",docDetail);
+	    int documentVersionId = documentService.selectNextDocumentVersion(documentId);
+	    model.addAttribute("documentVersionId",documentVersionId);
+	    List<FileVO> fileList = fileService.selectAll(documentId);
+	    model.addAttribute("fileList",fileList);
         return "document/documentUpdate";
     }
 	
-	@GetMapping("/history")
-    public String documentHistory() {
-        return "document/documentHistory";
+	@PostMapping("/update/{documentId}")
+	@Transactional
+    public String documentUpdateProc(@CookieValue(value="userId", required =false)String userId, DocumentVO documentVO,  @RequestParam("files") List<MultipartFile> files, @PathVariable String documentId) {
+		
+		int versionId = documentService.selectNextDocumentVersion(documentId);
+		DocumentVO document = documentService.selectDetail(documentId);
+		logger.debug(documentVO.toString());
+		System.out.print(documentVO);
+		documentVO.setCreatedBy(userId);
+		documentVO.setDocumentVersionId(versionId);
+		documentService.updateDocument(documentVO);
+		System.out.println(documentVO.getDocumentId());
+		
+		
+		
+		DocumentHistoryVO documentHistoryVO = new DocumentHistoryVO();
+		documentHistoryVO.setDocumentId(documentVO.getDocumentId());
+		documentHistoryVO.setCreatedBy(documentVO.getCreatedBy());
+		documentHistoryVO.setTitle(documentVO.getTitle());
+		documentHistoryVO.setDescription(documentVO.getDescription());
+		documentHistoryVO.setDocumentVersionId(versionId);
+		documentService.addDocumentHistory(documentHistoryVO);
+		
+		
+		FileDTO uploadDTO = new FileDTO();
+		uploadDTO.setProjectId("PROJECT_ID_2606_0001");
+		uploadDTO.setVersionId(document.getVersionId());
+		uploadDTO.setFileCode("f001");
+		uploadDTO.setUploadUserId(userId);
+		uploadDTO.setConnectAddress(documentVO.getDocumentId());
+
+		fileService.uploadFile(files, uploadDTO);
+		
+		System.out.print(documentVO.getDocumentId() + "문서 등록");
+		return "redirect:/document/detail/" + documentId;
+    }
+	
+	@GetMapping("/historylist/{documentId}")
+    public String documentHistoryList(Model model, @CookieValue(value="userId", required =false)String userId, @PathVariable String documentId) {
+		System.out.println(documentId);
+	    List<DocumentHistoryVO> historydocList = documentService.selectHistoryAll(documentId);
+	    System.out.println(historydocList.size());
+	    model.addAttribute("historydocList",historydocList);
+        return "document/documentHistoryList";
+    }
+
+	
+	@GetMapping("/historydetail/{documentHistoryId}")
+    public String documenthistoryDetail(Model model, @CookieValue(value="userId", required =false)String userId, @PathVariable String documentHistoryId) {
+		
+		System.out.println(documentHistoryId);
+	    DocumentVO docDetail = documentService.selectHistoryDetail(documentHistoryId);
+	    model.addAttribute("docDetail",docDetail);
+	    List<FileVO> fileList = fileService.selectAll(documentHistoryId);
+	    model.addAttribute("fileList",fileList);
+        return "document/documentHistoryDetail";
     }
 	
 	@GetMapping("/addcategory")

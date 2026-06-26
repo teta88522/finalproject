@@ -21,11 +21,12 @@ public class DocumentHistoryVO {
 	private String documentHistoryId;
 	private String documentId;
 	private String createdBy;
+	private String userName;
 	private String title;
 	private String description;
 	private String statusCode;
 	private String statusName;
 	@DateTimeFormat(pattern="yyyy-MM-dd")
 	private Date createdAt; 
-	private String documentVersionId;
+	private int documentVersionId;
 }

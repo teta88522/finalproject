@@ -34,6 +34,7 @@ public class DocumentVO {
 	private Date createdAt;
 	@DateTimeFormat(pattern="yyyy-MM-dd")
 	private Date updatedAt;
-	private String documentVersionId;
+	private int documentVersionId;
+	private int nextVersion;
 	
 }
