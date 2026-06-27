@@ -2,12 +2,14 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // 1. 설정 버튼 클릭 이벤트 (원하는 링크로 수정하세요)
     const btnSettings = document.getElementById('btnSettings');
-    if(btnSettings) {
-        btnSettings.addEventListener('click', () => {
-            console.log('설정 페이지로 이동합니다.');
-            window.location.href = '/roadmap/setting_list';
-        });
-    }
+	if (btnSettings) {
+	    btnSettings.addEventListener('click', (event) => {
+	        const url = event.currentTarget.dataset.url;
+	        if (url) {
+	            location.href = url;
+	        }
+	    });
+	}
 
     // 2. 아코디언 토글 로직
     const headers = document.querySelectorAll('.toggle-accordion');

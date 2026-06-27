@@ -9,31 +9,87 @@ document.addEventListener("DOMContentLoaded", function() {
     const startDateInput = document.getElementById("startDate");
     const endDateInput = document.getElementById("endDate");
     const dateErrorDiv = document.getElementById("dateError");
-
-    // [상태 관리 변수] (create.js 로직 적용)
+    const startDatePastError = document.getElementById("startDatePastError"); // 추가된 에러 메시지 요소
+	const projectId = document.getElementById('projectId').value;
+    // [상태 관리 변수]
     let selectedIssueIds = new Set();
-    let addedHistoryIds = new Set();  // 💡 한 번이라도 추가된 적 있는 일감 ID 목록
+    let addedHistoryIds = new Set();  
     let lockedVersionId = versionIdInput.value || null; 
     let searchTimeout = null; 
 
+    // --- [오늘 날짜 구하기 및 달력 과거 날짜 차단] ---
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const dd = String(today.getDate()).padStart(2, '0');
+    const todayStr = `${yyyy}-${mm}-${dd}`;
+
+    if (startDateInput) {
+        startDateInput.setAttribute('min', todayStr); // 달력 UI에서 오늘 이전 날짜 비활성화
+    }
+    // ------------------------------------------------
+	if (endDateInput) {
+	      endDateInput.setAttribute('min', todayStr); // 목표일자 달력도 기본적으로 과거 차단
+	  }
+
+	  // 시작일을 선택(변경)했을 때, 목표일자의 최소 선택 가능 날짜를 시작일로 동기화
+	  if (startDateInput && endDateInput) {
+	      startDateInput.addEventListener('change', function() {
+	          endDateInput.setAttribute('min', this.value); 
+	          
+	          // 만약 이미 선택해둔 목표일자가 새로 바꾼 시작일보다 빠르다면, 목표일자 초기화
+	          if (endDateInput.value && endDateInput.value < this.value) {
+	              endDateInput.value = '';
+	          }
+	      });
+	  }
+	  
+	  const statusSelect = document.getElementById("statusCode");
+
+	      function toggleStartDateLock() {
+	          if (statusSelect && startDateInput) {
+	              // 'L002' (진행 중) 인 경우
+	              if (statusSelect.value === 'L002') { 
+	                  startDateInput.readOnly = true; // 읽기 전용으로 변경
+	                  startDateInput.style.backgroundColor = '#e9ecef'; // 회색 배경으로 변경 (비활성화 느낌)
+	                  startDateInput.style.pointerEvents = 'none'; // 달력 아이콘 클릭 원천 차단
+	                  startDateInput.title = '진행 중인 마일스톤의 시작일은 변경할 수 없습니다.';
+	              } else {
+	                  // 그 외 상태 (진행 예정 등) 일 경우 잠금 해제
+	                  startDateInput.readOnly = false;
+	                  startDateInput.style.backgroundColor = '';
+	                  startDateInput.style.pointerEvents = 'auto';
+	                  startDateInput.title = '';
+	              }
+	          }
+	      }
+
+	      // 1. 페이지가 처음 열렸을 때 기존 상태를 읽어서 즉시 적용
+	      toggleStartDateLock();
+
+	      // 2. 사용자가 드롭다운에서 상태를 변경할 때마다 실시간 적용
+	      if (statusSelect) {
+	          statusSelect.addEventListener('change', toggleStartDateLock);
+	      }
+	      // ------------------------------------------------
     // 기존 연결 일감 불러오기
     function initExistingIssues() {
         const existingCheckboxes = document.querySelectorAll(".issue-checkbox");
         existingCheckboxes.forEach(checkbox => {
             if (checkbox.checked) {
-                const issueId = parseInt(checkbox.value) || checkbox.value; // 타입 방어
+                const issueId = parseInt(checkbox.value) || checkbox.value;
                 selectedIssueIds.add(issueId); 
-                addedHistoryIds.add(issueId); // 기존 데이터도 히스토리에 등록
+                addedHistoryIds.add(issueId); 
             }
             checkbox.addEventListener('change', handleCheckboxChange);
         });
         updateHiddenInput();
-        updateCheckboxUI(); // 초기 UI 업데이트
+        updateCheckboxUI(); 
     }
 
     // 일감 검색 API 호출 함수
     function fetchAndShowIssues(keyword) {
-        let apiUrl = `/milestones/api/issues/search?keyword=${keyword}`;
+		let apiUrl = `/project/${projectId}/milestones/api/issues/search?keyword=${keyword}`;
         
         if (lockedVersionId !== null && lockedVersionId !== '') {
             apiUrl += `&versionId=${lockedVersionId}`;
@@ -45,7 +101,7 @@ document.addEventListener("DOMContentLoaded", function() {
             .catch(error => console.error("일감 조회 에러 :", error));
     }
 
-    // 검색창 타이핑 시 (Debounce 적용)
+    // 검색창 타이핑 시
     issueSearchInput.addEventListener("input", function() {
         clearTimeout(searchTimeout); 
         const keyword = this.value.trim();
@@ -58,7 +114,7 @@ document.addEventListener("DOMContentLoaded", function() {
         fetchAndShowIssues(keyword);
     });
 
-    // [드롭다운 렌더링 함수] (create.js의 방어 로직 적용)
+    // [드롭다운 렌더링 함수]
     function renderDropdown(data) {
         searchDropdown.innerHTML = ''; 
 
@@ -72,7 +128,6 @@ document.addEventListener("DOMContentLoaded", function() {
             const li = document.createElement("li");
             li.className = "search-dropdown-item";
 
-            // 💡 조건 1, 2 판별 (히스토리 포함 여부, 버전 불일치)
             const isUsed = addedHistoryIds.has(issue.issueId) || addedHistoryIds.has(String(issue.issueId));
             const isDifferentVersion = (lockedVersionId !== null && lockedVersionId !== "" && String(issue.versionId) !== String(lockedVersionId));
 
@@ -139,7 +194,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
     // [체크박스 상태 변경 로직]
     function handleCheckboxChange() {
-        const clickedIssueId = parseInt(this.value) || this.value; // 타입 방어
+        const clickedIssueId = parseInt(this.value) || this.value; 
         const clickedVersionId = this.getAttribute("data-version-id");
 
         if (this.checked) {
@@ -161,7 +216,7 @@ document.addEventListener("DOMContentLoaded", function() {
         updateCheckboxUI(); 
     }
 
-    // 💡 표에 있는 모든 체크박스의 활성/비활성 상태 갱신 함수
+    // 표에 있는 모든 체크박스의 활성/비활성 상태 갱신 함수
     function updateCheckboxUI() {
         const allCheckboxes = document.querySelectorAll(".issue-checkbox");
         
@@ -197,10 +252,11 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     });
 
-    // 폼 검증
+    // --- [폼 전송 시 최종 검증] ---
     form.addEventListener("submit", function(event) {
         let isValid = true; 
 
+        // 1. 필수 입력값 체크
         const requiredInputs = document.querySelectorAll(".required-input");
         requiredInputs.forEach(input => {
             if (input.value.trim() === '') { 
@@ -211,19 +267,29 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         });
 
-        if (startDateInput.value && endDateInput.value) { 
-            const startDate = new Date(startDateInput.value);
-            const endDate = new Date(endDateInput.value);
-
-            if (startDate > endDate) { 
+        // 2. 날짜 논리 검증
+        if (startDateInput.value) {
+            // 과거 날짜 입력 차단
+            if (startDateInput.value < todayStr) {
                 startDateInput.classList.add('error-border');
-                endDateInput.classList.add('error-border');
-                dateErrorDiv.style.display = "block"; 
-                isValid = false; 
+                if (startDatePastError) startDatePastError.style.display = "block";
+                isValid = false;
             } else {
                 startDateInput.classList.remove('error-border');
-                endDateInput.classList.remove('error-border');
-                dateErrorDiv.style.display = "none"; 
+                if (startDatePastError) startDatePastError.style.display = "none";
+            }
+            
+            // 목표 일자와의 선후 관계 검증
+            if (endDateInput.value) {
+                if (startDateInput.value > endDateInput.value) { 
+                    startDateInput.classList.add('error-border');
+                    endDateInput.classList.add('error-border');
+                    dateErrorDiv.style.display = "block"; 
+                    isValid = false; 
+                } else {
+                    endDateInput.classList.remove('error-border');
+                    dateErrorDiv.style.display = "none"; 
+                }
             }
         }
 
@@ -236,6 +302,6 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     });
 
-    // 💡 수정 화면 전용: 열리자마자 기존 세팅 호출!
+    // 수정 화면 전용: 열리자마자 기존 세팅 호출
     initExistingIssues();
 });

@@ -18,23 +18,49 @@
 	 <div class="main-header">
 	        <h2>로드맵 상세보기</h2>
 	        <div class="header-actions">
-	            <a th:href="@{/roadmap/roadmap_list}" class="btn-list">목록으로</a>
+	            <a th:href="@{/project/{id}/roadmap/roadmap_list(id=${projectId})}" class="btn-list">목록으로</a>
 	            <button type="button" id="btnCompleteRoadmap" class="btn-complete" disabled>완료</button>
 	        </div>
 	    </div>
 	    <hr class="section-divider" style="margin-bottom: 24px;" />   
     
-      <div class="roadmap-header">
-  <div class="title-row">
-    <h2 th:text="${roadmap.versionName}">로드맵타이틀</h2>
-    <span
-      class="status-badge"
-      th:classappend="${roadmap.statusCode == 'k001' ? 'status-k001' : (roadmap.statusCode == 'k002' ? 'status-k002' : 'status-k003')}"
-      th:text="${roadmap.statusCode == 'k001' ? '진행 예정' : (roadmap.statusCode == 'k002' ? '진행 중' : '완료')}"
-    ></span>
-  </div>
-  <p class="roadmap-desc" th:text="${roadmap.description}">상세보기</p>
-</div>
+		<div class="roadmap-header">
+		  
+		  <div class="header-left">
+		    <div class="title-row">
+		      <h2 th:text="${roadmap.versionName}">로드맵타이틀</h2>
+		      <span class="status-badge"
+		            th:classappend="${roadmap.statusCode == 'k001' ? 'status-k001' : (roadmap.statusCode == 'k002' ? 'status-k002' : 'status-k003')}"
+		            th:text="${roadmap.statusCode == 'k001' ? '진행 예정' : (roadmap.statusCode == 'k002' ? '진행 중' : '완료')}">
+		      </span>
+		    </div>
+		    <p class="roadmap-desc" th:text="${roadmap.description}">상세보기</p>
+		  </div>
+
+		  <div class="header-right">
+		    <div class="summary-item">
+		      <span class="summary-label">담당자</span>
+		      <span class="summary-value" th:text="${roadmap.projectOwnerName ?: '미지정'}">담당자명</span>
+		    </div>
+		    
+		    <div class="summary-item">
+		      <span class="summary-label">마일스톤</span>
+		      <span class="summary-value" th:text="${#lists.size(roadmap.milestoneList)} + '개'">0개</span>
+		    </div>
+
+		    <div class="summary-item">
+		      <span class="summary-label">전체 일감</span>
+		      <span class="summary-value" id="headerTotalIssues">0개</span>
+		    </div>
+
+		    <div class="summary-item">
+		      <span class="summary-label">총 소요시간 (예상/실제)</span>
+		      <span class="summary-value">
+		        <span id="headerTotalEstimate">0</span>h / <span id="headerTotalHours">0</span>h
+		      </span>
+		    </div>
+		  </div>
+		</div>
 
       <div class="roadmap-content">
         <div class="left-panel">
@@ -94,10 +120,9 @@
                       <td th:text="${issue.title}">일감명</td>
                       <td th:text="${issue.assigneeName != null ? issue.assigneeName : '미정'}">담당자명</td>
                       <td>
-                        <span
-                          class="issue-status"
-                          th:text="${issue.issueStatusName}"
-                          >상태</span>
+						<span class="issue-status dynamic-badge" 
+						      th:data-status="${issue.issueStatusName}" 
+						      th:text="${issue.issueStatusName}">상태</span>
                       </td>
                       <td
                         th:text="${issue.estimatedHours != null ? issue.estimatedHours + 'h' : '0h'}"
@@ -154,7 +179,14 @@
       <div id="customLegend" class="custom-legend"></div>
     </div>
   </div>
+  
+	<div class="chart-card mt-20">
+	  <h3>마감 임박 일감 (Top 5)</h3>
+	  <div id="upcomingIssuesContainer" class="upcoming-issues-list">
+	    </div>
+	</div>
 </div>
+
 </div>
       <script th:inline="javascript">
         /*<![CDATA[*/

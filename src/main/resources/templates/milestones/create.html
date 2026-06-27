@@ -19,10 +19,11 @@
 
         <form
           id="milestoneForm"
-          th:action="@{/milestones/create}"
+          th:action="@{/project/{projectId}/milestones/create(projectId=${projectId})}"
           method="post"
         >
           <input type="hidden" id="versionId" name="versionId" value="" />
+		  <input type="hidden" id="projectId" th:value="${projectId}">
           <input
             type="hidden"
             id="selectedIssueIds"
@@ -123,15 +124,14 @@
                   </select>
                 </div>
 
-                <div class="form-group">
-                  <label>시작일 <span class="required">*</span></label>
-                  <input
-                    type="date"
-                    id="startDate"
-                    name="startDate"
-                    class="form-control required-input date-input"
-                  />
-                </div>
+				<div class="form-group">
+				    <label>시작일 <span class="required">*</span></label>
+				    <input type="date" id="startDate" name="startDate" class="form-control required-input date-input">
+				    
+				    <div id="startDatePastError" class="error-text" style="display: none; color: #dc3545; font-size: 12px; margin-top: 5px;">
+				        시작일은 오늘 날짜 이전으로 설정할 수 없습니다.
+				    </div>
+				</div>
 
                 <div class="form-group">
                   <label>목표 일자 <span class="required">*</span></label>

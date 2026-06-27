@@ -53,6 +53,11 @@
   display: flex;
   flex-direction: column;
   gap: 24px;
+  
+  /* 아래 3줄이 마법의 Sticky 코드입니다 */
+      position: sticky;
+      top: 24px; /* 화면 위에서 24px 떨어진 곳에 고정 */
+      height: fit-content; /* 콘텐츠 높이만큼만 영역을 잡아야 고정이 작동합니다 */
 }
 
 /* 마일스톤 아코디언 디자인 */
@@ -358,3 +363,136 @@
     cursor: not-allowed;
     color: #fff;
 }
+
+/* 헤더 전체 레이아웃 (좌/우 분리) */
+.roadmap-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center; /* 세로 중앙 정렬 */
+  background: #fff;
+  padding: 20px 24px;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  margin-bottom: 24px;
+}
+
+.header-left {
+  flex: 1;
+}
+
+/* 우측 요약 정보 박스 */
+.header-right {
+  display: flex;
+  gap: 32px; /* 항목 간 간격 */
+  background: #f8f9fa; /* 약간 회색 배경으로 구분감 부여 */
+  padding: 16px 24px;
+  border-radius: 8px;
+  border: 1px solid #eee;
+}
+
+.summary-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* 텍스트 가운데 정렬 */
+  gap: 6px;
+}
+
+.summary-label {
+  font-size: 13px;
+  color: #888;
+  font-weight: 500;
+}
+
+.summary-value {
+  font-size: 16px;
+  font-weight: 700;
+  color: #333;
+}
+
+.issue-status {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+    text-align: center;
+}
+
+/* 1. 진행 예정 (회색) */
+.status-k001 {
+    background-color: #868e96; /* 차분한 회색 */
+	color: #ffffff;
+}
+
+/* 2. 진행 중 (파란색) */
+.status-k002 {
+    background-color: #007bff; /* 쨍한 파란색 */
+	color: #ffffff;
+}
+
+/* 3. 완료 (초록색) */
+.status-k003 {
+    background-color: #28a745; /* 안정적인 초록색 */
+	color: #ffffff;
+}
+
+/* 마감 임박 위젯 컨테이너 */
+.upcoming-issues-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 16px;
+}
+
+/* 개별 아이템 박스 */
+.upcoming-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background-color: #f8f9fa;
+    border-radius: 6px;
+    border-left: 4px solid #ccc; /* 기본 테두리 색상 */
+}
+
+/* 텍스트 정보 영역 */
+.upcoming-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.upcoming-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+    
+    /* 제목이 너무 길면 말줄임표 처리 */
+    max-width: 150px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.upcoming-date {
+    font-size: 12px;
+    color: #666;
+}
+
+/* D-Day 뱃지 공통 스타일 */
+.d-day-badge {
+    font-size: 13px;
+    font-weight: bold;
+    padding: 4px 10px;
+    border-radius: 20px;
+}
+
+/* 동적 색상 클래스 */
+.border-red { border-left-color: #dc3545; }
+.badge-red { background-color: #ffeeba; color: #dc3545; background: #ffeeee; }
+
+.border-orange { border-left-color: #fd7e14; }
+.badge-orange { background-color: #fff3cd; color: #fd7e14; }
+
+.border-blue { border-left-color: #007bff; }
+.badge-blue { background-color: #cce5ff; color: #007bff; }

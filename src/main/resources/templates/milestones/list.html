@@ -18,7 +18,12 @@
                 
                 <div class="main-header">
                     <h2>마일스톤</h2>
-                    <button type="button" class="btn btn-primary" id="btnCreateMilestone">마일스톤 생성</button>
+					<button type="button" 
+					        class="btn btn-primary" 
+					        id="btnCreateMilestone" 
+					        th:data-url="@{/project/{id}/milestones/create(id=${projectId})}">
+					    마일스톤 생성
+					</button>
                 </div>
 
                 <hr class="section-divider" />
@@ -79,7 +84,7 @@
                                     <span class="toggle-icon"><i class="fas fa-chevron-down"></i></span>
                                     <span class="version-tag" th:text="${milestone.versionName ?: '버전없음'}">버전명</span>
                                     <h4 style="margin:0; font-size: 17px; font-weight: 500;">
-                                        <a th:href="@{/milestones/detail(id=${milestone.milestoneId})}" class="title-link no-accordion" th:text="${milestone.title}">마일스톤 제목</a>
+                                        <a th:href="@{/project/{projectId}/milestones/detail(projectId=${projectId},id=${milestone.milestoneId})}" class="title-link no-accordion" th:text="${milestone.title}">마일스톤 제목</a>
                                     </h4>
 									<span class="status-badge"
 									      th:classappend="${'status-' + (milestone.statusCode == 'L001' ? 'todo' : (milestone.statusCode == 'L002' ? 'inpg' : 'done'))}"
