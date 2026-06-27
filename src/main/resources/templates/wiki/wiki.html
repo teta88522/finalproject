@@ -1,15 +1,168 @@
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{common/layouts/default_layout}">
 <head>
-    <title>Wiki Editor</title>
+<meta charset="UTF-8">
+<style>
+  .tiptap {
+    outline: none;
+    min-height: 460px;
+    cursor: text;
+  }
+  .collaboration-cursor__caret {
+    border-left: 1px solid #0d0d0d;
+    border-right: 1px solid #0d0d0d;
+    margin-left: -1px;
+    margin-right: -1px;
+    pointer-events: none;
+    position: relative;
+    word-break: normal;
+  }
+  .collaboration-cursor__label {
+    border-radius: 3px 3px 3px 0;
+    color: #0d0d0d;
+    font-size: 12px;
+    font-weight: 600;
+    left: -1px;
+    line-height: normal;
+    padding: 0.1rem 0.3rem;
+    position: absolute;
+    top: -1.4em;
+    user-select: none;
+    white-space: nowrap;
+  }
+  /* 버전 히스토리 패널 */
+  .version-panel {
+    width: 280px;
+    border-left: 1px solid #e0e0e0;
+    padding: 16px;
+    overflow-y: auto;
+    max-height: 600px;
+    display: none;
+  }
+  .version-panel.open {
+    display: block;
+  }
+  .version-item {
+    padding: 10px;
+    border-bottom: 1px solid #f0f0f0;
+    cursor: pointer;
+    border-radius: 6px;
+    margin-bottom: 4px;
+  }
+  .version-item:hover {
+    background: #f5f5f5;
+  }
+  .version-item .version-no {
+    font-size: 12px;
+    color: #888;
+  }
+  .version-item .version-date {
+    font-size: 11px;
+    color: #aaa;
+    margin-top: 4px;
+  }
+</style>
 </head>
 <body>
+<div layout:fragment="Content">
+<div class="product-status mg-b-15">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="product-status-wrap" style="background:#fff; border-radius:12px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); padding:20px;">
 
-<h1>Wiki Editor</h1>
+                    <!-- 상단 툴바 -->
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                        <h4 style="margin:0; font-size:16px; font-weight:500; color:#333;">wiki</h4>
+                        <button id="toggleVersionBtn"
+                                onclick="toggleVersionPanel()"
+                                style="padding:6px 14px; border:1px solid #ddd; border-radius:6px; background:#fff; cursor:pointer; font-size:13px;">
+                            버전 히스토리
+                        </button>
+                    </div>
 
-<div id="editor"></div>
+                    <!-- 제목 -->
+                    <input id="wikiTitle" type="text" placeholder="제목을 입력하세요"
+                           style="width:100%; font-size:24px; font-weight:600; border:none; outline:none; padding:8px 0; border-bottom:1px solid #e0e0e0; margin-bottom:16px;"/>
 
-<script src="/js/editor.js"></script>
+                    <!-- 에디터 + 버전패널 -->
+                    <div style="display:flex; gap:16px;">
 
+                        <!-- 에디터 -->
+                        <div id="editor"
+                             th:data-wiki-id="${wikiId}"
+                             style="flex:1; min-height:500px; border:1px solid #e0e0e0; border-radius:8px; padding:16px;">
+                        </div>
+
+                        <!-- 버전 히스토리 패널 -->
+                        <div id="versionPanel" class="version-panel">
+                            <h6 style="margin:0 0 12px 0; font-weight:600;">버전 히스토리</h6>
+                            <div id="versionList"></div>
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    // wikiId를 hidden input으로 받아오기
+    const wikiId = document.getElementById('editor').dataset.wikiId;
+
+    function toggleVersionPanel() {
+        const panel = document.getElementById('versionPanel')
+        panel.classList.toggle('open')
+
+        if (panel.classList.contains('open')) {
+            loadVersionList()
+        }
+    }
+
+    function loadVersionList() {
+        fetch(`/wiki/versions/${wikiId}`)
+            .then(res => res.json())
+            .then(list => {
+                const container = document.getElementById('versionList')
+                container.innerHTML = ''
+
+                if (list.length === 0) {
+                    container.innerHTML = '<p style="color:#aaa; font-size:13px;">저장된 버전이 없습니다.</p>'
+                    return
+                }
+
+                list.forEach(v => {
+                    const div = document.createElement('div')
+                    div.className = 'version-item'
+                    div.innerHTML = `
+                        <div style="font-size:13px; font-weight:500;">${v.title || '제목없음'}</div>
+                        <div class="version-no">${v.versionNo}</div>
+                        <div class="version-date">${v.createdAt}</div>
+                    `
+                    div.onclick = () => restoreVersion(v.versionId)
+                    container.appendChild(div)
+                })
+            })
+            .catch(err => console.error('버전 목록 로드 실패:', err))
+    }
+
+    function restoreVersion(versionId) {
+        if (!confirm('이 버전으로 복원하시겠습니까?')) return
+
+        fetch(`/wiki/version/${versionId}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data && data.content && window.editor) {
+                    window.editor.commands.setContent(JSON.parse(data.content))
+                    console.log('복원 완료')
+                }
+            })
+            .catch(err => console.error('복원 실패:', err))
+    }
+</script>
+</div>
 </body>
 </html>

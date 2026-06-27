@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.pixcel.app.wiki.mapper.WikiMapper">
+
+<!-- 위키 페이지 조회 -->
+	<select id="selectWikiPage" resultType="WikiPageVO">
+        SELECT
+        wiki_id,
+        project_id,
+        parent_wiki_id,
+        title,
+        summary,
+        current_version_no,
+        edit_availble_yn,
+        editing_user_id,
+        editing_start_at,
+        editing_expires_at,
+        created_by,
+        created_at,
+        updated_by,
+        updated_at
+    FROM wiki_page WHERE wiki_id = #{wikiId}
+    </select>
+
+    <insert id="insertWikiPage" parameterType="WikiPageVO">
+    <selectKey keyProperty="wikiId"
+           resultType="string"
+           order="BEFORE">
+    	SELECT
+        	'WIKI_PAGE_'
+        	|| TO_CHAR(SYSDATE, 'YYMM')
+        	|| '_'
+        	|| LPAD(
+            	NVL(MAX(TO_NUMBER(SUBSTR(wiki_id, -4))), 0) + 1,
+            	4,
+            	'0'
+        	)
+    	FROM wiki_page
+    	WHERE wiki_id LIKE
+          'WIKI_PAGE_' || TO_CHAR(SYSDATE, 'YYMM') || '_%'
+		</selectKey>
+        INSERT INTO wiki_page (
+            wiki_id,
+            project_id,
+            parent_wiki_id,
+            title,
+            summary,
+            current_version_no,
+            edit_availble_yn,
+            created_by,
+            created_at
+        ) VALUES (
+            #{wikiId},
+            #{projectId},
+            #{parentWikiId},
+            #{title},
+            #{summary},
+            #{currentVersionNo},
+            'Y',
+            #{createdBy},
+            SYSDATE
+        )
+    </insert>
+
+    <insert id="insertWikiVersion" parameterType="WikiVersionVO">
+    <selectKey keyProperty="versionId"
+           resultType="string"
+           order="BEFORE">
+    	SELECT
+        	'WIKI_VERSION_'
+        	|| TO_CHAR(SYSDATE, 'YYMM')
+        	|| '_'
+        	|| LPAD(
+            	NVL(MAX(TO_NUMBER(SUBSTR(version_id, -4))), 0) + 1,
+            	4,
+            	'0'
+        	)
+    	FROM wiki_version
+    	WHERE version_id LIKE
+          'WIKI_VERSION_' || TO_CHAR(SYSDATE, 'YYMM') || '_%'
+		</selectKey>
+        INSERT INTO wiki_version (
+            version_id,
+            wiki_id,
+            version_no,
+            title,
+            content,
+            change_summary,
+            created_by,
+            created_at
+        ) VALUES (
+            #{versionId},
+            #{wikiId},
+            #{versionNo},
+            #{title},
+            #{content},
+            #{changeSummary},
+            #{createdBy},
+            SYSDATE
+        )
+    </insert>
+
+    <select id="selectLatestVersion" resultType="WikiVersionVO">
+        SELECT 
+        	version_id,
+        	wiki_id,
+        	version_no,
+        	title,
+        	content,
+        	change_summary,
+        	created_by,
+        	created_at
+        FROM (
+        SELECT version_id, wiki_id, version_no, title, content, change_summary, created_by, created_at
+        FROM wiki_version
+        WHERE wiki_id = #{wikiId}
+        ORDER BY created_at DESC
+    	) WHERE ROWNUM = 1
+    </select>
+    
+    <select id="selectVersionList" parameterType="String" resultType="WikiVersionVO">
+    	SELECT version_id, wiki_id, version_no, title, change_summary, created_by, created_at
+    	FROM wiki_version
+    	WHERE wiki_id = #{wikiId}
+    ORDER BY created_at DESC
+	</select>
+
+	<select id="selectVersionDetail" parameterType="String" resultType="WikiVersionVO">
+    	SELECT
+    		version_id,
+        	wiki_id,
+        	version_no,
+        	title,
+        	content,
+        	change_summary,
+        	created_by,
+        	created_at
+        FROM wiki_version
+    	WHERE version_id = #{versionId}
+	</select>
+	<select id="selectWikiList" resultType="WikiPageVO">
+    SELECT wiki_id, project_id, title, summary, created_by, created_at
+    FROM wiki_page
+    WHERE project_id = #{projectId}
+    ORDER BY created_at DESC
+</select>
+</mapper>

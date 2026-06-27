@@ -3,7 +3,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const fileInput = document.getElementById("fileInput");
     const fileList = document.getElementById("fileList");
     const fileCount = document.getElementById("fileCount");
+	
+	// ✅ 이 페이지에 파일 요소가 없으면 그냥 종료
+	if (!fileInput || !fileList || !fileCount) return;
 
+	
     let selectedFiles = [];
 
     fileInput.addEventListener("change", (e) => {

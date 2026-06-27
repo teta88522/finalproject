@@ -4,7 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "webpack",
+    "watch": "webpack --watch"
   },
   "repository": {
     "type": "git",
@@ -13,7 +15,6 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
   "bugs": {
     "url": "https://github.com/KDT-final-project-1/finalproject/issues"
   },
@@ -25,5 +26,12 @@
     "@tiptap/starter-kit": "^3.27.1",
     "y-websocket": "^3.0.0",
     "yjs": "^13.6.31"
+  },
+  "devDependencies": {
+    "@babel/core": "^8.0.1",
+    "@babel/preset-env": "^8.0.2",
+    "babel-loader": "^10.1.1",
+    "webpack": "^5.108.1",
+    "webpack-cli": "^7.1.0"
   }
 }
