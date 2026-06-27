@@ -109,6 +109,17 @@
 		WHERE pm.project_id = #{projectId}
 		AND tm.user_id = #{userId}
 	</select>
+	
+	<select id="selectRecentVersionIdByProjectId" parameterType="String" resultType="String">
+		SELECT version_id
+		FROM (
+			SELECT version_id
+			FROM project_version
+			WHERE project_id = #{projectId}
+			ORDER BY version_id DESC
+		)
+		WHERE ROWNUM =1
+	</select>
 
 	<insert id="insertRepository" parameterType="RepositoryVO">
 
@@ -134,16 +145,15 @@
 		, project_id
 		, version_id
 		, file_code
-		,
-		original_name
+		, original_name
 		, stored_name
 		, file_path
 		, file_size
 		, upload_user_id
-		,
-		upload_date
+		, upload_date
 		, file_version
 		, file_use_yn
+		, connect_address
 		)
 		VALUES(
 		#{fileId}
@@ -166,6 +176,7 @@
 		</choose>
 		, #{fileVersion}
 		, #{fileUseYn}
+		, #{connectAddress}
 		)
 	</insert>
 

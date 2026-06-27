@@ -23,11 +23,14 @@
 
 			<div class="repo-detail-card"
 				style="padding: 40px; min-height: 450px;">
-				<form th:action="@{/repository/new}" method="post"
-					enctype="multipart/form-data" th:object="${repository}">
+				<form
+					th:action="@{/project/{projectId}/repository/new(projectId=${repository.projectId})}"
+					method="post" enctype="multipart/form-data"
+					th:object="${repository}">
 
-					<input type="hidden" name="projectId" th:value="${repository.projectId}"> 
-					<input type="hidden" name="versionId" th:value="${repository.versionId}">
+					<input type="hidden" name="projectId"
+						th:value="${repository.projectId}"> <input type="hidden"
+						name="versionId" th:value="${repository.versionId}">
 
 					<div class="repo-upload-zone"
 						onclick="document.getElementById('uploadFile').click();">
