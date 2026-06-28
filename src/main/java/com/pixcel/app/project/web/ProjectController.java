@@ -24,215 +24,218 @@ import com.pixcel.app.project.service.ProjectVO;
 //@RequestMapping("/project")	// 비동기(JSON) 데이터 통신을 위한 컨트롤러 선언
 // 프로젝트 관련 기본 URL 경로 설정 (/API는 안붙였는데 나중에 오류 생기면 추가하기)
 public class ProjectController {
-	
+
 	@Autowired
 	private ProjectService projectService;
-	
+
 	/*
-	 * 신규 프로젝트 및 선택 모듈 등록 API 
+	 * 신규 프로젝트 및 선택 모듈 등록 API
+	 * 
 	 * @param projectVO 화면(vue)에서 JSON 형태로 넘어오는 프로젝트 데이터
+	 * 
 	 * @return 등록 성공한 행(row)의 총 개수
 	 */
-	
+
 	@GetMapping("/project/register")
 	public String registerForm(Model model, @CookieValue(value = "userId", required = false) String userId) {
 		model.addAttribute("userId", userId);
 		// src/main/resources/templates/project/register.html 파일을 찾아감
-		return "project/project";	// 팀 폴더 구조에 맞게 경로 수정
+		return "project/project"; // 팀 폴더 구조에 맞게 경로 수정
 	}
-	
+
 	// 프로젝트 등록 실행 (데이터 저장 처리)
 	@PostMapping("/project/register")
 	public String registerProject(ProjectVO projectVO, @CookieValue(value = "userId", required = false) String userId) {
 		if (projectVO.getOwnerId() == null || projectVO.getOwnerId().isEmpty()) {
 			projectVO.setOwnerId(userId);
 		}
-		
+
 		projectService.registerProject(projectVO);
-		
+
 		return "redirect:/project/list";
 	}
-	
-	
-	//260623 고동현 추가 - projectList 관련
+
+	// 260623 고동현 추가 - projectList 관련
 	// 관리자 = subscribeYn = Y
 	// 관리자일 경우 - 본인이 생성한 프로젝트만 조회한다. 또한 프로젝트 생성 및 관리 버튼이 노출된다.
 	// 일반이용자 = subscribeYn = N
 	// 일반이용자일 경우 - 본인이 소속된 프로젝트가 조회된다. 프로젝트 생성 및 관리 버튼은 미노출된다.
-	
+
 	@GetMapping("/project/list")
-	public String projectListForm(Model model, @CookieValue(value = "userId", required=false)String userId,
-											   @CookieValue(value="subscribeYn", required=false)String subscribeYn) {
-		
+	public String projectListForm(Model model, @CookieValue(value = "userId", required = false) String userId,
+			@CookieValue(value = "subscribeYn", required = false) String subscribeYn) {
+
 		List<ProjectVO> projectList;
-		//sout for test
-		
-        //로그인 하지 않았거나, 쿠기가 없을 경우 기본 N으로 처리한다.
-        if(subscribeYn == null || subscribeYn.equals("")) {
-        	subscribeYn = "N";
-        }
-        
-        //관리자
-        if("Y".equals(subscribeYn)) {
-        	projectList = projectService.selectMyCreatedProjectList(userId);
-        }
-        //일반 이용자
-        else {
-        	projectList = projectService.selectMyJoinedProjectList(userId);
-        }
-        
-        model.addAttribute("projectList",projectList);
-        model.addAttribute("subscribeYn", subscribeYn);
-        
+		// sout for test
+
+		// 로그인 하지 않았거나, 쿠기가 없을 경우 기본 N으로 처리한다.
+		if (subscribeYn == null || subscribeYn.equals("")) {
+			subscribeYn = "N";
+		}
+
+		// 관리자
+		if ("Y".equals(subscribeYn)) {
+			projectList = projectService.selectMyCreatedProjectList(userId);
+		}
+		// 일반 이용자
+		else {
+			projectList = projectService.selectMyJoinedProjectList(userId);
+		}
+
+		model.addAttribute("projectList", projectList);
+		model.addAttribute("subscribeYn", subscribeYn);
+
 		return "project/projectList";
 	}
-	
-	//상세페이지 껍데기만 생성해뒀음 추후 수정필요
+
+	// 프로젝트 상세조회
 	@GetMapping("/projectdetail/{projectId}")
 	public String projectDetail(@PathVariable String projectId,
-								@CookieValue(value = "subscribeYn",required = false) String subscribeYn,
-								Model model) {
+			@CookieValue(value = "subscribeYn", required = false) String subscribeYn, Model model) {
+
+		// 1. 프로젝트 기본 정보 (기존 그대로)
 		ProjectVO project = projectService.selectProjectDetail(projectId);
-		
-		model.addAttribute("project",project);
-		model.addAttribute("projectId",projectId);
-		model.addAttribute("subscribeYn",subscribeYn);
+
+		// 2. 구성원 목록 추가 (④ 구성원 영역에서 사용)
+		List<ProjectMemberVO> projectMemberList = projectService.selectProjectMemberList(projectId);
+
+		model.addAttribute("project", project);
+		model.addAttribute("projectId", projectId);
+		model.addAttribute("subscribeYn", subscribeYn);
+		model.addAttribute("projectMemberList", projectMemberList);
+
+		// ※ 일감 추적(② 영역)은 현재 DB 쿼리가 없어서 일단 비워둡니다.
+		// issueStatList 쿼리가 준비되면 아래 주석을 해제하고 서비스 메서드를 추가하세요.
+		// List<?> issueStatList = projectService.selectIssueStatList(projectId);
+		// model.addAttribute("issueStatList", issueStatList);
+
 		return "project/projectDetail";
 	}
-	
-	//프로젝트 설정 - 구성원 목록조회
+
+	// 프로젝트 설정 - 구성원 목록조회
 	@GetMapping("/project/{projectId}/settings/members")
 	public String projectMemberSetting(@PathVariable String projectId,
-									   @CookieValue(value ="subscribeYn", required = false)String subscribeYn,
-									   Model model) {
-		
-		//관리자만 접근가능
-		if(!"Y".equals(subscribeYn)) {
-			return "redirect:/project/"+projectId;
-		}
-		
-		ProjectVO project = projectService.selectProjectDetail(projectId);
-		List<ProjectMemberVO> projectMemberList = projectService.selectProjectMemberList(projectId);
-		
-		model.addAttribute("project",project);
-		model.addAttribute("projectId",projectId);
-		model.addAttribute("subscribeYn",subscribeYn);
-		model.addAttribute("projectMemberList",projectMemberList);
-		
-		return "settings/projectMemberSetting";
-	}
-	
-	//구성원 추가 페이지
-	@GetMapping("/project/{projectId}/settings/members/new")
-	public String projectMemberAddForm(@PathVariable String projectId,
-	                                   @CookieValue(value = "subscribeYn", required = false) String subscribeYn,
-	                                   Model model) {
+			@CookieValue(value = "subscribeYn", required = false) String subscribeYn, Model model) {
 
-	    // 관리자만 접근 가능
-	    if (!"Y".equals(subscribeYn)) {
-	        return "redirect:/project/" + projectId;
-	    }
-
-	    ProjectVO project = projectService.selectProjectDetail(projectId);
-	    List<ProjectMemberVO> candidateList = projectService.selectProjectMemberCandidateList(projectId);
-	    List<ProjectRoleVO> projectRoleList = projectService.selectProjectRoleList(projectId);
-
-	    model.addAttribute("project", project);
-	    model.addAttribute("projectId", projectId);
-	    model.addAttribute("subscribeYn", subscribeYn);
-	    model.addAttribute("candidateList", candidateList);
-	    model.addAttribute("projectRoleList", projectRoleList);
-	    model.addAttribute("projectMemberVO", new ProjectMemberVO());
-
-	    return "settings/projectMemberAdd";
-	}
-
-	//구성원 추가 기능
-	@PostMapping("/project/{projectId}/settings/members/add")
-	public String insertProjectMember(@PathVariable String projectId,
-	                                  ProjectMemberVO projectMemberVO,
-	                                  @CookieValue(value = "subscribeYn", required = false) String subscribeYn,
-	                                  RedirectAttributes redirectAttributes) {
-
-	    // 관리자만 처리 가능
-	    if (!"Y".equals(subscribeYn)) {
-	        return "redirect:/project/" + projectId;
-	    }
-
-	    projectMemberVO.setProjectId(projectId);
-
-	    Map<String, Object> resultMap = projectService.insertProjectMember(projectMemberVO);
-
-	    redirectAttributes.addFlashAttribute("message", resultMap.get("message"));
-
-	    return "redirect:/project/" + projectId + "/settings/members";
-	}
-	
-	//멤버 권한 수정 페이지
-	@GetMapping("/project/{projectId}/settings/members/{projectMemberId}/update")
-	public String projectMemberUpdateForm(@PathVariable String projectId,
-										  @PathVariable String projectMemberId,
-										  @CookieValue(value="subscribeYn",required = false) String subscribeYn,
-										  Model model) {
-		
-		if(!"Y".equals(subscribeYn)) {
+		// 관리자만 접근가능
+		if (!"Y".equals(subscribeYn)) {
 			return "redirect:/project/" + projectId;
 		}
-		
+
+		ProjectVO project = projectService.selectProjectDetail(projectId);
+		List<ProjectMemberVO> projectMemberList = projectService.selectProjectMemberList(projectId);
+
+		model.addAttribute("project", project);
+		model.addAttribute("projectId", projectId);
+		model.addAttribute("subscribeYn", subscribeYn);
+		model.addAttribute("projectMemberList", projectMemberList);
+
+		return "settings/projectMemberSetting";
+	}
+
+	// 구성원 추가 페이지
+	@GetMapping("/project/{projectId}/settings/members/new")
+	public String projectMemberAddForm(@PathVariable String projectId,
+			@CookieValue(value = "subscribeYn", required = false) String subscribeYn, Model model) {
+
+		// 관리자만 접근 가능
+		if (!"Y".equals(subscribeYn)) {
+			return "redirect:/project/" + projectId;
+		}
+
+		ProjectVO project = projectService.selectProjectDetail(projectId);
+		List<ProjectMemberVO> candidateList = projectService.selectProjectMemberCandidateList(projectId);
+		List<ProjectRoleVO> projectRoleList = projectService.selectProjectRoleList(projectId);
+
+		model.addAttribute("project", project);
+		model.addAttribute("projectId", projectId);
+		model.addAttribute("subscribeYn", subscribeYn);
+		model.addAttribute("candidateList", candidateList);
+		model.addAttribute("projectRoleList", projectRoleList);
+		model.addAttribute("projectMemberVO", new ProjectMemberVO());
+
+		return "settings/projectMemberAdd";
+	}
+
+	// 구성원 추가 기능
+	@PostMapping("/project/{projectId}/settings/members/add")
+	public String insertProjectMember(@PathVariable String projectId, ProjectMemberVO projectMemberVO,
+			@CookieValue(value = "subscribeYn", required = false) String subscribeYn,
+			RedirectAttributes redirectAttributes) {
+
+		// 관리자만 처리 가능
+		if (!"Y".equals(subscribeYn)) {
+			return "redirect:/project/" + projectId;
+		}
+
+		projectMemberVO.setProjectId(projectId);
+
+		Map<String, Object> resultMap = projectService.insertProjectMember(projectMemberVO);
+
+		redirectAttributes.addFlashAttribute("message", resultMap.get("message"));
+
+		return "redirect:/project/" + projectId + "/settings/members";
+	}
+
+	// 멤버 권한 수정 페이지
+	@GetMapping("/project/{projectId}/settings/members/{projectMemberId}/update")
+	public String projectMemberUpdateForm(@PathVariable String projectId, @PathVariable String projectMemberId,
+			@CookieValue(value = "subscribeYn", required = false) String subscribeYn, Model model) {
+
+		if (!"Y".equals(subscribeYn)) {
+			return "redirect:/project/" + projectId;
+		}
+
 		ProjectVO project = projectService.selectProjectDetail(projectId);
 		ProjectMemberVO projectMember = projectService.selectProjectMemberDetail(projectMemberId);
-		List<ProjectRoleVO> projectRoleList = projectService.selectProjectRoleList(projectId); 
-		
-		model.addAttribute("project",project);
-		model.addAttribute("projectId",projectId);
-		model.addAttribute("subscribeYn",subscribeYn);
-		model.addAttribute("projectMember",projectMember);
-		model.addAttribute("projectRoleList",projectRoleList);
-		
+		List<ProjectRoleVO> projectRoleList = projectService.selectProjectRoleList(projectId);
+
+		model.addAttribute("project", project);
+		model.addAttribute("projectId", projectId);
+		model.addAttribute("subscribeYn", subscribeYn);
+		model.addAttribute("projectMember", projectMember);
+		model.addAttribute("projectRoleList", projectRoleList);
+
 		return "settings/projectMemberUpdate";
-		
+
 	}
-	
-	//멤버 권한 수정
+
+	// 멤버 권한 수정
 	@PostMapping("/project/{projectId}/settings/members/update")
-	public String updateProjectMemberRole(@PathVariable String projectId,
-	                                      ProjectMemberVO projectMemberVO,
-	                                      @CookieValue(value = "subscribeYn", required = false) String subscribeYn,
-	                                      RedirectAttributes redirectAttributes) {
+	public String updateProjectMemberRole(@PathVariable String projectId, ProjectMemberVO projectMemberVO,
+			@CookieValue(value = "subscribeYn", required = false) String subscribeYn,
+			RedirectAttributes redirectAttributes) {
 
-	    if (!"Y".equals(subscribeYn)) {
-	        return "redirect:/project/" + projectId;
-	    }
+		if (!"Y".equals(subscribeYn)) {
+			return "redirect:/project/" + projectId;
+		}
 
-	    projectMemberVO.setProjectId(projectId);
+		projectMemberVO.setProjectId(projectId);
 
-	    Map<String, Object> resultMap = projectService.updateProjectMemberRole(projectMemberVO);
+		Map<String, Object> resultMap = projectService.updateProjectMemberRole(projectMemberVO);
 
-	    redirectAttributes.addFlashAttribute("message", resultMap.get("message"));
-	    
-	    //redirectAttributes.addFlashAttribute = 일회성 model;
+		redirectAttributes.addFlashAttribute("message", resultMap.get("message"));
 
-	    return "redirect:/project/" + projectId + "/settings/members";
+		// redirectAttributes.addFlashAttribute = 일회성 model;
+
+		return "redirect:/project/" + projectId + "/settings/members";
 	}
 
-	//구성원 삭제
+	// 구성원 삭제
 	@PostMapping("/project/{projectId}/settings/members/delete")
-	public String deleteProjectMember(@PathVariable String projectId,
-	                                  @RequestParam String projectMemberId,
-	                                  @CookieValue(value = "subscribeYn", required = false) String subscribeYn,
-	                                  RedirectAttributes redirectAttributes) {
+	public String deleteProjectMember(@PathVariable String projectId, @RequestParam String projectMemberId,
+			@CookieValue(value = "subscribeYn", required = false) String subscribeYn,
+			RedirectAttributes redirectAttributes) {
 
-	    if (!"Y".equals(subscribeYn)) {
-	        return "redirect:/project/" + projectId;
-	    }
+		if (!"Y".equals(subscribeYn)) {
+			return "redirect:/project/" + projectId;
+		}
 
-	    Map<String, Object> resultMap = projectService.deleteProjectMember(projectMemberId);
+		Map<String, Object> resultMap = projectService.deleteProjectMember(projectMemberId);
 
-	    redirectAttributes.addFlashAttribute("message", resultMap.get("message"));
+		redirectAttributes.addFlashAttribute("message", resultMap.get("message"));
 
-	    return "redirect:/project/" + projectId + "/settings/members";
+		return "redirect:/project/" + projectId + "/settings/members";
 	}
-	
-	
-	
+
 }

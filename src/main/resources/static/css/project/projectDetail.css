@@ -1,0 +1,306 @@
+@charset "UTF-8";
+
+/* ============================================================
+   projectDetail.css
+   ============================================================ */
+
+/* 페이지 전체: 2열 가로 레이아웃, 스크롤 없음 */
+.project-detail-page {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 20px;
+    padding: 24px;
+    box-sizing: border-box;
+    height: 100%;
+    overflow: hidden;
+}
+
+/* 왼쪽 컬럼 */
+.detail-left {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    min-width: 0;
+    overflow-y: auto;
+    height: 100%;
+}
+
+/* 오른쪽 컬럼 */
+.detail-right {
+    width: 280px;
+    flex-shrink: 0;
+    overflow-y: auto;
+    height: 100%;
+}
+
+/* 섹션 카드 공통 */
+.detail-section {
+    background: #ffffff;
+    border: 1px solid #e4e7ec;
+    border-radius: 10px;
+    padding: 20px 24px;
+    box-sizing: border-box;
+}
+
+/* 섹션 제목 */
+.section-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 14px 0;
+}
+
+/* ============================================================
+   프로젝트 정보
+   ============================================================ */
+.info-card {
+    background: #f8f9fb;
+    border-radius: 8px;
+    padding: 16px 18px;
+}
+
+.info-card-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+}
+
+.project-name-badge {
+    font-size: 14px;
+    font-weight: 700;
+    color: #111827;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.info-description {
+    font-size: 13px;
+    color: #4b5563;
+    line-height: 1.6;
+    margin: 0 0 12px 0;
+    white-space: pre-line;
+}
+
+.info-meta-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.info-meta-list li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: #374151;
+}
+
+.meta-icon {
+    font-size: 13px;
+    width: 18px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.meta-label {
+    color: #6b7280;
+    min-width: 44px;
+    flex-shrink: 0;
+}
+
+.meta-value {
+    color: #111827;
+    font-weight: 500;
+    word-break: break-all;
+}
+
+.meta-link {
+    color: #3b5bdb;
+    text-decoration: none;
+}
+
+.meta-link:hover {
+    text-decoration: underline;
+}
+
+/* ============================================================
+   일감 추적 테이블
+   ============================================================ */
+.table-wrap {
+    overflow-x: auto;
+}
+
+.tracker-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.tracker-table thead tr {
+    background: #f1f5f9;
+}
+
+.tracker-table th,
+.tracker-table td {
+    padding: 8px 12px;
+    text-align: left;
+    border-bottom: 1px solid #e4e7ec;
+    white-space: nowrap;
+}
+
+.tracker-table th {
+    font-weight: 600;
+    color: #374151;
+    font-size: 12.5px;
+}
+
+.tracker-table td {
+    color: #111827;
+}
+
+.tracker-table tbody tr:hover {
+    background: #f8f9fb;
+}
+
+.col-action {
+    width: 36px;
+    text-align: center;
+}
+
+.btn-more {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 15px;
+    color: #9ca3af;
+    padding: 2px 6px;
+    border-radius: 4px;
+    transition: background 0.15s;
+}
+
+.btn-more:hover {
+    background: #e5e7eb;
+    color: #374151;
+}
+
+.count-cell {
+    color: #6b7280;
+}
+
+/* ============================================================
+   구성원 (오른쪽 컬럼)
+   ============================================================ */
+.member-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.member-team-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.member-team-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: #6b7280;
+    padding: 2px 0 4px 0;
+    border-bottom: 1px solid #e4e7ec;
+    margin-bottom: 2px;
+}
+
+.member-card {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #f8f9fb;
+    border: 1px solid #e4e7ec;
+    border-radius: 8px;
+    padding: 10px 12px;
+}
+
+.member-avatar {
+    width: 32px;
+    height: 32px;
+    background: #3b5bdb;
+    color: #ffffff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.member-info {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    min-width: 0;
+}
+
+.member-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: #111827;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.member-role {
+    font-size: 11.5px;
+    color: #6b7280;
+}
+
+.member-team {
+    font-size: 11px;
+    color: #9ca3af;
+}
+
+.empty-members {
+    text-align: center;
+    padding: 24px;
+    color: #9ca3af;
+    font-size: 13px;
+}
+
+.empty-members p {
+    margin: 0;
+}
+
+/* ============================================================
+   반응형
+   ============================================================ */
+@media (max-width: 768px) {
+    .project-detail-page {
+        flex-direction: column;
+        height: auto;
+        overflow: visible;
+    }
+
+    .detail-left,
+    .detail-right {
+        width: 100%;
+        height: auto;
+        overflow-y: visible;
+    }
+}
