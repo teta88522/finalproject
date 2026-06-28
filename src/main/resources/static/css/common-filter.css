@@ -107,6 +107,156 @@
     text-decoration: none;
 }
 
+.search-section .filter-check-list {
+    height: 32px;
+    min-height: 32px;
+    max-height: 32px;
+    border: 1px solid #d7dbe7;
+    border-radius: 5px;
+    padding: 0 8px;
+    background-color: #ffffff;
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 8px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: thin;
+}
+
+.search-section .filter-check-list:focus-within {
+    border-color: #252ba3;
+}
+
+.search-section .filter-check-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    flex: 0 0 auto;
+    height: 22px;
+    max-width: 120px;
+    font-size: 13px;
+    color: #333333;
+    line-height: 22px;
+    cursor: pointer;
+}
+
+.search-section .filter-check-item input[type="checkbox"],
+.search-section .filter-check-item input[type="radio"] {
+    flex: 0 0 auto;
+    width: 14px;
+    height: 14px;
+    min-width: 14px;
+    margin: 0;
+    padding: 0;
+    cursor: pointer;
+}
+
+.search-section .filter-check-item span {
+    display: block;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.search-section .filter-dropdown {
+    position: relative;
+    min-width: 0;
+}
+
+.search-section .filter-dropdown summary {
+    height: 32px;
+    border: 1px solid #d7dbe7;
+    border-radius: 5px;
+    padding: 0 30px 0 10px;
+    background-color: #ffffff;
+    color: #777777;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    list-style: none;
+}
+
+.search-section .filter-dropdown summary::-webkit-details-marker {
+    display: none;
+}
+
+.search-section .filter-dropdown summary::after {
+    content: "";
+    position: absolute;
+    right: 11px;
+    top: 13px;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 5px solid #777777;
+}
+
+.search-section .filter-dropdown[open] summary {
+    border-color: #252ba3;
+}
+
+.search-section .filter-dropdown.has-selected summary {
+    color: #252ba3;
+    font-weight: 600;
+}
+
+.search-section .filter-selected-text {
+    display: block;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.search-section .filter-dropdown-panel.filter-check-list {
+    position: absolute;
+    left: 0;
+    right: auto;
+    top: 36px;
+    z-index: 20;
+    width: max-content;
+    min-width: 180px;
+    max-width: 260px;
+    height: auto;
+    min-height: 40px;
+    max-height: 180px;
+    padding: 8px;
+    display: block;
+    overflow-x: hidden;
+    overflow-y: auto;
+    box-shadow: 0 8px 18px rgba(30, 35, 60, 0.16);
+}
+
+.search-section .filter-dropdown-panel .filter-check-item {
+    width: 100%;
+    max-width: none;
+    height: 28px;
+    padding: 0 6px;
+    border-radius: 4px;
+}
+
+.search-section .filter-dropdown-panel .filter-check-item:hover {
+    background-color: #f4f6fb;
+}
+
+.search-section .filter-dropdown-panel .filter-check-item input:checked + span {
+    color: #252ba3;
+    font-weight: 600;
+}
+
+.search-section .filter-empty-message {
+    display: block;
+    padding: 8px 6px;
+    font-size: 12px;
+    color: #777777;
+    white-space: nowrap;
+}
+
+.search-section .filter-dropdown:not([open]) .filter-dropdown-panel {
+    display: none;
+}
+
 
 /* ==============================
    모바일 대응

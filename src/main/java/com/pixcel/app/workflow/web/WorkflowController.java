@@ -35,15 +35,16 @@ public class WorkflowController {
 
 		String loginUserId = getLoginUserId(userId);
 
-		List<WorkflowVO> issueTypeList = workflowService.getIssueTypeList(loginUserId);
-		List<WorkflowVO> roleList = workflowService.getRoleList(loginUserId);
-		List<WorkflowVO> workflowCountList = workflowService.getWorkflowCountList(loginUserId);
+		Map<String, Object> pageData = workflowService.getWorkflowListPageData(loginUserId);
+		List<WorkflowVO> issueTypeList = (List<WorkflowVO>) pageData.get("issueTypeList");
+		List<WorkflowVO> roleList = (List<WorkflowVO>) pageData.get("roleList");
+		List<WorkflowVO> workflowCountList = (List<WorkflowVO>) pageData.get("workflowCountList");
 
-		Map<String, Integer> workflowCountMap = new LinkedHashMap<>();
+		Map<String, WorkflowVO> workflowCountMap = new LinkedHashMap<>();
 
 		for (WorkflowVO workflowCount : workflowCountList) {
 			String countKey = workflowCount.getIssueTypeId() + "|" + workflowCount.getRoleId();
-			workflowCountMap.put(countKey, workflowCount.getTransitionCount());
+			workflowCountMap.put(countKey, workflowCount);
 		}
 		
 
@@ -61,23 +62,16 @@ public class WorkflowController {
 
 		String loginUserId = getLoginUserId(userId);
 
-		List<WorkflowVO> issueTypeList = workflowService.getIssueTypeList(loginUserId);
-		List<WorkflowVO> roleList = workflowService.getRoleList(loginUserId);
+		Map<String, Object> pageData = workflowService.getWorkflowOptionPageData(loginUserId);
+		List<WorkflowVO> issueTypeList = (List<WorkflowVO>) pageData.get("issueTypeList");
+		List<WorkflowVO> roleList = (List<WorkflowVO>) pageData.get("roleList");
 
 		setDefaultSearchCondition(searchVO, issueTypeList, roleList);
 
 		searchVO.setUserId(loginUserId);
 
-		WorkflowVO fromStatusSearchVO = new WorkflowVO();
-		fromStatusSearchVO.setUserId(loginUserId);
-
-		List<WorkflowVO> fromStatusList = workflowService.getIssueStatusList(fromStatusSearchVO);
-
-		WorkflowVO toStatusSearchVO = new WorkflowVO();
-		toStatusSearchVO.setUserId(loginUserId);
-		toStatusSearchVO.setClosedYn(searchVO.getClosedYn());
-
-		List<WorkflowVO> toStatusList = workflowService.getIssueStatusList(toStatusSearchVO);
+		List<WorkflowVO> fromStatusList = (List<WorkflowVO>) pageData.get("issueStatusList");
+		List<WorkflowVO> toStatusList = filterIssueStatusByClosedYn(fromStatusList, searchVO.getClosedYn());
 
 		List<String> savedTransitionKeyList = new ArrayList<>();
 
@@ -130,8 +124,10 @@ public class WorkflowController {
 	        model.addAttribute("workflowVO", new WorkflowVO());
 	    }
 
-	    model.addAttribute("issueTypeList", workflowService.getIssueTypeList(loginUserId));
-	    model.addAttribute("roleList", workflowService.getRoleList(loginUserId));
+	    Map<String, Object> pageData = workflowService.getWorkflowOptionPageData(loginUserId);
+
+	    model.addAttribute("issueTypeList", pageData.get("issueTypeList"));
+	    model.addAttribute("roleList", pageData.get("roleList"));
 
 	    return "workflow/copy";
 	}
@@ -170,13 +166,29 @@ public class WorkflowController {
 		}
 
 		if (isBlank(searchVO.getApplyTargetCode())) {
-			searchVO.setApplyTargetCode("j003");
+			searchVO.setApplyTargetCode("j001");
 		}
 	}
 
 	private boolean hasSearchCondition(WorkflowVO searchVO) {
 		return !isBlank(searchVO.getIssueTypeId()) && !isBlank(searchVO.getRoleId())
 				&& !isBlank(searchVO.getApplyTargetCode());
+	}
+
+	private List<WorkflowVO> filterIssueStatusByClosedYn(List<WorkflowVO> issueStatusList, String closedYn) {
+		if (isBlank(closedYn)) {
+			return issueStatusList;
+		}
+
+		List<WorkflowVO> filteredStatusList = new ArrayList<>();
+
+		for (WorkflowVO issueStatus : issueStatusList) {
+			if (closedYn.equals(issueStatus.getClosedYn())) {
+				filteredStatusList.add(issueStatus);
+			}
+		}
+
+		return filteredStatusList;
 	}
 
 	private String getLoginUserId(String userId) {

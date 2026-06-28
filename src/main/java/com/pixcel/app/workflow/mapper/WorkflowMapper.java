@@ -8,6 +8,10 @@ import com.pixcel.app.workflow.service.WorkflowVO;
 
 public interface WorkflowMapper {
 
+	List<WorkflowVO> selectWorkflowListPageRows(@Param("userId") String userId);
+
+	List<WorkflowVO> selectWorkflowOptionRows(@Param("userId") String userId);
+
 	List<WorkflowVO> selectIssueTypeList(@Param("userId") String userId);
 
 	List<WorkflowVO> selectRoleList(@Param("userId") String userId);
@@ -25,6 +29,8 @@ public interface WorkflowMapper {
 	int deleteWorkflowTransition(WorkflowVO workflowVO);
 
 	int insertWorkflowTransition(WorkflowVO workflowVO);
+
+	int insertWorkflowTransitionList(@Param("transitionList") List<WorkflowVO> transitionList);
 
 	// ==============================
 	// 업무흐름 전체조회 추가
@@ -49,4 +55,6 @@ public interface WorkflowMapper {
 	// 원본 업무흐름을 대상 조건으로 복사
 	// ==============================
 	int copyWorkflowTransition(WorkflowVO workflowVO);
+
+	int copyDefaultWorkflowTransitionToAll(WorkflowVO workflowVO);
 }

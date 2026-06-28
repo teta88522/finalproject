@@ -43,16 +43,22 @@
 							</div>
 
 							<div class="search-field">
-								<label for="closedYn">종료 여부</label> <select id="closedYn"
-									name="closedYn">
-									<option value="">선택</option>
-									<option value="N"
-										th:selected="${searchVO != null and searchVO.closedYn == 'N'}">
-										진행</option>
-									<option value="Y"
-										th:selected="${searchVO != null and searchVO.closedYn == 'Y'}">
-										종료</option>
-								</select>
+								<label>종료 여부</label>
+								<details class="filter-dropdown" data-placeholder="전체">
+									<summary><span class="filter-selected-text">전체</span></summary>
+									<div class="filter-check-list filter-dropdown-panel">
+										<label class="filter-check-item">
+											<input type="checkbox" name="closedYnList" value="N"
+												th:checked="${searchVO != null and searchVO.closedYnList != null and #lists.contains(searchVO.closedYnList, 'N')}">
+											<span>진행</span>
+										</label>
+										<label class="filter-check-item">
+											<input type="checkbox" name="closedYnList" value="Y"
+												th:checked="${searchVO != null and searchVO.closedYnList != null and #lists.contains(searchVO.closedYnList, 'Y')}">
+											<span>종료</span>
+										</label>
+									</div>
+								</details>
 							</div>
 
 						</div>
@@ -60,11 +66,11 @@
 						<div class="search-btn-area">
 							<a th:href="@{/issuestatus/list}"
 								class="btn btn-custon-rounded-four btn-default filter-btn">
-								clean </a>
+								초기화 </a>
 
 							<button type="submit"
 								class="btn btn-custon-rounded-four btn-primary filter-btn">
-								apply</button>
+								검색</button>
 						</div>
 					</form>
 				</div>
@@ -131,7 +137,7 @@
 
 											<form th:action="@{/issuestatus/delete}" method="post"
 												class="inline-form"
-												onsubmit="return confirm('이 일감 상태를 삭제하시겠습니까? 사용 중인 상태는 삭제할 수 없습니다.');">
+												onsubmit="return confirm('이 일감 상태를 삭제하시겠습니까?');">
 												<input type="hidden" name="issueStatusId"
 													th:value="${status.issueStatusId}">
 
@@ -151,5 +157,49 @@
 		</div>
 
 	</div>
+	<script>
+		(function() {
+			function updateFilterSummary(dropdown) {
+				var checkedLabels = Array.prototype.slice.call(
+						dropdown.querySelectorAll('input[type="checkbox"]:checked, input[type="radio"]:checked'))
+						.map(function(input) {
+							var label = input.closest('.filter-check-item');
+							return label ? label.innerText.trim() : '';
+						}).filter(function(text) {
+							return text.length > 0;
+						});
+				var summaryText = dropdown.querySelector('.filter-selected-text');
+				var placeholder = dropdown.getAttribute('data-placeholder') || '전체';
+
+				if (!summaryText) {
+					return;
+				}
+
+				if (checkedLabels.length === 0) {
+					summaryText.textContent = placeholder;
+					dropdown.classList.remove('has-selected');
+					return;
+				}
+
+				summaryText.textContent = checkedLabels.join(', ');
+				dropdown.classList.add('has-selected');
+			}
+
+			document.querySelectorAll('.filter-dropdown').forEach(function(dropdown) {
+				updateFilterSummary(dropdown);
+				dropdown.addEventListener('change', function() {
+					updateFilterSummary(dropdown);
+				});
+			});
+
+			document.addEventListener('click', function(event) {
+				document.querySelectorAll('.filter-dropdown[open]').forEach(function(dropdown) {
+					if (!dropdown.contains(event.target)) {
+						dropdown.removeAttribute('open');
+					}
+				});
+			});
+		})();
+	</script>
 </body>
 </html>

@@ -23,6 +23,8 @@ public class WorkflowVO {
 	 */
 	private String transitionId;
 
+	private Integer transitionSeqOffset;
+
 	private String issueTypeId;
 
 	private String roleId;
@@ -31,7 +33,7 @@ public class WorkflowVO {
 
 	private String toStatusId;
 
-	// j001: 담당자, j002: 작성자, j003: 기본
+	// j001: 기본, j002: 작성자, j003: 담당자
 	private String applyTargetCode;
 
 	// 설정 생성자. 권한/소유자 판단 기준이 아니라 기록용이다.
@@ -60,6 +62,8 @@ public class WorkflowVO {
 
 	private String applyTargetName;
 
+	private String optionGroup;
+
 	/*
 	 * 상태전환 설정 화면 form 전송용 -> 체크박스 선택항목 예: FROM_STATUS_ID|TO_STATUS_ID
 	 */
@@ -75,11 +79,17 @@ public class WorkflowVO {
 	// 역할 x 일감유형별 상태전환 설정 개수
 	// ==============================
 	private int transitionCount;
+
+	private int defaultTransitionCount;
+
+	private int authorTransitionCount;
+
+	private int assigneeTransitionCount;
 	
 	// ==============================
 	// 업무흐름 복사 추가
 	// 복사할 전환 기준 목록
-	// j001: 담당자, j002: 작성자, j003: 기본
+	// j001: 기본, j002: 작성자, j003: 담당자
 	// ==============================
 	private List<String> copyApplyTargetCodeList;
 	

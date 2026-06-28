@@ -1,5 +1,6 @@
 package com.pixcel.app.codevalue.service.impl;
 
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,6 +42,7 @@ public class CodeValueServiceImpl implements CodeValueService {
 		}
 
 		validateUserId(searchVO.getUserId());
+		normalizeSearchCondition(searchVO);
 
 		return codeValueMapper.selectCodeValueSearchList(searchVO);
 	}
@@ -70,7 +72,19 @@ public class CodeValueServiceImpl implements CodeValueService {
 	@Override
 	public Map<String, List<CodeValueVO>> getCodeValueSearchGroupMap(CodeValueVO searchVO) {
 
-		List<CodeValueVO> codeValueList = getCodeValueSearchList(searchVO);
+		String selectedGroupName = searchVO.getSettingGroupName();
+		List<String> selectedGroupNameList = searchVO.getSettingGroupNameList();
+		List<CodeValueVO> codeValueList;
+
+		searchVO.setSettingGroupName(null);
+		searchVO.setSettingGroupNameList(null);
+
+		try {
+			codeValueList = getCodeValueSearchList(searchVO);
+		} finally {
+			searchVO.setSettingGroupName(selectedGroupName);
+			searchVO.setSettingGroupNameList(selectedGroupNameList);
+		}
 
 		Map<String, List<CodeValueVO>> groupMap = new LinkedHashMap<>();
 
@@ -79,6 +93,41 @@ public class CodeValueServiceImpl implements CodeValueService {
 		groupMap.put(GROUP_G003, filterByGroup(codeValueList, GROUP_G003));
 
 		return groupMap;
+	}
+
+	private void normalizeSearchCondition(CodeValueVO searchVO) {
+		searchVO.setSettingGroupNameList(normalizeSearchList(searchVO.getSettingGroupNameList(),
+				searchVO.getSettingGroupName()));
+		searchVO.setDefaultYnList(normalizeSearchList(searchVO.getDefaultYnList(), searchVO.getDefaultYn()));
+	}
+
+	private List<String> normalizeSearchList(List<String> valueList, String legacyValue) {
+		List<String> normalizedList = valueList == null ? Collections.emptyList() : valueList.stream()
+				.map(this::trimToNull)
+				.filter(value -> value != null)
+				.distinct()
+				.collect(Collectors.toList());
+
+		if (!normalizedList.isEmpty()) {
+			return normalizedList;
+		}
+
+		String checkedLegacyValue = trimToNull(legacyValue);
+
+		if (checkedLegacyValue == null) {
+			return Collections.emptyList();
+		}
+
+		return Collections.singletonList(checkedLegacyValue);
+	}
+
+	private String trimToNull(String value) {
+		if (value == null) {
+			return null;
+		}
+
+		String trimmedValue = value.trim();
+		return trimmedValue.isEmpty() ? null : trimmedValue;
 	}
 
 	// 코드값 단건 조회

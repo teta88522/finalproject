@@ -37,22 +37,27 @@
                     <div class="search-form-row">
 
                         <div class="search-field">
-                            <label for="settingGroupName">그룹</label>
-                            <select id="settingGroupName" name="settingGroupName">
-                                <option value="">전체</option>
-                                <option value="g001"
-                                        th:selected="${searchVO != null and searchVO.settingGroupName == 'g001'}">
-                                    작업분류
-                                </option>
-                                <option value="g002"
-                                        th:selected="${searchVO != null and searchVO.settingGroupName == 'g002'}">
-                                    일감 우선순위
-                                </option>
-                                <option value="g003"
-                                        th:selected="${searchVO != null and searchVO.settingGroupName == 'g003'}">
-                                    문서유형
-                                </option>
-                            </select>
+                            <label>그룹</label>
+                            <details class="filter-dropdown" data-placeholder="전체">
+                                <summary><span class="filter-selected-text">전체</span></summary>
+                                <div class="filter-check-list filter-dropdown-panel">
+                                    <label class="filter-check-item">
+                                        <input type="checkbox" name="settingGroupNameList" value="g001"
+                                               th:checked="${searchVO != null and searchVO.settingGroupNameList != null and #lists.contains(searchVO.settingGroupNameList, 'g001')}">
+                                        <span>작업분류</span>
+                                    </label>
+                                    <label class="filter-check-item">
+                                        <input type="checkbox" name="settingGroupNameList" value="g002"
+                                               th:checked="${searchVO != null and searchVO.settingGroupNameList != null and #lists.contains(searchVO.settingGroupNameList, 'g002')}">
+                                        <span>일감 우선순위</span>
+                                    </label>
+                                    <label class="filter-check-item">
+                                        <input type="checkbox" name="settingGroupNameList" value="g003"
+                                               th:checked="${searchVO != null and searchVO.settingGroupNameList != null and #lists.contains(searchVO.settingGroupNameList, 'g003')}">
+                                        <span>문서유형</span>
+                                    </label>
+                                </div>
+                            </details>
                         </div>
 
                         <div class="search-field">
@@ -65,18 +70,22 @@
                         </div>
 
                         <div class="search-field">
-                            <label for="defaultYn">기본값 여부</label>
-                            <select id="defaultYn" name="defaultYn">
-                                <option value="">선택</option>
-                                <option value="Y"
-                                        th:selected="${searchVO != null and searchVO.defaultYn == 'Y'}">
-                                    기본값
-                                </option>
-                                <option value="N"
-                                        th:selected="${searchVO != null and searchVO.defaultYn == 'N'}">
-                                    일반값
-                                </option>
-                            </select>
+                            <label>기본값 여부</label>
+                            <details class="filter-dropdown" data-placeholder="전체">
+                                <summary><span class="filter-selected-text">전체</span></summary>
+                                <div class="filter-check-list filter-dropdown-panel">
+                                    <label class="filter-check-item">
+                                        <input type="checkbox" name="defaultYnList" value="Y"
+                                               th:checked="${searchVO != null and searchVO.defaultYnList != null and #lists.contains(searchVO.defaultYnList, 'Y')}">
+                                        <span>기본값</span>
+                                    </label>
+                                    <label class="filter-check-item">
+                                        <input type="checkbox" name="defaultYnList" value="N"
+                                               th:checked="${searchVO != null and searchVO.defaultYnList != null and #lists.contains(searchVO.defaultYnList, 'N')}">
+                                        <span>일반값</span>
+                                    </label>
+                                </div>
+                            </details>
                         </div>
 
                     </div>
@@ -84,12 +93,12 @@
                     <div class="search-btn-area">
                         <a th:href="@{/codevalue/list}"
                            class="btn btn-custon-rounded-four btn-default filter-btn">
-                            clean
+                            초기화
                         </a>
 
                         <button type="submit"
                                 class="btn btn-custon-rounded-four btn-primary filter-btn">
-                            apply
+                            검색
                         </button>
                     </div>
                 </form>
@@ -109,10 +118,7 @@
 
                 <div class="codevalue-card"
                      th:each="entry : ${codeValueGroupMap}"
-                     th:if="${searchVO == null
-                             or searchVO.settingGroupName == null
-                             or searchVO.settingGroupName == ''
-                             or searchVO.settingGroupName == entry.key}">
+                     th:classappend="${searchVO != null and ((searchVO.settingGroupNameList != null and #lists.contains(searchVO.settingGroupNameList, entry.key)) or searchVO.settingGroupName == entry.key)} ? ' is-selected' : ''">
 
                     <div class="codevalue-card-header">
                         <div class="codevalue-title-wrap">
@@ -228,5 +234,50 @@
     </div>
 
 </div>
+<script>
+    (function() {
+        function updateFilterSummary(dropdown) {
+            var checkedLabels = Array.prototype.slice.call(
+                dropdown.querySelectorAll('input[type="checkbox"]:checked, input[type="radio"]:checked'))
+                .map(function(input) {
+                    var label = input.closest('.filter-check-item');
+                    return label ? label.innerText.trim() : '';
+                })
+                .filter(function(text) {
+                    return text.length > 0;
+                });
+            var summaryText = dropdown.querySelector('.filter-selected-text');
+            var placeholder = dropdown.getAttribute('data-placeholder') || '전체';
+
+            if (!summaryText) {
+                return;
+            }
+
+            if (checkedLabels.length === 0) {
+                summaryText.textContent = placeholder;
+                dropdown.classList.remove('has-selected');
+                return;
+            }
+
+            summaryText.textContent = checkedLabels.join(', ');
+            dropdown.classList.add('has-selected');
+        }
+
+        document.querySelectorAll('.filter-dropdown').forEach(function(dropdown) {
+            updateFilterSummary(dropdown);
+            dropdown.addEventListener('change', function() {
+                updateFilterSummary(dropdown);
+            });
+        });
+
+        document.addEventListener('click', function(event) {
+            document.querySelectorAll('.filter-dropdown[open]').forEach(function(dropdown) {
+                if (!dropdown.contains(event.target)) {
+                    dropdown.removeAttribute('open');
+                }
+            });
+        });
+    })();
+</script>
 </body>
 </html>

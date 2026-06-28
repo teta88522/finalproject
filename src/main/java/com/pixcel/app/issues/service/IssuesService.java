@@ -1,6 +1,7 @@
 package com.pixcel.app.issues.service;
 
 import java.util.List;
+import java.util.Map;
 
 public interface IssuesService {
 
@@ -24,6 +25,10 @@ public interface IssuesService {
 	// 프로젝트 기준 일감 목록을 조회한다.
 	List<IssuesVO> getIssueList(String projectId, IssuesVO searchVO, String userId);
 
+	Map<String, Object> getIssueListPageData(String projectId, IssuesVO searchVO, String userId);
+
+	Map<String, Object> getIssueListFilterData(String projectId, String userId);
+
 	// 일감 상태 필터 목록을 조회한다.
 	List<IssuesVO> getIssueStatusList(String projectId, String userId);
 
@@ -36,6 +41,12 @@ public interface IssuesService {
 	// 일감 삭제 권한 여부를 조회한다.
 	boolean canDeleteIssue(String projectId, String userId);
 
+	Map<String, Object> getIssueDetailPageData(String projectId, String issueId, String userId);
+
+	void validateIssueAccess(String projectId, String issueId, String userId);
+
+	void updateIssue(IssuesVO issue, String userId);
+
 	// 일감 전체조회에서 선택한 일감을 삭제한다.
 	void deleteIssue(String projectId, String issueId, String userId);
 
@@ -45,6 +56,10 @@ public interface IssuesService {
 
 	// 일감 생성 화면용 프로젝트 상세를 조회한다.
 	IssuesVO getProjectDetailForCreate(String projectId, String userId);
+
+	Map<String, Object> getIssueCreatePageData(String projectId, String userId);
+
+	Map<String, Object> getIssueCreateExtraOptionData(String projectId, String userId);
 
 	// 일감 생성 화면의 일감유형 목록을 조회한다.
 	List<IssuesVO> getIssueTypeList(String projectId, String userId);

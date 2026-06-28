@@ -87,7 +87,7 @@
 												<td class="center"><input type="checkbox"
 													name="fieldCodeList" value="ASSIGNEE"></td>
 												<td class="center"><input type="checkbox"
-													name="requiredFieldCodeList" value="ASSIGNEE"></td>
+													name="requiredFieldCodeList" value="ASSIGNEE" disabled></td>
 											</tr>
 
 											<tr>
@@ -95,7 +95,7 @@
 												<td class="center"><input type="checkbox"
 													name="fieldCodeList" value="MILESTONE"></td>
 												<td class="center"><input type="checkbox"
-													name="requiredFieldCodeList" value="MILESTONE"></td>
+													name="requiredFieldCodeList" value="MILESTONE" disabled></td>
 											</tr>
 
 											<tr>
@@ -103,7 +103,7 @@
 												<td class="center"><input type="checkbox"
 													name="fieldCodeList" value="PARENT_ISSUE"></td>
 												<td class="center"><input type="checkbox"
-													name="requiredFieldCodeList" value="PARENT_ISSUE">
+													name="requiredFieldCodeList" value="PARENT_ISSUE" disabled>
 												</td>
 											</tr>
 
@@ -112,7 +112,7 @@
 												<td class="center"><input type="checkbox"
 													name="fieldCodeList" value="START_DATE"></td>
 												<td class="center"><input type="checkbox"
-													name="requiredFieldCodeList" value="START_DATE"></td>
+													name="requiredFieldCodeList" value="START_DATE" disabled></td>
 											</tr>
 
 											<tr>
@@ -120,7 +120,7 @@
 												<td class="center"><input type="checkbox"
 													name="fieldCodeList" value="DUE_DATE"></td>
 												<td class="center"><input type="checkbox"
-													name="requiredFieldCodeList" value="DUE_DATE"></td>
+													name="requiredFieldCodeList" value="DUE_DATE" disabled></td>
 											</tr>
 
 											<tr>
@@ -128,7 +128,7 @@
 												<td class="center"><input type="checkbox"
 													name="fieldCodeList" value="ESTIMATED_HOURS"></td>
 												<td class="center"><input type="checkbox"
-													name="requiredFieldCodeList" value="ESTIMATED_HOURS">
+													name="requiredFieldCodeList" value="ESTIMATED_HOURS" disabled>
 												</td>
 											</tr>
 										</tbody>
@@ -187,6 +187,31 @@
 
 			</div>
 		</div>
+
+		<script>
+			document.addEventListener('DOMContentLoaded', function () {
+				document.querySelectorAll('input[name="fieldCodeList"]').forEach(function (useCheckbox) {
+					var requiredCheckbox = document.querySelector(
+						'input[name="requiredFieldCodeList"][value="' + useCheckbox.value + '"]'
+					);
+
+					if (!requiredCheckbox) {
+						return;
+					}
+
+					function syncRequiredCheckbox() {
+						requiredCheckbox.disabled = !useCheckbox.checked;
+
+						if (!useCheckbox.checked) {
+							requiredCheckbox.checked = false;
+						}
+					}
+
+					useCheckbox.addEventListener('change', syncRequiredCheckbox);
+					syncRequiredCheckbox();
+				});
+			});
+		</script>
 
 	</div>
 </body>

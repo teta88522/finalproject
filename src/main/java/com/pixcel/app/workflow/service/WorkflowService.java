@@ -1,8 +1,13 @@
 package com.pixcel.app.workflow.service;
 
 import java.util.List;
+import java.util.Map;
 
 public interface WorkflowService {
+
+	Map<String, Object> getWorkflowListPageData(String userId);
+
+	Map<String, Object> getWorkflowOptionPageData(String userId);
 
 	List<WorkflowVO> getIssueTypeList(String userId);
 

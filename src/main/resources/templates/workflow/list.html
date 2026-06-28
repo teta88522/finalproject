@@ -69,21 +69,45 @@
 										th:text="${issueType.issueTypeName}">결함</th>
 
 									<td th:each="role : ${roleList}"
-										th:with="transitionCount=${workflowCountMap.get(#strings.concat(issueType.issueTypeId, '|', role.roleId))}">
+										th:with="workflowCount=${workflowCountMap.get(#strings.concat(issueType.issueTypeId, '|', role.roleId))}">
 										<!-- ==============================
 										     업무흐름 전체조회 수정
 										     상태전환 개수 클릭 시 해당 일감유형+역할 설정 화면으로 이동
-										     기본 전환(j003) 기준으로 진입
-													============================== --> <a
-										th:href="@{/workflow/transition(
-											issueTypeId=${issueType.issueTypeId},
-											roleId=${role.roleId},
-											applyTargetCode='j003'
-										)}"
-										class="workflow-count-badge workflow-count-link"
-										th:classappend="${transitionCount == null or transitionCount == 0} ? ' workflow-count-empty' : ''"
-										th:text="${transitionCount != null ? transitionCount : 0}">
-											0 </a>
+										     기본/작성자/담당자 전환 개수를 분리해서 표시
+													============================== -->
+										<div class="workflow-count-stack">
+											<a
+												th:href="@{/workflow/transition(
+													issueTypeId=${issueType.issueTypeId},
+													roleId=${role.roleId},
+													applyTargetCode='j001'
+												)}"
+												class="workflow-count-badge workflow-count-link workflow-count-mini"
+												th:classappend="${workflowCount == null or workflowCount.defaultTransitionCount == 0} ? ' workflow-count-empty' : ''">
+												<span>기본</span> <strong
+													th:text="${workflowCount != null ? workflowCount.defaultTransitionCount : 0}">0</strong>
+											</a> <a
+												th:href="@{/workflow/transition(
+													issueTypeId=${issueType.issueTypeId},
+													roleId=${role.roleId},
+													applyTargetCode='j002'
+												)}"
+												class="workflow-count-badge workflow-count-link workflow-count-mini"
+												th:classappend="${workflowCount == null or workflowCount.authorTransitionCount == 0} ? ' workflow-count-empty' : ''">
+												<span>작성자</span> <strong
+													th:text="${workflowCount != null ? workflowCount.authorTransitionCount : 0}">0</strong>
+											</a> <a
+												th:href="@{/workflow/transition(
+													issueTypeId=${issueType.issueTypeId},
+													roleId=${role.roleId},
+													applyTargetCode='j003'
+												)}"
+												class="workflow-count-badge workflow-count-link workflow-count-mini"
+												th:classappend="${workflowCount == null or workflowCount.assigneeTransitionCount == 0} ? ' workflow-count-empty' : ''">
+												<span>담당자</span> <strong
+													th:text="${workflowCount != null ? workflowCount.assigneeTransitionCount : 0}">0</strong>
+											</a>
+										</div>
 									</td>
 								</tr>
 							</tbody>

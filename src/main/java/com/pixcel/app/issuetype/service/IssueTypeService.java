@@ -1,8 +1,13 @@
 package com.pixcel.app.issuetype.service;
 
 import java.util.List;
+import java.util.Map;
 
 public interface IssueTypeService {
+
+	Map<String, Object> getIssueTypeListPageData(IssueTypeVO searchVO);
+
+	Map<String, Object> getIssueTypeFormPageData(String userId);
 
 	// 검색조건에 맞는 사용자별 일감유형 목록을 조회한다.
 	List<IssueTypeVO> getIssueTypeList(IssueTypeVO searchVO);
