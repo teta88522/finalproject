@@ -1,5 +1,6 @@
 package com.pixcel.app.issues.service.impl;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -64,6 +65,7 @@ public class IssuesServiceImpl implements IssuesService {
 
 	// 페이징
 	private static final int ISSUE_PAGE_SIZE = 10;
+	private static final int ISSUE_PAGE_BLOCK_SIZE = 5;
 
 	@Override
 	public List<IssuesVO> getProjectList(String userId) {
@@ -112,6 +114,7 @@ public class IssuesServiceImpl implements IssuesService {
 		pageData.put("versionList", Collections.emptyList());
 		pageData.put("priorityList", Collections.emptyList());
 		pageData.put("assigneeList", Collections.emptyList());
+		pageData.putAll(buildSelectedIssueListFilterData(searchVO));
 		pageData.put("canCreateIssue", "Y".equals(projectInfo.getIssueCreatePermissionYn()));
 		pageData.put("canCreateMilestone", "Y".equals(projectInfo.getMilestoneCreatePermissionYn()));
 
@@ -122,6 +125,10 @@ public class IssuesServiceImpl implements IssuesService {
 	public Map<String, Object> getIssueListFilterData(String projectId, String userId) {
 		validateProjectAccess(projectId, userId);
 
+		return buildIssueListFilterData(projectId);
+	}
+
+	private Map<String, Object> buildIssueListFilterData(String projectId) {
 		List<IssuesVO> optionRows = issuesMapper.selectIssueListOptionRows(projectId);
 
 		Map<String, Object> filterData = new HashMap<>();
@@ -134,6 +141,31 @@ public class IssuesServiceImpl implements IssuesService {
 		return filterData;
 	}
 
+	private Map<String, Object> buildSelectedIssueListFilterData(IssuesVO searchVO) {
+		List<IssuesVO> selectedOptionRows = hasSelectedIssueListFilter(searchVO)
+				? issuesMapper.selectIssueListSelectedOptionRows(searchVO)
+				: Collections.emptyList();
+
+		Map<String, Object> filterData = new HashMap<>();
+		filterData.put("selectedIssueTypeList", filterOptionRows(selectedOptionRows, OPTION_ISSUE_TYPE));
+		filterData.put("selectedIssueStatusList", filterOptionRows(selectedOptionRows, OPTION_ISSUE_STATUS));
+		filterData.put("selectedVersionList", filterOptionRows(selectedOptionRows, OPTION_VERSION));
+		filterData.put("selectedPriorityList", filterOptionRows(selectedOptionRows, OPTION_PRIORITY));
+		filterData.put("selectedAssigneeList", filterOptionRows(selectedOptionRows, OPTION_ASSIGNEE));
+
+		return filterData;
+	}
+
+	private boolean hasSelectedIssueListFilter(IssuesVO searchVO) {
+		return hasValue(searchVO.getIssueTypeIdList()) || hasValue(searchVO.getIssueStatusIdList())
+				|| hasValue(searchVO.getVersionIdList()) || hasValue(searchVO.getSettingCodeIdList())
+				|| hasValue(searchVO.getAssigneeIdList());
+	}
+
+	private boolean hasValue(List<String> valueList) {
+		return valueList != null && !valueList.isEmpty();
+	}
+
 	private List<IssuesVO> selectIssueList(String projectId, IssuesVO searchVO) {
 		if (searchVO == null) {
 			searchVO = new IssuesVO();
@@ -142,23 +174,31 @@ public class IssuesServiceImpl implements IssuesService {
 		searchVO.setProjectId(projectId);
 		trimSearchCondition(searchVO);
 		applyPaging(searchVO);
+		applyPageBlock(searchVO);
 
-		// 전체 count 대신 pageSize + 1건을 조회해 다음 페이지 존재 여부만 판단한다.
-		List<IssuesVO> issueList = issuesMapper.selectIssueList(searchVO);
-
-		boolean hasNextPage = issueList.size() > ISSUE_PAGE_SIZE;
-		if (hasNextPage) {
-			issueList = issueList.stream()
-					.limit(ISSUE_PAGE_SIZE)
-					.collect(Collectors.toList());
+		List<IssuesVO> pageBlockRows = issuesMapper.selectIssueListPageBlockRows(searchVO);
+		if (pageBlockRows == null) {
+			pageBlockRows = Collections.emptyList();
 		}
+		applyPageBlockResult(searchVO, pageBlockRows);
 
 		searchVO.setTotalCount(null);
 		searchVO.setTotalPage(null);
 		searchVO.setHasPreviousPage(searchVO.getPage() > 1);
-		searchVO.setHasNextPage(hasNextPage);
 
-		return issueList;
+		int startRow = searchVO.getStartRow();
+		int endRow = searchVO.getEndRow();
+
+		List<String> pageIssueIdList = pageBlockRows.stream().filter(row -> row.getRowNo() != null)
+				.filter(row -> row.getRowNo() >= startRow && row.getRowNo() < endRow).map(IssuesVO::getIssueId)
+				.filter(Objects::nonNull).collect(Collectors.toList());
+
+		if (pageIssueIdList.isEmpty()) {
+			return Collections.emptyList();
+		}
+
+		searchVO.setPageIssueIdList(pageIssueIdList);
+		return issuesMapper.selectIssueListByPageIds(searchVO);
 	}
 
 	@Override
@@ -369,9 +409,7 @@ public class IssuesServiceImpl implements IssuesService {
 			return Collections.emptyList();
 		}
 
-		return optionRows.stream()
-				.filter(row -> optionGroup.equals(row.getOptionGroup()))
-				.collect(Collectors.toList());
+		return optionRows.stream().filter(row -> optionGroup.equals(row.getOptionGroup())).collect(Collectors.toList());
 	}
 
 	private List<IssuesVO> distinctByIssueStatusId(List<IssuesVO> statusList) {
@@ -379,12 +417,12 @@ public class IssuesServiceImpl implements IssuesService {
 			return Collections.emptyList();
 		}
 
-		return statusList.stream()
-				.filter(status -> !isBlank(status.getIssueStatusId()))
-				.collect(Collectors.collectingAndThen(
-						Collectors.toMap(IssuesVO::getIssueStatusId, status -> status,
-								(first, second) -> first, LinkedHashMap::new),
-						map -> map.values().stream().collect(Collectors.toList())));
+		return statusList.stream().filter(status -> !isBlank(status.getIssueStatusId()))
+				.collect(
+						Collectors.collectingAndThen(
+								Collectors.toMap(IssuesVO::getIssueStatusId, status -> status, (first, second) -> first,
+										LinkedHashMap::new),
+								map -> map.values().stream().collect(Collectors.toList())));
 	}
 
 	@Override
@@ -435,8 +473,7 @@ public class IssuesServiceImpl implements IssuesService {
 		validateUserId(userId);
 		validateBasicIssue(issue);
 
-		IssuesVO validation = issuesMapper.selectIssueCreateSaveValidation(issue, userId,
-				PERMISSION_ISSUE_CREATE_CODE);
+		IssuesVO validation = issuesMapper.selectIssueCreateSaveValidation(issue, userId, PERMISSION_ISSUE_CREATE_CODE);
 		validateIssueCreateSaveCondition(validation);
 
 		issue.setIssueStatusId(validation.getInitialStatusId());
@@ -454,8 +491,8 @@ public class IssuesServiceImpl implements IssuesService {
 		issue.setIssueNo(issuesMapper.selectNextIssueNoForUpdate(issue.getProjectId()));
 
 		issuesMapper.insertIssue(issue);
-		insertIssueHistory(issue.getIssueId(), userId, CHANGE_TYPE_CREATE_CODE, CHANGE_TYPE_CREATE_NAME, "일감 생성",
-				"-", issue.getTitle());
+		insertIssueHistory(issue.getIssueId(), userId, CHANGE_TYPE_CREATE_CODE, CHANGE_TYPE_CREATE_NAME, "일감 생성", "-",
+				issue.getTitle());
 	}
 
 	private void validateBasicIssueForUpdate(IssuesVO issue) {
@@ -542,8 +579,8 @@ public class IssuesServiceImpl implements IssuesService {
 		if (!Objects.equals(currentIssue.getIssueStatusId(), issue.getIssueStatusId())) {
 			insertIssueHistory(issue.getIssueId(), userId, CHANGE_TYPE_STATUS_CODE, CHANGE_TYPE_STATUS_NAME,
 					defaultHistoryReason(issue.getHistoryReason(), CHANGE_TYPE_STATUS_NAME),
-					currentIssue.getIssueStatusName(), resolveStatusName(issue.getProjectId(), issue.getIssueId(),
-							issue.getIssueStatusId(), userId));
+					currentIssue.getIssueStatusName(),
+					resolveStatusName(issue.getProjectId(), issue.getIssueId(), issue.getIssueStatusId(), userId));
 		}
 
 		if (hasGeneralIssueChange(currentIssue, issue)) {
@@ -568,10 +605,8 @@ public class IssuesServiceImpl implements IssuesService {
 
 	private String resolveStatusName(String projectId, String issueId, String statusId, String userId) {
 		return issuesMapper.selectAvailableStatusList(projectId, issueId, userId).stream()
-				.filter(status -> Objects.equals(statusId, status.getIssueStatusId()))
-				.map(IssuesVO::getIssueStatusName)
-				.findFirst()
-				.orElse(statusId);
+				.filter(status -> Objects.equals(statusId, status.getIssueStatusId())).map(IssuesVO::getIssueStatusName)
+				.findFirst().orElse(statusId);
 	}
 
 	private String defaultHistoryReason(String reason, String defaultReason) {
@@ -924,20 +959,20 @@ public class IssuesServiceImpl implements IssuesService {
 		searchVO.setProgressRange(trimToNull(searchVO.getProgressRange()));
 		searchVO.setIssueTypeIdList(normalizeSearchList(searchVO.getIssueTypeIdList(), searchVO.getIssueTypeId()));
 		searchVO.setVersionIdList(normalizeSearchList(searchVO.getVersionIdList(), searchVO.getVersionId()));
-		searchVO.setIssueStatusIdList(normalizeSearchList(searchVO.getIssueStatusIdList(), searchVO.getIssueStatusId()));
-		searchVO.setSettingCodeIdList(normalizeSearchList(searchVO.getSettingCodeIdList(), searchVO.getSettingCodeId()));
+		searchVO.setIssueStatusIdList(
+				normalizeSearchList(searchVO.getIssueStatusIdList(), searchVO.getIssueStatusId()));
+		searchVO.setSettingCodeIdList(
+				normalizeSearchList(searchVO.getSettingCodeIdList(), searchVO.getSettingCodeId()));
 		searchVO.setAssigneeIdList(normalizeSearchList(searchVO.getAssigneeIdList(), searchVO.getAssigneeId()));
-		searchVO.setProgressRangeList(normalizeProgressRangeList(searchVO.getProgressRangeList(),
-				searchVO.getProgressRange()));
+		searchVO.setProgressRangeList(
+				normalizeProgressRangeList(searchVO.getProgressRangeList(), searchVO.getProgressRange()));
 		searchVO.setIssueNoSort(normalizeIssueNoSort(searchVO.getIssueNoSort()));
 	}
 
 	private List<String> normalizeSearchList(List<String> valueList, String legacyValue) {
-		List<String> normalizedList = valueList == null ? Collections.emptyList() : valueList.stream()
-				.map(this::trimToNull)
-				.filter(value -> value != null)
-				.distinct()
-				.collect(Collectors.toList());
+		List<String> normalizedList = valueList == null ? Collections.emptyList()
+				: valueList.stream().map(this::trimToNull).filter(value -> value != null).distinct()
+						.collect(Collectors.toList());
 
 		if (!normalizedList.isEmpty()) {
 			return normalizedList;
@@ -955,8 +990,7 @@ public class IssuesServiceImpl implements IssuesService {
 	private List<String> normalizeProgressRangeList(List<String> valueList, String legacyValue) {
 		List<String> allowedRangeList = Arrays.asList("0-20", "21-40", "41-60", "61-80", "81-100");
 		List<String> normalizedList = normalizeSearchList(valueList, legacyValue).stream()
-				.filter(allowedRangeList::contains)
-				.collect(Collectors.toList());
+				.filter(allowedRangeList::contains).collect(Collectors.toList());
 
 		if (normalizedList.isEmpty() && !isBlank(legacyValue)) {
 			throw new IllegalArgumentException("진척도 검색 범위가 올바르지 않습니다.");
@@ -1009,6 +1043,42 @@ public class IssuesServiceImpl implements IssuesService {
 
 		searchVO.setStartRow((page - 1) * pageSize + 1);
 		searchVO.setEndRow(page * pageSize + 1);
+	}
+
+	private void applyPageBlock(IssuesVO searchVO) {
+		int blockStartPage = getPageBlockStartPage(searchVO.getPage());
+		int blockEndPage = blockStartPage + ISSUE_PAGE_BLOCK_SIZE - 1;
+
+		searchVO.setPageBlockStartRow((blockStartPage - 1) * ISSUE_PAGE_SIZE + 1);
+		searchVO.setPageBlockProbeEndRow(blockEndPage * ISSUE_PAGE_SIZE + 1);
+	}
+
+	private void applyPageBlockResult(IssuesVO searchVO, List<IssuesVO> pageBlockRows) {
+		int blockStartPage = getPageBlockStartPage(searchVO.getPage());
+		int blockCapacity = ISSUE_PAGE_BLOCK_SIZE * ISSUE_PAGE_SIZE;
+		int probeRowCount = pageBlockRows == null ? 0 : pageBlockRows.size();
+		int visibleRowCount = Math.min(probeRowCount, blockCapacity);
+		int visiblePageCount = (int) Math.ceil((double) visibleRowCount / ISSUE_PAGE_SIZE);
+		List<Integer> pageList = new ArrayList<>();
+
+		for (int i = 0; i < visiblePageCount; i++) {
+			pageList.add(blockStartPage + i);
+		}
+
+		if (!pageList.contains(searchVO.getPage())) {
+			pageList.add(searchVO.getPage());
+		}
+
+		boolean hasNextPage = pageBlockRows != null && pageBlockRows.stream()
+				.anyMatch(row -> row.getRowNo() != null && row.getRowNo() >= searchVO.getEndRow());
+
+		searchVO.setPageList(pageList);
+		searchVO.setHasNextPage(hasNextPage);
+		searchVO.setHasNextPageBlock(probeRowCount > blockCapacity);
+	}
+
+	private int getPageBlockStartPage(int page) {
+		return ((page - 1) / ISSUE_PAGE_BLOCK_SIZE) * ISSUE_PAGE_BLOCK_SIZE + 1;
 	}
 
 	private String normalizeIssueNoSort(String issueNoSort) {

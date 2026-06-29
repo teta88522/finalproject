@@ -54,7 +54,7 @@
 							<div class="search-field">
 								<label>역할</label>
 								<details class="filter-dropdown" data-placeholder="선택">
-									<summary><span class="filter-selected-text">선택</span></summary>
+									<summary><span class="filter-selected-text" th:text="${selectedRoleText}">선택</span></summary>
 									<div class="filter-check-list filter-dropdown-panel">
 										<label class="filter-check-item">
 											<input type="radio" name="roleId" value=""
@@ -63,7 +63,7 @@
 										</label>
 										<label class="filter-check-item" th:each="role : ${roleList}">
 											<input type="radio" name="roleId" th:value="${role.roleId}"
-												th:checked="${searchVO.roleId == role.roleId}">
+												th:checked="${#strings.equals(searchVO.roleId, role.roleId)}">
 											<span th:text="${role.roleName}">개발자</span>
 										</label>
 									</div>
@@ -73,7 +73,7 @@
 							<div class="search-field">
 								<label>일감유형</label>
 								<details class="filter-dropdown" data-placeholder="선택">
-									<summary><span class="filter-selected-text">선택</span></summary>
+									<summary><span class="filter-selected-text" th:text="${selectedIssueTypeText}">선택</span></summary>
 									<div class="filter-check-list filter-dropdown-panel">
 										<label class="filter-check-item">
 											<input type="radio" name="issueTypeId" value=""
@@ -83,7 +83,7 @@
 										<label class="filter-check-item" th:each="issueType : ${issueTypeList}">
 											<input type="radio" name="issueTypeId"
 												th:value="${issueType.issueTypeId}"
-												th:checked="${searchVO.issueTypeId == issueType.issueTypeId}">
+												th:checked="${#strings.equals(searchVO.issueTypeId, issueType.issueTypeId)}">
 											<span th:text="${issueType.issueTypeName}">결함</span>
 										</label>
 									</div>
@@ -93,7 +93,7 @@
 							<div class="search-field">
 								<label>완료여부</label>
 								<details class="filter-dropdown" data-placeholder="전체">
-									<summary><span class="filter-selected-text">전체</span></summary>
+									<summary><span class="filter-selected-text" th:text="${selectedClosedYnText}">전체</span></summary>
 									<div class="filter-check-list filter-dropdown-panel">
 										<label class="filter-check-item">
 											<input type="radio" name="closedYn" value=""
@@ -388,6 +388,14 @@
 										return;
 									}
 
+									if (!dropdown.dataset.summaryInitialized) {
+										dropdown.dataset.summaryInitialized = 'true';
+										if (summaryText.textContent.trim() && summaryText.textContent.trim() !== placeholder) {
+											dropdown.classList.add('has-selected');
+											return;
+										}
+									}
+
 									if (checkedLabels.length === 0) {
 										summaryText.textContent = placeholder;
 										dropdown.classList
@@ -574,6 +582,54 @@
 											});
 								}
 							});
+		</script>
+
+		<script>
+			(function() {
+				function updateWorkflowFilterSummary(dropdown) {
+					var checkedInput = dropdown.querySelector('input[type="checkbox"]:checked, input[type="radio"]:checked');
+					var summaryText = dropdown.querySelector('.filter-selected-text');
+					var placeholder = dropdown.getAttribute('data-placeholder') || '전체';
+					var label = checkedInput ? checkedInput.closest('.filter-check-item') : null;
+					var text = label ? label.innerText.trim() : '';
+
+					if (!summaryText) {
+						return;
+					}
+
+					if (!dropdown.dataset.secondarySummaryInitialized) {
+						dropdown.dataset.secondarySummaryInitialized = 'true';
+						if (summaryText.textContent.trim() && summaryText.textContent.trim() !== placeholder) {
+							dropdown.classList.add('has-selected');
+							return;
+						}
+					}
+
+					if (!text || !checkedInput || !checkedInput.value) {
+						summaryText.textContent = placeholder;
+						dropdown.classList.remove('has-selected');
+						return;
+					}
+
+					summaryText.textContent = text;
+					dropdown.classList.add('has-selected');
+				}
+
+				function initWorkflowFilterSummary() {
+					document.querySelectorAll('.workflow-transition-page .filter-dropdown').forEach(function(dropdown) {
+						updateWorkflowFilterSummary(dropdown);
+						dropdown.addEventListener('change', function() {
+							updateWorkflowFilterSummary(dropdown);
+						});
+					});
+				}
+
+				if (document.readyState === 'loading') {
+					document.addEventListener('DOMContentLoaded', initWorkflowFilterSummary);
+				} else {
+					initWorkflowFilterSummary();
+				}
+			})();
 		</script>
 
 	</div>

@@ -38,6 +38,10 @@ public interface IssuesMapper {
 
 	List<IssuesVO> selectIssueList(IssuesVO searchVO);
 
+	List<IssuesVO> selectIssueListPageBlockRows(IssuesVO searchVO);
+
+	List<IssuesVO> selectIssueListByPageIds(IssuesVO searchVO);
+
 	List<IssuesVO> selectIssueStatusList(@Param("projectId") String projectId);
 
 	IssuesVO selectIssueDetail(@Param("projectId") String projectId, @Param("issueId") String issueId,
@@ -81,6 +85,8 @@ public interface IssuesMapper {
 	List<IssuesVO> selectIssueCreateExtraOptionRows(@Param("projectId") String projectId);
 
 	List<IssuesVO> selectIssueListOptionRows(@Param("projectId") String projectId);
+
+	List<IssuesVO> selectIssueListSelectedOptionRows(IssuesVO searchVO);
 
 	IssuesVO selectIssueCreateSaveValidation(@Param("issue") IssuesVO issue, @Param("userId") String userId,
 			@Param("permissionCode") String permissionCode);

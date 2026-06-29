@@ -148,10 +148,16 @@ public class IssuesVO {
 	private Integer pageSize;
 	private Integer startRow;
 	private Integer endRow;
+	private Integer pageBlockStartRow;
+	private Integer pageBlockProbeEndRow;
+	private Integer rowNo;
 	private Integer totalCount;
 	private Integer totalPage;
 	private Boolean hasPreviousPage;
 	private Boolean hasNextPage;
+	private Boolean hasNextPageBlock;
+	private List<Integer> pageList;
+	private List<String> pageIssueIdList;
 
  // TIME_LOG 조회용
     private Integer hours;

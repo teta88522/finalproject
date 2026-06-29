@@ -789,6 +789,109 @@
 	border-color: #252ba3;
 }
 
+.workflow-copy-native-select {
+	display: none !important;
+}
+
+.workflow-copy-field .filter-dropdown {
+	position: relative;
+	min-width: 0;
+}
+
+.workflow-copy-field .filter-dropdown summary {
+	height: 34px;
+	border: 1px solid #d7dbe7;
+	border-radius: 5px;
+	padding: 0 30px 0 10px;
+	background: #ffffff;
+	color: #777777;
+	display: flex;
+	align-items: center;
+	cursor: pointer;
+	list-style: none;
+}
+
+.workflow-copy-field .filter-dropdown summary::-webkit-details-marker {
+	display: none;
+}
+
+.workflow-copy-field .filter-dropdown summary::after {
+	content: "";
+	position: absolute;
+	right: 11px;
+	top: 14px;
+	border-left: 4px solid transparent;
+	border-right: 4px solid transparent;
+	border-top: 5px solid #777777;
+}
+
+.workflow-copy-field .filter-dropdown[open] summary {
+	border-color: #252ba3;
+}
+
+.workflow-copy-field .filter-dropdown.has-selected summary {
+	color: #252ba3;
+	font-weight: 600;
+}
+
+.workflow-copy-field .filter-selected-text {
+	display: block;
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.workflow-copy-field .filter-dropdown-panel.filter-check-list {
+	position: absolute;
+	left: 0;
+	top: 38px;
+	z-index: 30;
+	width: max-content;
+	min-width: 180px;
+	max-width: 280px;
+	height: auto;
+	min-height: 0;
+	max-height: 230px;
+	padding: 8px;
+	border: 1px solid #d7dbe7;
+	border-radius: 6px;
+	background: #ffffff;
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+	gap: 4px;
+	overflow-y: auto;
+	overflow-x: hidden;
+	box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+}
+
+.workflow-copy-field .filter-check-item {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	min-height: 24px;
+	font-size: 13px;
+	color: #333333;
+	background: #ffffff;
+	cursor: pointer;
+}
+
+.workflow-copy-field .filter-check-item input[type="radio"] {
+	flex: 0 0 auto;
+	width: 14px;
+	height: 14px;
+	margin: 0;
+}
+
+.workflow-copy-field .filter-check-item span {
+	display: block;
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
 .workflow-copy-notice {
 	margin-top: 14px;
 	padding: 10px 12px;

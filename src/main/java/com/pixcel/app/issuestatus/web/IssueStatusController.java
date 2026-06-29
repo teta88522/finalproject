@@ -1,5 +1,10 @@
 package com.pixcel.app.issuestatus.web;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.CookieValue;
@@ -30,6 +35,8 @@ public class IssueStatusController {
 		searchVO.setUserId(loginUserId);
 
 		model.addAttribute("searchVO", searchVO);
+		model.addAttribute("selectedClosedYnText",
+				getSelectedText(searchVO.getClosedYnList(), getClosedYnNameMap(), "전체"));
 		model.addAttribute("issueStatusList", issueStatusService.getIssueStatusSearchList(searchVO));
 
 		return "issuestatus/list";
@@ -136,5 +143,30 @@ public class IssueStatusController {
 		}
 
 		return userId;
+	}
+
+	private Map<String, String> getClosedYnNameMap() {
+		Map<String, String> closedYnNameMap = new LinkedHashMap<>();
+		closedYnNameMap.put("N", "진행");
+		closedYnNameMap.put("Y", "종료");
+		return closedYnNameMap;
+	}
+
+	private String getSelectedText(List<String> selectedValueList, Map<String, String> labelMap, String defaultText) {
+		if (selectedValueList == null || selectedValueList.isEmpty()) {
+			return defaultText;
+		}
+
+		List<String> selectedLabelList = new ArrayList<>();
+
+		for (String selectedValue : selectedValueList) {
+			String label = labelMap.get(selectedValue);
+
+			if (label != null) {
+				selectedLabelList.add(label);
+			}
+		}
+
+		return selectedLabelList.isEmpty() ? defaultText : String.join(", ", selectedLabelList);
 	}
 }

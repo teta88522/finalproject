@@ -85,6 +85,11 @@ public class WorkflowController {
 		model.addAttribute("fromStatusList", fromStatusList);
 		model.addAttribute("toStatusList", toStatusList);
 		model.addAttribute("savedTransitionKeyList", savedTransitionKeyList);
+		model.addAttribute("selectedRoleText",
+				getSelectedWorkflowText(searchVO.getRoleId(), roleList, "role", "선택"));
+		model.addAttribute("selectedIssueTypeText",
+				getSelectedWorkflowText(searchVO.getIssueTypeId(), issueTypeList, "issueType", "선택"));
+		model.addAttribute("selectedClosedYnText", getClosedYnText(searchVO.getClosedYn()));
 
 		return "workflow/transition";
 	}
@@ -201,5 +206,35 @@ public class WorkflowController {
 
 	private boolean isBlank(String value) {
 		return value == null || value.trim().isEmpty();
+	}
+
+	private String getSelectedWorkflowText(String selectedValue, List<WorkflowVO> optionList, String optionType,
+			String defaultText) {
+		if (isBlank(selectedValue) || optionList == null || optionList.isEmpty()) {
+			return defaultText;
+		}
+
+		for (WorkflowVO option : optionList) {
+			String value = "role".equals(optionType) ? option.getRoleId() : option.getIssueTypeId();
+
+			if (selectedValue.equals(value)) {
+				String label = "role".equals(optionType) ? option.getRoleName() : option.getIssueTypeName();
+				return isBlank(label) ? defaultText : label;
+			}
+		}
+
+		return defaultText;
+	}
+
+	private String getClosedYnText(String closedYn) {
+		if ("N".equals(closedYn)) {
+			return "미완료";
+		}
+
+		if ("Y".equals(closedYn)) {
+			return "완료";
+		}
+
+		return "전체";
 	}
 }
