@@ -59,7 +59,7 @@ public class ProjectController {
 	// 일반이용자 = subscribeYn = N
 	// 일반이용자일 경우 - 본인이 소속된 프로젝트가 조회된다. 프로젝트 생성 및 관리 버튼은 미노출된다.
 	
-	@GetMapping("/project/list")
+	@GetMapping("/myproject/list")
 	public String projectListForm(Model model, @CookieValue(value = "userId", required=false)String userId,
 											   @CookieValue(value="subscribeYn", required=false)String subscribeYn) {
 		
