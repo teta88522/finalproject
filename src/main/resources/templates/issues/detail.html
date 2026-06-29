@@ -1,0 +1,420 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{common/layouts/default_layout}">
+
+<head>
+<meta charset="UTF-8">
+<title>일감 상세조회</title>
+
+<link rel="stylesheet" th:href="@{/css/common-ui.css}">
+<link rel="stylesheet" th:href="@{/css/issues/issues.css}">
+</head>
+
+<body>
+	<div layout:fragment="Content">
+
+		<div class="issues-detail-page">
+			<div class="container-fluid">
+
+				<div class="issues-header issues-detail-header">
+					<div>
+						<h3>일감 상세조회</h3>
+						<p>
+							<span class="issues-header-issue-no"
+								th:text="${issue.displayIssueNo}">#0001</span>
+							<span> / </span>
+							<span th:text="${issue.projectName}">프로젝트명</span>
+							<span> / </span>
+							<span th:text="${issue.issueTypeName}">일감유형</span>
+						</p>
+					</div>
+
+					<div class="issues-list-actions">
+						<a th:href="@{/project/{projectId}/issues(projectId=${selectedProjectId})}"
+							class="btn btn-custon-rounded-four btn-default">목록</a>
+
+						<button th:if="${canUpdateIssue}" type="submit" form="issueUpdateForm"
+							class="btn btn-custon-rounded-four btn-primary">수정</button>
+
+						<form th:if="${canDeleteIssue}" class="issues-inline-delete-form"
+							th:action="@{/project/{projectId}/issues/{issueId}/delete(projectId=${selectedProjectId}, issueId=${issue.issueId})}"
+							method="post"
+							onsubmit="return confirm('삭제하면 일감과 변경 이력이 함께 삭제됩니다. 삭제하시겠습니까?');">
+							<input type="hidden" name="redirectTo" value="detail">
+							<button type="submit" class="btn btn-custon-rounded-four btn-danger">삭제</button>
+						</form>
+					</div>
+				</div>
+
+				<div th:if="${message}" class="page-message page-message-success"
+					th:text="${message}"></div>
+
+				<div th:if="${errorMessage}" class="page-message page-message-error"
+					th:text="${errorMessage}"></div>
+
+				<div th:each="setting : ${fieldSettingList}"
+					class="field-setting-data"
+					th:attr="data-field-code=${setting.fieldCode},
+						data-use-yn=${setting.useYn},
+						data-required-yn=${setting.requiredYn}"></div>
+
+				<form id="issueUpdateForm"
+					th:action="@{/project/{projectId}/issues/{issueId}/update(projectId=${selectedProjectId}, issueId=${issue.issueId})}"
+					method="post" th:object="${issue}">
+
+					<div class="issues-detail-layout">
+						<div class="issues-detail-main">
+							<div class="issues-card issues-detail-summary">
+								<div class="issues-detail-title-row">
+									<input type="text" class="form-control issues-detail-title-input"
+										th:field="*{title}" th:disabled="${!canUpdateIssue}"
+										maxlength="255" required>
+								</div>
+
+								<div class="issues-detail-info-grid">
+									<div class="issues-info-item">
+										<span class="issues-info-label">상태</span>
+										<select class="form-control" th:field="*{issueStatusId}"
+											th:disabled="${!canUpdateIssue}" required>
+											<option th:each="status : ${availableStatusList}"
+												th:value="${status.issueStatusId}"
+												th:text="${status.issueStatusName}">New</option>
+										</select>
+									</div>
+
+									<div class="issues-info-item">
+										<span class="issues-info-label">우선순위</span>
+										<select class="form-control" th:field="*{settingCodeId}"
+											th:disabled="${!canUpdateIssue}" required>
+											<option th:each="priority : ${priorityList}"
+												th:value="${priority.settingCodeId}"
+												th:text="${priority.settingName}">Normal</option>
+										</select>
+									</div>
+
+									<div class="issues-info-item dynamic-field" data-field-code="ASSIGNEE">
+										<span class="issues-info-label">담당자 <span
+											class="required dynamic-required">*</span></span>
+										<select class="form-control" th:field="*{assigneeId}"
+											th:disabled="${!canUpdateIssue}">
+											<option value="">미지정</option>
+											<option th:each="assignee : ${assigneeList}"
+												th:value="${assignee.assigneeId}"
+												th:text="${assignee.assigneeName}">담당자</option>
+										</select>
+									</div>
+
+									<div class="issues-info-item">
+										<span class="issues-info-label">진척도</span>
+										<div class="issues-detail-progress-control">
+											<input type="range" min="0" max="100" step="10"
+												th:field="*{progressRate}" th:disabled="${!canUpdateIssue}"
+												oninput="this.nextElementSibling.textContent = this.value + '%'">
+											<span class="issues-detail-progress-value"
+												th:text="|${issue.progressRate != null ? issue.progressRate : 0}%|">0%</span>
+										</div>
+									</div>
+
+									<div class="issues-info-item">
+										<span class="issues-info-label">작성자</span>
+										<input type="text" class="form-control issues-readonly-control"
+											th:value="${issue.authorName != null ? issue.authorName : '-'}" readonly>
+									</div>
+
+									<div class="issues-info-item">
+										<span class="issues-info-label">유형</span>
+										<input type="text" class="form-control issues-readonly-control"
+											th:value="${issue.issueTypeName}" readonly>
+									</div>
+
+									<div class="issues-info-item">
+										<span class="issues-info-label">버전</span>
+										<input type="text" class="form-control issues-readonly-control"
+											th:value="${issue.versionName}" readonly>
+									</div>
+
+									<div class="issues-info-item dynamic-field"
+										data-field-code="ESTIMATED_HOURS">
+										<span class="issues-info-label">추정시간 <span
+											class="required dynamic-required">*</span></span>
+										<input type="number" min="0" max="99999" class="form-control"
+											th:field="*{estimatedHours}" th:disabled="${!canUpdateIssue}">
+									</div>
+
+									<div class="issues-info-item dynamic-field"
+										data-field-code="START_DATE">
+										<span class="issues-info-label">시작일 <span
+											class="required dynamic-required">*</span></span>
+										<input type="date" class="form-control" th:field="*{startDate}"
+											th:disabled="${!canUpdateIssue}">
+									</div>
+
+									<div class="issues-info-item dynamic-field" data-field-code="DUE_DATE">
+										<span class="issues-info-label">완료기한 <span
+											class="required dynamic-required">*</span></span>
+										<input type="date" class="form-control" th:field="*{dueDate}"
+											th:disabled="${!canUpdateIssue}">
+									</div>
+
+									<div class="issues-info-item dynamic-field"
+										data-field-code="MILESTONE">
+										<span class="issues-info-label">마일스톤 <span
+											class="required dynamic-required">*</span></span>
+										<select class="form-control" th:field="*{milestoneId}"
+											th:disabled="${!canUpdateIssue}">
+											<option value="">미지정</option>
+											<option th:each="milestone : ${milestoneList}"
+												th:value="${milestone.milestoneId}"
+												th:text="${milestone.milestoneTitle}">마일스톤</option>
+										</select>
+									</div>
+
+									<div class="issues-info-item dynamic-field"
+										data-field-code="PARENT_ISSUE">
+										<span class="issues-info-label">상위일감 <span
+											class="required dynamic-required">*</span></span>
+										<select class="form-control" th:field="*{parentIssueId}"
+											th:disabled="${!canUpdateIssue}">
+											<option value="">없음</option>
+											<option th:each="parent : ${parentIssueList}"
+												th:value="${parent.parentIssueId}"
+												th:text="${parent.parentIssueTitle}">상위일감</option>
+										</select>
+									</div>
+								</div>
+							</div>
+
+							<div class="issues-card issues-detail-description-card">
+								<div class="issues-card-title">
+									<h4>설명</h4>
+								</div>
+								<textarea class="form-control issues-detail-description"
+									th:field="*{description}" th:disabled="${!canUpdateIssue}"
+									maxlength="1000"></textarea>
+							</div>
+
+							<div class="issues-card issues-detail-file-card">
+								<div class="issues-card-title">
+									<h4>첨부파일</h4>
+								</div>
+
+								<ul id="issueFileList" class="issues-detail-file-list"></ul>
+
+								<div id="issueFileEmpty" class="issues-empty-box">
+									첨부파일을 불러오는 중입니다.
+								</div>
+
+								<a id="issueFileDownloadAll"
+									class="btn btn-info btn-custon-rounded-four issues-download-all"
+									style="display: none;"
+									th:href="@{/project/{projectId}/issues/{issueId}/files/download(projectId=${selectedProjectId}, issueId=${issue.issueId})}">전체 다운로드</a>
+							</div>
+
+							<details class="issues-card issues-detail-history-card">
+								<summary class="issues-history-summary">
+									<span>변경 이력</span>
+									<strong th:text="|${#lists.size(historyList)}건|">0건</strong>
+								</summary>
+
+								<div class="issues-history-list" th:if="${!#lists.isEmpty(historyList)}">
+									<div class="issues-history-item" th:each="history : ${historyList}">
+										<div class="issues-history-meta">
+											<strong th:text="${history.changeTypeName}">상태 변경</strong>
+											<span th:text="${history.changedByName != null ? history.changedByName : history.changedBy}">사용자</span>
+											<span th:text="${#dates.format(history.changedAt, 'yyyy-MM-dd HH:mm')}">2026-06-28 12:00</span>
+										</div>
+										<div class="issues-history-body">
+											<span th:text="${history.beforeValue}">before</span>
+											<span class="issues-history-arrow">→</span>
+											<span th:text="${history.afterValue}">after</span>
+										</div>
+										<p th:text="${history.reason}">변경 사유</p>
+									</div>
+								</div>
+
+								<div class="issues-empty-box" th:if="${#lists.isEmpty(historyList)}">
+									변경 이력이 없습니다.
+								</div>
+							</details>
+						</div>
+
+						<div class="issues-detail-side">
+							<div class="issues-card issues-detail-side-card">
+								<div class="issues-card-title">
+									<h4>상세 설정</h4>
+								</div>
+
+								<div class="issues-side-info">
+									<span>식별번호</span>
+									<strong th:text="${issue.displayIssueNo}">#0001</strong>
+								</div>
+								<div class="issues-side-info">
+									<span>생성일</span>
+									<strong th:text="${#dates.format(issue.createdAt, 'yyyy-MM-dd HH:mm')}">-</strong>
+								</div>
+								<div class="issues-side-info">
+									<span>수정일</span>
+									<strong th:text="${issue.updatedAt != null ? #dates.format(issue.updatedAt, 'yyyy-MM-dd HH:mm') : '-'}">-</strong>
+								</div>
+								<div class="issues-side-info">
+									<span>상태</span>
+									<strong th:text="${issue.issueStatusName}">New</strong>
+								</div>
+
+								<div class="form-group issues-reason-group" th:if="${canUpdateIssue}">
+									<label for="historyReason">변경 사유</label>
+									<input type="text" id="historyReason" class="form-control"
+										th:field="*{historyReason}" maxlength="100"
+										placeholder="변경 사유">
+								</div>
+							</div>
+						</div>
+					</div>
+				</form>
+			</div>
+		</div>
+
+		<script th:inline="javascript">
+			(function() {
+				document.body.classList.add('issues-detail-body');
+
+				var canUpdateIssue = /*[[${canUpdateIssue}]]*/ false;
+				var fileListUrl = /*[[@{/project/{projectId}/issues/{issueId}/files(projectId=${selectedProjectId}, issueId=${issue.issueId})}]]*/ '';
+				var fileDownloadPrefix = /*[[@{|/project/${selectedProjectId}/issues/${issue.issueId}/files/|}]]*/ '';
+				var settingMap = {};
+				var fileList = document.getElementById('issueFileList');
+				var fileEmpty = document.getElementById('issueFileEmpty');
+				var fileDownloadAll = document.getElementById('issueFileDownloadAll');
+				var detailPage = document.querySelector('.issues-detail-page');
+				var historyCard = document.querySelector('.issues-detail-history-card');
+
+				if (historyCard && detailPage) {
+					historyCard.addEventListener('toggle', function() {
+						detailPage.classList.toggle('has-open-history',
+								historyCard.open);
+					});
+				}
+
+				document.querySelectorAll('.field-setting-data').forEach(function(item) {
+					var fieldCode = item.getAttribute('data-field-code');
+
+					settingMap[fieldCode] = {
+						useYn : item.getAttribute('data-use-yn'),
+						requiredYn : item.getAttribute('data-required-yn')
+					};
+				});
+
+				function setDisabled(group, disabled) {
+					group.querySelectorAll('input, select, textarea').forEach(function(input) {
+						input.disabled = disabled || !canUpdateIssue;
+
+						if (input.disabled) {
+							input.required = false;
+						}
+					});
+				}
+
+				document.querySelectorAll('.dynamic-field').forEach(function(group) {
+					var fieldCode = group.getAttribute('data-field-code');
+					var setting = settingMap[fieldCode];
+					var isUsed = setting && setting.useYn === 'Y';
+					var isRequired = isUsed && setting.requiredYn === 'Y';
+
+					group.classList.toggle('is-hidden', !isUsed);
+
+					group.querySelectorAll('.dynamic-required').forEach(function(mark) {
+						mark.style.display = isRequired ? 'inline' : 'none';
+					});
+
+					setDisabled(group, !isUsed);
+
+					if (isUsed && canUpdateIssue) {
+						group.querySelectorAll('input, select, textarea').forEach(function(input) {
+							input.required = isRequired;
+						});
+					}
+				});
+
+				function setFileMessage(message) {
+					if (fileEmpty) {
+						fileEmpty.textContent = message;
+						fileEmpty.style.display = 'block';
+					}
+					if (fileDownloadAll) {
+						fileDownloadAll.style.display = 'none';
+					}
+				}
+
+				function renderIssueFiles(files) {
+					if (!fileList) {
+						return;
+					}
+
+					fileList.innerHTML = '';
+
+					if (!files || files.length === 0) {
+						setFileMessage('첨부된 파일이 없습니다.');
+						return;
+					}
+
+					if (fileEmpty) {
+						fileEmpty.style.display = 'none';
+					}
+					if (fileDownloadAll) {
+						fileDownloadAll.style.display = 'inline-flex';
+					}
+
+					files.forEach(function(file) {
+						var item = document.createElement('li');
+						var info = document.createElement('span');
+						var name = document.createElement('span');
+						var version = document.createElement('small');
+						var download = document.createElement('a');
+
+						name.textContent = file.originalName || '첨부파일';
+						version.textContent = 'v' + (file.fileVersion || 1);
+						info.appendChild(name);
+						info.appendChild(version);
+
+						download.className = 'btn btn-default btn-custon-rounded-four btn-xs';
+						download.href = fileDownloadPrefix + encodeURIComponent(file.fileId) + '/download';
+						download.textContent = '다운로드';
+
+						item.appendChild(info);
+						item.appendChild(download);
+						fileList.appendChild(item);
+					});
+				}
+
+				function loadIssueFiles() {
+					if (!fileListUrl) {
+						setFileMessage('첨부파일을 불러오지 못했습니다.');
+						return;
+					}
+
+					if (fileDownloadAll) {
+						fileDownloadAll.style.display = 'none';
+					}
+
+					fetch(fileListUrl, {
+						headers : {
+							'Accept' : 'application/json'
+						}
+					}).then(function(response) {
+						if (!response.ok) {
+							throw new Error('file request failed');
+						}
+						return response.json();
+					}).then(renderIssueFiles).catch(function() {
+						setFileMessage('첨부파일을 불러오지 못했습니다.');
+					});
+				}
+
+				loadIssueFiles();
+			})();
+		</script>
+
+	</div>
+</body>
+</html>

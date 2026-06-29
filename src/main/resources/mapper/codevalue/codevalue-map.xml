@@ -34,16 +34,24 @@
 		where user_id = #{userId}
 		and setting_group_name in ('g001', 'g002', 'g003')
 
-		<if test="settingGroupName != null and settingGroupName != ''">
-			and setting_group_name = #{settingGroupName}
+		<if test="settingGroupNameList != null and settingGroupNameList.size() > 0">
+			and setting_group_name in
+			<foreach collection="settingGroupNameList" item="settingGroupName"
+				open="(" separator="," close=")">
+				#{settingGroupName}
+			</foreach>
 		</if>
 
 		<if test="settingName != null and settingName != ''">
 			and upper(setting_name) like '%' || upper(#{settingName}) || '%'
 		</if>
 
-		<if test="defaultYn != null and defaultYn != ''">
-			and default_yn = #{defaultYn}
+		<if test="defaultYnList != null and defaultYnList.size() > 0">
+			and default_yn in
+			<foreach collection="defaultYnList" item="defaultYn"
+				open="(" separator="," close=")">
+				#{defaultYn}
+			</foreach>
 		</if>
 
 		order by setting_group_name, setting_code_id

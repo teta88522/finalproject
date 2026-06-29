@@ -2,9 +2,13 @@ package com.pixcel.app.workflow.service.impl;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,8 +25,56 @@ public class WorkflowServiceImpl implements WorkflowService {
 
 	private final WorkflowMapper workflowMapper;
 
-	// j001: 담당자, j002: 작성자, j003: 기본
-	private static final List<String> APPLY_TARGET_CODE_LIST = Arrays.asList("j001", "j002", "j003");
+	private static final String APPLY_TARGET_DEFAULT = "j001";
+	private static final String APPLY_TARGET_AUTHOR = "j002";
+	private static final String APPLY_TARGET_ASSIGNEE = "j003";
+
+	private static final String OPTION_ISSUE_TYPE = "ISSUE_TYPE";
+	private static final String OPTION_ROLE = "ROLE";
+	private static final String OPTION_ISSUE_STATUS = "ISSUE_STATUS";
+	private static final String OPTION_WORKFLOW_COUNT = "WORKFLOW_COUNT";
+
+	// apply target: j001 default, j002 author, j003 assignee
+	private static final List<String> APPLY_TARGET_CODE_LIST = Arrays.asList(APPLY_TARGET_DEFAULT,
+			APPLY_TARGET_AUTHOR, APPLY_TARGET_ASSIGNEE);
+
+	@Override
+	public Map<String, Object> getWorkflowListPageData(String userId) {
+		validateUserId(userId);
+
+		List<WorkflowVO> pageRows = workflowMapper.selectWorkflowListPageRows(userId);
+
+		Map<String, Object> pageData = new HashMap<>();
+		pageData.put("issueTypeList", filterWorkflowRows(pageRows, OPTION_ISSUE_TYPE));
+		pageData.put("roleList", filterWorkflowRows(pageRows, OPTION_ROLE));
+		pageData.put("workflowCountList", filterWorkflowRows(pageRows, OPTION_WORKFLOW_COUNT));
+
+		return pageData;
+	}
+
+	@Override
+	public Map<String, Object> getWorkflowOptionPageData(String userId) {
+		validateUserId(userId);
+
+		List<WorkflowVO> optionRows = workflowMapper.selectWorkflowOptionRows(userId);
+
+		Map<String, Object> pageData = new HashMap<>();
+		pageData.put("issueTypeList", filterWorkflowRows(optionRows, OPTION_ISSUE_TYPE));
+		pageData.put("roleList", filterWorkflowRows(optionRows, OPTION_ROLE));
+		pageData.put("issueStatusList", filterWorkflowRows(optionRows, OPTION_ISSUE_STATUS));
+
+		return pageData;
+	}
+
+	private List<WorkflowVO> filterWorkflowRows(List<WorkflowVO> rows, String optionGroup) {
+		if (rows == null || rows.isEmpty()) {
+			return Collections.emptyList();
+		}
+
+		return rows.stream()
+				.filter(row -> optionGroup.equals(row.getOptionGroup()))
+				.collect(Collectors.toList());
+	}
 
 	// 현재 사용자가 소유한 일감유형 목록을 조회한다.
 	@Override
@@ -83,16 +135,37 @@ public class WorkflowServiceImpl implements WorkflowService {
 		List<WorkflowVO> transitionList = parseTransitionKeyList(workflowVO);
 		validateStatusOwner(transitionList, userId);
 
-		workflowMapper.deleteWorkflowTransition(workflowVO);
+		String requestedApplyTargetCode = workflowVO.getApplyTargetCode();
+		List<String> saveApplyTargetCodeList = getSaveApplyTargetCodeList(requestedApplyTargetCode);
+		List<WorkflowVO> saveTransitionList = new ArrayList<>();
 
-		for (WorkflowVO transition : transitionList) {
-			transition.setIssueTypeId(workflowVO.getIssueTypeId());
-			transition.setRoleId(workflowVO.getRoleId());
-			transition.setApplyTargetCode(workflowVO.getApplyTargetCode());
-			transition.setCreatedBy(userId);
+		for (String applyTargetCode : saveApplyTargetCodeList) {
+			workflowVO.setApplyTargetCode(applyTargetCode);
+			workflowMapper.deleteWorkflowTransition(workflowVO);
 
-			workflowMapper.insertWorkflowTransition(transition);
+			for (WorkflowVO transition : transitionList) {
+				saveTransitionList.add(createSaveTransition(workflowVO, transition, applyTargetCode, userId));
+			}
 		}
+
+		if (!saveTransitionList.isEmpty()) {
+			workflowMapper.insertWorkflowTransitionList(saveTransitionList);
+		}
+
+		workflowVO.setApplyTargetCode(requestedApplyTargetCode);
+	}
+
+	private WorkflowVO createSaveTransition(WorkflowVO workflowVO, WorkflowVO transition, String applyTargetCode,
+			String userId) {
+		WorkflowVO saveTransition = new WorkflowVO();
+		saveTransition.setIssueTypeId(workflowVO.getIssueTypeId());
+		saveTransition.setRoleId(workflowVO.getRoleId());
+		saveTransition.setFromStatusId(transition.getFromStatusId());
+		saveTransition.setToStatusId(transition.getToStatusId());
+		saveTransition.setApplyTargetCode(applyTargetCode);
+		saveTransition.setCreatedBy(userId);
+
+		return saveTransition;
 	}
 
 	// 일감유형 소유자 검증
@@ -189,6 +262,14 @@ public class WorkflowServiceImpl implements WorkflowService {
 		}
 	}
 
+	private List<String> getSaveApplyTargetCodeList(String applyTargetCode) {
+		if (APPLY_TARGET_DEFAULT.equals(applyTargetCode)) {
+			return APPLY_TARGET_CODE_LIST;
+		}
+
+		return Arrays.asList(applyTargetCode);
+	}
+
 	// 로그인 사용자 검증
 	private void validateUserId(String userId) {
 
@@ -238,7 +319,9 @@ public class WorkflowServiceImpl implements WorkflowService {
 	    validateRequired(workflowVO.getTargetIssueTypeId(), "대상 일감유형");
 	    validateRequired(workflowVO.getTargetRoleId(), "대상 역할");
 
-	    validateCopyApplyTargetCodeList(workflowVO.getCopyApplyTargetCodeList());
+	    List<String> requestedApplyTargetCodeList = normalizeCopyApplyTargetCodeList(
+	            workflowVO.getCopyApplyTargetCodeList());
+	    boolean copyDefaultToAll = requestedApplyTargetCodeList.contains(APPLY_TARGET_DEFAULT);
 
 	    validateIssueTypeOwner(workflowVO.getSourceIssueTypeId(), userId);
 	    validateIssueTypeOwner(workflowVO.getTargetIssueTypeId(), userId);
@@ -250,28 +333,47 @@ public class WorkflowServiceImpl implements WorkflowService {
 	        throw new IllegalArgumentException("원본과 대상이 같습니다.");
 	    }
 
+	    workflowVO.setCopyApplyTargetCodeList(copyDefaultToAll ? Collections.singletonList(APPLY_TARGET_DEFAULT)
+	            : requestedApplyTargetCodeList);
+
 	    int sourceCount = workflowMapper.countSourceWorkflowTransition(workflowVO);
 
 	    if (sourceCount == 0) {
 	        throw new IllegalArgumentException("선택한 전환 기준에 복사할 업무흐름 설정이 없습니다.");
 	    }
 
+	    workflowVO.setCopyApplyTargetCodeList(copyDefaultToAll ? APPLY_TARGET_CODE_LIST : requestedApplyTargetCodeList);
 	    workflowMapper.deleteTargetWorkflowTransitionForCopy(workflowVO);
-	    workflowMapper.copyWorkflowTransition(workflowVO);
+
+	    if (copyDefaultToAll) {
+	        workflowVO.setCopyApplyTargetCodeList(Collections.singletonList(APPLY_TARGET_DEFAULT));
+	        workflowMapper.copyDefaultWorkflowTransitionToAll(workflowVO);
+	    } else {
+	        workflowVO.setCopyApplyTargetCodeList(requestedApplyTargetCodeList);
+	        workflowMapper.copyWorkflowTransition(workflowVO);
+	    }
 	}
-	
+
 	// ==============================
 	// 업무흐름 복사 추가
 	// 복사할 전환 기준 목록 검증
 	// ==============================
-	private void validateCopyApplyTargetCodeList(List<String> copyApplyTargetCodeList) {
+	private List<String> normalizeCopyApplyTargetCodeList(List<String> copyApplyTargetCodeList) {
 
 	    if (copyApplyTargetCodeList == null || copyApplyTargetCodeList.isEmpty()) {
 	        throw new IllegalArgumentException("복사할 전환 기준을 선택해주세요.");
 	    }
 
+	    List<String> normalizedList = new ArrayList<>();
+
 	    for (String applyTargetCode : copyApplyTargetCodeList) {
 	        validateApplyTargetCode(applyTargetCode);
+
+	        if (!normalizedList.contains(applyTargetCode)) {
+	            normalizedList.add(applyTargetCode);
+	        }
 	    }
+
+	    return normalizedList;
 	}
 }

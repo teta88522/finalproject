@@ -190,9 +190,14 @@
 								</div>
 
 								<div class="form-group">
-									<label for="progressRate">진척도</label> <input type="number"
-										id="progressRate" th:field="*{progressRate}"
-										class="form-control" min="0" max="100" step="1">
+									<label for="progressRate">진척도</label>
+									<div class="issues-detail-progress-control">
+										<input type="range" id="progressRate" min="0" max="100"
+											step="10" th:field="*{progressRate}"
+											oninput="this.nextElementSibling.textContent = this.value + '%'">
+										<span class="issues-detail-progress-value"
+											th:text="|${issue.progressRate != null ? issue.progressRate : 0}%|">0%</span>
+									</div>
 								</div>
 
 								<div class="form-group dynamic-field"
@@ -230,10 +235,15 @@
 							th:href="@{/project/{projectId}/issues(projectId=${selectedProjectId})}"
 							class="btn btn-custon-rounded-four btn-default"> 취소 </a>
 
-						<button type="submit"
+						<button type="submit" name="submitAction" value="next"
 							class="btn btn-custon-rounded-four btn-primary"
 							th:disabled="${#lists.isEmpty(issueTypeList) or #lists.isEmpty(versionList) or #lists.isEmpty(priorityList)}">
-							등록</button>
+							다음</button>
+
+						<button type="submit" name="submitAction" value="finish"
+							class="btn btn-custon-rounded-four btn-primary"
+							th:disabled="${#lists.isEmpty(issueTypeList) or #lists.isEmpty(versionList) or #lists.isEmpty(priorityList)}">
+							완료</button>
 					</div>
 
 				</form>
@@ -248,7 +258,17 @@
 				var issueTypeSelect = document.getElementById('issueTypeId');
 				var versionSelect = document.getElementById('versionId');
 				var milestoneSelect = document.getElementById('milestoneId');
+				var assigneeSelect = document.getElementById('assigneeId');
+				var parentIssueSelect = document.getElementById('parentIssueId');
+				var createOptionUrl = /*[[@{/project/{projectId}/issues/create/options(projectId=${selectedProjectId})}]]*/ '';
+				var selectedMilestoneId = /*[[${issue.milestoneId}]]*/ '';
+				var selectedAssigneeId = /*[[${issue.assigneeId}]]*/ '';
+				var selectedParentIssueId = /*[[${issue.parentIssueId}]]*/ '';
 				var settingMap = {};
+
+				selectedMilestoneId = selectedMilestoneId || '';
+				selectedAssigneeId = selectedAssigneeId || '';
+				selectedParentIssueId = selectedParentIssueId || '';
 
 				document.querySelectorAll('.field-setting-data').forEach(
 						function(item) {
@@ -350,6 +370,82 @@
 					}
 				}
 
+				function resetSelect(select, placeholder) {
+					if (!select) {
+						return;
+					}
+
+					select.innerHTML = '';
+
+					var option = document.createElement('option');
+					option.value = '';
+					option.textContent = placeholder;
+					select.appendChild(option);
+				}
+
+				function appendOption(select, value, text, selectedValue) {
+					var option = document.createElement('option');
+
+					option.value = value;
+					option.textContent = text;
+					option.selected = selectedValue && selectedValue === value;
+					select.appendChild(option);
+
+					return option;
+				}
+
+				function renderCreateExtraOptions(data) {
+					resetSelect(milestoneSelect, '선택');
+					resetSelect(assigneeSelect, '선택');
+					resetSelect(parentIssueSelect, '선택');
+
+					(data.milestoneList || []).forEach(function(milestone) {
+						var option = appendOption(milestoneSelect,
+								milestone.milestoneId, milestone.milestoneTitle,
+								selectedMilestoneId);
+						option.setAttribute('data-version-id', milestone.versionId);
+					});
+
+					(data.assigneeList || []).forEach(function(assignee) {
+						appendOption(assigneeSelect, assignee.assigneeId,
+								assignee.assigneeName, selectedAssigneeId);
+					});
+
+					(data.parentIssueList || []).forEach(function(parentIssue) {
+						appendOption(parentIssueSelect, parentIssue.parentIssueId,
+								parentIssue.parentIssueTitle + ' ('
+										+ parentIssue.parentIssueId + ')',
+								selectedParentIssueId);
+					});
+
+					filterMilestoneOptions();
+				}
+
+				function loadCreateExtraOptions() {
+					if (!createOptionUrl) {
+						return;
+					}
+
+					resetSelect(milestoneSelect, '불러오는 중');
+					resetSelect(assigneeSelect, '불러오는 중');
+					resetSelect(parentIssueSelect, '불러오는 중');
+
+					fetch(createOptionUrl, {
+						headers : {
+							'Accept' : 'application/json'
+						}
+					}).then(function(response) {
+						if (!response.ok) {
+							throw new Error('create option request failed');
+						}
+						return response.json();
+					}).then(renderCreateExtraOptions).catch(function() {
+						resetSelect(milestoneSelect, '목록을 불러오지 못했습니다');
+						resetSelect(assigneeSelect, '목록을 불러오지 못했습니다');
+						resetSelect(parentIssueSelect, '목록을 불러오지 못했습니다');
+					});
+				}
+
 				if (issueTypeSelect) {
 					issueTypeSelect.addEventListener('change',
 							applyFieldSettings);
@@ -361,6 +457,7 @@
 				}
 
 				applyFieldSettings();
+				loadCreateExtraOptions();
 			})();
 		</script>
 

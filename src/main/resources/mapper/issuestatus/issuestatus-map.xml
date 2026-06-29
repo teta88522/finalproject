@@ -33,8 +33,12 @@
 			and upper(status_name) like '%' || upper(#{statusName}) || '%'
 		</if>
 
-		<if test="closedYn != null and closedYn != ''">
-			and closed_yn = #{closedYn}
+		<if test="closedYnList != null and closedYnList.size() > 0">
+			and closed_yn in
+			<foreach collection="closedYnList" item="closedYn"
+				open="(" separator="," close=")">
+				#{closedYn}
+			</foreach>
 		</if>
 
 		order by issue_status_id ASC

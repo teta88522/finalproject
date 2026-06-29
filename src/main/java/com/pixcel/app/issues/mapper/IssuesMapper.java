@@ -16,6 +16,13 @@ public interface IssuesMapper {
 
 	IssuesVO selectProjectDetailForUser(@Param("projectId") String projectId, @Param("userId") String userId);
 
+	IssuesVO selectIssueCreateProjectAccess(@Param("projectId") String projectId, @Param("userId") String userId,
+			@Param("permissionCode") String permissionCode);
+
+	IssuesVO selectIssueListProjectAccess(@Param("projectId") String projectId, @Param("userId") String userId,
+			@Param("issueCreatePermissionCode") String issueCreatePermissionCode,
+			@Param("milestoneCreatePermissionCode") String milestoneCreatePermissionCode);
+
 	int countProjectPermission(@Param("projectId") String projectId, @Param("userId") String userId,
 			@Param("permissionCode") String permissionCode, @Param("permissionName") String permissionName);
 
@@ -23,16 +30,28 @@ public interface IssuesMapper {
 
 	Integer selectNextIssueNo(@Param("projectId") String projectId);
 
+	Integer selectNextIssueNoForUpdate(@Param("projectId") String projectId);
+
 	// ==============================
 	// 일감 전체조회
 	// ==============================
-	
-	// 페이징
-	int countIssueList(IssuesVO searchVO);
 
 	List<IssuesVO> selectIssueList(IssuesVO searchVO);
 
 	List<IssuesVO> selectIssueStatusList(@Param("projectId") String projectId);
+
+	IssuesVO selectIssueDetail(@Param("projectId") String projectId, @Param("issueId") String issueId,
+			@Param("userId") String userId, @Param("updatePermissionCode") String updatePermissionCode,
+			@Param("deletePermissionCode") String deletePermissionCode);
+
+	int countIssueDetailAccess(@Param("projectId") String projectId, @Param("issueId") String issueId,
+			@Param("userId") String userId);
+
+	List<IssuesVO> selectIssueDetailRows(@Param("projectId") String projectId,
+			@Param("issueId") String issueId, @Param("userId") String userId);
+
+	List<IssuesVO> selectAvailableStatusList(@Param("projectId") String projectId,
+			@Param("issueId") String issueId, @Param("userId") String userId);
 
 	// ==============================
 	// 일감 생성 / 조회 공통 선택 목록
@@ -57,6 +76,15 @@ public interface IssuesMapper {
 
 	List<IssuesVO> selectParentIssueList(@Param("projectId") String projectId);
 
+	List<IssuesVO> selectIssueCreateBaseOptionRows(@Param("projectId") String projectId);
+
+	List<IssuesVO> selectIssueCreateExtraOptionRows(@Param("projectId") String projectId);
+
+	List<IssuesVO> selectIssueListOptionRows(@Param("projectId") String projectId);
+
+	IssuesVO selectIssueCreateSaveValidation(@Param("issue") IssuesVO issue, @Param("userId") String userId,
+			@Param("permissionCode") String permissionCode);
+
 	// ==============================
 	// 일감 생성 검증
 	// ==============================
@@ -68,6 +96,9 @@ public interface IssuesMapper {
 	int countMilestoneForCreate(@Param("projectId") String projectId, @Param("versionId") String versionId,
 			@Param("milestoneId") String milestoneId);
 
+	int countMilestoneForUpdate(@Param("projectId") String projectId, @Param("versionId") String versionId,
+			@Param("milestoneId") String milestoneId);
+
 	int countAssigneeForProject(@Param("projectId") String projectId, @Param("assigneeId") String assigneeId);
 
 	int countParentIssueForProject(@Param("projectId") String projectId, @Param("parentIssueId") String parentIssueId);
@@ -77,11 +108,22 @@ public interface IssuesMapper {
 	// ==============================
 
 	int insertIssue(IssuesVO issue);
+
+	IssuesVO selectIssueForUpdate(@Param("projectId") String projectId, @Param("issueId") String issueId);
+
+	int countAllowedStatusTransition(@Param("projectId") String projectId, @Param("issueId") String issueId,
+			@Param("toStatusId") String toStatusId, @Param("userId") String userId);
+
+	int updateIssue(IssuesVO issue);
+
+	int insertIssueHistoryByProcedure(IssuesVO history);
 	
 	int countChildIssue(
 	        @Param("projectId") String projectId,
 	        @Param("issueId") String issueId
 	);
+
+	int deleteIssueHistory(@Param("issueId") String issueId);
 
 	int deleteIssue(@Param("projectId") String projectId, @Param("issueId") String issueId);
 }

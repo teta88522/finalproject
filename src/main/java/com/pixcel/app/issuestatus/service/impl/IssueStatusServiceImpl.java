@@ -1,6 +1,8 @@
 package com.pixcel.app.issuestatus.service.impl;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,8 +32,42 @@ public class IssueStatusServiceImpl implements IssueStatusService {
 	public List<IssueStatusVO> getIssueStatusSearchList(IssueStatusVO searchVO) {
 
 		validateUserId(searchVO.getUserId());
+		normalizeSearchCondition(searchVO);
 
 		return issueStatusMapper.selectIssueStatusSearchList(searchVO);
+	}
+
+	private void normalizeSearchCondition(IssueStatusVO searchVO) {
+		searchVO.setClosedYnList(normalizeSearchList(searchVO.getClosedYnList(), searchVO.getClosedYn()));
+	}
+
+	private List<String> normalizeSearchList(List<String> valueList, String legacyValue) {
+		List<String> normalizedList = valueList == null ? Collections.emptyList() : valueList.stream()
+				.map(this::trimToNull)
+				.filter(value -> value != null)
+				.distinct()
+				.collect(Collectors.toList());
+
+		if (!normalizedList.isEmpty()) {
+			return normalizedList;
+		}
+
+		String checkedLegacyValue = trimToNull(legacyValue);
+
+		if (checkedLegacyValue == null) {
+			return Collections.emptyList();
+		}
+
+		return Collections.singletonList(checkedLegacyValue);
+	}
+
+	private String trimToNull(String value) {
+		if (value == null) {
+			return null;
+		}
+
+		String trimmedValue = value.trim();
+		return trimmedValue.isEmpty() ? null : trimmedValue;
 	}
 
 	// 사용자별 일감 상태 ID 기준으로 상세 정보를 조회한다.

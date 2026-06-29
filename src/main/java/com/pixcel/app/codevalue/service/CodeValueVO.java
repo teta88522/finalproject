@@ -1,5 +1,7 @@
 package com.pixcel.app.codevalue.service;
 
+import java.util.List;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -24,11 +26,15 @@ public class CodeValueVO {
 	// 설정코드 그룹코드
 	private String settingGroupName;
 
+	private List<String> settingGroupNameList;
+
 	// 설정 명
 	private String settingName;
 
 	// 기본값 여부
 	private String defaultYn;
+
+	private List<String> defaultYnList;
 
 	// 사용 여부
 	private String useYn;

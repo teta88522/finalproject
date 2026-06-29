@@ -47,7 +47,8 @@
 					등록해주세요.</div>
 
 				<form th:action="@{/workflow/copy}" method="post"
-					th:object="${workflowVO}" class="workflow-copy-form">
+					th:object="${workflowVO}" class="workflow-copy-form workflow-loading-form"
+					data-loading-message="업무흐름을 복사하는 중입니다.">
 
 					<div class="workflow-copy-card">
 
@@ -126,13 +127,13 @@
 
 							<div class="workflow-copy-apply-list">
 								<label class="workflow-copy-check-item"> <input
-									type="checkbox" name="copyApplyTargetCodeList" value="j003"
+									type="checkbox" name="copyApplyTargetCodeList" value="j001"
 									checked> <span>기본 전환</span>
 								</label> <label class="workflow-copy-check-item"> <input
 									type="checkbox" name="copyApplyTargetCodeList" value="j002">
 									<span>작성자일 때</span>
 								</label> <label class="workflow-copy-check-item"> <input
-									type="checkbox" name="copyApplyTargetCodeList" value="j001">
+									type="checkbox" name="copyApplyTargetCodeList" value="j003">
 									<span>담당자일 때</span>
 								</label>
 							</div>
@@ -156,9 +157,44 @@
 					</div>
 				</form>
 
+				<div class="workflow-processing-overlay" aria-live="polite">
+					<div class="workflow-processing-box">
+						<div class="workflow-processing-spinner"></div>
+						<div class="workflow-processing-title">처리중</div>
+						<div class="workflow-processing-message">업무흐름을 복사하는 중입니다.</div>
+					</div>
+				</div>
+
 			</div>
 		</div>
 		<!-- 업무흐름 복사 추가 끝 -->
+
+		<script>
+			document.addEventListener('DOMContentLoaded', function() {
+				const loadingForm = document.querySelector('.workflow-loading-form');
+				const loadingOverlay = document.querySelector('.workflow-processing-overlay');
+				const loadingMessage = document.querySelector('.workflow-processing-message');
+
+				if (!loadingForm || !loadingOverlay) {
+					return;
+				}
+
+				loadingForm.addEventListener('submit', function() {
+					const submitButton = loadingForm.querySelector('button[type="submit"]');
+
+					if (submitButton) {
+						submitButton.disabled = true;
+						submitButton.textContent = '처리중';
+					}
+
+					if (loadingMessage && loadingForm.dataset.loadingMessage) {
+						loadingMessage.textContent = loadingForm.dataset.loadingMessage;
+					}
+
+					loadingOverlay.classList.add('is-visible');
+				});
+			});
+		</script>
 
 	</div>
 </body>

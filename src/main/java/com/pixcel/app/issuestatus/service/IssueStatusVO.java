@@ -1,5 +1,7 @@
 package com.pixcel.app.issuestatus.service;
 
+import java.util.List;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -22,6 +24,8 @@ public class IssueStatusVO {
     private String statusAnswer;
 
     private String closedYn;
+
+    private List<String> closedYnList;
     
     private String userId;
     

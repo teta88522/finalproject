@@ -25,6 +25,8 @@ public class IssueTypeVO {
 
     private String initialStatusId;
 
+    private List<String> initialStatusIdList;
+
     private String issueTypeName;
 
     // 화면에서는 제외. DB 컬럼은 남아 있으므로 값은 null로 관리한다.
@@ -66,6 +68,10 @@ public class IssueTypeVO {
      */
     private String initialStatusName;
 
+    private String issueStatusId;
+
+    private String statusName;
+
     private String projectName;
 
     private String projectNames;
@@ -81,6 +87,8 @@ public class IssueTypeVO {
     private List<String> fieldCodeList;
 
     private List<String> requiredFieldCodeList;
+
+    private List<IssueTypeVO> fieldSettingList;
     
     /*
      * 요약 화면 조회용 필드
@@ -98,4 +106,16 @@ public class IssueTypeVO {
     private String dueDateYn;
 
     private String estimatedHoursYn;
+
+    private String optionGroup;
+
+    private Integer duplicateCount;
+
+    private Integer initialStatusCount;
+
+    private Integer selectedProjectCount;
+
+    private Integer usedCount;
+
+    private Integer sortNo;
 }

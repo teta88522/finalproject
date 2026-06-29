@@ -52,37 +52,66 @@
 						<div class="search-form-row workflow-target-row">
 
 							<div class="search-field">
-								<label for="roleId">역할</label> <select id="roleId" name="roleId">
-									<option value="">선택</option>
-									<option th:each="role : ${roleList}" th:value="${role.roleId}"
-										th:text="${role.roleName}"
-										th:selected="${searchVO.roleId == role.roleId}">개발자</option>
-								</select>
+								<label>역할</label>
+								<details class="filter-dropdown" data-placeholder="선택">
+									<summary><span class="filter-selected-text">선택</span></summary>
+									<div class="filter-check-list filter-dropdown-panel">
+										<label class="filter-check-item">
+											<input type="radio" name="roleId" value=""
+												th:checked="${searchVO.roleId == null or searchVO.roleId == ''}">
+											<span>선택</span>
+										</label>
+										<label class="filter-check-item" th:each="role : ${roleList}">
+											<input type="radio" name="roleId" th:value="${role.roleId}"
+												th:checked="${searchVO.roleId == role.roleId}">
+											<span th:text="${role.roleName}">개발자</span>
+										</label>
+									</div>
+								</details>
 							</div>
 
 							<div class="search-field">
-								<label for="issueTypeId">일감유형</label> <select id="issueTypeId"
-									name="issueTypeId">
-									<option value="">선택</option>
-									<option th:each="issueType : ${issueTypeList}"
-										th:value="${issueType.issueTypeId}"
-										th:text="${issueType.issueTypeName}"
-										th:selected="${searchVO.issueTypeId == issueType.issueTypeId}">
-										결함</option>
-								</select>
+								<label>일감유형</label>
+								<details class="filter-dropdown" data-placeholder="선택">
+									<summary><span class="filter-selected-text">선택</span></summary>
+									<div class="filter-check-list filter-dropdown-panel">
+										<label class="filter-check-item">
+											<input type="radio" name="issueTypeId" value=""
+												th:checked="${searchVO.issueTypeId == null or searchVO.issueTypeId == ''}">
+											<span>선택</span>
+										</label>
+										<label class="filter-check-item" th:each="issueType : ${issueTypeList}">
+											<input type="radio" name="issueTypeId"
+												th:value="${issueType.issueTypeId}"
+												th:checked="${searchVO.issueTypeId == issueType.issueTypeId}">
+											<span th:text="${issueType.issueTypeName}">결함</span>
+										</label>
+									</div>
+								</details>
 							</div>
 
 							<div class="search-field">
-								<label for="closedYn">완료여부</label> <select id="closedYn"
-									name="closedYn">
-									<option value=""
-										th:selected="${searchVO.closedYn == null or searchVO.closedYn == ''}">
-										전체</option>
-									<option value="N" th:selected="${searchVO.closedYn == 'N'}">
-										미완료</option>
-									<option value="Y" th:selected="${searchVO.closedYn == 'Y'}">
-										완료</option>
-								</select>
+								<label>완료여부</label>
+								<details class="filter-dropdown" data-placeholder="전체">
+									<summary><span class="filter-selected-text">전체</span></summary>
+									<div class="filter-check-list filter-dropdown-panel">
+										<label class="filter-check-item">
+											<input type="radio" name="closedYn" value=""
+												th:checked="${searchVO.closedYn == null or searchVO.closedYn == ''}">
+											<span>전체</span>
+										</label>
+										<label class="filter-check-item">
+											<input type="radio" name="closedYn" value="N"
+												th:checked="${searchVO.closedYn == 'N'}">
+											<span>미완료</span>
+										</label>
+										<label class="filter-check-item">
+											<input type="radio" name="closedYn" value="Y"
+												th:checked="${searchVO.closedYn == 'Y'}">
+											<span>완료</span>
+										</label>
+									</div>
+								</details>
 							</div>
 
 						</div>
@@ -90,11 +119,11 @@
 						<div class="search-btn-area">
 							<a th:href="@{/workflow/transition}"
 								class="btn btn-custon-rounded-four btn-default filter-btn">
-								clean </a>
+								초기화 </a>
 
 							<button type="submit"
 								class="btn btn-custon-rounded-four btn-primary filter-btn">
-								apply</button>
+								검색</button>
 						</div>
 					</form>
 				</div>
@@ -115,10 +144,10 @@
 								roleId=${searchVO.roleId},
 								issueTypeId=${searchVO.issueTypeId},
 								closedYn=${searchVO.closedYn},
-								applyTargetCode='j003'
+								applyTargetCode='j001'
 							)}"
 							class="workflow-apply-item"
-							th:classappend="${searchVO.applyTargetCode == 'j003'} ? ' workflow-apply-item-active' : ''">
+							th:classappend="${searchVO.applyTargetCode == 'j001'} ? ' workflow-apply-item-active' : ''">
 							<strong>기본 전환</strong> <span>역할 기준으로 기본 허용되는 상태 전환입니다.</span>
 						</a> <a
 							th:href="@{/workflow/transition(
@@ -135,10 +164,10 @@
 								roleId=${searchVO.roleId},
 								issueTypeId=${searchVO.issueTypeId},
 								closedYn=${searchVO.closedYn},
-								applyTargetCode='j001'
+								applyTargetCode='j003'
 							)}"
 							class="workflow-apply-item"
-							th:classappend="${searchVO.applyTargetCode == 'j001'} ? ' workflow-apply-item-active' : ''">
+							th:classappend="${searchVO.applyTargetCode == 'j003'} ? ' workflow-apply-item-active' : ''">
 							<strong>담당자일 때</strong> <span>로그인 사용자가 일감 담당자인 경우의 전환입니다.</span>
 						</a>
 
@@ -147,7 +176,8 @@
 
 				<!-- 상태 전환 저장 -->
 				<form th:action="@{/workflow/transition/save}" method="post"
-					class="workflow-transition-form">
+					class="workflow-transition-form workflow-loading-form"
+					data-loading-message="업무흐름을 저장하는 중입니다.">
 
 					<input type="hidden" name="roleId" th:value="${searchVO.roleId}">
 					<input type="hidden" name="issueTypeId"
@@ -302,6 +332,14 @@
 					</div>
 				</form>
 
+				<div class="workflow-processing-overlay" aria-live="polite">
+					<div class="workflow-processing-box">
+						<div class="workflow-processing-spinner"></div>
+						<div class="workflow-processing-title">처리중</div>
+						<div class="workflow-processing-message">업무흐름을 저장하는 중입니다.</div>
+					</div>
+				</div>
+
 			</div>
 		</div>
 
@@ -323,6 +361,63 @@
 								const transitionChecks = Array
 										.from(document
 												.querySelectorAll('.workflow-transition-check'));
+								const filterDropdowns = Array
+										.from(document
+												.querySelectorAll('.filter-dropdown'));
+
+								function updateFilterSummary(dropdown) {
+									const checkedLabels = Array
+											.from(
+													dropdown
+															.querySelectorAll('input[type="checkbox"]:checked, input[type="radio"]:checked'))
+											.map(function(input) {
+												const label = input
+														.closest('.filter-check-item');
+												return label ? label.innerText
+														.trim() : '';
+											}).filter(function(text) {
+												return text.length > 0;
+											});
+									const summaryText = dropdown
+											.querySelector('.filter-selected-text');
+									const placeholder = dropdown
+											.getAttribute('data-placeholder')
+											|| '전체';
+
+									if (!summaryText) {
+										return;
+									}
+
+									if (checkedLabels.length === 0) {
+										summaryText.textContent = placeholder;
+										dropdown.classList
+												.remove('has-selected');
+										return;
+									}
+
+									summaryText.textContent = checkedLabels
+											.join(', ');
+									dropdown.classList.add('has-selected');
+								}
+
+								filterDropdowns.forEach(function(dropdown) {
+									updateFilterSummary(dropdown);
+									dropdown.addEventListener('change',
+											function() {
+												updateFilterSummary(dropdown);
+											});
+								});
+
+								document.addEventListener('click', function(
+										event) {
+									filterDropdowns.forEach(function(dropdown) {
+										if (dropdown.open
+												&& !dropdown
+														.contains(event.target)) {
+											dropdown.removeAttribute('open');
+										}
+									});
+								});
 
 								function getEnabledTransitionChecks() {
 									return transitionChecks.filter(function(
@@ -451,6 +546,33 @@
 
 								updateAllRowChecks();
 								updateAllCheck();
+
+								const loadingForm = document
+										.querySelector('.workflow-loading-form');
+								const loadingOverlay = document
+										.querySelector('.workflow-processing-overlay');
+								const loadingMessage = document
+										.querySelector('.workflow-processing-message');
+
+								if (loadingForm && loadingOverlay) {
+									loadingForm.addEventListener('submit',
+											function() {
+												const submitButton = loadingForm
+														.querySelector('button[type="submit"]');
+
+												if (submitButton) {
+													submitButton.disabled = true;
+													submitButton.textContent = '처리중';
+												}
+
+												if (loadingMessage
+														&& loadingForm.dataset.loadingMessage) {
+													loadingMessage.textContent = loadingForm.dataset.loadingMessage;
+												}
+
+												loadingOverlay.classList.add('is-visible');
+											});
+								}
 							});
 		</script>
 

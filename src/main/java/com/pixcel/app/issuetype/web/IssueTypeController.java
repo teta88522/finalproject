@@ -1,5 +1,7 @@
 package com.pixcel.app.issuetype.web;
 
+import java.util.Map;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.CookieValue;
@@ -8,7 +10,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.pixcel.app.issuestatus.service.IssueStatusService;
 import com.pixcel.app.issuetype.service.IssueTypeService;
 import com.pixcel.app.issuetype.service.IssueTypeVO;
 import com.pixcel.app.web.LoginRequiredException;
@@ -20,7 +21,6 @@ import lombok.RequiredArgsConstructor;
 public class IssueTypeController {
 
 	private final IssueTypeService issueTypeService;
-	private final IssueStatusService issueStatusService;
 
 	// 일감유형 목록 화면으로 이동한다.
 	@GetMapping("/issuetype/list")
@@ -30,10 +30,11 @@ public class IssueTypeController {
 		String loginUserId = getLoginUserId(userId);
 
 		searchVO.setUserId(loginUserId);
+		Map<String, Object> pageData = issueTypeService.getIssueTypeListPageData(searchVO);
 
 		model.addAttribute("searchVO", searchVO);
-		model.addAttribute("issueTypeList", issueTypeService.getIssueTypeList(searchVO));
-		model.addAttribute("issueStatusList", issueStatusService.getIssueStatusList(loginUserId));
+		model.addAttribute("issueTypeList", pageData.get("issueTypeList"));
+		model.addAttribute("issueStatusList", pageData.get("issueStatusList"));
 
 		return "issuetype/list";
 	}
@@ -168,8 +169,10 @@ public class IssueTypeController {
 	// 일감유형 생성/복사 화면에 필요한 공통 데이터를 담는다.
 	private void addFormModel(Model model, String userId) {
 
-		model.addAttribute("issueStatusList", issueStatusService.getIssueStatusList(userId));
-		model.addAttribute("projectList", issueTypeService.getProjectList(userId));
+		Map<String, Object> pageData = issueTypeService.getIssueTypeFormPageData(userId);
+
+		model.addAttribute("issueStatusList", pageData.get("issueStatusList"));
+		model.addAttribute("projectList", pageData.get("projectList"));
 	}
 
 	// 현재 로그인 사용자 ID를 반환한다.

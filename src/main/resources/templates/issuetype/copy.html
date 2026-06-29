@@ -90,7 +90,8 @@
 												</td>
 												<td class="center"><input type="checkbox"
 													name="requiredFieldCodeList" value="ASSIGNEE"
-													th:checked="${issueType.requiredFieldCodeList != null and #lists.contains(issueType.requiredFieldCodeList, 'ASSIGNEE')}">
+													th:checked="${issueType.requiredFieldCodeList != null and #lists.contains(issueType.requiredFieldCodeList, 'ASSIGNEE')}"
+													th:disabled="${issueType.fieldCodeList == null or !#lists.contains(issueType.fieldCodeList, 'ASSIGNEE')}">
 												</td>
 											</tr>
 
@@ -102,7 +103,8 @@
 												</td>
 												<td class="center"><input type="checkbox"
 													name="requiredFieldCodeList" value="MILESTONE"
-													th:checked="${issueType.requiredFieldCodeList != null and #lists.contains(issueType.requiredFieldCodeList, 'MILESTONE')}">
+													th:checked="${issueType.requiredFieldCodeList != null and #lists.contains(issueType.requiredFieldCodeList, 'MILESTONE')}"
+													th:disabled="${issueType.fieldCodeList == null or !#lists.contains(issueType.fieldCodeList, 'MILESTONE')}">
 												</td>
 											</tr>
 
@@ -114,7 +116,8 @@
 												</td>
 												<td class="center"><input type="checkbox"
 													name="requiredFieldCodeList" value="PARENT_ISSUE"
-													th:checked="${issueType.requiredFieldCodeList != null and #lists.contains(issueType.requiredFieldCodeList, 'PARENT_ISSUE')}">
+													th:checked="${issueType.requiredFieldCodeList != null and #lists.contains(issueType.requiredFieldCodeList, 'PARENT_ISSUE')}"
+													th:disabled="${issueType.fieldCodeList == null or !#lists.contains(issueType.fieldCodeList, 'PARENT_ISSUE')}">
 												</td>
 											</tr>
 
@@ -126,7 +129,8 @@
 												</td>
 												<td class="center"><input type="checkbox"
 													name="requiredFieldCodeList" value="START_DATE"
-													th:checked="${issueType.requiredFieldCodeList != null and #lists.contains(issueType.requiredFieldCodeList, 'START_DATE')}">
+													th:checked="${issueType.requiredFieldCodeList != null and #lists.contains(issueType.requiredFieldCodeList, 'START_DATE')}"
+													th:disabled="${issueType.fieldCodeList == null or !#lists.contains(issueType.fieldCodeList, 'START_DATE')}">
 												</td>
 											</tr>
 
@@ -138,7 +142,8 @@
 												</td>
 												<td class="center"><input type="checkbox"
 													name="requiredFieldCodeList" value="DUE_DATE"
-													th:checked="${issueType.requiredFieldCodeList != null and #lists.contains(issueType.requiredFieldCodeList, 'DUE_DATE')}">
+													th:checked="${issueType.requiredFieldCodeList != null and #lists.contains(issueType.requiredFieldCodeList, 'DUE_DATE')}"
+													th:disabled="${issueType.fieldCodeList == null or !#lists.contains(issueType.fieldCodeList, 'DUE_DATE')}">
 												</td>
 											</tr>
 
@@ -150,7 +155,8 @@
 												</td>
 												<td class="center"><input type="checkbox"
 													name="requiredFieldCodeList" value="ESTIMATED_HOURS"
-													th:checked="${issueType.requiredFieldCodeList != null and #lists.contains(issueType.requiredFieldCodeList, 'ESTIMATED_HOURS')}">
+													th:checked="${issueType.requiredFieldCodeList != null and #lists.contains(issueType.requiredFieldCodeList, 'ESTIMATED_HOURS')}"
+													th:disabled="${issueType.fieldCodeList == null or !#lists.contains(issueType.fieldCodeList, 'ESTIMATED_HOURS')}">
 												</td>
 											</tr>
 										</tbody>
@@ -210,6 +216,31 @@
 
 			</div>
 		</div>
+
+		<script>
+			document.addEventListener('DOMContentLoaded', function () {
+				document.querySelectorAll('input[name="fieldCodeList"]').forEach(function (useCheckbox) {
+					var requiredCheckbox = document.querySelector(
+						'input[name="requiredFieldCodeList"][value="' + useCheckbox.value + '"]'
+					);
+
+					if (!requiredCheckbox) {
+						return;
+					}
+
+					function syncRequiredCheckbox() {
+						requiredCheckbox.disabled = !useCheckbox.checked;
+
+						if (!useCheckbox.checked) {
+							requiredCheckbox.checked = false;
+						}
+					}
+
+					useCheckbox.addEventListener('change', syncRequiredCheckbox);
+					syncRequiredCheckbox();
+				});
+			});
+		</script>
 
 	</div>
 </body>

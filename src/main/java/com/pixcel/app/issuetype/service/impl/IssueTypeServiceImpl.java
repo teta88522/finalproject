@@ -1,9 +1,14 @@
 package com.pixcel.app.issuetype.service.impl;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,13 +28,89 @@ public class IssueTypeServiceImpl implements IssueTypeService {
 	private static final List<String> FIELD_CODE_LIST = Arrays.asList("ASSIGNEE", "MILESTONE", "PARENT_ISSUE",
 			"START_DATE", "DUE_DATE", "ESTIMATED_HOURS");
 
+	private static final String OPTION_ISSUE_TYPE = "ISSUE_TYPE";
+	private static final String OPTION_ISSUE_STATUS = "ISSUE_STATUS";
+	private static final String OPTION_PROJECT = "PROJECT";
+
+	@Override
+	public Map<String, Object> getIssueTypeListPageData(IssueTypeVO searchVO) {
+		validateUserId(searchVO.getUserId());
+		normalizeSearchCondition(searchVO);
+
+		List<IssueTypeVO> pageRows = issueTypeMapper.selectIssueTypeListPageRows(searchVO);
+
+		Map<String, Object> pageData = new HashMap<>();
+		pageData.put("issueTypeList", filterOptionRows(pageRows, OPTION_ISSUE_TYPE));
+		pageData.put("issueStatusList", filterOptionRows(pageRows, OPTION_ISSUE_STATUS));
+
+		return pageData;
+	}
+
+	@Override
+	public Map<String, Object> getIssueTypeFormPageData(String userId) {
+		validateUserId(userId);
+
+		List<IssueTypeVO> optionRows = issueTypeMapper.selectIssueTypeFormOptionRows(userId);
+
+		Map<String, Object> pageData = new HashMap<>();
+		pageData.put("issueStatusList", filterOptionRows(optionRows, OPTION_ISSUE_STATUS));
+		pageData.put("projectList", filterOptionRows(optionRows, OPTION_PROJECT));
+
+		return pageData;
+	}
+
+	private List<IssueTypeVO> filterOptionRows(List<IssueTypeVO> rows, String optionGroup) {
+		if (rows == null || rows.isEmpty()) {
+			return Collections.emptyList();
+		}
+
+		return rows.stream()
+				.filter(row -> optionGroup.equals(row.getOptionGroup()))
+				.collect(Collectors.toList());
+	}
+
 	// 검색조건에 맞는 사용자별 일감유형 목록을 조회한다.
 	@Override
 	public List<IssueTypeVO> getIssueTypeList(IssueTypeVO searchVO) {
 
 		validateUserId(searchVO.getUserId());
+		normalizeSearchCondition(searchVO);
 
 		return issueTypeMapper.selectIssueTypeList(searchVO);
+	}
+
+	private void normalizeSearchCondition(IssueTypeVO searchVO) {
+		searchVO.setInitialStatusIdList(normalizeSearchList(searchVO.getInitialStatusIdList(),
+				searchVO.getInitialStatusId()));
+	}
+
+	private List<String> normalizeSearchList(List<String> valueList, String legacyValue) {
+		List<String> normalizedList = valueList == null ? Collections.emptyList() : valueList.stream()
+				.map(this::trimToNull)
+				.filter(value -> value != null)
+				.distinct()
+				.collect(Collectors.toList());
+
+		if (!normalizedList.isEmpty()) {
+			return normalizedList;
+		}
+
+		String checkedLegacyValue = trimToNull(legacyValue);
+
+		if (checkedLegacyValue == null) {
+			return Collections.emptyList();
+		}
+
+		return Collections.singletonList(checkedLegacyValue);
+	}
+
+	private String trimToNull(String value) {
+		if (value == null) {
+			return null;
+		}
+
+		String trimmedValue = value.trim();
+		return trimmedValue.isEmpty() ? null : trimmedValue;
 	}
 
 	// 일감유형별 표준 항목 사용 여부 요약 목록을 조회한다.
@@ -53,10 +134,27 @@ public class IssueTypeServiceImpl implements IssueTypeService {
 		}
 
 		issueType.setProjectIdList(issueTypeMapper.selectAppliedProjectIdList(issueTypeId, userId));
-		issueType.setFieldCodeList(issueTypeMapper.selectUsedFieldCodeList(issueTypeId, userId));
-		issueType.setRequiredFieldCodeList(issueTypeMapper.selectRequiredFieldCodeList(issueTypeId, userId));
+		applyFieldSettingList(issueType, issueTypeMapper.selectFieldSettingListByIssueType(issueTypeId, userId));
 
 		return issueType;
+	}
+
+	private void applyFieldSettingList(IssueTypeVO issueType, List<IssueTypeVO> fieldSettingList) {
+		List<String> usedFieldCodeList = new ArrayList<>();
+		List<String> requiredFieldCodeList = new ArrayList<>();
+
+		for (IssueTypeVO fieldSetting : fieldSettingList) {
+			if ("Y".equals(fieldSetting.getUseYn())) {
+				usedFieldCodeList.add(fieldSetting.getFieldCode());
+			}
+
+			if ("Y".equals(fieldSetting.getRequiredYn())) {
+				requiredFieldCodeList.add(fieldSetting.getFieldCode());
+			}
+		}
+
+		issueType.setFieldCodeList(usedFieldCodeList);
+		issueType.setRequiredFieldCodeList(requiredFieldCodeList);
 	}
 
 	// 현재 사용자가 소유한 프로젝트 목록을 조회한다.
@@ -77,16 +175,13 @@ public class IssueTypeServiceImpl implements IssueTypeService {
 		issueType.setRoadmapYn(null);
 
 		validateIssueType(issueType);
-		validateInitialStatusOwner(issueType.getInitialStatusId(), userId);
-		validateProjectOwner(issueType.getProjectIdList(), userId);
 		validateFieldSetting(issueType);
-
-		validateDuplicateIssueTypeName(userId, issueType.getIssueTypeName());
+		validateIssueTypeSaveCondition(issueType);
 
 		issueTypeMapper.insertIssueType(issueType);
 
-		insertIssueTypeProjectList(issueType);
-		insertIssueTypeFieldSettingList(issueType);
+		insertIssueTypeProjectListBulk(issueType);
+		insertIssueTypeFieldSettingListBulk(issueType);
 	}
 
 	// 기존 일감유형을 복사하여 신규 일감유형으로 등록한다.
@@ -100,16 +195,13 @@ public class IssueTypeServiceImpl implements IssueTypeService {
 		issueType.setRoadmapYn(null);
 
 		validateIssueType(issueType);
-		validateInitialStatusOwner(issueType.getInitialStatusId(), userId);
-		validateProjectOwner(issueType.getProjectIdList(), userId);
 		validateFieldSetting(issueType);
-
-		validateDuplicateIssueTypeName(userId, issueType.getIssueTypeName());
+		validateIssueTypeSaveCondition(issueType);
 
 		issueTypeMapper.insertIssueType(issueType);
 
-		insertIssueTypeProjectList(issueType);
-		insertIssueTypeFieldSettingList(issueType);
+		insertIssueTypeProjectListBulk(issueType);
+		insertIssueTypeFieldSettingListBulk(issueType);
 	}
 
 	// 사용 중이지 않은 일감유형을 삭제한다.
@@ -118,15 +210,13 @@ public class IssueTypeServiceImpl implements IssueTypeService {
 	public void removeIssueType(String issueTypeId, String userId) {
 		validateUserId(userId);
 
-		IssueTypeVO issueType = issueTypeMapper.selectIssueTypeDetail(issueTypeId, userId);
+		IssueTypeVO issueType = issueTypeMapper.selectIssueTypeDeleteCheck(issueTypeId, userId);
 
 		if (issueType == null) {
 			throw new IllegalArgumentException("존재하지 않는 일감유형입니다.");
 		}
 
-		int usedCount = issueTypeMapper.countUsedIssueType(issueTypeId);
-
-		if (usedCount > 0) {
+		if (issueType.getUsedCount() != null && issueType.getUsedCount() > 0) {
 			throw new IllegalArgumentException("이미 일감 또는 업무흐름에서 사용 중인 일감유형이므로 삭제할 수 없습니다.");
 		}
 
@@ -135,8 +225,37 @@ public class IssueTypeServiceImpl implements IssueTypeService {
 		issueTypeMapper.deleteIssueType(issueTypeId, userId);
 	}
 
+	private void validateIssueTypeSaveCondition(IssueTypeVO issueType) {
+		IssueTypeVO validation = issueTypeMapper.selectIssueTypeSaveValidation(issueType);
+
+		if (validation == null || validation.getInitialStatusCount() == null
+				|| validation.getInitialStatusCount() == 0) {
+			throw new IllegalArgumentException("선택한 초기 상태를 사용할 수 없습니다.");
+		}
+
+		if (validation.getDuplicateCount() != null && validation.getDuplicateCount() > 0) {
+			throw new IllegalArgumentException("이미 사용 중인 일감유형명입니다.");
+		}
+
+		List<String> projectIdList = issueType.getProjectIdList();
+
+		if (projectIdList != null && !projectIdList.isEmpty()) {
+			Set<String> uniqueProjectIdSet = new HashSet<>(projectIdList);
+			int selectedProjectCount = validation.getSelectedProjectCount() == null ? 0
+					: validation.getSelectedProjectCount();
+
+			if (selectedProjectCount != uniqueProjectIdSet.size()) {
+				throw new IllegalArgumentException("선택한 프로젝트 중 사용할 수 없는 프로젝트가 있습니다.");
+			}
+		}
+	}
+
 	// 일감유형 적용 프로젝트를 등록한다.
 	private void insertIssueTypeProjectList(IssueTypeVO issueType) {
+
+		if (issueType.getProjectIdList() == null || issueType.getProjectIdList().isEmpty()) {
+			return;
+		}
 
 		for (String projectId : issueType.getProjectIdList()) {
 			IssueTypeVO project = new IssueTypeVO();
@@ -145,6 +264,14 @@ public class IssueTypeServiceImpl implements IssueTypeService {
 
 			issueTypeMapper.insertIssueTypeProject(project);
 		}
+	}
+
+	private void insertIssueTypeProjectListBulk(IssueTypeVO issueType) {
+		if (issueType.getProjectIdList() == null || issueType.getProjectIdList().isEmpty()) {
+			return;
+		}
+
+		issueTypeMapper.insertIssueTypeProjectList(issueType);
 	}
 
 	// 일감유형 항목 설정을 등록한다.
@@ -164,6 +291,26 @@ public class IssueTypeServiceImpl implements IssueTypeService {
 		}
 	}
 
+	private void insertIssueTypeFieldSettingListBulk(IssueTypeVO issueType) {
+		Set<String> usedFieldSet = new HashSet<>(issueType.getFieldCodeList());
+		Set<String> requiredFieldSet = new HashSet<>(issueType.getRequiredFieldCodeList());
+		List<IssueTypeVO> fieldSettingList = new ArrayList<>();
+		int sortNo = 1;
+
+		for (String fieldCode : FIELD_CODE_LIST) {
+			IssueTypeVO fieldSetting = new IssueTypeVO();
+			fieldSetting.setIssueTypeId(issueType.getIssueTypeId());
+			fieldSetting.setFieldCode(fieldCode);
+			fieldSetting.setUseYn(usedFieldSet.contains(fieldCode) ? "Y" : "N");
+			fieldSetting.setRequiredYn(requiredFieldSet.contains(fieldCode) ? "Y" : "N");
+			fieldSetting.setSortNo(sortNo++);
+			fieldSettingList.add(fieldSetting);
+		}
+
+		issueType.setFieldSettingList(fieldSettingList);
+		issueTypeMapper.insertIssueTypeFieldSettingList(issueType);
+	}
+
 	// 로그인 사용자 ID 값을 검증한다.
 	private void validateUserId(String userId) {
 
@@ -181,10 +328,6 @@ public class IssueTypeServiceImpl implements IssueTypeService {
 
 		if (issueType.getInitialStatusId() == null || issueType.getInitialStatusId().trim().isEmpty()) {
 			throw new IllegalArgumentException("초기 상태를 선택하세요.");
-		}
-
-		if (issueType.getProjectIdList() == null || issueType.getProjectIdList().isEmpty()) {
-			throw new IllegalArgumentException("적용 프로젝트를 1개 이상 선택하세요.");
 		}
 
 		if (issueType.getFieldCodeList() == null) {
@@ -208,6 +351,10 @@ public class IssueTypeServiceImpl implements IssueTypeService {
 
 	// 선택한 프로젝트들이 현재 사용자의 프로젝트인지 검증한다.
 	private void validateProjectOwner(List<String> projectIdList, String userId) {
+
+		if (projectIdList == null || projectIdList.isEmpty()) {
+			return;
+		}
 
 		Set<String> uniqueProjectIdSet = new HashSet<>(projectIdList);
 

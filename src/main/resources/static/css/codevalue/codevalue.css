@@ -97,6 +97,15 @@
     height: 100%;
 }
 
+.codevalue-card.is-selected {
+    border-color: #3157a3;
+    box-shadow: 0 4px 12px rgba(49, 87, 163, 0.18);
+}
+
+.codevalue-card.is-selected .codevalue-card-header {
+    background: #f3f7ff;
+}
+
 .codevalue-card-header {
     padding: 14px 16px 12px;
     border-bottom: 1px solid #eeeeee;
@@ -314,7 +323,6 @@
     justify-content: center;
     font-size: 13px;
 }
-
 
 /* ==============================
    반응형

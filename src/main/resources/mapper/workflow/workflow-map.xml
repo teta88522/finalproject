@@ -3,6 +3,160 @@
 
 <mapper namespace="com.pixcel.app.workflow.mapper.WorkflowMapper">
 
+	<select id="selectWorkflowListPageRows" resultType="WorkflowVO">
+		select *
+		from (
+		select
+		'ISSUE_TYPE' as option_group,
+		issue_type_id,
+		issue_type_name,
+		null as role_id,
+		null as role_name,
+		null as issue_status_id,
+		null as status_name,
+		null as closed_yn,
+		0 as transition_count,
+		0 as default_transition_count,
+		0 as author_transition_count,
+		0 as assignee_transition_count,
+		1 as option_sort,
+		row_number() over (order by created_at desc, issue_type_name, issue_type_id) as row_sort
+		from issue_type
+		where user_id = #{userId}
+
+		union all
+
+		select
+		'ROLE' as option_group,
+		null as issue_type_id,
+		null as issue_type_name,
+		role_id,
+		role_name,
+		null as issue_status_id,
+		null as status_name,
+		null as closed_yn,
+		0 as transition_count,
+		0 as default_transition_count,
+		0 as author_transition_count,
+		0 as assignee_transition_count,
+		2 as option_sort,
+		row_number() over (order by role_name, role_id) as row_sort
+		from role
+		where created_by = #{userId}
+
+		union all
+
+		select
+		'WORKFLOW_COUNT' as option_group,
+		wc.issue_type_id,
+		null as issue_type_name,
+		wc.role_id,
+		null as role_name,
+		null as issue_status_id,
+		null as status_name,
+		null as closed_yn,
+		wc.transition_count,
+		wc.default_transition_count,
+		wc.author_transition_count,
+		wc.assignee_transition_count,
+		3 as option_sort,
+		row_number() over (order by wc.issue_type_id, wc.role_id) as row_sort
+		from (
+		select
+		wt.issue_type_id,
+		wt.role_id,
+		count(*) as transition_count,
+		sum(case when wt.apply_target_code = 'j001' then 1 else 0 end) as default_transition_count,
+		sum(case when wt.apply_target_code = 'j002' then 1 else 0 end) as author_transition_count,
+		sum(case when wt.apply_target_code = 'j003' then 1 else 0 end) as assignee_transition_count
+		from workflow_transition wt
+		join issue_type it
+		on wt.issue_type_id = it.issue_type_id
+		join role r
+		on wt.role_id = r.role_id
+		where it.user_id = #{userId}
+		and r.created_by = #{userId}
+		group by
+		wt.issue_type_id,
+		wt.role_id
+		) wc
+		)
+		order by option_sort, row_sort
+	</select>
+
+	<select id="selectWorkflowOptionRows" resultType="WorkflowVO">
+		select *
+		from (
+		select
+		'ISSUE_TYPE' as option_group,
+		issue_type_id,
+		issue_type_name,
+		null as role_id,
+		null as role_name,
+		null as issue_status_id,
+		null as status_name,
+		null as closed_yn,
+		0 as transition_count,
+		0 as default_transition_count,
+		0 as author_transition_count,
+		0 as assignee_transition_count,
+		1 as option_sort,
+		row_number() over (order by created_at desc, issue_type_name, issue_type_id) as row_sort
+		from issue_type
+		where user_id = #{userId}
+
+		union all
+
+		select
+		'ROLE' as option_group,
+		null as issue_type_id,
+		null as issue_type_name,
+		role_id,
+		role_name,
+		null as issue_status_id,
+		null as status_name,
+		null as closed_yn,
+		0 as transition_count,
+		0 as default_transition_count,
+		0 as author_transition_count,
+		0 as assignee_transition_count,
+		2 as option_sort,
+		row_number() over (order by role_name, role_id) as row_sort
+		from role
+		where created_by = #{userId}
+
+		union all
+
+		select
+		'ISSUE_STATUS' as option_group,
+		null as issue_type_id,
+		null as issue_type_name,
+		null as role_id,
+		null as role_name,
+		issue_status_id,
+		status_name,
+		closed_yn,
+		0 as transition_count,
+		0 as default_transition_count,
+		0 as author_transition_count,
+		0 as assignee_transition_count,
+		3 as option_sort,
+		row_number() over (
+		order by
+		case closed_yn
+		when 'N' then 1
+		when 'Y' then 2
+		else 3
+		end,
+		status_name,
+		issue_status_id
+		) as row_sort
+		from issue_status
+		where user_id = #{userId}
+		)
+		order by option_sort, row_sort
+	</select>
+
 	<!-- 현재 사용자가 소유한 일감유형 목록 조회 -->
 	<select id="selectIssueTypeList" resultType="WorkflowVO">
 		select
@@ -175,7 +329,8 @@
 			|| to_char(sysdate, 'YYMM')
 			|| '_'
 			|| lpad(
-			nvl(max(to_number(substr(transition_id, -4))), 0) + 1,
+			nvl(max(to_number(substr(transition_id, -4))), 0)
+			+ nvl(#{transitionSeqOffset}, 1),
 			4,
 			'0'
 			)
@@ -206,37 +361,77 @@
 		)
 	</insert>
 
+	<insert id="insertWorkflowTransitionList">
+		insert into workflow_transition (
+		transition_id,
+		issue_type_id,
+		role_id,
+		from_status_id,
+		to_status_id,
+		apply_target_code,
+		created_by,
+		created_at
+		)
+		select
+		'WORKFLOW_TRANSITION_'
+		|| to_char(sysdate, 'YYMM')
+		|| '_'
+		|| lpad(
+		(
+		select nvl(max(to_number(substr(transition_id, -4))), 0)
+		from workflow_transition
+		where substr(transition_id, 1, 25) =
+		'WORKFLOW_TRANSITION_' || to_char(sysdate, 'YYMM') || '_'
+		) + row_number() over (
+		order by transition_rows.apply_target_code,
+		transition_rows.from_status_id,
+		transition_rows.to_status_id
+		),
+		4,
+		'0'
+		) as transition_id,
+		transition_rows.issue_type_id,
+		transition_rows.role_id,
+		transition_rows.from_status_id,
+		transition_rows.to_status_id,
+		transition_rows.apply_target_code,
+		transition_rows.created_by,
+		sysdate
+		from (
+		<foreach collection="transitionList" item="transition" separator=" union all ">
+			select
+			#{transition.issueTypeId} as issue_type_id,
+			#{transition.roleId} as role_id,
+			#{transition.fromStatusId} as from_status_id,
+			#{transition.toStatusId} as to_status_id,
+			#{transition.applyTargetCode} as apply_target_code,
+			#{transition.createdBy} as created_by
+			from dual
+		</foreach>
+		) transition_rows
+	</insert>
+
 	<!-- ============================== 업무흐름 전체조회 추가/수정 세로: 일감유형 가로: 역할 셀 값: 
 		해당 일감유형 + 역할에 설정된 상태전환 개수 ============================== -->
 	<select id="selectWorkflowCountList" resultType="WorkflowVO">
 		select
-		it.issue_type_id,
-		it.issue_type_name,
-		r.role_id,
-		r.role_name,
-		nvl(wc.transition_count, 0) as transition_count
-		from issue_type it
-		cross join role r
-		left join (
-		select
-		issue_type_id,
-		role_id,
+		wt.issue_type_id,
+		wt.role_id,
 		count(*) as
-		transition_count
-		from workflow_transition
-		group by
-		issue_type_id,
-		role_id
-		) wc
-		on wc.issue_type_id = it.issue_type_id
-		and wc.role_id = r.role_id
+		transition_count,
+		sum(case when wt.apply_target_code = 'j001' then 1 else 0 end) as default_transition_count,
+		sum(case when wt.apply_target_code = 'j002' then 1 else 0 end) as author_transition_count,
+		sum(case when wt.apply_target_code = 'j003' then 1 else 0 end) as assignee_transition_count
+		from workflow_transition wt
+		join issue_type it
+		on wt.issue_type_id = it.issue_type_id
+		join role r
+		on wt.role_id = r.role_id
 		where it.user_id = #{userId}
 		and r.created_by = #{userId}
-		order by
-		it.created_at asc,
-		it.issue_type_id asc,
-		r.role_name asc,
-		r.role_id asc
+		group by
+		wt.issue_type_id,
+		wt.role_id
 	</select>
 	<!-- ============================== 업무흐름 복사 추가/수정 선택한 전환 기준에 해당하는 원본 업무흐름 
 		개수 확인 ============================== -->
@@ -354,6 +549,73 @@
 			item="applyTargetCode" open="(" separator="," close=")">
 			#{applyTargetCode}
 		</foreach>
+		and source_it.user_id = #{userId}
+		and target_it.user_id = #{userId}
+		and source_role.created_by = #{userId}
+		and target_role.created_by = #{userId}
+		and fs.user_id = #{userId}
+		and ts.user_id = #{userId}
+	</insert>
+
+	<insert id="copyDefaultWorkflowTransitionToAll" parameterType="WorkflowVO">
+		insert into workflow_transition (
+		transition_id,
+		issue_type_id,
+		role_id,
+		from_status_id,
+		to_status_id,
+		apply_target_code,
+		created_by,
+		created_at
+		)
+		select
+		'WORKFLOW_TRANSITION_'
+		|| to_char(sysdate, 'YYMM')
+		|| '_'
+		|| lpad(
+		(
+		select nvl(max(to_number(substr(transition_id, -4))), 0)
+		from workflow_transition
+		where substr(transition_id, 1, 25) =
+		'WORKFLOW_TRANSITION_' || to_char(sysdate, 'YYMM') || '_'
+		) + row_number() over (
+		order by target_apply.apply_target_code,
+		wt.transition_id
+		),
+		4,
+		'0'
+		) as transition_id,
+		#{targetIssueTypeId},
+		#{targetRoleId},
+		wt.from_status_id,
+		wt.to_status_id,
+		target_apply.apply_target_code,
+		#{createdBy},
+		sysdate
+		from workflow_transition wt
+		join (
+		select 'j001' as apply_target_code from dual
+		union all
+		select 'j002' as apply_target_code from dual
+		union all
+		select 'j003' as apply_target_code from dual
+		) target_apply
+		on 1 = 1
+		join issue_type source_it
+		on wt.issue_type_id = source_it.issue_type_id
+		join role source_role
+		on wt.role_id = source_role.role_id
+		join issue_type target_it
+		on target_it.issue_type_id = #{targetIssueTypeId}
+		join role target_role
+		on target_role.role_id = #{targetRoleId}
+		join issue_status fs
+		on wt.from_status_id = fs.issue_status_id
+		join issue_status ts
+		on wt.to_status_id = ts.issue_status_id
+		where wt.issue_type_id = #{sourceIssueTypeId}
+		and wt.role_id = #{sourceRoleId}
+		and wt.apply_target_code = 'j001'
 		and source_it.user_id = #{userId}
 		and target_it.user_id = #{userId}
 		and source_role.created_by = #{userId}

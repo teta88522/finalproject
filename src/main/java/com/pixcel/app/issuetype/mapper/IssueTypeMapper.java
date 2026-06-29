@@ -8,6 +8,10 @@ import com.pixcel.app.issuetype.service.IssueTypeVO;
 
 public interface IssueTypeMapper {
 
+	List<IssueTypeVO> selectIssueTypeListPageRows(IssueTypeVO searchVO);
+
+	List<IssueTypeVO> selectIssueTypeFormOptionRows(@Param("userId") String userId);
+
 	// 검색조건에 맞는 사용자별 일감유형 목록을 조회한다.
 	List<IssueTypeVO> selectIssueTypeList(IssueTypeVO searchVO);
 	
@@ -41,14 +45,30 @@ public interface IssueTypeMapper {
             @Param("userId") String userId
     );
 
+    List<IssueTypeVO> selectFieldSettingListByIssueType(
+            @Param("issueTypeId") String issueTypeId,
+            @Param("userId") String userId
+    );
+
+    IssueTypeVO selectIssueTypeSaveValidation(IssueTypeVO issueType);
+
+    IssueTypeVO selectIssueTypeDeleteCheck(
+            @Param("issueTypeId") String issueTypeId,
+            @Param("userId") String userId
+    );
+
     // 신규 일감유형을 등록한다.
     int insertIssueType(IssueTypeVO issueType);
 
     // 일감유형 적용 프로젝트를 등록한다.
     int insertIssueTypeProject(IssueTypeVO issueType);
 
+    int insertIssueTypeProjectList(IssueTypeVO issueType);
+
     // 일감유형 항목 설정을 등록한다.
     int insertIssueTypeFieldSetting(IssueTypeVO issueType);
+
+    int insertIssueTypeFieldSettingList(IssueTypeVO issueType);
 
     // 사용자별 일감유형명 중복 여부를 확인한다.
     int countDuplicateIssueTypeName(
