@@ -7,7 +7,7 @@
 <title>프로젝트 전체조회</title>
 
 <link rel="stylesheet" th:href="@{/css/project/projectList.css}">
-<link rel="stylesheet" th:href="@{/css/common-fliter.css}">
+<link rel="stylesheet" th:href="@{/css/common-filter.css}">
 </head>
 
 <body>
@@ -30,74 +30,66 @@
 					<div class="search-title">검색조건</div>
 
 					<!-- 관리자만 생성/관리 버튼 노출 -->
+					<!-- ① 프로젝트 관리 버튼 경로: /manage/groups -->
 					<div class="search-action-area" th:if="${subscribeYn == 'Y'}">
-						<a th:href="@{/project/register}" class="search-action-btn">
-							프로젝트 생성 </a> <a th:href="@{/project/manage}"
-							class="search-action-btn manage"> 프로젝트 관리 </a>
+						<a th:href="@{/project/register}" class="search-action-btn">프로젝트
+							생성</a> <a th:href="@{/manage/groups}"
+							class="search-action-btn manage">프로젝트 관리</a>
 					</div>
 				</div>
 
-				<form th:action="@{/project}" method="get">
+				<!-- ③ 검색 form: /project/list (Controller @GetMapping 경로) -->
+				<form id="searchForm" th:action="@{/project/list}" method="get">
 					<div class="search-form-row">
 
-						<!-- 프로젝트 명 검색 -->
+						<!-- 프로젝트 명 -->
 						<div class="search-field">
-							<label for="projectName">프로젝트 명</label> <input type="text"
-								id="projectName" name="projectName"
-								th:value="${projectSearchVO != null ? projectSearchVO.projectName : ''}"
+							<label for="searchProjectName">프로젝트 명</label> <input type="text"
+								id="searchProjectName" name="searchProjectName"
+								th:value="${searchVO != null ? searchVO.searchProjectName : ''}"
 								placeholder="input">
 						</div>
 
-						<!-- 생성자 검색 -->
+						<!-- 생성자 -->
 						<div class="search-field">
-							<label for="ownerName">생성자</label> <input type="text"
-								id="ownerName" name="ownerName"
-								th:value="${projectSearchVO != null ? projectSearchVO.ownerName : ''}"
+							<label for="searchOwnerName">생성자</label> <input type="text"
+								id="searchOwnerName" name="searchOwnerName"
+								th:value="${searchVO != null ? searchVO.searchOwnerName : ''}"
 								placeholder="input">
 						</div>
 
-						<!-- 시작일 검색 -->
+						<!-- 프로젝트 상태 - select → radio -->
 						<div class="search-field">
-							<label for="startDate">시작일</label> <input type="date"
-								id="startDate" name="startDate"
-								th:value="${projectSearchVO != null and projectSearchVO.startDate != null ? #dates.format(projectSearchVO.startDate, 'yyyy-MM-dd') : ''}">
-						</div>
-
-						<!-- 완료일 검색 -->
-						<div class="search-field">
-							<label for="endDate">완료일</label> <input type="date" id="endDate"
-								name="endDate"
-								th:value="${projectSearchVO != null and projectSearchVO.endDate != null ? #dates.format(projectSearchVO.endDate, 'yyyy-MM-dd') : ''}">
-						</div>
-
-						<!-- 프로젝트 상태 검색 -->
-						<div class="search-field">
-							<label for="statusCode">프로젝트 상태</label> <select id="statusCode"
-								name="statusCode">
-								<option value="">선택</option>
-
-								<option value="a001"
-									th:selected="${projectSearchVO != null and projectSearchVO.statusCode == 'a001'}">
-									예정</option>
-
-								<option value="a002"
-									th:selected="${projectSearchVO != null and projectSearchVO.statusCode == 'a002'}">
-									진행중</option>
-
-								<option value="a003"
-									th:selected="${projectSearchVO != null and projectSearchVO.statusCode == 'a003'}">
-									종료</option>
-							</select>
+							<label>프로젝트 상태</label>
+							<div class="radio-group">
+								<label class="radio-label"> <input type="radio"
+									name="searchStatusCode" value=""
+									th:checked="${searchVO == null or searchVO.searchStatusCode == null or searchVO.searchStatusCode == ''}">
+									전체
+								</label> <label class="radio-label"> <input type="radio"
+									name="searchStatusCode" value="a001"
+									th:checked="${searchVO != null and searchVO.searchStatusCode == 'a001'}">
+									예정
+								</label> <label class="radio-label"> <input type="radio"
+									name="searchStatusCode" value="a002"
+									th:checked="${searchVO != null and searchVO.searchStatusCode == 'a002'}">
+									진행중
+								</label> <label class="radio-label"> <input type="radio"
+									name="searchStatusCode" value="a003"
+									th:checked="${searchVO != null and searchVO.searchStatusCode == 'a003'}">
+									종료
+								</label>
+							</div>
 						</div>
 
 					</div>
 
 					<div class="search-btn-area">
-						<!-- clean은 검색 파라미터 제거용 -->
-						<a th:href="@{/project}" class="btn-basic">clean</a>
-
-						<!-- apply는 GET submit -->
-						<button type="submit" class="btn-basic btn-primary">apply</button>
+						<!-- clean: 검색 파라미터 초기화 -->
+						<a th:href="@{/project/list}" class="btn-basic">clean</a>
+						<!-- apply: 미입력 시 제출 차단 (JS에서 처리) -->
+						<button type="button" class="btn-basic btn-primary"
+							onclick="submitSearch()">apply</button>
 					</div>
 				</form>
 			</div>
@@ -108,17 +100,13 @@
 				<div class="list-header">
 					<div>
 						<div class="list-title">프로젝트 목록</div>
-
-						<div class="list-sub-text" th:if="${subscribeYn == 'Y'}">
-							관리자는 본인이 생성한 프로젝트 목록을 조회합니다.</div>
-
+						<div class="list-sub-text" th:if="${subscribeYn == 'Y'}">관리자는
+							본인이 생성한 프로젝트 목록을 조회합니다.</div>
 						<div class="list-sub-text" th:if="${subscribeYn != 'Y'}">일반
 							이용자는 본인이 소속된 프로젝트 목록을 조회합니다.</div>
 					</div>
-
 					<div class="list-count">
-						총 <strong
-							th:text="${projectList == null ? 0 : #lists.size(projectList)}">0</strong>
+						총 <strong th:text="${searchVO != null ? searchVO.totalCount : 0}">0</strong>
 						건
 					</div>
 				</div>
@@ -138,116 +126,149 @@
 								<th th:if="${subscribeYn == 'Y'}">관리</th>
 							</tr>
 						</thead>
-
 						<tbody>
-							<!-- 데이터 없음 -->
 							<tr th:if="${projectList == null or #lists.isEmpty(projectList)}">
-								<td th:colspan="${subscribeYn == 'Y' ? 9 : 8}" class="empty-row">
-									조회된 프로젝트가 없습니다.</td>
+								<td th:colspan="${subscribeYn == 'Y' ? 9 : 8}" class="empty-row">조회된
+									프로젝트가 없습니다.</td>
 							</tr>
-
-							<!-- 프로젝트 목록 -->
 							<tr th:each="project : ${projectList}"
 								th:data-project-id="${project.projectId}"
 								onclick="goProjectDetail(this)">
-
 								<td th:text="${project.identifier}">identifier</td>
-
 								<td class="project-name-cell"><span
-									th:text="${project.projectName}"> 프로젝트명 </span></td>
-
-								<td class="desc-cell" th:text="${project.description}">
-									프로젝트 설명</td>
-
+									th:text="${project.projectName}">프로젝트명</span></td>
+								<td class="desc-cell" th:text="${project.description}">프로젝트
+									설명</td>
 								<td th:text="${project.ownerName}">생성자</td>
-
 								<td onclick="event.stopPropagation();"><a
 									th:if="${project.projectUrl != null and project.projectUrl != ''}"
 									th:href="${project.projectUrl}" target="_blank"
-									th:text="${project.projectUrl}"> 홈페이지 </a> <span
-									th:if="${project.projectUrl == null or project.projectUrl == ''}">
-										- </span></td>
-
+									th:text="${project.projectUrl}">홈페이지</a> <span
+									th:if="${project.projectUrl == null or project.projectUrl == ''}">-</span>
+								</td>
 								<td><span class="status-badge"
-									th:text="${project.statusName != null ? project.statusName : project.statusCode}">
-										진행중 </span></td>
-
+									th:text="${project.statusName != null ? project.statusName : project.statusCode}">진행중</span></td>
 								<td
-									th:text="${project.startDate != null ? #dates.format(project.startDate, 'yyyy/MM/dd') : '-'}">
-									2026/06/01</td>
-
+									th:text="${project.startDate != null ? #dates.format(project.startDate, 'yyyy/MM/dd') : '-'}">2026/06/01</td>
 								<td
-									th:text="${project.endDate != null ? #dates.format(project.endDate, 'yyyy/MM/dd') : '-'}">
-									2026/12/31</td>
-
-								<!-- 관리자만 수정 / 삭제 버튼 노출 -->
+									th:text="${project.endDate   != null ? #dates.format(project.endDate,   'yyyy/MM/dd') : '-'}">2026/12/31</td>
 								<td th:if="${subscribeYn == 'Y'}" class="project-action-cell"
 									onclick="event.stopPropagation();">
-
 									<button type="button" class="mini-btn"
 										th:data-project-id="${project.projectId}"
 										onclick="goProjectEdit(this)">수정</button>
-
 									<button type="button" class="mini-btn delete"
 										th:data-project-id="${project.projectId}"
 										th:data-project-name="${project.projectName}"
 										onclick="deleteProject(this)">삭제</button>
-
 								</td>
 							</tr>
 						</tbody>
 					</table>
 				</div>
 
-				<!-- 페이징 영역 : 일단 화면만 -->
-				<div class="pagination">
-					<button type="button" class="page-btn">&lt;</button>
-					<button type="button" class="page-btn active">1</button>
-					<button type="button" class="page-btn">2</button>
-					<button type="button" class="page-btn">3</button>
-					<span class="page-dots">...</span>
-					<button type="button" class="page-btn">&gt;</button>
+				<!-- ④ 페이징 영역 -->
+				<div class="pagination"
+					th:if="${searchVO != null and searchVO.totalPage > 0}">
+
+					<!-- 이전 버튼: 첫 페이지면 disabled -->
+					<button type="button" class="page-btn"
+						th:classappend="${!searchVO.hasPrevious} ? ' disabled'"
+						th:disabled="${!searchVO.hasPrevious}"
+						th:onclick="${searchVO.hasPrevious} ? 'goPage(' + (searchVO.page - 1) + ')' : 'return false'">
+						&lt;</button>
+
+					<!-- 페이지 번호 -->
+					<th:block
+						th:each="pageNum : ${#numbers.sequence(1, searchVO.totalPage)}">
+						<button type="button" class="page-btn"
+							th:classappend="${pageNum == searchVO.page} ? ' active'"
+							th:onclick="'goPage(' + ${pageNum} + ')'">
+							<span th:text="${pageNum}">1</span>
+						</button>
+					</th:block>
+
+					<!-- 다음 버튼: 마지막 페이지면 disabled -->
+					<button type="button" class="page-btn"
+						th:classappend="${!searchVO.hasNext} ? ' disabled'"
+						th:disabled="${!searchVO.hasNext}"
+						th:onclick="${searchVO.hasNext} ? 'goPage(' + (searchVO.page + 1) + ')' : 'return false'">
+						&gt;</button>
 				</div>
 
 			</div>
-
 		</div>
 
-		<script>
-			function goProjectDetail(row) {
-				const projectId = row.dataset.projectId;
+		<script th:inline="javascript">
+			/* 페이지 이동 */
+			function goPage(page) {
+				const form = document.getElementById('searchForm');
+				// 기존 hidden page input 제거 후 재생성
+				let pageInput = form.querySelector('input[name="page"]');
+				if (!pageInput) {
+					pageInput = document.createElement('input');
+					pageInput.type = 'hidden';
+					pageInput.name = 'page';
+					form.appendChild(pageInput);
+				}
+				pageInput.value = page;
+				form.submit();
+			}
 
-				if (!projectId) {
+			/* ③ 검색: 아무 조건도 입력/선택 안 하면 submit 막기
+			   단, '전체' 라디오(value="")는 조건 선택으로 간주하지 않음 */
+			function submitSearch() {
+				const projectName = document
+						.getElementById('searchProjectName').value.trim();
+				const ownerName = document.getElementById('searchOwnerName').value
+						.trim();
+				const statusRadio = document
+						.querySelector('input[name="searchStatusCode"]:checked');
+				// value가 비어있으면 '전체' 선택 → 조건 미선택으로 간주
+				const statusSelected = statusRadio && statusRadio.value !== '';
+
+				if (!projectName && !ownerName && !statusSelected) {
+					alert('검색 조건을 하나 이상 입력하거나 선택해 주세요.\n(프로젝트명, 생성자 입력 또는 예정/진행중/종료 중 하나를 선택하세요.)');
 					return;
 				}
+				// page를 1로 초기화
+				let pageInput = document
+						.querySelector('#searchForm input[name="page"]');
+				if (!pageInput) {
+					pageInput = document.createElement('input');
+					pageInput.type = 'hidden';
+					pageInput.name = 'page';
+					document.getElementById('searchForm')
+							.appendChild(pageInput);
+				}
+				pageInput.value = 1;
+				document.getElementById('searchForm').submit();
+			}
 
-				location.href = "/projectdetail/" + encodeURIComponent(projectId);
+			function goProjectDetail(row) {
+				const projectId = row.dataset.projectId;
+				if (!projectId)
+					return;
+				location.href = '/projectdetail/'
+						+ encodeURIComponent(projectId);
 			}
 
 			function goProjectEdit(button) {
 				const projectId = button.dataset.projectId;
-
-				if (!projectId) {
+				if (!projectId)
 					return;
-				}
-
-				location.href = "/project/update/"
+				location.href = '/project/update/'
 						+ encodeURIComponent(projectId);
 			}
 
 			function deleteProject(button) {
 				const projectId = button.dataset.projectId;
 				const projectName = button.dataset.projectName;
-
-				if (!projectId) {
+				if (!projectId)
 					return;
-				}
-
-				if (!confirm("'" + projectName + "' 프로젝트를 삭제하시겠습니까?")) {
+				if (!confirm("'" + projectName + "' 프로젝트를 삭제하시겠습니까?"))
 					return;
-				}
-
-				console.log("삭제 대상 projectId =", projectId);
+				console.log('삭제 대상 projectId =', projectId);
 			}
 		</script>
 

@@ -11,12 +11,18 @@
 		<div class="repo-container">
 			<div class="repo-header">
 				<h2 class="repo-title">자료실</h2>
-				<a th:href="@{/repository/new}" class="repo-btn-upload">업로드</a>
+				<a
+					th:href="@{/project/{projectId}/repository/new(projectId=${projectId})}"
+					class="repo-btn-upload">업로드</a>
 			</div>
 
 			<div class="search-section">
-				<form th:action="@{/repository}" method="get">
+				<form
+					th:action="@{/project/{projectId}/repository(projectId=${projectId})}"
+					method="get">
 					<div class="search-form-row">
+
+						<!-- 기간 -->
 						<div class="search-field">
 							<label>기간</label>
 							<div class="d-flex align-items-center">
@@ -25,28 +31,45 @@
 								<input type="date" name="endDate" th:value="${param.endDate}">
 							</div>
 						</div>
+
+						<!-- ⑤ 일감: select → radio -->
 						<div class="search-field">
-							<label>일감</label> <select name="projectId">
-								<option value="">전체</option>
-								<option th:each="project : ${projectList}"
+							<label>일감</label>
+							<div class="radio-group">
+								<!-- 전체 선택 -->
+								<label class="radio-label"> <input type="radio"
+									name="projectId" value=""
+									th:checked="${param.projectId == null or param.projectId == ''}">
+									전체
+								</label>
+								<!-- 프로젝트별 radio -->
+								<label class="radio-label" th:each="project : ${projectList}">
+									<input type="radio" name="projectId"
 									th:value="${project.projectId}"
-									th:text="${project.projectName}"
-									th:selected="${#strings.toString(project.projectId) == #strings.toString(param.projectId)}">
-									일감</option>
-							</select>
+									th:checked="${#strings.toString(project.projectId) == #strings.toString(param.projectId)}">
+									<span th:text="${project.projectName}">프로젝트명</span>
+								</label>
+							</div>
 						</div>
+
+						<!-- 제목 -->
 						<div class="search-field">
 							<label>제목</label> <input type="text" name="originalName"
 								th:value="${param.originalName}" placeholder="입력">
 						</div>
+
+						<!-- 작성자 -->
 						<div class="search-field">
 							<label>작성자</label> <input type="text" name="uploadUserId"
 								th:value="${param.uploadUserId}" placeholder="입력">
 						</div>
+
 					</div>
 
 					<div class="search-btn-area">
-						<a th:href="@{/repository}" class="filter-btn btn-secondary">clean</a>
+						<a
+							th:href="@{/project/{projectId}/repository(projectId=${projectId})}"
+							class="filter-btn btn-secondary">clean</a>
 						<button type="submit" class="filter-btn btn-primary">apply</button>
 					</div>
 				</form>
@@ -66,53 +89,53 @@
 					<tbody>
 						<tr th:each="repo : ${repositoryList}">
 							<td><a
-								th:href="@{/repository/detail(fileId=${repo.fileId})}"
-								class="repo-file-link" th:text="${repo.originalName}">파일명</a>
-							</td>
-
+								th:href="@{/project/{projectId}/repository/detail(projectId=${projectId}, fileId=${repo.fileId})}"
+								class="repo-file-link" th:text="${repo.originalName}">파일명</a></td>
 							<td class="repo-checksum" th:text="${repo.categoryName}"></td>
-
 							<td
 								th:text="${#dates.format(repo.uploadDate, 'yyyy-MM-dd HH:mm')}"></td>
-
 							<td th:text="${repo.fileSizeText}"></td>
-
-							<td class="text-center" style="text-align: center !important;">
-								<a th:href="@{/repository/download(fileId=${repo.fileId})}"
-								class="repo-download-icon"
-								style="text-decoration: none; color: #007bff; font-weight: bold; display: inline-block;">↓</a>
-							</td>
-						</tr>
-
-						<tr th:if="${repositoryList.size() < 10}"
-							th:each="i : ${#numbers.sequence(repositoryList.size() + 1, 10)}"
-							style="height: 45px;">
-							<td colspan="6">&nbsp;</td>
+							<td class="text-center"><a
+								th:href="@{/project/{projectId}/repository/download(projectId=${projectId}, fileId=${repo.fileId})}"
+								class="repo-download-icon">↓</a></td>
 						</tr>
 					</tbody>
 				</table>
 			</div>
 
+			<!-- 페이징 (기존 유지) -->
 			<div class="pagination-area"
 				style="text-align: center; margin-top: 20px;">
 				<ul class="pagination">
-					<li th:classappend="${!hasPrevious} ? 'disabled'"><a
-						th:href="${hasPrevious} ? @{/repository(page=${currentPage - 1}, startDate=${param.startDate}, endDate=${param.endDate}, projectId=${param.projectId}, originalName=${param.originalName}, uploadUserId=${param.uploadUserId})} : 'javascript:void(0)'">이전</a>
+					<li th:classappend="${!repositoryPage.hasPrevious} ? 'disabled'">
+						<a
+						th:href="${repositoryPage.hasPrevious}
+                        ? @{/project/{projectId}/repository(projectId=${projectId}, page=${repositoryPage.page - 1}, startDate=${param.startDate}, endDate=${param.endDate}, originalName=${param.originalName}, uploadUserId=${param.uploadUserId})}
+                        : 'javascript:void(0)'">이전</a>
 					</li>
-
-					<li th:each="pageNum : ${#numbers.sequence(1, totalPages)}"><a
-						th:href="@{/repository(page=${pageNum}, startDate=${param.startDate}, endDate=${param.endDate}, projectId=${param.projectId}, originalName=${param.originalName}, uploadUserId=${param.uploadUserId})}"
-						th:text="${pageNum}"
-						th:classappend="${pageNum == currentPage} ? 'active'">1</a></li>
-
-					<li th:classappend="${!hasNext} ? 'disabled'"><a
-						th:href="${hasNext} ? @{/repository(page=${currentPage + 1}, startDate=${param.startDate}, endDate=${param.endDate}, projectId=${param.projectId}, originalName=${param.originalName}, uploadUserId=${param.uploadUserId})} : 'javascript:void(0)'">다음</a>
+					<!-- totalPage가 1 이상일 때만 페이지 번호 렌더링 (0이면 sequence(1,0) → [1,0] 버그 방지) -->
+					<th:block th:if="${repositoryPage.totalPage >= 1}">
+						<li
+							th:each="pageNum : ${#numbers.sequence(1, repositoryPage.totalPage)}">
+							<a
+							th:href="@{/project/{projectId}/repository(projectId=${projectId}, page=${pageNum}, startDate=${param.startDate}, endDate=${param.endDate}, originalName=${param.originalName}, uploadUserId=${param.uploadUserId})}"
+							th:text="${pageNum}"
+							th:classappend="${pageNum == repositoryPage.page} ? 'active'">1</a>
+						</li>
+					</th:block>
+					<!-- 데이터가 없을 때 1페이지 고정 표시 -->
+					<li th:if="${repositoryPage.totalPage == 0}"><a class="active"
+						href="javascript:void(0)">1</a></li>
+					<li th:classappend="${!repositoryPage.hasNext} ? 'disabled'">
+						<a
+						th:href="${repositoryPage.hasNext}
+                        ? @{/project/{projectId}/repository(projectId=${projectId}, page=${repositoryPage.page + 1}, startDate=${param.startDate}, endDate=${param.endDate}, originalName=${param.originalName}, uploadUserId=${param.uploadUserId})}
+                        : 'javascript:void(0)'">다음</a>
 					</li>
 				</ul>
 			</div>
 		</div>
 	</div>
-
 </body>
 
 </html>

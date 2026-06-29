@@ -66,6 +66,16 @@ public class RepositoryVO {
 	private boolean hasPrevious;
 	private boolean hasNext;
 	
+	private boolean first;
+	
+	public boolean isFirst() {
+	    return first;
+	}
+
+	public void setFirst(boolean first) {
+	    this.first = first;
+	}
+	
 	private String startDate;
 	private String endDate;
 }

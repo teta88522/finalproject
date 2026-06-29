@@ -45,57 +45,63 @@ public class RepositoryServiceImpl implements RepositoryService {
 	public RepositoryVO getRepositoryDetail(String fileId) {
 		return repositoryMapper.selectRepositoryDetail(fileId);
 	}
-	
+
 	// 4. 자료실 파일 등록
 	@Override
 	public int registerRepository(RepositoryVO repositoryVO, MultipartFile uploadFile) {
-		
-//		if(!isProjectMember(repositoryVO.getProjectId(), repositoryVO.getUploadUserId())) {
-//			throw new SecurityException("해당 프로젝트의 구성원이 아닙니다. 파일 업로드가 불가능합니다.");
-//		}
-		
-		// 방어 코드: 프로젝트ID가 없으면 강제로 기본값을 주거나 에러를 처리
-	    if (repositoryVO.getProjectId() == null || repositoryVO.getProjectId().isEmpty()) {
-	        // 방법 A: 강제로 지정 (예: 기본 프로젝트ID가 있다면)
-	        // repositoryVO.setProjectId("P001");
-	        
-	        // 방법 B: 예외를 발생시켜 어디서 비어있는지 명확히 확인
-	        throw new RuntimeException("프로젝트 ID가 전달되지 않았습니다. 폼 데이터를 확인하세요.");
-	    }
 
-	    if(uploadFile != null && !uploadFile.isEmpty()) {
-	        handleFileUpload(repositoryVO, uploadFile);
-	    }
-	    
-	    return repositoryMapper.insertRepository(repositoryVO);
+		// 1. 프로젝트 ID 검증[cite: 14]
+		if (repositoryVO.getProjectId() == null || repositoryVO.getProjectId().isEmpty()) {
+			throw new RuntimeException("프로젝트 ID가 전달되지 않았습니다. 폼 데이터를 확인하세요.");
+		}
+
+		// 2. [추가] VERSION_ID가 없을 경우 DB에서 조회하여 자동 세팅[cite: 14]
+		if (repositoryVO.getVersionId() == null || repositoryVO.getVersionId().isEmpty()) {
+			String versionId = repositoryMapper.selectRecentVersionIdByProjectId(repositoryVO.getProjectId());
+			
+			// --- 방어 코드 추가 ---
+	        if (versionId == null) {
+	            throw new RuntimeException("해당 프로젝트(" + repositoryVO.getProjectId() + ")에 연결된 버전 정보가 없습니다. 프로젝트 버전을 먼저 생성해주세요.");
+	        }
+			
+			repositoryVO.setVersionId(versionId);
+		}
+
+		// 3. 파일 처리[cite: 14]
+		if (uploadFile != null && !uploadFile.isEmpty()) {
+			handleFileUpload(repositoryVO, uploadFile);
+		}
+
+		// 4. 저장[cite: 14]
+		return repositoryMapper.insertRepository(repositoryVO);
 	}
 
 	// 5. 자료실 파일 수정
 	@Override
 	@Transactional
 	public int modifyRepository(RepositoryVO repositoryVO, MultipartFile uploadFile, String userId) {
-	    // 1. 기존 데이터 확인 (팀원 코드의 target 찾기)
-	    RepositoryVO oldData = repositoryMapper.selectRepositoryDetail(repositoryVO.getFileId());
-	    
-	    // 2. 권한 체크 (이건 필수!)
+		// 1. 기존 데이터 확인 (팀원 코드의 target 찾기)
+		RepositoryVO oldData = repositoryMapper.selectRepositoryDetail(repositoryVO.getFileId());
+
+		// 2. 권한 체크 (이건 필수!)
 //	    List<ProjectMemberVO> members = projectService.selectProjectMemberList(oldData.getProjectId());
 //	    boolean isMember = members.stream().anyMatch(member -> member.getUserId().equals(userId));
 //	    if (!isMember) {
 //	        throw new RuntimeException("프로젝트 구성원만 수정할 수 있습니다.");
 //	    }
 
-	    // 3. 기존 파일 죽이기
-	    repositoryMapper.updateRepositoryUseYn(repositoryVO.getFileId(), "N");
+		// 3. 기존 파일 죽이기
+		repositoryMapper.updateRepositoryUseYn(repositoryVO.getFileId(), "N");
 
-	    // 4. 새 버전 정보 세팅
-	    int nextVersion = Integer.parseInt(oldData.getFileVersion()) + 1;
-	    repositoryVO.setFileVersion(String.valueOf(nextVersion));
-	    repositoryVO.setProjectId(oldData.getProjectId());
-	    repositoryVO.setFileCode(oldData.getFileCode());
-	    repositoryVO.setVersionId(oldData.getVersionId());
+		// 4. 새 버전 정보 세팅
+		int nextVersion = Integer.parseInt(oldData.getFileVersion()) + 1;
+		repositoryVO.setFileVersion(String.valueOf(nextVersion));
+		repositoryVO.setProjectId(oldData.getProjectId());
+		repositoryVO.setFileCode(oldData.getFileCode());
+		repositoryVO.setVersionId(oldData.getVersionId());
 
-	    // 5. 새 파일 저장
-	    return registerRepository(repositoryVO, uploadFile);
+		// 5. 새 파일 저장
+		return registerRepository(repositoryVO, uploadFile);
 	}
 
 	// 파일 업로드 공통 처리 로직
@@ -139,9 +145,9 @@ public class RepositoryServiceImpl implements RepositoryService {
 
 	@Override
 	public boolean isProjectMember(String projectId, String userId) {
-	    int count = repositoryMapper.isProjectMember(projectId, userId);
-	    
-	    return count > 0;
+		int count = repositoryMapper.isProjectMember(projectId, userId);
+
+		return count > 0;
 	}
 
 }

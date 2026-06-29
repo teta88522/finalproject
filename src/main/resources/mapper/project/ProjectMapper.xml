@@ -1,25 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.pixcel.app.project.mapper.ProjectMapper">
+	<!-- ============================================================ 프로젝트 등록 
+		============================================================ -->
 	<insert id="insertProject"
 		parameterType="com.pixcel.app.project.service.ProjectVO">
-
 		<selectKey keyProperty="projectId" resultType="string"
 			order="BEFORE">
-			SELECT
-			'PROJECT_'
-			|| to_char(sysdate, 'YYMM')
-			|| '_'
-			|| lpad(
-			nvl(max(to_number(substr(project_id, -4))), 0) + 1,
-			4,
-			'0'
-			)
-			FROM project
-			WHERE substr(project_id, 1, 13) = 'PROJECT_' || to_char(sysdate, 'YYMM')
-			|| '_'
+			SELECT 'PROJECT_' || to_char(sysdate, 'YYMM') || '_'
+			||
+			lpad(nvl(max(to_number(substr(project_id, -4))), 0) + 1, 4, '0')
+			FROM
+			project
+			WHERE substr(project_id, 1, 13) = 'PROJECT_' ||
+			to_char(sysdate, 'YYMM') || '_'
 		</selectKey>
-
 		INSERT INTO project (
 		project_id
 		, owner_id
@@ -32,8 +27,7 @@
 		, end_date
 		, created_at
 		, git_url
-		)
-		VALUES (
+		) VALUES (
 		#{projectId}
 		, #{ownerId}
 		, #{projectName}
@@ -50,31 +44,45 @@
 
 	<insert id="insertProjectModules"
 		parameterType="com.pixcel.app.project.service.ProjectVO">
-
 		<if test="moduleCodes != null and moduleCodes.size > 0">
 			INSERT ALL
 			<foreach collection="moduleCodes" item="code" index="idx">
 				INTO
-				project_module (
-				project_module_id
+				project_module (project_module_id
 				, project_id
-				, module_code
-				)
-				VALUES (
-				sys_guid()
+				, module_code)
+				VALUES (sys_guid()
 				, #{projectId}
-				, #{code}
-				)
+				, #{code})
 			</foreach>
 			SELECT * FROM dual
 		</if>
 	</insert>
 
 	<!-- 260623 고동현 프로젝트 목록 조회 xml추가 -->
-	<!-- 관리자: 본인이 생성한 프로젝트 목록 조회 -->
-	<select id="selectMyCreatedProjectList"
-		resultType="com.pixcel.app.project.service.ProjectVO">
+	<!-- ============================================================ 공통 검색 
+		조건 SQL 조각 ============================================================ -->
+	<sql id="searchCondition">
+		<if test="searchProjectName != null and searchProjectName != ''">
+			AND p.project_name LIKE '%' || #{searchProjectName} || '%'
+		</if>
+		<if test="searchOwnerName != null and searchOwnerName != ''">
+			AND u.user_name LIKE '%' || #{searchOwnerName} || '%'
+		</if>
+		<if test="searchStatusCode != null and searchStatusCode != ''">
+			AND p.status_code = #{searchStatusCode}
+		</if>
+	</sql>
 
+	<!-- ============================================================ 관리자: 본인이 
+		생성한 프로젝트 목록 (검색 + 페이징) ============================================================ -->
+	<select id="selectMyCreatedProjectList"
+		parameterType="com.pixcel.app.project.service.ProjectVO"
+		resultType="com.pixcel.app.project.service.ProjectVO">
+		SELECT *
+		FROM (
+		SELECT ROWNUM AS rn, sq.*
+		FROM (
 		SELECT
 		p.project_id AS "projectId",
 		p.owner_id AS "ownerId",
@@ -90,23 +98,41 @@
 		p.git_url AS "gitUrl",
 		u.user_name AS "ownerName"
 		FROM project p
-		LEFT JOIN users u
-		ON p.owner_id = u.user_id
-		LEFT JOIN common_code c
-		ON p.status_code = c.code_id
-		AND c.code_name = '0A'
-		WHERE p.owner_id = #{userId}
-		ORDER BY
-		p.created_at DESC,
-		p.project_id DESC
-
+		LEFT JOIN users u ON p.owner_id = u.user_id
+		LEFT JOIN common_code c ON p.status_code = c.code_id AND c.code_name =
+		'0A'
+		WHERE p.owner_id = #{ownerId}
+		<include refid="searchCondition" />
+		ORDER BY p.created_at DESC, p.project_id DESC
+		) sq
+		WHERE ROWNUM &lt;= #{offset} + #{pageSize}
+		)
+		WHERE rn &gt; #{offset}
 	</select>
 
+	<!-- 관리자 전체 건수 -->
+	<select id="selectMyCreatedProjectCount"
+		parameterType="com.pixcel.app.project.service.ProjectVO"
+		resultType="int">
+		SELECT COUNT(*)
+		FROM project p
+		LEFT JOIN users u ON p.owner_id =
+		u.user_id
+		LEFT JOIN common_code c ON p.status_code = c.code_id AND
+		c.code_name = '0A'
+		WHERE p.owner_id = #{ownerId}
+		<include refid="searchCondition" />
+	</select>
 
-	<!-- 일반 이용자: 본인이 소속된 프로젝트 목록 조회 -->
+	<!-- ============================================================ 일반이용자: 
+		소속된 프로젝트 목록 (검색 + 페이징) ============================================================ -->
 	<select id="selectMyJoinedProjectList"
+		parameterType="com.pixcel.app.project.service.ProjectVO"
 		resultType="com.pixcel.app.project.service.ProjectVO">
-
+		SELECT *
+		FROM (
+		SELECT ROWNUM AS rn, sq.*
+		FROM (
 		SELECT
 		p.project_id AS "projectId",
 		p.owner_id AS "ownerId",
@@ -122,29 +148,64 @@
 		p.git_url AS "gitUrl",
 		owner.user_name AS "ownerName"
 		FROM project p
-		LEFT JOIN users owner
-		ON p.owner_id = owner.user_id
-		LEFT JOIN common_code c
-		ON p.status_code = c.code_id
-		AND c.code_name = '0A'
+		LEFT JOIN users owner ON p.owner_id = owner.user_id
+		LEFT JOIN common_code c ON p.status_code = c.code_id AND c.code_name =
+		'0A'
 		WHERE EXISTS (
 		SELECT 1
 		FROM project_member pm
-		JOIN team_member tm
-		ON pm.team_member_id = tm.team_member_id
+		JOIN team_member tm ON pm.team_member_id = tm.team_member_id
 		WHERE pm.project_id = p.project_id
-		AND tm.user_id = #{userId}
+		AND tm.user_id = #{ownerId}
 		)
-		ORDER BY
-		p.created_at DESC,
-		p.project_id DESC
-
+		<if test="searchProjectName != null and searchProjectName != ''">
+			AND p.project_name LIKE '%' || #{searchProjectName} || '%'
+		</if>
+		<if test="searchOwnerName != null and searchOwnerName != ''">
+			AND owner.user_name LIKE '%' || #{searchOwnerName} || '%'
+		</if>
+		<if test="searchStatusCode != null and searchStatusCode != ''">
+			AND p.status_code = #{searchStatusCode}
+		</if>
+		ORDER BY p.created_at DESC, p.project_id DESC
+		) sq
+		WHERE ROWNUM &lt;= #{offset} + #{pageSize}
+		)
+		WHERE rn &gt; #{offset}
 	</select>
 
-	<!-- 프로젝트 상세 조회 -->
+	<!-- 일반이용자 전체 건수 -->
+	<select id="selectMyJoinedProjectCount"
+		parameterType="com.pixcel.app.project.service.ProjectVO"
+		resultType="int">
+		SELECT COUNT(*)
+		FROM project p
+		LEFT JOIN users owner ON p.owner_id =
+		owner.user_id
+		LEFT JOIN
+		common_code c ON p.status_code = c.code_id AND c.code_name = '0A'
+		WHERE EXISTS (
+		SELECT 1
+		FROM project_member pm
+		JOIN team_member tm ON pm.team_member_id = tm.team_member_id
+		WHERE pm.project_id = p.project_id
+		AND tm.user_id = #{ownerId}
+		)
+		<if test="searchProjectName != null and searchProjectName != ''">
+			AND p.project_name LIKE '%' || #{searchProjectName} || '%'
+		</if>
+		<if test="searchOwnerName != null and searchOwnerName != ''">
+			AND owner.user_name LIKE '%' || #{searchOwnerName} || '%'
+		</if>
+		<if test="searchStatusCode != null and searchStatusCode != ''">
+			AND p.status_code = #{searchStatusCode}
+		</if>
+	</select>
+
+	<!-- ============================================================ 프로젝트 상세 
+		조회 ============================================================ -->
 	<select id="selectProjectDetail"
 		resultType="com.pixcel.app.project.service.ProjectVO">
-
 		SELECT
 		p.project_id AS "projectId",
 		p.owner_id AS "ownerId",
@@ -160,19 +221,17 @@
 		p.git_url AS "gitUrl",
 		u.user_name AS "ownerName"
 		FROM project p
-		LEFT JOIN users u
-		ON p.owner_id = u.user_id
-		LEFT JOIN common_code c
-		ON p.status_code = c.code_id
-		AND c.code_name = '0A'
+		LEFT JOIN users u ON p.owner_id =
+		u.user_id
+		LEFT JOIN common_code c ON p.status_code = c.code_id AND
+		c.code_name = '0A'
 		WHERE p.project_id = #{projectId}
-
 	</select>
 
-	<!-- 프로젝트 설정 - 구성원 목록 조회 -->
+	<!-- ============================================================ 구성원 목록 
+		조회 ============================================================ -->
 	<select id="selectProjectMemberList"
 		resultType="com.pixcel.app.project.service.ProjectMemberVO">
-
 		SELECT
 		pm.project_member_id AS "projectMemberId",
 		pm.project_id AS "projectId",
@@ -180,156 +239,99 @@
 		pm.project_group_id AS "projectGroupId",
 		pm.role_id AS "roleId",
 		TO_CHAR(pm.joined_at, 'YYYY/MM/DD') AS "joinedAt",
-
 		p.project_name AS "projectName",
-
 		tm.team_id AS "teamId",
-
 		t.team_name AS "teamName",
-
 		u.user_id AS "userId",
 		u.login_id AS "loginId",
 		u.user_name AS "userName",
 		u.email AS "email",
 		u.phone AS "phone",
-
 		pg.group_name AS "groupName",
-
 		r.role_name AS "roleName"
 		FROM project_member pm
-		JOIN project p
-		ON pm.project_id = p.project_id
-		JOIN team_member tm
-		ON pm.team_member_id = tm.team_member_id
-		JOIN users u
-		ON tm.user_id = u.user_id
-		LEFT JOIN team t
-		ON tm.team_id = t.team_id
-		LEFT JOIN project_group pg
-		ON pm.project_group_id = pg.project_group_id
-		LEFT JOIN role r
-		ON pm.role_id = r.role_id
+		JOIN project p ON pm.project_id =
+		p.project_id
+		JOIN team_member tm ON pm.team_member_id =
+		tm.team_member_id
+		JOIN users u ON tm.user_id = u.user_id
+		LEFT JOIN team
+		t ON tm.team_id = t.team_id
+		LEFT JOIN project_group pg ON
+		pm.project_group_id = pg.project_group_id
+		LEFT JOIN role r ON
+		pm.role_id = r.role_id
 		WHERE pm.project_id = #{projectId}
 		ORDER BY
-		t.team_name,
-		pg.group_name,
-		r.role_name,
-		u.user_name
-
+		t.team_name, pg.group_name, r.role_name, u.user_name
 	</select>
 
-	<!-- 프로젝트 구성원 추가 후보 목록 조회 -->
+	<!-- 구성원 추가 후보 목록 -->
 	<select id="selectProjectMemberCandidateList"
 		resultType="com.pixcel.app.project.service.ProjectMemberVO">
-
 		SELECT
 		tm.team_member_id AS "teamMemberId",
-
 		t.team_id AS "teamId",
 		t.team_name AS "teamName",
-
 		u.user_id AS "userId",
 		u.login_id AS "loginId",
 		u.user_name AS "userName",
 		u.email AS "email",
 		u.phone AS "phone",
-
 		pm.project_member_id AS "projectMemberId",
-
-		CASE
-		WHEN pm.project_member_id IS NULL THEN 'N'
-		ELSE 'Y'
-		END AS "joinedYn"
+		CASE WHEN pm.project_member_id IS NULL THEN 'N' ELSE 'Y' END AS "joinedYn"
 		FROM project p
-		JOIN team t
-		ON t.created_by = p.owner_id
-		JOIN team_member tm
-		ON tm.team_id = t.team_id
-		JOIN users u
-		ON tm.user_id = u.user_id
-		LEFT JOIN project_member pm
-		ON pm.project_id = p.project_id
-		AND pm.team_member_id = tm.team_member_id
+		JOIN team t ON t.created_by = p.owner_id
+		JOIN team_member
+		tm ON tm.team_id = t.team_id
+		JOIN users u ON tm.user_id = u.user_id
+		LEFT JOIN project_member pm ON pm.project_id = p.project_id AND
+		pm.team_member_id = tm.team_member_id
 		WHERE p.project_id = #{projectId}
-		ORDER BY
-		CASE
-		WHEN pm.project_member_id IS NULL THEN 0
-		ELSE 1
-		END,
-		t.team_name,
-		u.user_name
-
+		ORDER BY CASE WHEN pm.project_member_id IS NULL THEN 0 ELSE 1 END,
+		t.team_name, u.user_name
 	</select>
 
-
-	<!-- 프로젝트 역할 목록 조회 : 프로젝트 생성자가 만든 역할 -->
+	<!-- 역할 목록 -->
 	<select id="selectProjectRoleList"
 		resultType="com.pixcel.app.project.service.ProjectRoleVO">
-
-		SELECT
-		r.role_id AS "roleId",
-		r.role_name AS "roleName"
+		SELECT r.role_id AS "roleId", r.role_name AS "roleName"
 		FROM role r
-		JOIN project p
-		ON r.created_by = p.owner_id
-		WHERE p.project_id = #{projectId}
-		ORDER BY
-		r.created_at DESC,
-		r.role_name
-
+		JOIN project p ON r.created_by = p.owner_id
+		WHERE
+		p.project_id = #{projectId}
+		ORDER BY r.created_at DESC, r.role_name
 	</select>
 
-
-	<!-- 프로젝트 구성원 중복 확인 -->
+	<!-- 구성원 중복 확인 -->
 	<select id="selectProjectMemberDuplicateCount" resultType="int">
-
-		SELECT
-		COUNT(*)
-		FROM project_member
-		WHERE project_id = #{projectId}
-		AND team_member_id = #{teamMemberId}
-
+		SELECT COUNT(*) FROM project_member
+		WHERE project_id = #{projectId} AND
+		team_member_id = #{teamMemberId}
 	</select>
 
-
-	<!-- 프로젝트 구성원 ID 다음 번호 -->
+	<!-- 구성원 ID 다음 번호 -->
 	<select id="selectProjectMemberNextNo" resultType="int">
-
 		SELECT
-		NVL(MAX(TO_NUMBER(REGEXP_SUBSTR(project_member_id, '[0-9]+$'))), 0) + 1
+		NVL(MAX(TO_NUMBER(REGEXP_SUBSTR(project_member_id, '[0-9]+$'))), 0) +
+		1
 		FROM project_member
-		WHERE project_member_id LIKE 'PROJECT_MEMBER_' || TO_CHAR(SYSDATE,
-		'YYYYMM') || '_%'
-
+		WHERE project_member_id LIKE 'PROJECT_MEMBER_' ||
+		TO_CHAR(SYSDATE, 'YYYYMM') || '_%'
 	</select>
 
-
-	<!-- 프로젝트 구성원 등록 -->
+	<!-- 구성원 등록 -->
 	<insert id="insertProjectMember"
 		parameterType="com.pixcel.app.project.service.ProjectMemberVO">
-
-		INSERT INTO project_member (
-		project_member_id,
-		project_id,
-		team_member_id,
-		project_group_id,
-		role_id,
-		joined_at
-		) VALUES (
-		#{projectMemberId},
-		#{projectId},
-		#{teamMemberId},
-		#{projectGroupId, jdbcType=VARCHAR},
-		#{roleId},
-		SYSDATE
-		)
-
+		INSERT INTO project_member (project_member_id,
+		project_id, team_member_id, project_group_id, role_id, joined_at)
+		VALUES (#{projectMemberId}, #{projectId}, #{teamMemberId},
+		#{projectGroupId, jdbcType=VARCHAR}, #{roleId}, SYSDATE)
 	</insert>
 
-	<!-- 프로젝트 구성원 단건 조회 -->
+	<!-- 구성원 단건 조회 -->
 	<select id="selectProjectMemberDetail"
 		resultType="com.pixcel.app.project.service.ProjectMemberVO">
-
 		SELECT
 		pm.project_member_id AS "projectMemberId",
 		pm.project_id AS "projectId",
@@ -337,75 +339,51 @@
 		pm.project_group_id AS "projectGroupId",
 		pm.role_id AS "roleId",
 		TO_CHAR(pm.joined_at, 'YYYY/MM/DD') AS "joinedAt",
-
 		p.project_name AS "projectName",
-
 		tm.team_id AS "teamId",
 		t.team_name AS "teamName",
-
 		u.user_id AS "userId",
 		u.login_id AS "loginId",
 		u.user_name AS "userName",
 		u.email AS "email",
 		u.phone AS "phone",
-
 		pg.group_name AS "groupName",
-
 		r.role_name AS "roleName"
 		FROM project_member pm
-		JOIN project p
-		ON pm.project_id = p.project_id
-		JOIN team_member tm
-		ON pm.team_member_id = tm.team_member_id
-		JOIN users u
-		ON tm.user_id = u.user_id
-		LEFT JOIN team t
-		ON tm.team_id = t.team_id
-		LEFT JOIN project_group pg
-		ON pm.project_group_id = pg.project_group_id
-		LEFT JOIN role r
-		ON pm.role_id = r.role_id
+		JOIN project p ON pm.project_id =
+		p.project_id
+		JOIN team_member tm ON pm.team_member_id =
+		tm.team_member_id
+		JOIN users u ON tm.user_id = u.user_id
+		LEFT JOIN team
+		t ON tm.team_id = t.team_id
+		LEFT JOIN project_group pg ON
+		pm.project_group_id = pg.project_group_id
+		LEFT JOIN role r ON
+		pm.role_id = r.role_id
 		WHERE pm.project_member_id = #{projectMemberId}
-
 	</select>
 
-
-	<!-- 프로젝트 구성원 역할 수정 -->
+	<!-- 구성원 역할 수정 -->
 	<update id="updateProjectMemberRole"
 		parameterType="com.pixcel.app.project.service.ProjectMemberVO">
-
 		UPDATE project_member
 		SET role_id = #{roleId}
-		WHERE project_member_id = #{projectMemberId}
-		AND project_id = #{projectId}
-
+		WHERE
+		project_member_id = #{projectMemberId} AND project_id = #{projectId}
 	</update>
 
-
-	<!-- 프로젝트 구성원 삭제 -->
+	<!-- 구성원 삭제 -->
 	<delete id="deleteProjectMember" parameterType="String">
-
-		DELETE FROM project_member
-		WHERE project_member_id = #{projectMemberId}
-
+		DELETE FROM
+		project_member WHERE project_member_id = #{projectMemberId}
 	</delete>
-	
-	<select id="selectAllProjects" resultType="ProjectVO">
-		SELECT project_id, project_name
-		FROM project
-		ORDER BY project_name ASC
-	</select>
-	
-	
-	<select id="selectProjectModules"
-		resultType="ProjectModulesVO">
 
-		SELECT
-		project_module_id
-		project_id
-		module_code
-		FROM project_module
-		WHERE project_id = #{projectId}
-
+	<!-- 자료실용 전체 프로젝트 -->
+	<select id="selectAllProjects"
+		resultType="com.pixcel.app.project.service.ProjectVO">
+		SELECT project_id AS "projectId", project_name AS
+		"projectName"
+		FROM project ORDER BY project_name ASC
 	</select>
 </mapper>

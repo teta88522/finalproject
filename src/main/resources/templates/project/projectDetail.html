@@ -1,59 +1,155 @@
 <!doctype html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{common/layouts/default_layout}">
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{common/layouts/default_layout}">
 <head>
 <meta charset="UTF-8">
-<title>프로젝트 상세</title>
+<title>프로젝트 상세조회</title>
+<link rel="stylesheet" th:href="@{/css/project/projectDetail.css}">
 </head>
 
 <body>
-<div layout:fragment="Content">
+	<div layout:fragment="Content">
 
-    <div class="project-detail-page">
+		<div class="project-detail-page">
 
-        <div class="project-detail-header">
-            <h1 th:text="${project.projectName}">프로젝트명</h1>
+			<!-- 왼쪽 컬럼: 프로젝트 정보 + 일감 추적 -->
+			<div class="detail-left">
 
-            <div class="project-detail-meta">
-                <span>식별자: </span>
-                <strong th:text="${project.identifier}">identifier</strong>
-            </div>
-        </div>
+				<!-- 프로젝트 정보 -->
+				<div class="detail-section">
+					<div class="section-body">
+						<h2 class="section-title">프로젝트 정보</h2>
+						<div class="info-card">
+							<div class="info-card-header">
+								<span class="project-name-badge"
+									th:text="${project.projectName}">프로젝트명</span> <span
+									class="status-badge"
+									th:text="${project.statusName != null ? project.statusName : project.statusCode}">
+									진행중 </span>
+							</div>
+							<p class="info-description"
+								th:text="${project.description != null ? project.description : '설명이 없습니다.'}">
+								프로젝트 설명</p>
+							<ul class="info-meta-list">
+								<li><span class="meta-icon">📅</span> <span
+									class="meta-label">시작일</span> <span class="meta-value"
+									th:text="${project.startDate != null ? #dates.format(project.startDate, 'yyyy-MM-dd') : '-'}">-</span>
+								</li>
+								<li><span class="meta-icon">🏁</span> <span
+									class="meta-label">완료일</span> <span class="meta-value"
+									th:text="${project.endDate != null ? #dates.format(project.endDate, 'yyyy-MM-dd') : '-'}">-</span>
+								</li>
+								<li><span class="meta-icon">👤</span> <span
+									class="meta-label">PM</span> <span class="meta-value"
+									th:text="${project.ownerName != null ? project.ownerName : '-'}">-</span>
+								</li>
+								<li
+									th:if="${project.gitUrl != null and project.gitUrl != '' and project.gitUrl != 'none'}">
+									<span class="meta-icon">🔗</span> <span class="meta-label">GitHub</span>
+									<a class="meta-value meta-link" th:href="${project.gitUrl}"
+									th:text="${project.gitUrl}" target="_blank">-</a>
+								</li>
+								<li
+									th:if="${project.projectUrl != null and project.projectUrl != ''}">
+									<span class="meta-icon">🌐</span> <span class="meta-label">사이트</span>
+									<a class="meta-value meta-link" th:href="${project.projectUrl}"
+									th:text="${project.projectUrl}" target="_blank">-</a>
+								</li>
+							</ul>
+						</div>
+					</div>
+				</div>
 
-        <div class="project-detail-card">
-            <h3>프로젝트 정보</h3>
+				<!-- 일감 추적 -->
+				<div class="detail-section">
+					<div class="section-body">
+						<h2 class="section-title">일감 추적</h2>
+						<div class="table-wrap">
+							<table class="tracker-table">
+								<thead>
+									<tr>
+										<th>분류</th>
+										<th>진행 중</th>
+										<th>완료됨</th>
+										<th>합계</th>
+										<th class="col-action"></th>
+									</tr>
+								</thead>
+								<tbody>
+									<!-- 일감 데이터가 있을 때 -->
+									<th:block
+										th:if="${issueStatList != null and !#lists.isEmpty(issueStatList)}">
+										<tr th:each="stat : ${issueStatList}">
+											<td th:text="${stat.typeName}">-</td>
+											<td th:text="${stat.inProgressCount}">0</td>
+											<td th:text="${stat.doneCount}">0</td>
+											<td th:text="${stat.totalCount}">0</td>
+											<td class="col-action">
+												<button type="button" class="btn-more" title="더보기">⋮</button>
+											</td>
+										</tr>
+									</th:block>
+									<!-- 일감 데이터가 없을 때: 분류별 빈 행 + ⋮ 버튼 유지 -->
+									<th:block
+										th:if="${issueStatList == null or #lists.isEmpty(issueStatList)}">
+										<tr
+											th:each="typeName : ${ {'새기능', '결함', '요구사항', '테스트케이스', '이슈', '설계'} }">
+											<td th:text="${typeName}">-</td>
+											<td class="count-cell">0</td>
+											<td class="count-cell">0</td>
+											<td class="count-cell">0</td>
+											<td class="col-action">
+												<button type="button" class="btn-more" title="더보기">⋮</button>
+											</td>
+										</tr>
+									</th:block>
+								</tbody>
+							</table>
+						</div>
+					</div>
+				</div>
 
-            <div class="detail-row">
-                <span class="label">프로젝트명</span>
-                <span th:text="${project.projectName}">프로젝트명</span>
-            </div>
+			</div>
 
-            <div class="detail-row">
-                <span class="label">상태</span>
-                <span th:text="${project.statusName != null ? project.statusName : project.statusCode}">
-                    진행중
-                </span>
-            </div>
+			<!-- 오른쪽 컬럼: 구성원 -->
+			<div class="detail-right">
+				<div class="detail-section">
+					<div class="section-body">
+						<h2 class="section-title">구성원</h2>
+						<div class="member-list">
+							<!-- 구성원 데이터가 있을 때 -->
+							<th:block
+								th:if="${projectMemberList != null and !#lists.isEmpty(projectMemberList)}">
+								<!-- 팀별 그룹핑: teamName 기준으로 묶어서 표시 -->
+								<th:block th:each="member : ${projectMemberList}">
+									<!-- 팀 라벨: 이전 멤버와 팀명이 다를 때만 출력 -->
+									<div class="member-team-label"
+										th:if="${memberStat.first or member.teamName != projectMemberList[__${memberStat.index - 1}__].teamName}"
+										th:text="${member.teamName != null ? member.teamName : '미지정'}">팀명</div>
+									<div class="member-card">
+										<div class="member-avatar"
+											th:text="${member.userName != null ? #strings.substring(member.userName, 0, 1) : '?'}">?</div>
+										<div class="member-info">
+											<span class="member-name" th:text="${member.userName}">이름</span>
+											<span class="member-role"
+												th:text="${member.roleName != null ? member.roleName : (member.groupName != null ? member.groupName : '-')}">역할</span>
+										</div>
+									</div>
+								</th:block>
+							</th:block>
+							<!-- 구성원이 없을 때 -->
+							<div class="empty-members"
+								th:if="${projectMemberList == null or #lists.isEmpty(projectMemberList)}">
+								<p>등록된 구성원이 없습니다.</p>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
 
-            <div class="detail-row">
-                <span class="label">생성자</span>
-                <span th:text="${project.ownerName}">생성자</span>
-            </div>
+		</div>
 
-            <div class="detail-row">
-                <span class="label">설명</span>
-                <span th:text="${project.description}">설명</span>
-            </div>
-        </div>
-
-        <div class="project-detail-guide">
-            왼쪽 사이드바에서 프로젝트 기능을 선택할 수 있습니다.
-            관리자는 설정 메뉴에서 프로젝트 구성원을 관리할 수 있습니다.
-        </div>
-
-    </div>
-
-</div>
+	</div>
 </body>
 </html>
