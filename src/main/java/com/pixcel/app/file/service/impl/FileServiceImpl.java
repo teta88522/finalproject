@@ -62,13 +62,6 @@ public class FileServiceImpl implements FileService{
 	                }
 					String projectId =  req.getProjectId();
 					String connectAddress = req.getConnectAddress();
-//					int maxVersion = fileMapper.selectMaxVersion(
-//					        req.getProjectId(),
-//					        req.getConnectAddress(),
-//					        originName
-//					);
-//
-//					int nextVersion = maxVersion + 1;
 					int nextVersion = fileMapper.selectNextFileVersion(req.getProjectId(),
 			        req.getConnectAddress(),
 					        originName);
@@ -122,16 +115,16 @@ public class FileServiceImpl implements FileService{
 			
 			for(FileVO fileInfo : files) {
 				
-				FileDownloadHistoryVO historyFile = new FileDownloadHistoryVO();
-				historyFile.setFileId(fileInfo.getFileId());
-				historyFile.setDownloadUserId(userId);
-				fileMapper.insertDownloadHistory(historyFile);
 				
-				File file = new File(fileInfo.getFilePath(), fileInfo.getStoredName());
+				File file = new File(fileInfo.getFilePath());
 				
 				if(!file.exists()) {
 					continue;
 				}
+				FileDownloadHistoryVO historyFile = new FileDownloadHistoryVO();
+				historyFile.setFileId(fileInfo.getFileId());
+				historyFile.setDownloadUserId(userId);
+				fileMapper.insertDownloadHistory(historyFile);
 				
 				ZipEntry zipEntry = new ZipEntry(fileInfo.getOriginalName());
 				
@@ -157,15 +150,14 @@ public class FileServiceImpl implements FileService{
 		if(fileInfo == null) {
 			throw new RuntimeException("다운로드할 파일이 없습니다.");
 		}
+		File file = new File(fileInfo.getFilePath());
+		if(!file.exists()) {
+			throw new RuntimeException("실제 파일이 존재하지 않습니다.");
+		}
 		FileDownloadHistoryVO historyFile = new FileDownloadHistoryVO();
 		historyFile.setFileId(fileInfo.getFileId());
 		historyFile.setDownloadUserId(userId);
 		fileMapper.insertDownloadHistory(historyFile);
-		File file = new File(fileInfo.getFilePath(), fileInfo.getStoredName());
-		
-		if(!file.exists()) {
-			throw new RuntimeException("실제 파일이 존재하지 않습니다.");
-		}
 		
 		String fileName = URLEncoder.encode(fileInfo.getOriginalName(), StandardCharsets.UTF_8).replace("\\+", "%20");
 		response.setContentType("application/octet-stream");

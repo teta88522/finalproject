@@ -70,14 +70,32 @@ public class DocumentServiceImpl implements DocumentService{
 
 	@Override
 	public List<DocumentHistoryVO> selectHistoryAll(String documentId) {
-		// TODO Auto-generated method stub
 		return documentMapper.selectHistoryAll(documentId);
 	}
 
 	@Override
 	public DocumentVO selectHistoryDetail(String documentHistoryId) {
-		// TODO Auto-generated method stub
 		return documentMapper.selectHistoryDetail(documentHistoryId);
+	}
+
+	@Override
+	public int deleteDocument(String documentId) {
+		return documentMapper.deleteDocument(documentId);
+	}
+
+	@Override
+	public int deleteDocumentCategory(String documentCategoryId) {
+		return documentMapper.deleteDocumentCategory(documentCategoryId);
+	}
+
+	@Override
+	public DocumentVO selectHistoryLastDetail(String documentId) {
+		// TODO Auto-generated method stub
+		return documentMapper.selectHistoryLastDetail(documentId);
+	}
+	
+	public int deleteDocumentHistory(String documentHistoryId) {
+		return documentMapper.deleteDocumentHistory(documentHistoryId);
 	}
 
 

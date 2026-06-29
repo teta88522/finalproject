@@ -29,4 +29,5 @@ public class DocumentHistoryVO {
 	@DateTimeFormat(pattern="yyyy-MM-dd")
 	private Date createdAt; 
 	private int documentVersionId;
+	public int totalCnt;
 }

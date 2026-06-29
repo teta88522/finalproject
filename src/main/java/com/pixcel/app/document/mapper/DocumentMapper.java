@@ -10,6 +10,7 @@ public interface DocumentMapper {
 	
 	public List<DocumentVO> selectAll();
 	public DocumentVO selectHistoryDetail(String documentHistoryId);
+	public DocumentVO selectHistoryLastDetail(String documentHistoryId);
 	public int insertDocument(DocumentVO documentVO);
 	public int insertDocumentHistory(DocumentHistoryVO documentHistoryVO);
 	public int updateDocument(DocumentVO documentVO);
@@ -20,4 +21,7 @@ public interface DocumentMapper {
 	public List<DocumentVO> selectCategorydoc(String categoryId);
 	public DocumentVO selectDetail(String documentId);
 	public int insertCategory(DocumentCategoryVO documentCategoryVO);
+	public int deleteDocument(String documentId);
+	public int deleteDocumentHistory(String documentHistoryId);
+	public int deleteDocumentCategory(String documentCategoryId);
 }

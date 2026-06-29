@@ -17,10 +17,12 @@
             status_code,
             status_name
         from document
+        ORDER BY document_id DESC
     </select>
     
     <select id="selectHistoryAll" resultType="DocumentHistoryVO">
         select
+        	count(*) over() as total_cnt,
         	h.document_history_id,
             h.document_id,
             h.created_by,
@@ -34,6 +36,7 @@
         from document_history h
         LEFT JOIN users u ON h.created_by = u.user_id
         WHERE h.document_id = #{documentId}
+        ORDER BY h.document_history_id DESC
     </select>
     
     <!-- 문서에 카테고리 없는 파일조회 -->
@@ -60,11 +63,13 @@
         LEFT JOIN users u ON d.created_by = u.user_id
         WHERE document_category_id IS NULL
         AND project_id = #{projectId}
+        ORDER BY d.document_id DESC
     </select>
     
     <!-- 문서에 카테고리있는 파일 목록조회 -->
     <select id="selectCategorydoc" resultType="DocumentVO">
         select
+        	count(*) over() as total_cnt,
             d.document_id,
             d.project_id,
             d.document_category_id,
@@ -86,6 +91,7 @@
         LEFT JOIN users u ON d.created_by = u.user_id
         LEFT JOIN document_category c ON d.document_category_id = c.document_category_id
         WHERE d.document_category_id = #{documentCategoryId}
+        ORDER BY d.document_id DESC
     </select>
     
     <!-- 문서에 파일 상세 조회 -->
@@ -125,7 +131,7 @@
             v.version_name,
             d.milestone_id,
             m.title as milestone_title,
-            d.created_by,
+            h.created_by,
             u.user_name,
             h.title,
             h.description,
@@ -320,4 +326,56 @@
 
     WHERE document_id = #{documentId}
 </update>
+
+<delete id="deleteDocument" parameterType="String">
+    DELETE
+      FROM document
+     WHERE document_id = #{documentId}
+</delete>
+
+<delete id="deleteDocumentHistory" parameterType="String">
+    DELETE
+      FROM document_history
+     WHERE document_history_id = #{documentHistoryId}
+</delete>
+
+<delete id="deleteDocumentCategory" parameterType="String">
+    DELETE
+      FROM document_category
+     WHERE document_category_id = #{documentCategoryId}
+</delete>
+
+<select id="selectHistoryLastDetail" resultType="DocumentVO">
+    SELECT
+        h.document_history_id,
+        d.document_id,
+        d.project_id,
+        d.document_category_id,
+        c.category_name,
+        d.version_id,
+        v.version_name,
+        d.milestone_id,
+        m.title AS milestone_title,
+        h.created_by,
+        u.user_name,
+        h.title,
+        h.description,
+        d.setting_code_id,
+        d.status_code,
+        d.status_name,
+        h.document_version_id
+    FROM document d
+    LEFT JOIN milestone m ON d.milestone_id = m.milestone_id
+    LEFT JOIN project_version v ON d.version_id = v.version_id
+    LEFT JOIN users u ON d.created_by = u.user_id
+    LEFT JOIN document_category c ON d.document_category_id = c.document_category_id
+    LEFT JOIN document_history h ON d.document_id = h.document_id
+    WHERE h.document_id = #{documentId}
+      AND h.document_version_id = (
+    		SELECT MAX(document_version_id)
+    		FROM document_history
+    	WHERE document_id = #{documentId}
+)
+</select>
+
 </mapper>

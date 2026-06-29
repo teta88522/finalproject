@@ -141,6 +141,7 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 
-# End of https://www.toptal.com/developers/gitignore/api/windows,java,eclipse,visualstudiocode
+# node libarary
+node_modules/
 
-Dockerfile
+# End of https://www.toptal.com/developers/gitignore/api/windows,java,eclipse,visualstudiocode

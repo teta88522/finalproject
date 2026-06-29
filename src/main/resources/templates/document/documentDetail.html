@@ -67,7 +67,7 @@
                                     <span th:text="${file.originalName}" ></span>
                                     <span th:text="'v' + ${file.fileVersion}"></span>
                                 </span>
-                                <a class="btn btn-default btn-custon-three btn-custon-rounded-four btn-xs" th:href="@{/document/detail/{documentId}/{fileId}/download(
+                                <a class="btn btn-default btn-custon-three btn-custon-rounded-four btn-xs" th:href="@{/project/{projectId}/document/detail/{documentId}/{fileId}/download(projectId=${projectId},
         									documentId=${docDetail.documentId},
         									fileId=${file.fileId})}">
                                     <i class="fa fa-download"></i>
@@ -85,7 +85,7 @@
                 <div style="display:flex; align-items:flex-start; padding:12px 16px;">
                     <label style="width:120px; font-size:13px; color:#888; font-weight:500; margin:0; padding-top:4px;">연결된 문서 목록</label>
                     <!-- ⑥ 목록 -->
-            		<a th:href="@{/document/historylist/{documentId}(documentId=${docDetail.documentId})}" class="btn btn-default btn-custon-three btn-custon-rounded-four" style="font-size:13px; padding:6px 16px;">
+            		<a th:href="@{/project/{projectId}/document/historylist/{documentId}(projectId=${projectId},documentId=${docDetail.documentId})}" class="btn btn-default btn-custon-three btn-custon-rounded-four" style="font-size:13px; padding:6px 16px;">
                 		<i class="fa fa-list" style="margin-right:5px;"></i> 바로가기
             		</a>
                     <ul style="flex:1; list-style:none; padding:0; margin:0; font-size:13px; color:#555;">
@@ -109,23 +109,32 @@
             <!-- ⑤ 파일 다운로드 -->
             <a class="btn btn-info btn-custon-three btn-custon-rounded-four"
    					style="font-size:13px; padding:6px 16px;"
-   					th:href="@{/document/detail/{documentId}/download(documentId=${docDetail.documentId})}">
+   					th:href="@{/project/{projectId}/document/detail/{documentId}/download(projectId=${projectId},documentId=${docDetail.documentId})}">
 
     			<i class="fa fa-download" style="margin-right:5px;"></i>
     			파일 다운로드
 			</a>
             <!-- ⑥ 목록 -->
-            <a th:href="@{/document/list}" class="btn btn-default btn-custon-three btn-custon-rounded-four" style="font-size:13px; padding:6px 16px;">
+            <a th:href="@{/project/{projectId}/document/list(projectId=${projectId})}" class="btn btn-default btn-custon-three btn-custon-rounded-four" style="font-size:13px; padding:6px 16px;">
                 <i class="fa fa-list" style="margin-right:5px;"></i> 목록
             </a>
             <!-- ⑦ 수정 -->
-            <a th:href="@{/document/update/{id}(id=${docDetail.documentId})}" class="btn btn-primary btn-custon-three btn-custon-rounded-four" style="font-size:13px; padding:6px 16px;">
+            <a th:href="@{/project/{projectId}/document/update/{id}(projectId=${projectId},id=${docDetail.documentId})}" class="btn btn-primary btn-custon-three btn-custon-rounded-four" style="font-size:13px; padding:6px 16px;">
                 <i class="fa fa-pencil" style="margin-right:5px;"></i> 수정
             </a>
             <!-- ⑧ 삭제 -->
-            <button type="button" class="btn btn-danger btn-custon-three btn-custon-rounded-four" style="font-size:13px; padding:6px 16px;" onclick="confirmDelete()">
-                <i class="fa fa-trash" style="margin-right:5px;"></i> 삭제
-            </button>
+            <form th:action="@{/project/{projectId}/document/deletedocument/{documentId}
+					(projectId=${projectId}, documentId=${docDetail.documentId})}"
+      				method="post"
+      				style="display:inline;">
+
+    		<button type="submit"
+            		class="btn btn-danger btn-custon-three btn-custon-rounded-four"
+            		style="font-size:13px; padding:6px 16px; border:none;">
+        			<i class="fa fa-trash" style="margin-right:5px;"></i> 삭제
+    		</button>
+
+			</form>
         </div>
  
     </div>

@@ -76,6 +76,7 @@ public class ProjectController {
 		searchVO.setPage(page);
 		searchVO.setPageSize(pageSize);
 
+
 		List<ProjectVO> projectList;
 		if ("Y".equals(subscribeYn)) {
 			projectList = projectService.selectMyCreatedProjectList(searchVO);

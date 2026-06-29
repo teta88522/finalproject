@@ -1,72 +1,57 @@
-//package com.pixcel.app.websocket;
-//
-//
-//import java.util.Map;
-//import java.util.Set;
-//import java.util.concurrent.ConcurrentHashMap;
-//
-//import org.springframework.beans.factory.annotation.Autowired;
-//import org.springframework.stereotype.Component;
-//import org.springframework.web.socket.BinaryMessage;
-//import org.springframework.web.socket.WebSocketSession;
-//import org.springframework.web.socket.handler.BinaryWebSocketHandler;
-//
-//import com.pixcel.app.redis.RedisPublisher;
-//
-//@Component
-//public class WikiWebSocketHandler extends BinaryWebSocketHandler {
-//
-//    private final Map<String, Set<WebSocketSession>> rooms = new ConcurrentHashMap<>();
-//
-//    @Override
-//    public void afterConnectionEstablished(WebSocketSession session) throws Exception {
-//
-//        String wikiId = getWikiId(session);
-//
-//        session.getAttributes().put("wikiId", wikiId);
-//
-//        rooms.computeIfAbsent(wikiId, k -> ConcurrentHashMap.newKeySet())
-//             .add(session);
-//
-//        System.out.println("접속 : " + wikiId);
-//    }
-//
-//    @Override
-//    protected void handleBinaryMessage(WebSocketSession session, BinaryMessage message) throws Exception {
-//
-//        String wikiId = (String) session.getAttributes().get("wikiId");
-//
-//        byte[] payload = message.getPayload().array();
-//
-//        System.out.println("메시지 수신 : " + wikiId);
-//
-//        // 👉 Redis publish
-//        redisPublisher.publish("wiki-room:" + wikiId, payload);
-//    }
-//
-//    public void broadcast(String channel, byte[] message) {
-//
-//        String wikiId = channel.replace("wiki-room:", "");
-//
-//        Set<WebSocketSession> sessions = rooms.get(wikiId);
-//        if (sessions == null) return;
-//
-//        for (WebSocketSession s : sessions) {
-//            try {
-//                if (s.isOpen()) {
-//                    s.sendMessage(new BinaryMessage(message));
-//                }
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//            }
-//        }
-//    }
-//
-//    private String getWikiId(WebSocketSession session) {
-//        String query = session.getUri().getQuery();
-//        return query.split("=")[1]; // ?wikiId=123
-//    }
-//
-//    @Autowired
-//    private RedisPublisher redisPublisher;
-//}
+package com.pixcel.app.websocket;
+
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
+import org.springframework.web.socket.BinaryMessage;
+import org.springframework.web.socket.CloseStatus;
+import org.springframework.web.socket.WebSocketSession;
+import org.springframework.web.socket.handler.BinaryWebSocketHandler;
+
+public class WikiWebSocketHandler extends BinaryWebSocketHandler {
+
+    // wiki_id 별로 세션 관리
+    private final Map<String, Set<WebSocketSession>> rooms = new ConcurrentHashMap<>();
+
+    @Override
+    public void afterConnectionEstablished(WebSocketSession session) {
+        String wikiId = getWikiId(session);
+        rooms.computeIfAbsent(wikiId, k -> ConcurrentHashMap.newKeySet()).add(session);
+        System.out.println("연결됨 - wikiId: " + wikiId + ", 세션: " + session.getId());
+    }
+
+    @Override
+    protected void handleBinaryMessage(WebSocketSession session, BinaryMessage message) throws Exception {
+        String wikiId = getWikiId(session);
+        Set<WebSocketSession> room = rooms.get(wikiId);
+
+        if (room == null) return;
+
+        // 같은 위키 페이지 사람들한테 broadcast
+        for (WebSocketSession s : room) {
+            if (s.isOpen() && !s.getId().equals(session.getId())) {
+                s.sendMessage(new BinaryMessage(message.getPayload()));
+            }
+        }
+    }
+
+    @Override
+    public void afterConnectionClosed(WebSocketSession session, CloseStatus status) {
+        String wikiId = getWikiId(session);
+        Set<WebSocketSession> room = rooms.get(wikiId);
+
+        if (room != null) {
+            room.remove(session);
+            if (room.isEmpty()) {
+                rooms.remove(wikiId);
+            }
+        }
+        System.out.println("연결종료 - wikiId: " + wikiId + ", 세션: " + session.getId());
+    }
+
+    private String getWikiId(WebSocketSession session) {
+        String path = session.getUri().getPath();
+        return path.substring(path.lastIndexOf('/') + 1);
+    }
+}

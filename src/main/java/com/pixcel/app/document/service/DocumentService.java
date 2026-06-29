@@ -15,5 +15,9 @@ public interface DocumentService {
 	public List<DocumentVO> selectCategorydoc(String categoryId);
 	public DocumentVO selectDetail(String documentId);
 	public DocumentVO selectHistoryDetail(String documentHistoryId);
+	public DocumentVO selectHistoryLastDetail(String documentId);
 	public int insertCategory(DocumentCategoryVO documentCategoryVO);
+	public int deleteDocument(String documentId);
+	public int deleteDocumentCategory(String documentCategoryId);
+	public int deleteDocumentHistory(String documentHistoryId);
 }

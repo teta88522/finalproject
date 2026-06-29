@@ -14,8 +14,8 @@ import lombok.ToString;
 @Setter
 @ToString
 public class DocumentVO {
-	
 	private String documentId;
+	private String documentHistoryId;
 	private String projectId;
 	private String documentCategoryId;
 	private String categoryName;

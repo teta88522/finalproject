@@ -5537,6 +5537,67 @@ div#sparklinehome canvas {
   display: none;
 }
 /*----------------------------------------*/
+/*  23. 위키
+/*----------------------------------------*/
+  .tiptap {
+    outline: none;
+    min-height: 460px;
+    cursor: text;
+  }
+  .collaboration-cursor__caret {
+    border-left: 1px solid #0d0d0d;
+    border-right: 1px solid #0d0d0d;
+    margin-left: -1px;
+    margin-right: -1px;
+    pointer-events: none;
+    position: relative;
+    word-break: normal;
+  }
+  .collaboration-cursor__label {
+    border-radius: 3px 3px 3px 0;
+    color: #0d0d0d;
+    font-size: 12px;
+    font-weight: 600;
+    left: -1px;
+    line-height: normal;
+    padding: 0.1rem 0.3rem;
+    position: absolute;
+    top: -1.4em;
+    user-select: none;
+    white-space: nowrap;
+  }
+  /* 버전 히스토리 패널 */
+  .version-panel {
+    width: 280px;
+    border-left: 1px solid #e0e0e0;
+    padding: 16px;
+    overflow-y: auto;
+    max-height: 600px;
+    display: none;
+  }
+  .version-panel.open {
+    display: block;
+  }
+  .version-item {
+    padding: 10px;
+    border-bottom: 1px solid #f0f0f0;
+    cursor: pointer;
+    border-radius: 6px;
+    margin-bottom: 4px;
+  }
+  .version-item:hover {
+    background: #f5f5f5;
+  }
+  .version-item .version-no {
+    font-size: 12px;
+    color: #888;
+  }
+  .version-item .version-date {
+    font-size: 11px;
+    color: #aaa;
+    margin-top: 4px;
+  }
+/*----------------------------------------*/
 /*  23. footer
 /*----------------------------------------*/
 .footer-copy-right p {
