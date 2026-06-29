@@ -140,10 +140,11 @@ public class ProjectServiceImpl implements ProjectService {
 		resultMap.put("message", "구성원 삭제가 성공하였습니다.");
 		return resultMap;
 	}
- 
+
+	// 류송지 추가
 	@Override
-	public List<ProjectModulesVO> selectAllModuleProjects() {
-		return null;
+	public List<ProjectModulesVO> selectAllModuleProjects(String projectId) {
+		return projectMapper.selectAllModuleProjects(projectId);
 	}
 	
 	@Override

@@ -22,7 +22,7 @@ public interface ProjectMapper {
 	public List<ProjectVO> selectAllProjects();
 	// 류송지 추가
 	// 프로젝트 모듈 관련
-	public List<ProjectModulesVO> selectAllModuleProjects();
+	public List<ProjectModulesVO> selectAllModuleProjects(String projectId);
  
 	//260623 고동현 프로젝트 리스트 관련추가
 	// 관리자 - 본인 생성 목록 (검색+페이징)

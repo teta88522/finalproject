@@ -26,7 +26,7 @@
                 	<div style="display:flex; align-items:center; border-bottom:1px solid #f3f4f6; padding:12px 16px;">
                         <label style="width:120px; font-size:13px; color:#888; font-weight:500; margin:0;">카테고리</label>
                         <select name="documentCategoryId" class="form-control" style="flex:1; font-size:13px; height:34px;">
-                            <option value="" selected disabled>Select milestone</option>
+                            <option value="" selected disabled>Select category</option>
                             <option th:each="category : ${categoryList}"
                                     th:value="${category.documentCategoryId}"
                                     th:text="${category.categoryName}">
@@ -37,12 +37,11 @@
                     <div style="display:flex; align-items:center; border-bottom:1px solid #f3f4f6; padding:12px 16px;">
                         <label style="width:120px; font-size:13px; color:#888; font-weight:500; margin:0;">버전</label>
                         <select name="versionId" class="form-control" style="flex:1; font-size:13px; height:34px;">
-                            <option value="" selected disabled>Select milestone</option>
-                            <option value="VERSION_ID_2606_0001">1단계 기획 완료</option>
-                            <option value="VERSION_ID_2606_0002">UI/UX 디자인 완료</option>
-                            <option value="VERSION_ID_2606_0003">백엔드 개발 완료</option>
-                            <option value="VERSION_ID_2606_0004">프론트엔드 개발 완료</option>
-                            <option value="VERSION_ID_2606_0005">QA 테스트 완료</option>
+                            <option value="" selected disabled>Select version</option>
+                            <option th:each="roadmap : ${roadmapList}"
+                                    th:value="${roadmap.versionId}"
+                                    th:text="${roadmap.versionName}">
+                            </option>
                         </select>
                     </div>
 
@@ -52,8 +51,11 @@
                             <option value="" selected disabled>Select milestone</option>
                             <option th:each="milestone : ${milestoneList}"
                                     th:value="${milestone.milestoneId}"
-                                    th:text="${milestone.title}">
+                                    th:text="${milestone.title}"
+                                    th:data-version-id="${milestone.versionId}">
+                                    <span th:text="${milestone.versionId}"></span>
                             </option>
+
                         </select>
                     </div>
 
@@ -96,7 +98,34 @@
         </div>
     </div>
 </div>
+<script th:inline="javascript">
+
+const versionSelect = document.getElementById("versionSelect");
+const milestoneSelect = document.getElementById("milestoneSelect");
+
+versionSelect.addEventListener("change", function () {
+    const versionId = this.value;
+
+    milestoneSelect.selectedIndex = 0;
+
+    Array.from(milestoneSelect.options).forEach(option => {
+        if (!option.value) return; // 기본 placeholder
+
+        const optionVersionId = option.dataset.versionId || "";
+
+        if (versionId) {
+            // 버전 선택된 경우: 해당 버전만 허용
+            option.hidden = optionVersionId !== versionId;
+            option.disabled = optionVersionId !== versionId;
+        } else {
+            // 버전 미선택: 버전 없는 것만 허용
+            const isGlobal = optionVersionId === "";
+            option.hidden = !isGlobal;
+            option.disabled = !isGlobal;
+        }
+    });
+});
+</script>
 </div>
 </body>
-
 </html>

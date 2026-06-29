@@ -9,6 +9,9 @@ import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.BinaryWebSocketHandler;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class WikiWebSocketHandler extends BinaryWebSocketHandler {
 
     // wiki_id 별로 세션 관리
@@ -18,7 +21,7 @@ public class WikiWebSocketHandler extends BinaryWebSocketHandler {
     public void afterConnectionEstablished(WebSocketSession session) {
         String wikiId = getWikiId(session);
         rooms.computeIfAbsent(wikiId, k -> ConcurrentHashMap.newKeySet()).add(session);
-        System.out.println("연결됨 - wikiId: " + wikiId + ", 세션: " + session.getId());
+        log.info("연결됨 - wikiId: " + wikiId + ", 세션: " + session.getId());
     }
 
     @Override
@@ -47,7 +50,7 @@ public class WikiWebSocketHandler extends BinaryWebSocketHandler {
                 rooms.remove(wikiId);
             }
         }
-        System.out.println("연결종료 - wikiId: " + wikiId + ", 세션: " + session.getId());
+        log.info("연결종료 - wikiId: " + wikiId + ", 세션: " + session.getId());
     }
 
     private String getWikiId(WebSocketSession session) {

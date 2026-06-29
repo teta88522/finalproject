@@ -17,70 +17,93 @@
 				
 				<ul class="metismenu" id="menu1">
 					<!-- 대시보드 -->
-					<li><a th:href="@{/dashboard}"> <span
+					<li>
+					<a th:href="@{/dashboard}"> <span
 							class="educate-icon educate-event icon-wrap"></span> <span
 							class="mini-click-non">대시보드</span>
-					</a></li>
+					</a>
+					</li>
 
 					<!-- 작업내역 -->
-					<li><a th:href="@{/workhistory}"> <span
+					<li>
+					<a th:href="@{/workhistory}"> <span
 							class="educate-icon educate-event icon-wrap"></span> <span
 							class="mini-click-non">작업내역</span>
-					</a></li>
+					</a>
+					</li>
 
 					<!-- 로드맵 -->
-					<li><a th:href="@{/project/{projectId}/roadmap/roadmap_list(projectId=${projectId})}"> <span
+					<li th:if="${moduleCodes.contains('h010')}">
+					<a th:href="@{/project/{projectId}/roadmap/roadmap_list(projectId=${projectId})}"> <span
 							class="educate-icon educate-event icon-wrap"></span> <span
 							class="mini-click-non">로드맵</span>
-					</a></li>
+					</a>
+					</li>
 
 					<!-- 마일스톤 -->
-					<li><a th:href="@{/project/{projectId}/milestones/list(projectId=${projectId})}"> <span
+					<li th:if="${moduleCodes.contains('h011')}">
+					<a th:href="@{/project/{projectId}/milestones/list(projectId=${projectId})}"> <span
 							class="educate-icon educate-event icon-wrap"></span> <span
 							class="mini-click-non">마일스톤</span>
-					</a></li>
+					</a>
+					</li>
 
 					<!-- 일감 -->
-					<li><a th:href="@{/project/{projectId}/issues(projectId=${projectId})}"><span
+					<li>
+					<a th:href="@{/project/{projectId}/issues(projectId=${projectId})}"><span
 							class="educate-icon educate-event icon-wrap"></span> <span
 							class="mini-click-non">일감</span>
-					</a></li>
+					</a>
+					</li>
 
 					<!-- 칸반 -->
-					<li><a th:href="@{/kanban}"> <span
+					<li th:if="${moduleCodes.contains('h009')}">
+					<a th:href="@{/kanban}"> <span
 							class="educate-icon educate-event icon-wrap"></span> <span
 							class="mini-click-non">칸반</span>
-					</a></li>
+					</a>
+					</li>
 
 					<!-- 간트차트 -->
+					<li th:if="${moduleCodes.contains('h008')}">
+					<a th:href="@{/gantt}"> <span
 					<li><a th:href="@{/project/{projectId}/gantt/ganttView(projectId=${projectId})}"> <span
 							class="educate-icon educate-event icon-wrap"></span> <span
 							class="mini-click-non">간트차트</span>
-					</a></li>
+					</a>
+					</li>
 
 					<!-- 달력 -->
-					<li><a th:href="@{/calendar}"> <span
+					<li th:if="${moduleCodes.contains('h012')}">
+					<a th:href="@{/calendar}"> <span
 							class="educate-icon educate-event icon-wrap"></span> <span
 							class="mini-click-non">달력</span>
-					</a></li>
+					</a>
+					</li>
 
 					<!-- 문서관리 -->
-					<li><a th:href="@{/project/{projectId}/document/list(projectId=${projectId})}"> <span
+					<li th:if="${moduleCodes.contains('h005')}">
+					<a th:href="@{/project/{projectId}/document/list(projectId=${projectId})}"> <span
 							class="educate-icon educate-event icon-wrap"></span> <span
 							class="mini-click-non">문서관리</span>
-					</a></li>
+					</a>
+					</li>
 
 					<!-- 자료실 -->
-					<li><a th:href="@{/project/{projectId}/repository(projectId=${projectId})}"> <span
+					<li th:if="${moduleCodes.contains('h003')}">
+					<a th:href="@{/project/{projectId}/repository(projectId=${projectId})}"> <span
 							class="educate-icon educate-event icon-wrap"></span> <span
 							class="mini-click-non">자료실</span>
-					</a></li>
+					</a>
+					</li>
 
 					<!-- 위키 -->
-					<li><a th:href="@{/project/{projectId}/wiki/list(projectId=${projectId})}"> <span
+					<li th:if="${moduleCodes.contains('h006')}">
+					<a th:href="@{/project/{projectId}/wiki/list(projectId=${projectId})}"> <span
 							class="educate-icon educate-event icon-wrap"></span> <span
 							class="mini-click-non">위키</span>
-					</a></li>
+					</a>
+					</li>
 
 
 
@@ -101,16 +124,20 @@
 						</ul></li>
 
 					<!-- 저장소 -->
-					<li><a th:href="@{/sourcerepository}"> <span
+					<li th:if="${moduleCodes.contains('h004')}">
+					<a th:href="@{/sourcerepository}"> <span
 							class="educate-icon educate-event icon-wrap"></span> <span
 							class="mini-click-non">저장소</span>
-					</a></li>
+					</a>
+					</li>
 
 					<!-- 게시판 -->
-					<li><a th:href="@{/notice}"> <span
+					<li th:if="${moduleCodes.contains('h007')}">
+					<a th:href="@{/notice}"> <span
 							class="educate-icon educate-event icon-wrap"></span> <span
 							class="mini-click-non">게시판</span>
-					</a></li>
+					</a>
+					</li>
 
 					<!-- 설정  2026/06/23 고동현 수정-->
 					<li th:if="${subscribeYn == 'Y'}"><a

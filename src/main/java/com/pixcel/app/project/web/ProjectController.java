@@ -15,6 +15,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.pixcel.app.project.service.IssueStatVO;
 import com.pixcel.app.project.service.ProjectMemberVO;
+import com.pixcel.app.project.service.ProjectModulesVO;
 import com.pixcel.app.project.service.ProjectRoleVO;
 import com.pixcel.app.project.service.ProjectService;
 import com.pixcel.app.project.service.ProjectVO;

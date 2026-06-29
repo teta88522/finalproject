@@ -55,4 +55,9 @@ public class RoadmapServicelmpl implements RoadmapService {
         // 매퍼의 2번 쿼리 호출
         return roadmapMapper.getRoadmapMilestones(projectId, versionId);
     }
+
+	@Override
+	public List<RoadmapVO> getVersionId(String projectId) {
+		return roadmapMapper.getVersionId(projectId);
+	}
 }

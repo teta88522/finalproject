@@ -28,6 +28,8 @@ import com.pixcel.app.file.service.FileVO;
 import com.pixcel.app.milestones.service.MilestoneSearchVO;
 import com.pixcel.app.milestones.service.MilestonesService;
 import com.pixcel.app.milestones.service.MilestonesVO;
+import com.pixcel.app.roadmap.service.RoadmapService;
+import com.pixcel.app.roadmap.service.RoadmapVO;
 import com.pixcel.app.web.AllProjectController;
 
 import jakarta.servlet.http.HttpServletResponse;
@@ -43,6 +45,7 @@ public class DocumentController {
 	private final DocumentService documentService;
 	private final FileService fileService;
 	private final MilestonesService milestonesService;
+	private final RoadmapService roadmapService;
 	private final CodeValueService codeValueService;
 	
 	@GetMapping("/list")
@@ -88,11 +91,13 @@ public class DocumentController {
 		MilestoneSearchVO vo = new MilestoneSearchVO();
 		vo.setProjectId(projectId);
 		List<MilestonesVO> milestoneList = milestonesService.getMilestoneList(vo.getProjectId());
-
 	    model.addAttribute("milestoneList", milestoneList);
 	    
 	    List<CodeValueVO> codeValueList = codeValueService.getCodeValueListByGroup(userId,"g003");
 	    model.addAttribute("codeValueList", codeValueList);
+	    
+	    List<RoadmapVO> roadmapList = roadmapService.getVersionId(projectId);
+	    model.addAttribute("roadmapList", roadmapList);
 	    
 	    List<DocumentCategoryVO> categoryList = documentService.selectCategoryAll(projectId);
 	    model.addAttribute("categoryList",categoryList);

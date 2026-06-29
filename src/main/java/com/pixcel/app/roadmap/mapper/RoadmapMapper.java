@@ -18,4 +18,6 @@ public interface RoadmapMapper {
 	public List<RoadmapVO> getRoadmapFull(String projectId);
 	public RoadmapVO getRoadmapDetail(@Param("versionId") String versionId, @Param("projectId") String projectId);
 	public List<MilestonesVO> getRoadmapMilestones(@Param("projectId") String projectId, @Param("versionId") String versionId);
+	// 류송지 추가
+	public List<RoadmapVO> getVersionId(String projectId);
 }

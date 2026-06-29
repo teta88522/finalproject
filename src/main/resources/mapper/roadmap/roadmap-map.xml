@@ -201,5 +201,18 @@
     
     ORDER BY NVL(M.START_DATE, DATE '9999-12-31'), I.ISSUE_ID
 </select>
-	
+
+
+<!-- 류송지 추가 -->
+<select id="getVersionId" resultType="RoadmapVO">
+	SELECT
+         version_id
+        ,version_name   
+        ,description
+        ,default_yn
+        ,status_code
+    FROM project_version
+    WHERE project_id = #{projectId} ORDER BY 
+        default_yn DESC, created_at DESC
+</select>
 </mapper>

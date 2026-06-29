@@ -9,7 +9,7 @@ public interface ProjectService {
 	List<ProjectVO> findAllProjects();
 	
 	// 프로젝트 모듈 관련
-	public List<ProjectModulesVO> selectAllModuleProjects();
+	public List<ProjectModulesVO> selectAllModuleProjects(String projectId);
 
 	// 프로젝트 리스트 관련
 	// 관리자 (검색+페이징 적용)
