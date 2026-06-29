@@ -258,29 +258,71 @@ public class ManageController {
         return "manage/group/manageGroupMember";
     }
     
+//    @PostMapping("/groups/{projectGroupId}/members/add")
+//    public String addGroupMember(@PathVariable String projectGroupId,
+//    							 @RequestParam String projectMemberId,
+//    							 @RequestParam String roleId,
+//    							 @CookieValue(value ="userId", required = false) String userId,
+//    							 @CookieValue(value = "user_pk", required = false) String userPk,
+//    							 @CookieValue(value ="subscribeYn",required = false) String subscribeYn,
+//    							 RedirectAttributes redirectAttributes) {
+//    	if(!"Y".equals(subscribeYn)) {
+//    		return "redirect:/";
+//    	}
+//    	
+//    	String ownerId = getLoginOwnerId(userId, userPk);
+//    	
+//    	if(ownerId == null || ownerId.equals("")) {
+//    		return "redirect:/login";
+//    	}
+//    	
+//    	Map<String , Object> resultMap = manageService.addGroupMember(projectGroupId, projectMemberId, roleId, ownerId);
+//    	
+//    	redirectAttributes.addFlashAttribute("message",resultMap.get("message"));
+//    	
+//    	return "redirect:/manage/groups/" + projectGroupId + "/members";
+//    }
     @PostMapping("/groups/{projectGroupId}/members/add")
     public String addGroupMember(@PathVariable String projectGroupId,
-    							 @RequestParam String projectMemberId,
-    							 @RequestParam String roleId,
-    							 @CookieValue(value ="userId", required = false) String userId,
-    							 @CookieValue(value = "user_pk", required = false) String userPk,
-    							 @CookieValue(value ="subscribeYn",required = false) String subscribeYn,
-    							 RedirectAttributes redirectAttributes) {
-    	if(!"Y".equals(subscribeYn)) {
-    		return "redirect:/";
-    	}
-    	
-    	String ownerId = getLoginOwnerId(userId, userPk);
-    	
-    	if(ownerId == null || ownerId.equals("")) {
-    		return "redirect:/login";
-    	}
-    	
-    	Map<String , Object> resultMap = manageService.addGroupMember(projectGroupId, projectMemberId, roleId, ownerId);
-    	
-    	redirectAttributes.addFlashAttribute("message",resultMap.get("message"));
-    	
-    	return "redirect:/manage/groups/" + projectGroupId + "/members";
+                                 @RequestParam(value = "projectMemberIds", required = false) List<String> projectMemberIds,
+                                 @RequestParam(value = "roleIds", required = false) List<String> roleIds,
+                                 @CookieValue(value = "userId", required = false) String userId,
+                                 @CookieValue(value = "user_pk", required = false) String userPk,
+                                 @CookieValue(value = "subscribeYn", required = false) String subscribeYn,
+                                 RedirectAttributes redirectAttributes) {
+
+        if (!"Y".equals(subscribeYn)) {
+            return "redirect:/";
+        }
+
+        String ownerId = getLoginOwnerId(userId, userPk);
+
+        if (ownerId == null || ownerId.equals("")) {
+            return "redirect:/login";
+        }
+
+        if (projectMemberIds == null || projectMemberIds.isEmpty()
+                || roleIds == null || roleIds.isEmpty()) {
+
+            redirectAttributes.addFlashAttribute("message", "선택한 구성원이 없습니다.");
+            return "redirect:/manage/groups/" + projectGroupId + "/members";
+        }
+
+        if (projectMemberIds.size() != roleIds.size()) {
+            redirectAttributes.addFlashAttribute("message", "구성원과 역할 정보가 일치하지 않습니다.");
+            return "redirect:/manage/groups/" + projectGroupId + "/members";
+        }
+
+        Map<String, Object> resultMap =
+                manageService.addGroupMemberList(projectGroupId, projectMemberIds, roleIds, ownerId);
+
+        redirectAttributes.addFlashAttribute("message", resultMap.get("message"));
+
+        if (Boolean.TRUE.equals(resultMap.get("result"))) {
+            return "redirect:/manage/groups/" + projectGroupId;
+        }
+
+        return "redirect:/manage/groups/" + projectGroupId + "/members";
     }
     
     @PostMapping("/groups/{projectGroupId}/members/role/update")
@@ -327,7 +369,7 @@ public class ManageController {
     	
     	redirectAttributes.addFlashAttribute("message", resultMap.get("message"));
     	
-    	return "redirect:/manage/groups/" + projectGroupId ;
+    	return "redirect:/manage/groups/" + projectGroupId + "/members" ;
     };
     
     

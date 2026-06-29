@@ -1,7 +1,7 @@
 <!doctype html>
 <html xmlns:th="http://www.thymeleaf.org"
-	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-	layout:decorate="~{common/layouts/default_layout}">
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{common/layouts/default_layout}">
 <head>
 <meta charset="UTF-8">
 <title>역할 추가</title>
@@ -9,430 +9,525 @@
 </head>
 
 <body>
-	<div layout:fragment="Content">
-
-		<div class="role-add-page">
-
-			<form th:action="@{/roles/add}" th:object="${roleServiceVO}"
-				method="post">
-
-				<div class="role-page-header">
-					<h1 class="role-page-title">역할 &gt;&gt; 역할 추가</h1>
-
-					<div class="role-top-btn-area">
-						<button type="button" class="role-btn"
-							th:onclick="|location.href='@{/roles}'|">취소</button>
-
-						<button type="submit" class="role-btn primary">저장</button>
-					</div>
-				</div>
-
-				<!-- 기본 정보 -->
-				<div class="role-section">
-					<div class="role-section-inner">
-						<div class="section-title">기본 정보</div>
-
-						<div class="form-row">
-							<label for="roleName">역할명</label> <input type="text"
-								id="roleName" th:field="*{roleName}"
-								placeholder="역할명을 입력하세요. 예: 팀장">
-						</div>
-					</div>
-				</div>
-
-				<!-- 권한 단계 -->
-				<div class="role-section">
-					<div class="step-area">
-						<div class="step-item active" data-page="1"
-							onclick="showPermissionPage(1)">
-							<span class="step-num">1</span> 프로젝트 / 마일스톤
-						</div>
-
-						<div class="step-item" data-page="2"
-							onclick="showPermissionPage(2)">
-							<span class="step-num">2</span> 일감 관리
-						</div>
-
-						<div class="step-item" data-page="3"
-							onclick="showPermissionPage(3)">
-							<span class="step-num">3</span> 게시판 관리
-						</div>
-
-						<div class="step-item" data-page="4"
-							onclick="showPermissionPage(4)">
-							<span class="step-num">4</span> 문서/파일/시각화 관련
-						</div>
-
-						<div class="step-item" data-page="5"
-							onclick="showPermissionPage(5)">
-							<span class="step-num">5</span> 저장소 관리
-						</div>
-					</div>
-				</div>
-
-				<!-- 권한 설정 -->
-				<div class="role-section">
-					<div class="permission-wrap">
-
-						<div class="section-title">권한 설정</div>
-
-						<div class="permission-header">
-							<span class="page-chip" id="pageChip">1 / 5 페이지</span>
-
-							<div class="permission-control">
-								<button type="button" class="small-btn"
-									onclick="checkCurrentPageAll(true)">전체 선택</button>
-
-								<button type="button" class="small-btn"
-									onclick="checkCurrentPageAll(false)">전체 해제</button>
-							</div>
-						</div>
-
-						<div class="permission-box">
-
-							<!-- 1. 프로젝트 및 마일스톤 권한 -->
-							<div class="permission-page active" data-page="1">
-								<div class="permission-box-title">
-									<span class="step-num">1</span> 프로젝트 및 마일스톤 권한
-								</div>
-
-								<div class="permission-content">
-									<div class="permission-grid">
-
-										<div class="permission-card">
-											<div class="permission-sub-title">프로젝트</div>
-
-											<div class="check-row">
-												<label th:each="permission : ${permissionList}"
-													th:if="${permission.permissionCategoryId == 'PC001'}">
-													<input type="checkbox" name="permissionIds"
-													th:value="${permission.permissionId}"
-													th:checked="${checkedPermissionIds != null and checkedPermissionIds.contains(permission.permissionId)}">
-													<span
-													th:text="${#strings.replace(permission.permissionName, '프로젝트 ', '')}">
-														권한명 </span>
-												</label>
-											</div>
-										</div>
-
-										<div class="permission-card">
-											<div class="permission-sub-title">마일스톤</div>
-
-											<div class="check-row">
-												<label th:each="permission : ${permissionList}"
-													th:if="${permission.permissionCategoryId == 'PC002'}">
-													<input type="checkbox" name="permissionIds"
-													th:value="${permission.permissionId}"
-													th:checked="${checkedPermissionIds != null and checkedPermissionIds.contains(permission.permissionId)}">
-													<span
-													th:text="${#strings.replace(permission.permissionName, '마일스톤 ', '')}">
-														권한명 </span>
-												</label>
-											</div>
-										</div>
-
-									</div>
-								</div>
-							</div>
-
-							<!-- 2. 일감 관리 -->
-							<div class="permission-page" data-page="2">
-								<div class="permission-box-title">
-									<span class="step-num">2</span> 일감 관리 권한
-								</div>
-
-								<div class="permission-content">
-									<div class="permission-grid three">
-
-										<div class="permission-card">
-											<div class="permission-sub-title">일감 기본</div>
-
-											<div class="check-row one">
-												<label th:each="permission : ${permissionList}"
-													th:if="${permission.permissionCategoryId == 'PC003'}">
-													<input type="checkbox" name="permissionIds"
-													th:value="${permission.permissionId}"
-													th:checked="${checkedPermissionIds != null and checkedPermissionIds.contains(permission.permissionId)}">
-													<span th:text="${permission.permissionName}">권한명</span>
-												</label>
-											</div>
-										</div>
-
-										<div class="permission-card">
-											<div class="permission-sub-title">구조 및 속성</div>
-
-											<div class="check-row one">
-												<label th:each="permission : ${permissionList}"
-													th:if="${permission.permissionCategoryId == 'PC004'}">
-													<input type="checkbox" name="permissionIds"
-													th:value="${permission.permissionId}"
-													th:checked="${checkedPermissionIds != null and checkedPermissionIds.contains(permission.permissionId)}">
-													<span th:text="${permission.permissionName}">권한명</span>
-												</label>
-											</div>
-										</div>
-
-										<div class="permission-card">
-											<div class="permission-sub-title">공개 설정</div>
-
-											<div class="check-row one">
-												<label th:each="permission : ${permissionList}"
-													th:if="${permission.permissionCategoryId == 'PC005'}">
-													<input type="checkbox" name="permissionIds"
-													th:value="${permission.permissionId}"
-													th:checked="${checkedPermissionIds != null and checkedPermissionIds.contains(permission.permissionId)}">
-													<span th:text="${permission.permissionName}">권한명</span>
-												</label>
-											</div>
-										</div>
-
-										<div class="permission-card">
-											<div class="permission-sub-title">댓글 관리</div>
-
-											<div class="check-row one">
-												<label th:each="permission : ${permissionList}"
-													th:if="${permission.permissionCategoryId == 'PC006'}">
-													<input type="checkbox" name="permissionIds"
-													th:value="${permission.permissionId}"
-													th:checked="${checkedPermissionIds != null and checkedPermissionIds.contains(permission.permissionId)}">
-													<span th:text="${permission.permissionName}">권한명</span>
-												</label>
-											</div>
-										</div>
-
-										<div class="permission-card">
-											<div class="permission-sub-title">관람자</div>
-
-											<div class="check-row one">
-												<label th:each="permission : ${permissionList}"
-													th:if="${permission.permissionCategoryId == 'PC007'}">
-													<input type="checkbox" name="permissionIds"
-													th:value="${permission.permissionId}"
-													th:checked="${checkedPermissionIds != null and checkedPermissionIds.contains(permission.permissionId)}">
-													<span th:text="${permission.permissionName}">권한명</span>
-												</label>
-											</div>
-										</div>
-
-									</div>
-								</div>
-							</div>
-
-							<!-- 3. 게시판 관리 -->
-							<div class="permission-page" data-page="3">
-								<div class="permission-box-title">
-									<span class="step-num">3</span> 게시판 관리 권한
-								</div>
-
-								<div class="permission-content">
-									<div class="permission-grid three">
-
-										<div class="permission-card">
-											<div class="permission-sub-title">기본 조작</div>
-
-											<div class="check-row one">
-												<label th:each="permission : ${permissionList}"
-													th:if="${permission.permissionCategoryId == 'PC008'}">
-													<input type="checkbox" name="permissionIds"
-													th:value="${permission.permissionId}"
-													th:checked="${checkedPermissionIds != null and checkedPermissionIds.contains(permission.permissionId)}">
-													<span th:text="${permission.permissionName}">권한명</span>
-												</label>
-											</div>
-										</div>
-
-										<div class="permission-card">
-											<div class="permission-sub-title">편집/삭제</div>
-
-											<div class="check-row one">
-												<label th:each="permission : ${permissionList}"
-													th:if="${permission.permissionCategoryId == 'PC009'}">
-													<input type="checkbox" name="permissionIds"
-													th:value="${permission.permissionId}"
-													th:checked="${checkedPermissionIds != null and checkedPermissionIds.contains(permission.permissionId)}">
-													<span th:text="${permission.permissionName}">권한명</span>
-												</label>
-											</div>
-										</div>
-
-										<div class="permission-card">
-											<div class="permission-sub-title">관람자</div>
-
-											<div class="check-row one">
-												<label th:each="permission : ${permissionList}"
-													th:if="${permission.permissionCategoryId == 'PC010'}">
-													<input type="checkbox" name="permissionIds"
-													th:value="${permission.permissionId}"
-													th:checked="${checkedPermissionIds != null and checkedPermissionIds.contains(permission.permissionId)}">
-													<span th:text="${permission.permissionName}">권한명</span>
-												</label>
-											</div>
-										</div>
-
-									</div>
-								</div>
-							</div>
-
-							<!-- 4. 문서/파일/시각화 관련 -->
-							<div class="permission-page" data-page="4">
-								<div class="permission-box-title">
-									<span class="step-num">4</span> 문서/파일/시각화 관련 권한
-								</div>
-
-								<div class="permission-content">
-									<div class="permission-grid three">
-
-										<div class="permission-card">
-											<div class="permission-sub-title">문서</div>
-
-											<div class="check-row one">
-												<label th:each="permission : ${permissionList}"
-													th:if="${permission.permissionCategoryId == 'PC011'}">
-													<input type="checkbox" name="permissionIds"
-													th:value="${permission.permissionId}"
-													th:checked="${checkedPermissionIds != null and checkedPermissionIds.contains(permission.permissionId)}">
-													<span
-													th:text="${#strings.replace(permission.permissionName, '문서 ', '')}">
-														권한명 </span>
-												</label>
-											</div>
-										</div>
-
-										<div class="permission-card">
-											<div class="permission-sub-title">파일</div>
-
-											<div class="check-row one">
-												<label th:each="permission : ${permissionList}"
-													th:if="${permission.permissionCategoryId == 'PC012'}">
-													<input type="checkbox" name="permissionIds"
-													th:value="${permission.permissionId}"
-													th:checked="${checkedPermissionIds != null and checkedPermissionIds.contains(permission.permissionId)}">
-													<span
-													th:text="${#strings.replace(permission.permissionName, '파일 ', '')}">
-														권한명 </span>
-												</label>
-											</div>
-										</div>
-
-										<div class="permission-card">
-											<div class="permission-sub-title">달력</div>
-
-											<div class="check-row one">
-												<label th:each="permission : ${permissionList}"
-													th:if="${permission.permissionCategoryId == 'PC013'}">
-													<input type="checkbox" name="permissionIds"
-													th:value="${permission.permissionId}"
-													th:checked="${checkedPermissionIds != null and checkedPermissionIds.contains(permission.permissionId)}">
-													<span th:text="${permission.permissionName}">권한명</span>
-												</label>
-											</div>
-										</div>
-
-										<div class="permission-card">
-											<div class="permission-sub-title">Gantt 차트</div>
-
-											<div class="check-row one">
-												<label th:each="permission : ${permissionList}"
-													th:if="${permission.permissionCategoryId == 'PC014'}">
-													<input type="checkbox" name="permissionIds"
-													th:value="${permission.permissionId}"
-													th:checked="${checkedPermissionIds != null and checkedPermissionIds.contains(permission.permissionId)}">
-													<span th:text="${permission.permissionName}">권한명</span>
-												</label>
-											</div>
-										</div>
-
-										<div class="permission-card">
-											<div class="permission-sub-title">대시보드</div>
-
-											<div class="check-row one">
-												<label th:each="permission : ${permissionList}"
-													th:if="${permission.permissionCategoryId == 'PC015'}">
-													<input type="checkbox" name="permissionIds"
-													th:value="${permission.permissionId}"
-													th:checked="${checkedPermissionIds != null and checkedPermissionIds.contains(permission.permissionId)}">
-													<span th:text="${permission.permissionName}">권한명</span>
-												</label>
-											</div>
-										</div>
-
-										<div class="permission-card">
-											<div class="permission-sub-title">칸반</div>
-
-											<div class="check-row one">
-												<label th:each="permission : ${permissionList}"
-													th:if="${permission.permissionCategoryId == 'PC016'}">
-													<input type="checkbox" name="permissionIds"
-													th:value="${permission.permissionId}"
-													th:checked="${checkedPermissionIds != null and checkedPermissionIds.contains(permission.permissionId)}">
-													<span th:text="${permission.permissionName}">권한명</span>
-												</label>
-											</div>
-										</div>
-
-									</div>
-								</div>
-							</div>
-
-							<!-- 5. 저장소 관리 -->
-							<div class="permission-page" data-page="5">
-								<div class="permission-box-title">
-									<span class="step-num">5</span> 저장소 관리 권한 &#91;보류&#93;
-								</div>
-
-								<div class="permission-content">
-									<div class="permission-grid">
-
-										<div class="permission-card">
-											<div class="permission-sub-title">조회</div>
-
-											<div class="check-row one">
-												<label th:each="permission : ${permissionList}"
-													th:if="${permission.permissionCategoryId == 'PC017'}">
-													<input type="checkbox" name="permissionIds"
-													th:value="${permission.permissionId}"
-													th:checked="${checkedPermissionIds != null and checkedPermissionIds.contains(permission.permissionId)}">
-													<span th:text="${permission.permissionName}">권한명</span>
-												</label>
-											</div>
-										</div>
-
-										<div class="permission-card">
-											<div class="permission-sub-title">관리</div>
-
-											<div class="check-row one">
-												<label th:each="permission : ${permissionList}"
-													th:if="${permission.permissionCategoryId == 'PC018'}">
-													<input type="checkbox" name="permissionIds"
-													th:value="${permission.permissionId}"
-													th:checked="${checkedPermissionIds != null and checkedPermissionIds.contains(permission.permissionId)}">
-													<span th:text="${permission.permissionName}">권한명</span>
-												</label>
-											</div>
-										</div>
-
-									</div>
-								</div>
-							</div>
-
-						</div>
-
-						<div class="bottom-btn-area">
-							<button type="button" id="prevBtn" class="prev-btn"
-								onclick="movePage(-1)">이전</button>
-
-							<button type="button" id="nextBtn" class="next-btn"
-								onclick="movePage(1)">다음</button>
-						</div>
-
-					</div>
-				</div>
-
-			</form>
-
-		</div>
-
-		<script>
+<div layout:fragment="Content">
+
+    <div class="role-add-page">
+
+        <form th:action="@{/roles/add}"
+              th:object="${roleServiceVO}"
+              method="post"
+              id="roleAddForm">
+
+            <div class="role-page-header">
+                <h1 class="role-page-title">역할 &gt;&gt; 역할 추가</h1>
+
+                <div class="role-top-btn-area">
+                    <button type="button"
+                            class="role-btn"
+                            th:onclick="|location.href='@{/roles}'|">
+                        취소
+                    </button>
+
+                    <button type="button"
+                            class="role-btn primary"
+                            id="rolePreviewBtn">
+                        저장
+                    </button>
+                </div>
+            </div>
+
+            <div class="role-section">
+                <div class="role-section-inner">
+                    <div class="section-title">기본 정보</div>
+
+                    <div class="form-row">
+                        <label for="roleName">역할명</label>
+                        <input type="text"
+                               id="roleName"
+                               th:field="*{roleName}"
+                               placeholder="역할명을 입력하세요. 예: 팀장"
+                               required>
+                    </div>
+                </div>
+            </div>
+
+            <div class="role-section">
+                <div class="step-area">
+                    <div class="step-item active" data-page="1" onclick="showPermissionPage(1)">
+                        <span class="step-num">1</span> 프로젝트 / 마일스톤
+                    </div>
+
+                    <div class="step-item" data-page="2" onclick="showPermissionPage(2)">
+                        <span class="step-num">2</span> 일감 관리
+                    </div>
+
+                    <div class="step-item" data-page="3" onclick="showPermissionPage(3)">
+                        <span class="step-num">3</span> 게시판 관리
+                    </div>
+
+                    <div class="step-item" data-page="4" onclick="showPermissionPage(4)">
+                        <span class="step-num">4</span> 문서/파일/시각화 관련
+                    </div>
+
+                    <div class="step-item" data-page="5" onclick="showPermissionPage(5)">
+                        <span class="step-num">5</span> 저장소 관리
+                    </div>
+                </div>
+            </div>
+
+            <div class="role-section">
+                <div class="permission-wrap">
+
+                    <div class="section-title">권한 설정</div>
+
+                    <div class="permission-header">
+                        <span class="page-chip" id="pageChip">1 / 5 페이지</span>
+
+                        <div class="permission-control">
+                            <button type="button"
+                                    class="small-btn"
+                                    onclick="checkCurrentPageAll(true)">
+                                전체 선택
+                            </button>
+
+                            <button type="button"
+                                    class="small-btn"
+                                    onclick="checkCurrentPageAll(false)">
+                                전체 해제
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="permission-box">
+
+                        <div class="permission-page active" data-page="1">
+                            <div class="permission-box-title">
+                                <span class="step-num">1</span> 프로젝트 및 마일스톤 권한
+                            </div>
+
+                            <div class="permission-content">
+                                <div class="permission-grid">
+
+                                    <div class="permission-card">
+                                        <div class="permission-sub-title">프로젝트</div>
+
+                                        <div class="check-row">
+                                            <label th:each="permission : ${permissionList}"
+                                                   th:if="${permission.permissionCategoryId == 'PC001'}">
+                                                <input type="checkbox"
+                                                       name="permissionIds"
+                                                       class="permission-check"
+                                                       th:value="${permission.permissionId}"
+                                                       th:data-permission-name="${permission.permissionName}"
+                                                       th:checked="${checkedPermissionIds != null and checkedPermissionIds.contains(permission.permissionId)}">
+                                                <span th:text="${#strings.replace(permission.permissionName, '프로젝트 ', '')}">
+                                                    권한명
+                                                </span>
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <div class="permission-card">
+                                        <div class="permission-sub-title">마일스톤</div>
+
+                                        <div class="check-row">
+                                            <label th:each="permission : ${permissionList}"
+                                                   th:if="${permission.permissionCategoryId == 'PC002'}">
+                                                <input type="checkbox"
+                                                       name="permissionIds"
+                                                       class="permission-check"
+                                                       th:value="${permission.permissionId}"
+                                                       th:data-permission-name="${permission.permissionName}"
+                                                       th:checked="${checkedPermissionIds != null and checkedPermissionIds.contains(permission.permissionId)}">
+                                                <span th:text="${#strings.replace(permission.permissionName, '마일스톤 ', '')}">
+                                                    권한명
+                                                </span>
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="permission-page" data-page="2">
+                            <div class="permission-box-title">
+                                <span class="step-num">2</span> 일감 관리 권한
+                            </div>
+
+                            <div class="permission-content">
+                                <div class="permission-grid three">
+
+                                    <div class="permission-card">
+                                        <div class="permission-sub-title">일감 기본</div>
+
+                                        <div class="check-row one">
+                                            <label th:each="permission : ${permissionList}"
+                                                   th:if="${permission.permissionCategoryId == 'PC003'}">
+                                                <input type="checkbox"
+                                                       name="permissionIds"
+                                                       class="permission-check"
+                                                       th:value="${permission.permissionId}"
+                                                       th:data-permission-name="${permission.permissionName}"
+                                                       th:checked="${checkedPermissionIds != null and checkedPermissionIds.contains(permission.permissionId)}">
+                                                <span th:text="${permission.permissionName}">권한명</span>
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <div class="permission-card">
+                                        <div class="permission-sub-title">구조 및 속성</div>
+
+                                        <div class="check-row one">
+                                            <label th:each="permission : ${permissionList}"
+                                                   th:if="${permission.permissionCategoryId == 'PC004'}">
+                                                <input type="checkbox"
+                                                       name="permissionIds"
+                                                       class="permission-check"
+                                                       th:value="${permission.permissionId}"
+                                                       th:data-permission-name="${permission.permissionName}"
+                                                       th:checked="${checkedPermissionIds != null and checkedPermissionIds.contains(permission.permissionId)}">
+                                                <span th:text="${permission.permissionName}">권한명</span>
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="permission-page" data-page="3">
+                            <div class="permission-box-title">
+                                <span class="step-num">3</span> 게시판 관리 권한
+                            </div>
+
+                            <div class="permission-content">
+                                <div class="permission-grid three">
+
+                                    <div class="permission-card">
+                                        <div class="permission-sub-title">기본 조작</div>
+
+                                        <div class="check-row one">
+                                            <label th:each="permission : ${permissionList}"
+                                                   th:if="${permission.permissionCategoryId == 'PC008'}">
+                                                <input type="checkbox"
+                                                       name="permissionIds"
+                                                       class="permission-check"
+                                                       th:value="${permission.permissionId}"
+                                                       th:data-permission-name="${permission.permissionName}"
+                                                       th:checked="${checkedPermissionIds != null and checkedPermissionIds.contains(permission.permissionId)}">
+                                                <span th:text="${permission.permissionName}">권한명</span>
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <div class="permission-card">
+                                        <div class="permission-sub-title">편집/삭제</div>
+
+                                        <div class="check-row one">
+                                            <label th:each="permission : ${permissionList}"
+                                                   th:if="${permission.permissionCategoryId == 'PC009'}">
+                                                <input type="checkbox"
+                                                       name="permissionIds"
+                                                       class="permission-check"
+                                                       th:value="${permission.permissionId}"
+                                                       th:data-permission-name="${permission.permissionName}"
+                                                       th:checked="${checkedPermissionIds != null and checkedPermissionIds.contains(permission.permissionId)}">
+                                                <span th:text="${permission.permissionName}">권한명</span>
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <div class="permission-card">
+                                        <div class="permission-sub-title">관람자</div>
+
+                                        <div class="check-row one">
+                                            <label th:each="permission : ${permissionList}"
+                                                   th:if="${permission.permissionCategoryId == 'PC010'}">
+                                                <input type="checkbox"
+                                                       name="permissionIds"
+                                                       class="permission-check"
+                                                       th:value="${permission.permissionId}"
+                                                       th:data-permission-name="${permission.permissionName}"
+                                                       th:checked="${checkedPermissionIds != null and checkedPermissionIds.contains(permission.permissionId)}">
+                                                <span th:text="${permission.permissionName}">권한명</span>
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="permission-page" data-page="4">
+                            <div class="permission-box-title">
+                                <span class="step-num">4</span> 문서/파일/시각화 관련 권한
+                            </div>
+
+                            <div class="permission-content">
+                                <div class="permission-grid three">
+
+                                    <div class="permission-card">
+                                        <div class="permission-sub-title">문서</div>
+
+                                        <div class="check-row one">
+                                            <label th:each="permission : ${permissionList}"
+                                                   th:if="${permission.permissionCategoryId == 'PC011'}">
+                                                <input type="checkbox"
+                                                       name="permissionIds"
+                                                       class="permission-check"
+                                                       th:value="${permission.permissionId}"
+                                                       th:data-permission-name="${permission.permissionName}"
+                                                       th:checked="${checkedPermissionIds != null and checkedPermissionIds.contains(permission.permissionId)}">
+                                                <span th:text="${#strings.replace(permission.permissionName, '문서 ', '')}">
+                                                    권한명
+                                                </span>
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <div class="permission-card">
+                                        <div class="permission-sub-title">파일</div>
+
+                                        <div class="check-row one">
+                                            <label th:each="permission : ${permissionList}"
+                                                   th:if="${permission.permissionCategoryId == 'PC012'}">
+                                                <input type="checkbox"
+                                                       name="permissionIds"
+                                                       class="permission-check"
+                                                       th:value="${permission.permissionId}"
+                                                       th:data-permission-name="${permission.permissionName}"
+                                                       th:checked="${checkedPermissionIds != null and checkedPermissionIds.contains(permission.permissionId)}">
+                                                <span th:text="${#strings.replace(permission.permissionName, '파일 ', '')}">
+                                                    권한명
+                                                </span>
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <div class="permission-card">
+                                        <div class="permission-sub-title">달력</div>
+
+                                        <div class="check-row one">
+                                            <label th:each="permission : ${permissionList}"
+                                                   th:if="${permission.permissionCategoryId == 'PC013'}">
+                                                <input type="checkbox"
+                                                       name="permissionIds"
+                                                       class="permission-check"
+                                                       th:value="${permission.permissionId}"
+                                                       th:data-permission-name="${permission.permissionName}"
+                                                       th:checked="${checkedPermissionIds != null and checkedPermissionIds.contains(permission.permissionId)}">
+                                                <span th:text="${permission.permissionName}">권한명</span>
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <div class="permission-card">
+                                        <div class="permission-sub-title">Gantt 차트</div>
+
+                                        <div class="check-row one">
+                                            <label th:each="permission : ${permissionList}"
+                                                   th:if="${permission.permissionCategoryId == 'PC014'}">
+                                                <input type="checkbox"
+                                                       name="permissionIds"
+                                                       class="permission-check"
+                                                       th:value="${permission.permissionId}"
+                                                       th:data-permission-name="${permission.permissionName}"
+                                                       th:checked="${checkedPermissionIds != null and checkedPermissionIds.contains(permission.permissionId)}">
+                                                <span th:text="${permission.permissionName}">권한명</span>
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <div class="permission-card">
+                                        <div class="permission-sub-title">대시보드</div>
+
+                                        <div class="check-row one">
+                                            <label th:each="permission : ${permissionList}"
+                                                   th:if="${permission.permissionCategoryId == 'PC015'}">
+                                                <input type="checkbox"
+                                                       name="permissionIds"
+                                                       class="permission-check"
+                                                       th:value="${permission.permissionId}"
+                                                       th:data-permission-name="${permission.permissionName}"
+                                                       th:checked="${checkedPermissionIds != null and checkedPermissionIds.contains(permission.permissionId)}">
+                                                <span th:text="${permission.permissionName}">권한명</span>
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <div class="permission-card">
+                                        <div class="permission-sub-title">칸반</div>
+
+                                        <div class="check-row one">
+                                            <label th:each="permission : ${permissionList}"
+                                                   th:if="${permission.permissionCategoryId == 'PC016'}">
+                                                <input type="checkbox"
+                                                       name="permissionIds"
+                                                       class="permission-check"
+                                                       th:value="${permission.permissionId}"
+                                                       th:data-permission-name="${permission.permissionName}"
+                                                       th:checked="${checkedPermissionIds != null and checkedPermissionIds.contains(permission.permissionId)}">
+                                                <span th:text="${permission.permissionName}">권한명</span>
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="permission-page" data-page="5">
+                            <div class="permission-box-title">
+                                <span class="step-num">5</span> 저장소 관리 권한 &#91;보류&#93;
+                            </div>
+
+                            <div class="permission-content">
+                                <div class="permission-grid">
+
+                                    <div class="permission-card">
+                                        <div class="permission-sub-title">조회</div>
+
+                                        <div class="check-row one">
+                                            <label th:each="permission : ${permissionList}"
+                                                   th:if="${permission.permissionCategoryId == 'PC017'}">
+                                                <input type="checkbox"
+                                                       name="permissionIds"
+                                                       class="permission-check"
+                                                       th:value="${permission.permissionId}"
+                                                       th:data-permission-name="${permission.permissionName}"
+                                                       th:checked="${checkedPermissionIds != null and checkedPermissionIds.contains(permission.permissionId)}">
+                                                <span th:text="${permission.permissionName}">권한명</span>
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <div class="permission-card">
+                                        <div class="permission-sub-title">관리</div>
+
+                                        <div class="check-row one">
+                                            <label th:each="permission : ${permissionList}"
+                                                   th:if="${permission.permissionCategoryId == 'PC018'}">
+                                                <input type="checkbox"
+                                                       name="permissionIds"
+                                                       class="permission-check"
+                                                       th:value="${permission.permissionId}"
+                                                       th:data-permission-name="${permission.permissionName}"
+                                                       th:checked="${checkedPermissionIds != null and checkedPermissionIds.contains(permission.permissionId)}">
+                                                <span th:text="${permission.permissionName}">권한명</span>
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="bottom-btn-area">
+                        <button type="button"
+                                id="prevBtn"
+                                class="prev-btn"
+                                onclick="movePage(-1)">
+                            이전
+                        </button>
+
+                        <button type="button"
+                                id="nextBtn"
+                                class="next-btn"
+                                onclick="movePage(1)">
+                            다음
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+
+        </form>
+
+        <div class="modal fade" id="rolePreviewModal" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document" style="width:640px; max-width:calc(100% - 40px); border-radius:20px;">
+                <div class="modal-content" style="border-radius:20px; overflow:hidden; border:none;">
+
+                    <div style="background:#1a6fe8; padding:18px 24px; display:flex; align-items:center; justify-content:space-between;">
+                        <h4 style="color:#fff; margin:0; font-size:15px; font-weight:500;">
+                            역할 등록 미리보기
+                        </h4>
+                        <span data-dismiss="modal" style="color:#fff; font-size:18px; cursor:pointer;">✕</span>
+                    </div>
+
+                    <div class="modal-body" style="padding:24px;">
+
+                        <div style="margin-bottom:16px;">
+                            <label style="font-size:13px; color:#555; display:block; margin-bottom:6px;">
+                                역할명 <span style="color:#e24b4a">*</span>
+                            </label>
+
+                            <div id="previewRoleName"
+                                 style="min-height:38px; display:flex; align-items:center; border:1px solid #ddd; border-radius:10px; padding:0 12px; font-size:13px; color:#222; background:#fafafa;">
+                                -
+                            </div>
+                        </div>
+
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:16px;">
+                            <div>
+                                <label style="font-size:13px; color:#555; display:block; margin-bottom:6px;">
+                                    선택 권한 수
+                                </label>
+
+                                <div id="previewPermissionCount"
+                                     style="min-height:38px; display:flex; align-items:center; border:1px solid #ddd; border-radius:10px; padding:0 12px; font-size:13px; color:#222; background:#fafafa;">
+                                    0개
+                                </div>
+                            </div>
+
+                            <div>
+                                <label style="font-size:13px; color:#555; display:block; margin-bottom:6px;">
+                                    권한 페이지
+                                </label>
+
+                                <div id="previewPermissionPageCount"
+                                     style="min-height:38px; display:flex; align-items:center; border:1px solid #ddd; border-radius:10px; padding:0 12px; font-size:13px; color:#222; background:#fafafa;">
+                                    -
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label style="font-size:13px; color:#555; display:block; margin-bottom:6px;">
+                                선택 권한 목록
+                            </label>
+
+                            <div id="previewPermissionList"
+                                 style="height:300px; overflow-y:auto; border:1px solid #ddd; border-radius:10px; padding:10px 12px; font-size:13px; color:#333; background:#fafafa;">
+                                선택된 권한이 없습니다.
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="modal-footer" style="border-top:1px solid #f0f0f0; padding:14px 24px 20px;">
+                        <button type="button"
+                                class="btn btn-default btn-custon-three btn-custon-rounded-three"
+                                data-dismiss="modal">
+                            취소
+                        </button>
+
+                        <button type="button"
+                                id="roleRealSubmitBtn"
+                                class="btn btn-primary btn-custon-three btn-custon-rounded-three">
+                            저장
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
         let currentPage = 1;
         const maxPage = 5;
 
@@ -513,11 +608,138 @@
             });
         }
 
+        function getPermissionText(checkbox) {
+            const permissionName = checkbox.dataset.permissionName || "";
+            const permissionCard = checkbox.closest(".permission-card");
+            const permissionPage = checkbox.closest(".permission-page");
+
+            let categoryName = "";
+            let pageTitle = "";
+
+            if (permissionCard) {
+                const categoryTitle = permissionCard.querySelector(".permission-sub-title");
+                if (categoryTitle) {
+                    categoryName = categoryTitle.innerText.trim();
+                }
+            }
+
+            if (permissionPage) {
+                const permissionBoxTitle = permissionPage.querySelector(".permission-box-title");
+                if (permissionBoxTitle) {
+                    pageTitle = permissionBoxTitle.innerText.trim().replace(/\s+/g, " ");
+
+                    // "4 문서/파일/시각화 관련 권한" → "4. 문서/파일/시각화 관련 권한"
+                    pageTitle = pageTitle.replace(/^([0-9]+)\s+/, "$1. ");
+                }
+            }
+
+            if (pageTitle !== "" && categoryName !== "" && permissionName !== "") {
+                return pageTitle + " > " + categoryName + " > " + permissionName;
+            }
+
+            if (categoryName !== "" && permissionName !== "") {
+                return categoryName + " > " + permissionName;
+            }
+
+            if (permissionName !== "") {
+                return permissionName;
+            }
+
+            const label = checkbox.closest("label");
+            if (label) {
+                return label.innerText.trim();
+            }
+
+            return checkbox.value;
+        }
+
+        function getCheckedPageCount(checkedPermissions) {
+            const pageSet = new Set();
+
+            checkedPermissions.forEach(checkbox => {
+                const page = checkbox.closest(".permission-page");
+
+                if (page) {
+                    pageSet.add(page.dataset.page);
+                }
+            });
+
+            return pageSet.size;
+        }
+
+        function openRolePreviewModal() {
+            const roleNameInput = document.getElementById("roleName");
+            const roleName = roleNameInput.value.trim();
+            const checkedPermissions = document.querySelectorAll(".permission-check:checked");
+
+            if (roleName === "") {
+                alert("역할명을 입력하세요.");
+                roleNameInput.focus();
+                return;
+            }
+
+            if (checkedPermissions.length === 0) {
+                alert("권한을 1개 이상 선택하세요.");
+                return;
+            }
+
+            const previewRoleName = document.getElementById("previewRoleName");
+            const previewPermissionCount = document.getElementById("previewPermissionCount");
+            const previewPermissionPageCount = document.getElementById("previewPermissionPageCount");
+            const previewPermissionList = document.getElementById("previewPermissionList");
+
+            previewRoleName.textContent = roleName;
+            previewPermissionCount.textContent = checkedPermissions.length + "개";
+            previewPermissionPageCount.textContent = getCheckedPageCount(checkedPermissions) + "개 페이지";
+
+            previewPermissionList.innerHTML = "";
+
+            checkedPermissions.forEach((checkbox, index) => {
+                const item = document.createElement("div");
+
+                item.style.display = "flex";
+                item.style.gap = "8px";
+                item.style.padding = "8px 4px";
+                item.style.borderBottom = "1px solid #e9e9e9";
+                item.style.lineHeight = "1.4";
+
+                const number = document.createElement("span");
+                number.textContent = index + 1 + ".";
+                number.style.minWidth = "24px";
+                number.style.color = "#1a6fe8";
+                number.style.fontWeight = "600";
+
+                const text = document.createElement("span");
+                text.textContent = getPermissionText(checkbox);
+
+                item.appendChild(number);
+                item.appendChild(text);
+
+                previewPermissionList.appendChild(item);
+            });
+
+            if (window.jQuery && $("#rolePreviewModal").modal) {
+                $("#rolePreviewModal").modal("show");
+            }
+        }
+
         document.addEventListener("DOMContentLoaded", function () {
+            const rolePreviewBtn = document.getElementById("rolePreviewBtn");
+            const roleRealSubmitBtn = document.getElementById("roleRealSubmitBtn");
+            const roleAddForm = document.getElementById("roleAddForm");
+
             showPermissionPage(1);
+
+            rolePreviewBtn.addEventListener("click", function () {
+                openRolePreviewModal();
+            });
+
+            roleRealSubmitBtn.addEventListener("click", function () {
+                roleAddForm.submit();
+            });
         });
     </script>
 
-	</div>
+</div>
 </body>
 </html>

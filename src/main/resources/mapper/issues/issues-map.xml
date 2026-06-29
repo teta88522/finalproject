@@ -60,13 +60,16 @@
 		or exists (
 		select 1
 		from project_member pm
-		join team_member tm
+		join
+		team_member tm
 		on pm.team_member_id = tm.team_member_id
-		join role_permission rp
+		join
+		role_permission rp
 		on
 		pm.role_id = rp.role_id
 		join permission perm
-		on rp.permission_id =
+		on
+		rp.permission_id =
 		perm.permission_id
 		where pm.project_id = p.project_id
 		and tm.user_id =
@@ -86,28 +89,35 @@
 		)
 	</select>
 
-	<select id="selectIssueCreateProjectAccess" resultType="IssuesVO">
+	<select id="selectIssueCreateProjectAccess"
+		resultType="IssuesVO">
 		select
 		p.project_id,
 		p.project_name,
 		p.owner_id,
 		case
-		when p.owner_id = #{userId} then 'Y'
+		when
+		p.owner_id = #{userId} then 'Y'
 		when exists (
 		select 1
-		from project_member pm
+		from
+		project_member pm
 		join team_member tm
-		on pm.team_member_id = tm.team_member_id
+		on pm.team_member_id =
+		tm.team_member_id
 		join role_permission rp
 		on pm.role_id = rp.role_id
 		join permission perm
 		on rp.permission_id = perm.permission_id
-		where pm.project_id = p.project_id
+		where
+		pm.project_id = p.project_id
 		and tm.user_id = #{userId}
-		and perm.permission_code = #{permissionCode}
+		and
+		perm.permission_code = #{permissionCode}
 		) then 'Y'
 		else 'N'
-		end as permission_yn
+		end as
+		permission_yn
 		from project p
 		where p.project_id = #{projectId}
 		and (
@@ -115,9 +125,11 @@
 		or exists (
 		select 1
 		from project_member pm
-		join team_member tm
+		join
+		team_member tm
 		on pm.team_member_id = tm.team_member_id
-		where pm.project_id = p.project_id
+		where
+		pm.project_id = p.project_id
 		and tm.user_id = #{userId}
 		)
 		)
@@ -129,50 +141,66 @@
 		p.project_name,
 		p.owner_id,
 		case
-		when p.owner_id = #{userId} then 'Y'
+		when p.owner_id = #{userId}
+		then 'Y'
 		when exists (
 		select 1
 		from project_member pm
 		join team_member tm
 		on pm.team_member_id = tm.team_member_id
 		join role_permission rp
-		on pm.role_id = rp.role_id
+		on
+		pm.role_id = rp.role_id
 		join permission perm
-		on rp.permission_id = perm.permission_id
+		on rp.permission_id =
+		perm.permission_id
 		where pm.project_id = p.project_id
-		and tm.user_id = #{userId}
+		and tm.user_id =
+		#{userId}
 		and perm.permission_code = #{issueCreatePermissionCode}
-		) then 'Y'
+		) then
+		'Y'
 		else 'N'
 		end as issue_create_permission_yn,
 		case
-		when p.owner_id = #{userId} then 'Y'
+		when p.owner_id =
+		#{userId} then 'Y'
 		when exists (
 		select 1
 		from project_member pm
-		join team_member tm
+		join
+		team_member tm
 		on pm.team_member_id = tm.team_member_id
-		join role_permission rp
+		join
+		role_permission rp
 		on pm.role_id = rp.role_id
 		join permission perm
-		on rp.permission_id = perm.permission_id
-		where pm.project_id = p.project_id
+		on
+		rp.permission_id = perm.permission_id
+		where pm.project_id =
+		p.project_id
 		and tm.user_id = #{userId}
-		and perm.permission_code = #{milestoneCreatePermissionCode}
+		and perm.permission_code =
+		#{milestoneCreatePermissionCode}
 		) then 'Y'
 		else 'N'
-		end as milestone_create_permission_yn
+		end as
+		milestone_create_permission_yn
 		from project p
-		where p.project_id = #{projectId}
+		where p.project_id =
+		#{projectId}
 		and (
 		p.owner_id = #{userId}
 		or exists (
 		select 1
-		from project_member pm
+		from
+		project_member pm
 		join team_member tm
-		on pm.team_member_id = tm.team_member_id
+		on pm.team_member_id =
+		tm.team_member_id
 		where pm.project_id = p.project_id
-		and tm.user_id = #{userId}
+		and tm.user_id =
+		#{userId}
 		)
 		)
 	</select>
@@ -196,10 +224,12 @@
 		(
 		select nvl(max(i.issue_no), 0) + 1
 		from issue i
-		where i.project_id = p.project_id
+		where i.project_id =
+		p.project_id
 		) as issue_no
 		from project p
-		where p.project_id = #{projectId}
+		where p.project_id =
+		#{projectId}
 		for update
 	</select>
 
@@ -217,8 +247,8 @@
 
 		<if test="versionIdList != null and versionIdList.size() > 0">
 			and i.version_id in
-			<foreach collection="versionIdList" item="versionId"
-				open="(" separator="," close=")">
+			<foreach collection="versionIdList" item="versionId" open="("
+				separator="," close=")">
 				#{versionId}
 			</foreach>
 		</if>
@@ -227,7 +257,8 @@
 			and lower(i.title) like '%' || lower(#{keyword}) || '%'
 		</if>
 
-		<if test="issueStatusIdList != null and issueStatusIdList.size() > 0">
+		<if
+			test="issueStatusIdList != null and issueStatusIdList.size() > 0">
 			and i.issue_status_id in
 			<foreach collection="issueStatusIdList" item="issueStatusId"
 				open="(" separator="," close=")">
@@ -235,7 +266,8 @@
 			</foreach>
 		</if>
 
-		<if test="settingCodeIdList != null and settingCodeIdList.size() > 0">
+		<if
+			test="settingCodeIdList != null and settingCodeIdList.size() > 0">
 			and i.setting_code_id in
 			<foreach collection="settingCodeIdList" item="settingCodeId"
 				open="(" separator="," close=")">
@@ -251,7 +283,8 @@
 			</foreach>
 		</if>
 
-		<if test="progressRangeList != null and progressRangeList.size() > 0">
+		<if
+			test="progressRangeList != null and progressRangeList.size() > 0">
 			and (
 			<foreach collection="progressRangeList" item="progressRange"
 				separator=" or ">
@@ -278,20 +311,66 @@
 
 		<if test="startDate != null">
 			and (
-			i.due_date <![CDATA[>=]]> #{startDate}
-			or (i.due_date is null and i.start_date <![CDATA[>=]]> #{startDate})
+			i.due_date <![CDATA[>=]]>
+			#{startDate}
+			or (i.due_date is null and i.start_date <![CDATA[>=]]>
+			#{startDate})
 			)
 		</if>
 
 		<if test="dueDate != null">
 			and (
-			i.start_date <![CDATA[<]]> #{dueDate} + 1
-			or (i.start_date is null and i.due_date <![CDATA[<]]> #{dueDate} + 1)
+			i.start_date <![CDATA[<]]>
+			#{dueDate} + 1
+			or (i.start_date is null and i.due_date <![CDATA[<]]>
+			#{dueDate} + 1)
 			)
 		</if>
 	</sql>
 
 	<!-- ============================== 일감 전체조회 ============================== -->
+
+	<select id="selectIssueListPageBlockRows"
+		parameterType="IssuesVO" resultType="IssuesVO">
+		select
+		page_rows.row_no,
+		page_rows.issue_id
+		from (
+		select
+		rownum as row_no,
+		issue_page.issue_id
+		from (
+		select
+		<choose>
+			<when test='issueNoSort != null and issueNoSort.equals("asc")'>
+				/*+ index_asc(i UK_ISSUE_PROJECT_NO) */
+			</when>
+			<otherwise>
+				/*+ index_desc(i UK_ISSUE_PROJECT_NO) */
+			</otherwise>
+		</choose>
+		i.issue_id,
+		i.issue_no
+		from issue i
+
+		<include refid="issueListWhere" />
+
+		<choose>
+			<when test='issueNoSort != null and issueNoSort.equals("asc")'>
+				order by i.issue_no asc, i.issue_id asc
+			</when>
+			<otherwise>
+				order by i.issue_no desc, i.issue_id desc
+			</otherwise>
+		</choose>
+		) issue_page
+		where rownum <![CDATA[<=]]>
+		#{pageBlockProbeEndRow}
+		) page_rows
+		where page_rows.row_no <![CDATA[>=]]>
+		#{pageBlockStartRow}
+		order by page_rows.row_no asc
+	</select>
 
 	<select id="selectIssueList" parameterType="IssuesVO"
 		resultType="IssuesVO">
@@ -307,7 +386,8 @@
 		v.version_name,
 		paged.title,
 		paged.issue_status_id,
-		ist.status_name as issue_status_name,
+		ist.status_name as
+		issue_status_name,
 		ist.closed_yn,
 		paged.setting_code_id,
 		sc.setting_name,
@@ -362,19 +442,91 @@
 		#{endRow}
 		) paged
 		left join issue_type it
-		on paged.issue_type_id = it.issue_type_id
+		on paged.issue_type_id =
+		it.issue_type_id
 		left join issue_status ist
-		on paged.issue_status_id = ist.issue_status_id
+		on paged.issue_status_id =
+		ist.issue_status_id
 		left join setting_code sc
-		on paged.setting_code_id = sc.setting_code_id
+		on paged.setting_code_id =
+		sc.setting_code_id
 		left join users assignee
-		on paged.assignee_id = assignee.user_id
+		on paged.assignee_id =
+		assignee.user_id
 		left join project_version v
-		on paged.version_id = v.version_id
+		on paged.version_id =
+		v.version_id
 		and paged.project_id = v.project_id
 		where paged.row_no <![CDATA[>=]]>
 		#{startRow}
 		order by paged.row_no asc
+	</select>
+
+	<select id="selectIssueListByPageIds" parameterType="IssuesVO"
+		resultType="IssuesVO">
+		select
+		null as total_count,
+		i.issue_id,
+		i.issue_no,
+		'#' ||
+		lpad(to_char(i.issue_no), 4, '0') as display_issue_no,
+		i.issue_type_id,
+		it.issue_type_name,
+		i.version_id,
+		v.version_name,
+		i.title,
+		i.issue_status_id,
+		ist.status_name as issue_status_name,
+		ist.closed_yn,
+		i.setting_code_id,
+		sc.setting_name,
+		i.assignee_id,
+		assignee.user_name as assignee_name,
+		i.progress_rate,
+		i.start_date,
+		i.due_date,
+		i.estimated_hours,
+		i.project_id
+		from issue i
+		left join
+		issue_type it
+		on i.issue_type_id = it.issue_type_id
+		left join
+		issue_status ist
+		on i.issue_status_id = ist.issue_status_id
+		left join
+		setting_code sc
+		on i.setting_code_id = sc.setting_code_id
+		left join
+		users assignee
+		on i.assignee_id = assignee.user_id
+		left join
+		project_version v
+		on i.version_id = v.version_id
+		and i.project_id =
+		v.project_id
+		where i.project_id = #{projectId}
+		<choose>
+			<when
+				test="pageIssueIdList != null and pageIssueIdList.size() > 0">
+				and i.issue_id in
+				<foreach collection="pageIssueIdList" item="issueId"
+					open="(" separator="," close=")">
+					#{issueId}
+				</foreach>
+			</when>
+			<otherwise>
+				and 1 = 0
+			</otherwise>
+		</choose>
+		<if test="pageIssueIdList != null and pageIssueIdList.size() > 0">
+			order by case
+			<foreach collection="pageIssueIdList" item="issueId"
+				index="idx">
+				when i.issue_id = #{issueId} then ${idx}
+			</foreach>
+			end
+		</if>
 	</select>
 
 	<select id="selectIssueStatusList" resultType="IssuesVO">
@@ -395,7 +547,8 @@
 		select
 		i.issue_id,
 		i.issue_no,
-		'#' || lpad(to_char(i.issue_no), 4, '0') as display_issue_no,
+		'#' || lpad(to_char(i.issue_no), 4, '0') as
+		display_issue_no,
 		i.project_id,
 		p.project_name,
 		p.owner_id,
@@ -407,7 +560,8 @@
 		i.issue_type_id,
 		it.issue_type_name,
 		i.issue_status_id,
-		ist.status_name as issue_status_name,
+		ist.status_name as
+		issue_status_name,
 		ist.closed_yn,
 		i.setting_code_id,
 		sc.setting_name,
@@ -424,73 +578,96 @@
 		i.created_at,
 		i.updated_at,
 		i.parent_issue_id,
-		parent_issue.title as parent_issue_title,
+		parent_issue.title as
+		parent_issue_title,
 		case
 		when p.owner_id = #{userId} then 'Y'
-		when exists (
+		when exists
+		(
 		select 1
 		from project_member pm
 		join team_member tm
-		on pm.team_member_id = tm.team_member_id
+		on pm.team_member_id
+		= tm.team_member_id
 		join role_permission rp
 		on pm.role_id = rp.role_id
 		join permission perm
 		on rp.permission_id = perm.permission_id
-		where pm.project_id = p.project_id
+		where
+		pm.project_id = p.project_id
 		and tm.user_id = #{userId}
-		and perm.permission_code = #{updatePermissionCode}
+		and
+		perm.permission_code = #{updatePermissionCode}
 		) then 'Y'
 		else 'N'
-		end as issue_update_permission_yn,
+		end as
+		issue_update_permission_yn,
 		case
 		when p.owner_id = #{userId} then 'Y'
 		when exists (
 		select 1
 		from project_member pm
 		join team_member tm
-		on pm.team_member_id = tm.team_member_id
+		on
+		pm.team_member_id = tm.team_member_id
 		join role_permission rp
-		on pm.role_id = rp.role_id
+		on
+		pm.role_id = rp.role_id
 		join permission perm
-		on rp.permission_id = perm.permission_id
+		on rp.permission_id =
+		perm.permission_id
 		where pm.project_id = p.project_id
-		and tm.user_id = #{userId}
+		and tm.user_id =
+		#{userId}
 		and perm.permission_code = #{deletePermissionCode}
 		) then 'Y'
 		else 'N'
 		end as issue_delete_permission_yn
 		from issue i
 		join project p
-		on i.project_id = p.project_id
+		on
+		i.project_id = p.project_id
 		left join issue_type it
-		on i.issue_type_id = it.issue_type_id
+		on i.issue_type_id =
+		it.issue_type_id
 		left join issue_status ist
-		on i.issue_status_id = ist.issue_status_id
+		on i.issue_status_id =
+		ist.issue_status_id
 		left join setting_code sc
-		on i.setting_code_id = sc.setting_code_id
+		on i.setting_code_id =
+		sc.setting_code_id
 		left join users assignee
-		on i.assignee_id = assignee.user_id
+		on i.assignee_id =
+		assignee.user_id
 		left join users author
 		on i.author_id = author.user_id
 		left join project_version v
 		on i.version_id = v.version_id
-		and i.project_id = v.project_id
+		and
+		i.project_id = v.project_id
 		left join milestone m
-		on i.milestone_id = m.milestone_id
+		on i.milestone_id =
+		m.milestone_id
 		and i.project_id = m.project_id
-		left join issue parent_issue
+		left join issue
+		parent_issue
 		on i.parent_issue_id = parent_issue.issue_id
-		and i.project_id = parent_issue.project_id
-		where i.project_id = #{projectId}
+		and
+		i.project_id = parent_issue.project_id
+		where i.project_id =
+		#{projectId}
 		and i.issue_id = #{issueId}
 		and (
 		p.owner_id = #{userId}
-		or exists (
+		or
+		exists (
 		select 1
 		from project_member pm
 		join team_member tm
-		on pm.team_member_id = tm.team_member_id
-		where pm.project_id = p.project_id
+		on
+		pm.team_member_id = tm.team_member_id
+		where pm.project_id =
+		p.project_id
 		and tm.user_id = #{userId}
 		)
 		)
@@ -501,16 +678,20 @@
 		from issue i
 		join project p
 		on i.project_id = p.project_id
-		where i.project_id = #{projectId}
+		where
+		i.project_id = #{projectId}
 		and i.issue_id = #{issueId}
 		and (
-		p.owner_id = #{userId}
+		p.owner_id
+		= #{userId}
 		or exists (
 		select 1
 		from project_member pm
-		join team_member tm
+		join team_member
+		tm
 		on pm.team_member_id = tm.team_member_id
-		where pm.project_id = p.project_id
+		where pm.project_id =
+		p.project_id
 		and tm.user_id = #{userId}
 		)
 		)
@@ -526,36 +707,46 @@
 		fs.field_setting_id,
 		case fs.field_code
 		when 'i001' then 'ASSIGNEE'
-		when 'i002' then 'MILESTONE'
+		when
+		'i002' then 'MILESTONE'
 		when 'i003' then 'PARENT_ISSUE'
-		when 'i004' then 'START_DATE'
+		when 'i004' then
+		'START_DATE'
 		when 'i005' then 'DUE_DATE'
-		when 'i006' then 'ESTIMATED_HOURS'
+		when 'i006' then
+		'ESTIMATED_HOURS'
 		else fs.field_code
 		end as field_code,
 		fs.use_yn,
 		fs.required_yn,
 		null as issue_status_id,
 		null as issue_status_name,
-		null as closed_yn,
+		null
+		as closed_yn,
 		null as milestone_id,
 		null as milestone_title,
-		null as version_id,
+		null as
+		version_id,
 		null as setting_code_id,
 		null as setting_name,
-		null as assignee_id,
+		null as
+		assignee_id,
 		null as assignee_name,
 		null as parent_issue_id,
-		null as parent_issue_title,
+		null as
+		parent_issue_title,
 		null as history_id,
 		null as issue_id,
-		null as changed_by,
+		null as
+		changed_by,
 		null as changed_by_name,
 		null as change_type_code,
-		null as change_type_name,
+		null as
+		change_type_name,
 		null as reason,
 		null as before_value,
-		null as after_value,
+		null as
+		after_value,
 		null as changed_at,
 		1 as option_sort,
 		row_number() over (
@@ -563,7 +754,8 @@
 		case fs.field_code
 		when 'i001' then 1
 		when 'i002' then 2
-		when 'i003' then 3
+		when
+		'i003' then 3
 		when 'i004' then 4
 		when 'i005' then 5
 		when 'i006' then 6
@@ -571,49 +763,63 @@
 		end
 		) as row_sort
 		from issue current_issue
-		join issue_type_field_setting fs
-		on current_issue.issue_type_id = fs.issue_type_id
+		join
+		issue_type_field_setting fs
+		on current_issue.issue_type_id =
+		fs.issue_type_id
 		where current_issue.project_id = #{projectId}
-		and current_issue.issue_id = #{issueId}
+		and
+		current_issue.issue_id = #{issueId}
 
 		union all
 
 		select
-		'AVAILABLE_STATUS' as option_group,
+		'AVAILABLE_STATUS'
+		as option_group,
 		null as issue_type_id,
 		null as field_setting_id,
-		null as field_code,
+		null as
+		field_code,
 		null as use_yn,
 		null as required_yn,
 		ist.issue_status_id,
 		ist.status_name as issue_status_name,
 		ist.closed_yn,
-		null as milestone_id,
+		null as
+		milestone_id,
 		null as milestone_title,
 		null as version_id,
-		null as setting_code_id,
+		null as
+		setting_code_id,
 		null as setting_name,
 		null as assignee_id,
-		null as assignee_name,
+		null as
+		assignee_name,
 		null as parent_issue_id,
 		null as parent_issue_title,
-		null as history_id,
+		null
+		as history_id,
 		null as issue_id,
 		null as changed_by,
-		null as changed_by_name,
+		null as
+		changed_by_name,
 		null as change_type_code,
 		null as change_type_name,
 		null as reason,
 		null as before_value,
 		null as after_value,
-		null as changed_at,
+		null as
+		changed_at,
 		2 as option_sort,
-		row_number() over (order by ist.issue_status_id asc) as row_sort
+		row_number() over (order by
+		ist.issue_status_id asc) as row_sort
 		from issue i
 		join project p
-		on i.project_id = p.project_id
+		on
+		i.project_id = p.project_id
 		join issue_status ist
-		on ist.user_id = p.owner_id
+		on ist.user_id =
+		p.owner_id
 		where i.project_id = #{projectId}
 		and i.issue_id = #{issueId}
 		and (
@@ -625,16 +831,21 @@
 		join project_member pm
 		on wt.role_id = pm.role_id
 		join team_member tm
-		on pm.team_member_id = tm.team_member_id
+		on pm.team_member_id =
+		tm.team_member_id
 		where pm.project_id = i.project_id
-		and tm.user_id = #{userId}
+		and tm.user_id =
+		#{userId}
 		and wt.issue_type_id = i.issue_type_id
-		and wt.from_status_id = i.issue_status_id
+		and wt.from_status_id =
+		i.issue_status_id
 		and wt.to_status_id = ist.issue_status_id
 		and (
 		wt.apply_target_code = 'j001'
-		or (wt.apply_target_code = 'j002' and i.author_id = #{userId})
-		or (wt.apply_target_code = 'j003' and i.assignee_id = #{userId})
+		or (wt.apply_target_code = 'j002' and
+		i.author_id = #{userId})
+		or (wt.apply_target_code = 'j003' and
+		i.assignee_id = #{userId})
 		)
 		)
 		)
@@ -642,41 +853,51 @@
 		union all
 
 		select
-		'PRIORITY' as option_group,
+		'PRIORITY' as
+		option_group,
 		null as issue_type_id,
 		null as field_setting_id,
-		null as field_code,
+		null as
+		field_code,
 		null as use_yn,
 		null as required_yn,
 		null as issue_status_id,
 		null as issue_status_name,
 		null as closed_yn,
 		null as milestone_id,
-		null as milestone_title,
+		null
+		as milestone_title,
 		null as version_id,
 		sc.setting_code_id,
 		sc.setting_name,
 		null as assignee_id,
 		null as assignee_name,
-		null as parent_issue_id,
+		null as
+		parent_issue_id,
 		null as parent_issue_title,
 		null as history_id,
-		null as issue_id,
+		null as
+		issue_id,
 		null as changed_by,
 		null as changed_by_name,
-		null as change_type_code,
+		null as
+		change_type_code,
 		null as change_type_name,
 		null as reason,
-		null as before_value,
+		null as
+		before_value,
 		null as after_value,
 		null as changed_at,
 		3 as option_sort,
-		row_number() over (order by sc.default_yn desc, sc.setting_code_id asc) as row_sort
+		row_number() over (order by sc.default_yn desc, sc.setting_code_id
+		asc) as row_sort
 		from setting_code sc
 		join project p
-		on sc.user_id = p.owner_id
+		on sc.user_id =
+		p.owner_id
 		where p.project_id = #{projectId}
-		and sc.setting_group_name = 'g002'
+		and sc.setting_group_name =
+		'g002'
 
 		union all
 
@@ -686,94 +907,121 @@
 		null as field_setting_id,
 		null as field_code,
 		null as use_yn,
-		null as required_yn,
+		null as
+		required_yn,
 		null as issue_status_id,
 		null as issue_status_name,
-		null as closed_yn,
+		null as
+		closed_yn,
 		null as milestone_id,
 		null as milestone_title,
-		null as version_id,
+		null as
+		version_id,
 		null as setting_code_id,
 		null as setting_name,
 		x.assignee_id,
 		x.assignee_name,
 		null as parent_issue_id,
-		null as parent_issue_title,
+		null as
+		parent_issue_title,
 		null as history_id,
 		null as issue_id,
-		null as changed_by,
+		null as
+		changed_by,
 		null as changed_by_name,
 		null as change_type_code,
-		null as change_type_name,
+		null as
+		change_type_name,
 		null as reason,
 		null as before_value,
-		null as after_value,
+		null as
+		after_value,
 		null as changed_at,
 		4 as option_sort,
-		row_number() over (order by x.assignee_name, x.assignee_id) as row_sort
+		row_number() over
+		(order by x.assignee_name, x.assignee_id) as row_sort
 		from (
 		select
 		u.user_id as assignee_id,
 		u.user_name as assignee_name
-		from project_member pm
+		from
+		project_member pm
 		join team_member tm
-		on pm.team_member_id = tm.team_member_id
+		on pm.team_member_id =
+		tm.team_member_id
 		join users u
 		on tm.user_id = u.user_id
-		where pm.project_id = #{projectId}
+		where
+		pm.project_id = #{projectId}
 
 		union
 
 		select
-		owner_user.user_id as assignee_id,
+		owner_user.user_id as
+		assignee_id,
 		owner_user.user_name as assignee_name
 		from project p
-		join users owner_user
+		join
+		users owner_user
 		on p.owner_id = owner_user.user_id
-		where p.project_id = #{projectId}
+		where p.project_id =
+		#{projectId}
 		) x
 
 		union all
 
 		select
 		'MILESTONE' as option_group,
-		null as issue_type_id,
+		null as
+		issue_type_id,
 		null as field_setting_id,
 		null as field_code,
-		null as use_yn,
+		null as
+		use_yn,
 		null as required_yn,
 		null as issue_status_id,
-		null as issue_status_name,
+		null as
+		issue_status_name,
 		null as closed_yn,
 		m.milestone_id,
-		m.title as milestone_title,
+		m.title as
+		milestone_title,
 		m.version_id,
 		null as setting_code_id,
-		null as setting_name,
+		null as
+		setting_name,
 		null as assignee_id,
 		null as assignee_name,
-		null as parent_issue_id,
+		null as
+		parent_issue_id,
 		null as parent_issue_title,
 		null as history_id,
-		null as issue_id,
+		null as
+		issue_id,
 		null as changed_by,
 		null as changed_by_name,
-		null as change_type_code,
+		null as
+		change_type_code,
 		null as change_type_name,
 		null as reason,
-		null as before_value,
+		null as
+		before_value,
 		null as after_value,
 		null as changed_at,
 		5 as option_sort,
-		row_number() over (order by m.start_date asc nulls last, m.milestone_id asc) as row_sort
+		row_number() over (order by m.start_date asc nulls last,
+		m.milestone_id asc) as row_sort
 		from milestone m
 		join project_version v
 		on m.version_id = v.version_id
 		and m.project_id = v.project_id
-		left join issue current_issue
+		left join
+		issue current_issue
 		on current_issue.issue_id = #{issueId}
-		and current_issue.project_id = m.project_id
-		where m.project_id = #{projectId}
+		and
+		current_issue.project_id = m.project_id
+		where m.project_id =
+		#{projectId}
 		and m.version_id = current_issue.version_id
 		and (
 		v.status_code != 'k003'
@@ -788,55 +1036,70 @@
 		null as field_setting_id,
 		null as field_code,
 		null as use_yn,
-		null as required_yn,
+		null as
+		required_yn,
 		null as issue_status_id,
 		null as issue_status_name,
-		null as closed_yn,
+		null as
+		closed_yn,
 		null as milestone_id,
 		null as milestone_title,
-		null as version_id,
+		null as
+		version_id,
 		null as setting_code_id,
 		null as setting_name,
-		null as assignee_id,
+		null as
+		assignee_id,
 		null as assignee_name,
 		parent.issue_id as parent_issue_id,
 		parent.title as parent_issue_title,
 		null as history_id,
-		null as issue_id,
+		null as
+		issue_id,
 		null as changed_by,
 		null as changed_by_name,
-		null as change_type_code,
+		null as
+		change_type_code,
 		null as change_type_name,
 		null as reason,
-		null as before_value,
+		null as
+		before_value,
 		null as after_value,
 		null as changed_at,
 		6 as option_sort,
 		row_number() over (order by parent.issue_no desc) as row_sort
-		from issue parent
+		from
+		issue parent
 		where parent.project_id = #{projectId}
-		and parent.issue_id != #{issueId}
+		and parent.issue_id
+		!= #{issueId}
 
 		union all
 
 		select
 		'HISTORY' as option_group,
-		null as issue_type_id,
+		null as
+		issue_type_id,
 		null as field_setting_id,
 		null as field_code,
-		null as use_yn,
+		null as
+		use_yn,
 		null as required_yn,
 		null as issue_status_id,
-		null as issue_status_name,
+		null as
+		issue_status_name,
 		null as closed_yn,
 		null as milestone_id,
-		null as milestone_title,
+		null as
+		milestone_title,
 		null as version_id,
 		null as setting_code_id,
-		null as setting_name,
+		null as
+		setting_name,
 		null as assignee_id,
 		null as assignee_name,
-		null as parent_issue_id,
+		null as
+		parent_issue_id,
 		null as parent_issue_title,
 		ih.history_id,
 		ih.issue_id,
@@ -849,17 +1112,21 @@
 		ih.after_value,
 		ih.changed_at,
 		7 as option_sort,
-		row_number() over (order by ih.changed_at desc, ih.history_id desc) as row_sort
-		from issue_history ih
+		row_number() over (order by
+		ih.changed_at desc, ih.history_id desc) as row_sort
+		from issue_history
+		ih
 		left join users u
 		on ih.changed_by = u.user_id
-		where ih.issue_id = #{issueId}
+		where ih.issue_id =
+		#{issueId}
 		)
 		order by option_sort, row_sort
 	</select>
 
 	<select id="selectAvailableStatusList" resultType="IssuesVO">
-		select distinct
+		select
+		distinct
 		ist.issue_status_id,
 		ist.status_name as issue_status_name,
 		ist.closed_yn
@@ -868,27 +1135,35 @@
 		on i.project_id = p.project_id
 		join issue_status ist
 		on ist.user_id = p.owner_id
-		where i.project_id = #{projectId}
+		where i.project_id =
+		#{projectId}
 		and i.issue_id = #{issueId}
 		and (
-		ist.issue_status_id = i.issue_status_id
+		ist.issue_status_id =
+		i.issue_status_id
 		or p.owner_id = #{userId}
 		or exists (
 		select 1
-		from workflow_transition wt
+		from
+		workflow_transition wt
 		join project_member pm
 		on wt.role_id = pm.role_id
 		join team_member tm
 		on pm.team_member_id = tm.team_member_id
-		where pm.project_id = i.project_id
+		where
+		pm.project_id = i.project_id
 		and tm.user_id = #{userId}
-		and wt.issue_type_id = i.issue_type_id
-		and wt.from_status_id = i.issue_status_id
+		and
+		wt.issue_type_id = i.issue_type_id
+		and wt.from_status_id =
+		i.issue_status_id
 		and wt.to_status_id = ist.issue_status_id
 		and (
 		wt.apply_target_code = 'j001'
-		or (wt.apply_target_code = 'j002' and i.author_id = #{userId})
-		or (wt.apply_target_code = 'j003' and i.assignee_id = #{userId})
+		or (wt.apply_target_code = 'j002' and
+		i.author_id = #{userId})
+		or (wt.apply_target_code = 'j003' and
+		i.assignee_id = #{userId})
 		)
 		)
 		)
@@ -1106,50 +1381,66 @@
 		it.issue_type_id,
 		it.issue_type_name,
 		it.initial_status_id,
-		ist.status_name as initial_status_name,
+		ist.status_name as
+		initial_status_name,
 		null as issue_status_id,
 		null as issue_status_name,
 		null as closed_yn,
 		null as version_id,
 		null as version_name,
-		null as version_status_code,
+		null as
+		version_status_code,
 		null as default_yn,
 		null as setting_code_id,
-		null as setting_name,
+		null as
+		setting_name,
 		null as assignee_id,
 		null as assignee_name,
-		1 as option_sort,
-		row_number() over (order by it.created_at asc, it.issue_type_id asc) as row_sort
+		1 as
+		option_sort,
+		row_number() over (order by it.created_at asc,
+		it.issue_type_id asc) as row_sort
 		from issue_type_project itp
-		join issue_type it
+		join
+		issue_type it
 		on itp.issue_type_id = it.issue_type_id
-		join issue_status ist
+		join issue_status
+		ist
 		on it.initial_status_id = ist.issue_status_id
-		where itp.project_id = #{projectId}
+		where itp.project_id =
+		#{projectId}
 
 		union all
 
 		select
 		'ISSUE_STATUS' as option_group,
-		null as issue_type_id,
+		null as
+		issue_type_id,
 		null as issue_type_name,
 		null as initial_status_id,
-		null as initial_status_name,
+		null
+		as initial_status_name,
 		ist.issue_status_id,
-		ist.status_name as issue_status_name,
+		ist.status_name as
+		issue_status_name,
 		ist.closed_yn,
 		null as version_id,
-		null as version_name,
+		null as
+		version_name,
 		null as version_status_code,
 		null as default_yn,
-		null as setting_code_id,
+		null as
+		setting_code_id,
 		null as setting_name,
 		null as assignee_id,
-		null as assignee_name,
+		null as
+		assignee_name,
 		2 as option_sort,
-		row_number() over (order by ist.issue_status_id asc) as row_sort
+		row_number() over (order by
+		ist.issue_status_id asc) as row_sort
 		from issue_status ist
-		join project p
+		join project
+		p
 		on ist.user_id = p.owner_id
 		where p.project_id = #{projectId}
 
@@ -1158,7 +1449,8 @@
 		select
 		'VERSION' as option_group,
 		null as issue_type_id,
-		null as issue_type_name,
+		null as
+		issue_type_name,
 		null as initial_status_id,
 		null as initial_status_name,
 		null as issue_status_id,
@@ -1170,39 +1462,51 @@
 		default_yn,
 		null as setting_code_id,
 		null as setting_name,
-		null as assignee_id,
+		null as
+		assignee_id,
 		null as assignee_name,
 		3 as option_sort,
-		row_number() over (order by default_yn desc, created_at desc, version_id asc) as row_sort
+		row_number() over
+		(order by default_yn desc, created_at desc, version_id asc) as
+		row_sort
 		from project_version
 		where project_id = #{projectId}
-		and status_code != 'k003'
+		and
+		status_code != 'k003'
 
 		union all
 
 		select
 		'PRIORITY' as option_group,
-		null as issue_type_id,
+		null as
+		issue_type_id,
 		null as issue_type_name,
 		null as initial_status_id,
-		null as initial_status_name,
+		null
+		as initial_status_name,
 		null as issue_status_id,
-		null as issue_status_name,
+		null as
+		issue_status_name,
 		null as closed_yn,
 		null as version_id,
-		null as version_name,
+		null as
+		version_name,
 		null as version_status_code,
 		sc.default_yn,
 		sc.setting_code_id,
 		sc.setting_name,
 		null as assignee_id,
-		null as assignee_name,
+		null as
+		assignee_name,
 		4 as option_sort,
-		row_number() over (order by sc.default_yn desc, sc.setting_code_id asc) as row_sort
-		from setting_code sc
+		row_number() over (order by
+		sc.default_yn desc, sc.setting_code_id asc) as row_sort
+		from
+		setting_code sc
 		join project p
 		on sc.user_id = p.owner_id
-		where p.project_id = #{projectId}
+		where
+		p.project_id = #{projectId}
 		and sc.setting_group_name = 'g002'
 
 		union all
@@ -1210,7 +1514,8 @@
 		select
 		'ASSIGNEE' as option_group,
 		null as issue_type_id,
-		null as issue_type_name,
+		null as
+		issue_type_name,
 		null as initial_status_id,
 		null as initial_status_name,
 		null as issue_status_id,
@@ -1225,27 +1530,34 @@
 		x.assignee_id,
 		x.assignee_name,
 		5 as option_sort,
-		row_number() over (order by x.assignee_name, x.assignee_id) as row_sort
+		row_number() over
+		(order by x.assignee_name, x.assignee_id) as row_sort
 		from (
 		select
 		u.user_id as assignee_id,
 		u.user_name as assignee_name
-		from project_member pm
+		from
+		project_member pm
 		join team_member tm
-		on pm.team_member_id = tm.team_member_id
+		on pm.team_member_id =
+		tm.team_member_id
 		join users u
 		on tm.user_id = u.user_id
-		where pm.project_id = #{projectId}
+		where
+		pm.project_id = #{projectId}
 
 		union
 
 		select
-		owner_user.user_id as assignee_id,
+		owner_user.user_id as
+		assignee_id,
 		owner_user.user_name as assignee_name
 		from project p
-		join users owner_user
+		join
+		users owner_user
 		on p.owner_id = owner_user.user_id
-		where p.project_id = #{projectId}
+		where p.project_id =
+		#{projectId}
 		) x
 		)
 		order by option_sort, row_sort
@@ -1253,7 +1565,216 @@
 
 	<!-- ============================== 일감 생성 검증 ============================== -->
 
-	<select id="selectIssueCreateBaseOptionRows" resultType="IssuesVO">
+	<select id="selectIssueListSelectedOptionRows"
+		resultType="IssuesVO">
+		select *
+		from (
+		select
+		'ISSUE_TYPE' as option_group,
+		it.issue_type_id,
+		it.issue_type_name,
+		null as issue_status_id,
+		null as issue_status_name,
+		null as version_id,
+		null as version_name,
+		null as setting_code_id,
+		null
+		as setting_name,
+		null as assignee_id,
+		null as assignee_name,
+		1 as
+		option_sort
+		from issue_type_project itp
+		join issue_type it
+		on
+		itp.issue_type_id = it.issue_type_id
+		where itp.project_id =
+		#{projectId}
+		<choose>
+			<when
+				test="issueTypeIdList != null and issueTypeIdList.size() > 0">
+				and it.issue_type_id in
+				<foreach collection="issueTypeIdList" item="issueTypeId"
+					open="(" separator="," close=")">
+					#{issueTypeId}
+				</foreach>
+			</when>
+			<otherwise>
+				and 1 = 0
+			</otherwise>
+		</choose>
+
+		union all
+
+		select
+		'ISSUE_STATUS' as option_group,
+		null as issue_type_id,
+		null as issue_type_name,
+		ist.issue_status_id,
+		ist.status_name as
+		issue_status_name,
+		null as version_id,
+		null as version_name,
+		null as
+		setting_code_id,
+		null as setting_name,
+		null as assignee_id,
+		null as
+		assignee_name,
+		2 as option_sort
+		from issue_status ist
+		join project p
+		on
+		ist.user_id = p.owner_id
+		where p.project_id = #{projectId}
+		<choose>
+			<when
+				test="issueStatusIdList != null and issueStatusIdList.size() > 0">
+				and ist.issue_status_id in
+				<foreach collection="issueStatusIdList" item="issueStatusId"
+					open="(" separator="," close=")">
+					#{issueStatusId}
+				</foreach>
+			</when>
+			<otherwise>
+				and 1 = 0
+			</otherwise>
+		</choose>
+
+		union all
+
+		select
+		'VERSION' as option_group,
+		null as issue_type_id,
+		null as
+		issue_type_name,
+		null as issue_status_id,
+		null as issue_status_name,
+		pv.version_id,
+		pv.version_name,
+		null as setting_code_id,
+		null as
+		setting_name,
+		null as assignee_id,
+		null as assignee_name,
+		3 as
+		option_sort
+		from project_version pv
+		where pv.project_id = #{projectId}
+		<choose>
+			<when test="versionIdList != null and versionIdList.size() > 0">
+				and pv.version_id in
+				<foreach collection="versionIdList" item="versionId"
+					open="(" separator="," close=")">
+					#{versionId}
+				</foreach>
+			</when>
+			<otherwise>
+				and 1 = 0
+			</otherwise>
+		</choose>
+
+		union all
+
+		select
+		'PRIORITY' as option_group,
+		null as issue_type_id,
+		null
+		as issue_type_name,
+		null as issue_status_id,
+		null as issue_status_name,
+		null as version_id,
+		null as version_name,
+		sc.setting_code_id,
+		sc.setting_name,
+		null as assignee_id,
+		null as assignee_name,
+		4 as
+		option_sort
+		from setting_code sc
+		join project p
+		on sc.user_id =
+		p.owner_id
+		where p.project_id = #{projectId}
+		and sc.setting_group_name =
+		'g002'
+		<choose>
+			<when
+				test="settingCodeIdList != null and settingCodeIdList.size() > 0">
+				and sc.setting_code_id in
+				<foreach collection="settingCodeIdList" item="settingCodeId"
+					open="(" separator="," close=")">
+					#{settingCodeId}
+				</foreach>
+			</when>
+			<otherwise>
+				and 1 = 0
+			</otherwise>
+		</choose>
+
+		union all
+
+		select
+		'ASSIGNEE' as option_group,
+		null as issue_type_id,
+		null
+		as issue_type_name,
+		null as issue_status_id,
+		null as issue_status_name,
+		null as version_id,
+		null as version_name,
+		null as setting_code_id,
+		null
+		as setting_name,
+		x.assignee_id,
+		x.assignee_name,
+		5 as option_sort
+		from (
+		select
+		u.user_id as assignee_id,
+		u.user_name as assignee_name
+		from
+		project_member pm
+		join team_member tm
+		on pm.team_member_id =
+		tm.team_member_id
+		join users u
+		on tm.user_id = u.user_id
+		where
+		pm.project_id = #{projectId}
+
+		union
+
+		select
+		owner_user.user_id as
+		assignee_id,
+		owner_user.user_name as assignee_name
+		from project p
+		join
+		users owner_user
+		on p.owner_id = owner_user.user_id
+		where p.project_id =
+		#{projectId}
+		) x
+		<choose>
+			<when
+				test="assigneeIdList != null and assigneeIdList.size() > 0">
+				where x.assignee_id in
+				<foreach collection="assigneeIdList" item="assigneeId"
+					open="(" separator="," close=")">
+					#{assigneeId}
+				</foreach>
+			</when>
+			<otherwise>
+				where 1 = 0
+			</otherwise>
+		</choose>
+		)
+		order by option_sort
+	</select>
+
+	<select id="selectIssueCreateBaseOptionRows"
+		resultType="IssuesVO">
 		select *
 		from (
 		select
@@ -1263,7 +1784,8 @@
 		it.initial_status_id,
 		ist.status_name as initial_status_name,
 		null as field_setting_id,
-		null as field_code,
+		null
+		as field_code,
 		null as use_yn,
 		null as required_yn,
 		null as version_id,
@@ -1273,13 +1795,17 @@
 		null as setting_code_id,
 		null as setting_name,
 		1 as option_sort,
-		row_number() over (order by it.created_at asc, it.issue_type_id asc) as row_sort
+		row_number() over (order by it.created_at asc, it.issue_type_id asc)
+		as row_sort
 		from issue_type_project itp
 		join issue_type it
-		on itp.issue_type_id = it.issue_type_id
+		on
+		itp.issue_type_id = it.issue_type_id
 		join issue_status ist
-		on it.initial_status_id = ist.issue_status_id
-		where itp.project_id = #{projectId}
+		on
+		it.initial_status_id = ist.issue_status_id
+		where itp.project_id =
+		#{projectId}
 
 		union all
 
@@ -1293,36 +1819,44 @@
 		case fs.field_code
 		when 'i001' then 'ASSIGNEE'
 		when 'i002' then 'MILESTONE'
-		when 'i003' then 'PARENT_ISSUE'
+		when 'i003'
+		then 'PARENT_ISSUE'
 		when 'i004' then 'START_DATE'
-		when 'i005' then 'DUE_DATE'
+		when 'i005' then
+		'DUE_DATE'
 		when 'i006' then 'ESTIMATED_HOURS'
 		else fs.field_code
-		end as field_code,
+		end as
+		field_code,
 		fs.use_yn,
 		fs.required_yn,
 		null as version_id,
-		null as version_name,
+		null as
+		version_name,
 		null as version_status_code,
 		null as default_yn,
-		null as setting_code_id,
+		null as
+		setting_code_id,
 		null as setting_name,
 		2 as option_sort,
-		row_number() over (
+		row_number()
+		over (
 		order by itp.issue_type_id,
 		case fs.field_code
 		when 'i001' then 1
 		when 'i002' then 2
 		when 'i003' then 3
 		when 'i004' then 4
-		when 'i005' then 5
+		when 'i005' then
+		5
 		when 'i006' then 6
 		else 99
 		end
 		) as row_sort
 		from issue_type_project itp
 		join issue_type_field_setting fs
-		on itp.issue_type_id = fs.issue_type_id
+		on itp.issue_type_id =
+		fs.issue_type_id
 		where itp.project_id = #{projectId}
 
 		union all
@@ -1330,21 +1864,26 @@
 		select
 		'VERSION' as option_group,
 		null as issue_type_id,
-		null as issue_type_name,
+		null as
+		issue_type_name,
 		null as initial_status_id,
 		null as initial_status_name,
 		null as field_setting_id,
 		null as field_code,
 		null as use_yn,
-		null as required_yn,
+		null as
+		required_yn,
 		version_id,
 		version_name,
-		status_code as version_status_code,
+		status_code as
+		version_status_code,
 		default_yn,
 		null as setting_code_id,
-		null as setting_name,
+		null as
+		setting_name,
 		3 as option_sort,
-		row_number() over (order by default_yn desc, created_at desc, version_id asc) as row_sort
+		row_number() over (order by default_yn
+		desc, created_at desc, version_id asc) as row_sort
 		from project_version
 		where project_id = #{projectId}
 		and status_code != 'k003'
@@ -1354,31 +1893,37 @@
 		select
 		'PRIORITY' as option_group,
 		null as issue_type_id,
-		null as issue_type_name,
+		null as
+		issue_type_name,
 		null as initial_status_id,
 		null as initial_status_name,
 		null as field_setting_id,
 		null as field_code,
 		null as use_yn,
-		null as required_yn,
+		null as
+		required_yn,
 		null as version_id,
 		null as version_name,
-		null as version_status_code,
+		null as
+		version_status_code,
 		sc.default_yn,
 		sc.setting_code_id,
 		sc.setting_name,
 		4 as option_sort,
-		row_number() over (order by sc.default_yn desc, sc.setting_code_id asc) as row_sort
+		row_number() over (order by sc.default_yn desc,
+		sc.setting_code_id asc) as row_sort
 		from setting_code sc
 		join project p
 		on sc.user_id = p.owner_id
 		where p.project_id = #{projectId}
-		and sc.setting_group_name = 'g002'
+		and
+		sc.setting_group_name = 'g002'
 		)
 		order by option_sort, row_sort
 	</select>
 
-	<select id="selectIssueCreateExtraOptionRows" resultType="IssuesVO">
+	<select id="selectIssueCreateExtraOptionRows"
+		resultType="IssuesVO">
 		select *
 		from (
 		select
@@ -1386,51 +1931,65 @@
 		m.version_id,
 		m.milestone_id,
 		m.title as milestone_title,
-		null as assignee_id,
+		null as
+		assignee_id,
 		null as assignee_name,
 		null as parent_issue_id,
-		null as parent_issue_title,
+		null as
+		parent_issue_title,
 		1 as option_sort,
-		row_number() over (order by m.start_date asc nulls last, m.milestone_id asc) as row_sort
-		from milestone m
+		row_number() over (order by
+		m.start_date asc nulls last, m.milestone_id asc) as row_sort
+		from
+		milestone m
 		join project_version v
 		on m.version_id = v.version_id
-		and m.project_id = v.project_id
+		and
+		m.project_id = v.project_id
 		where m.project_id = #{projectId}
-		and v.status_code != 'k003'
+		and
+		v.status_code != 'k003'
 
 		union all
 
 		select
 		'ASSIGNEE' as option_group,
-		null as version_id,
+		null
+		as version_id,
 		null as milestone_id,
 		null as milestone_title,
 		x.assignee_id,
 		x.assignee_name,
 		null as parent_issue_id,
-		null as parent_issue_title,
+		null as
+		parent_issue_title,
 		2 as option_sort,
-		row_number() over (order by x.assignee_name, x.assignee_id) as row_sort
+		row_number() over (order by
+		x.assignee_name, x.assignee_id) as row_sort
 		from (
 		select
-		u.user_id as assignee_id,
+		u.user_id as
+		assignee_id,
 		u.user_name as assignee_name
 		from project_member pm
-		join team_member tm
+		join
+		team_member tm
 		on pm.team_member_id = tm.team_member_id
 		join users u
-		on tm.user_id = u.user_id
+		on
+		tm.user_id = u.user_id
 		where pm.project_id = #{projectId}
 
 		union
 
 		select
 		owner_user.user_id as assignee_id,
-		owner_user.user_name as assignee_name
+		owner_user.user_name as
+		assignee_name
 		from project p
 		join users owner_user
-		on p.owner_id = owner_user.user_id
+		on p.owner_id =
+		owner_user.user_id
 		where p.project_id = #{projectId}
 		) x
 
@@ -1439,172 +1998,235 @@
 		select
 		'PARENT_ISSUE' as option_group,
 		null as version_id,
-		null as milestone_id,
+		null as
+		milestone_id,
 		null as milestone_title,
 		null as assignee_id,
-		null as assignee_name,
+		null as
+		assignee_name,
 		issue_id as parent_issue_id,
 		title as parent_issue_title,
 		3 as option_sort,
-		row_number() over (order by issue_no desc) as row_sort
+		row_number() over (order by issue_no desc) as
+		row_sort
 		from issue
 		where project_id = #{projectId}
 		)
-		order by option_sort, row_sort
+		order by
+		option_sort, row_sort
 	</select>
 
-	<select id="selectIssueCreateSaveValidation" resultType="IssuesVO">
+	<select id="selectIssueCreateSaveValidation"
+		resultType="IssuesVO">
 		select
 		p.project_id,
 		p.project_name,
 		p.owner_id,
 		case
-		when p.owner_id = #{userId} then 'Y'
+		when
+		p.owner_id = #{userId} then 'Y'
 		when exists (
 		select 1
-		from project_member pm
+		from
+		project_member pm
 		join team_member tm
-		on pm.team_member_id = tm.team_member_id
+		on pm.team_member_id =
+		tm.team_member_id
 		join role_permission rp
 		on pm.role_id = rp.role_id
 		join permission perm
 		on rp.permission_id = perm.permission_id
-		where pm.project_id = p.project_id
+		where
+		pm.project_id = p.project_id
 		and tm.user_id = #{userId}
-		and perm.permission_code = #{permissionCode}
+		and
+		perm.permission_code = #{permissionCode}
 		) then 'Y'
 		else 'N'
-		end as permission_yn,
+		end as
+		permission_yn,
 		(
 		select max(it.initial_status_id)
-		from issue_type_project itp
+		from issue_type_project
+		itp
 		join issue_type it
 		on itp.issue_type_id = it.issue_type_id
-		where itp.project_id = p.project_id
-		and it.issue_type_id = #{issue.issueTypeId}
+		where
+		itp.project_id = p.project_id
+		and it.issue_type_id =
+		#{issue.issueTypeId}
 		) as initial_status_id,
 		(
 		select count(*)
-		from project_version pv
+		from
+		project_version pv
 		where pv.project_id = p.project_id
-		and pv.version_id = #{issue.versionId}
+		and pv.version_id
+		= #{issue.versionId}
 		and pv.status_code != 'k003'
 		) as version_count,
 		(
 		select count(*)
 		from setting_code sc
 		where sc.user_id = p.owner_id
-		and sc.setting_group_name = 'g002'
-		and sc.setting_code_id = #{issue.settingCodeId}
+		and
+		sc.setting_group_name = 'g002'
+		and sc.setting_code_id =
+		#{issue.settingCodeId}
 		) as priority_count,
 		nvl((
 		select max(fs.use_yn)
 		from issue_type_field_setting fs
-		where fs.issue_type_id = #{issue.issueTypeId}
+		where fs.issue_type_id =
+		#{issue.issueTypeId}
 		and fs.field_code in ('i001', 'ASSIGNEE')
-		), 'N') as assignee_use_yn,
+		), 'N')
+		as assignee_use_yn,
 		nvl((
 		select max(fs.required_yn)
-		from issue_type_field_setting fs
-		where fs.issue_type_id = #{issue.issueTypeId}
+		from
+		issue_type_field_setting fs
+		where fs.issue_type_id =
+		#{issue.issueTypeId}
 		and fs.field_code in ('i001', 'ASSIGNEE')
-		), 'N') as assignee_required_yn,
+		), 'N')
+		as assignee_required_yn,
 		nvl((
 		select max(fs.use_yn)
-		from issue_type_field_setting fs
-		where fs.issue_type_id = #{issue.issueTypeId}
+		from
+		issue_type_field_setting fs
+		where fs.issue_type_id =
+		#{issue.issueTypeId}
 		and fs.field_code in ('i002', 'MILESTONE')
-		), 'N') as milestone_use_yn,
+		), 'N')
+		as milestone_use_yn,
 		nvl((
 		select max(fs.required_yn)
-		from issue_type_field_setting fs
-		where fs.issue_type_id = #{issue.issueTypeId}
+		from
+		issue_type_field_setting fs
+		where fs.issue_type_id =
+		#{issue.issueTypeId}
 		and fs.field_code in ('i002', 'MILESTONE')
-		), 'N') as milestone_required_yn,
+		), 'N')
+		as milestone_required_yn,
 		nvl((
 		select max(fs.use_yn)
-		from issue_type_field_setting fs
-		where fs.issue_type_id = #{issue.issueTypeId}
+		from
+		issue_type_field_setting fs
+		where fs.issue_type_id =
+		#{issue.issueTypeId}
 		and fs.field_code in ('i003', 'PARENT_ISSUE')
-		), 'N') as parent_issue_use_yn,
+		),
+		'N') as parent_issue_use_yn,
 		nvl((
 		select max(fs.required_yn)
-		from issue_type_field_setting fs
-		where fs.issue_type_id = #{issue.issueTypeId}
+		from
+		issue_type_field_setting fs
+		where fs.issue_type_id =
+		#{issue.issueTypeId}
 		and fs.field_code in ('i003', 'PARENT_ISSUE')
-		), 'N') as parent_issue_required_yn,
+		),
+		'N') as parent_issue_required_yn,
 		nvl((
 		select max(fs.use_yn)
-		from issue_type_field_setting fs
-		where fs.issue_type_id = #{issue.issueTypeId}
+		from
+		issue_type_field_setting fs
+		where fs.issue_type_id =
+		#{issue.issueTypeId}
 		and fs.field_code in ('i004', 'START_DATE')
-		), 'N') as start_date_use_yn,
+		), 'N')
+		as start_date_use_yn,
 		nvl((
 		select max(fs.required_yn)
-		from issue_type_field_setting fs
-		where fs.issue_type_id = #{issue.issueTypeId}
+		from
+		issue_type_field_setting fs
+		where fs.issue_type_id =
+		#{issue.issueTypeId}
 		and fs.field_code in ('i004', 'START_DATE')
-		), 'N') as start_date_required_yn,
+		), 'N')
+		as start_date_required_yn,
 		nvl((
 		select max(fs.use_yn)
-		from issue_type_field_setting fs
-		where fs.issue_type_id = #{issue.issueTypeId}
+		from
+		issue_type_field_setting fs
+		where fs.issue_type_id =
+		#{issue.issueTypeId}
 		and fs.field_code in ('i005', 'DUE_DATE')
-		), 'N') as due_date_use_yn,
+		), 'N')
+		as due_date_use_yn,
 		nvl((
 		select max(fs.required_yn)
-		from issue_type_field_setting fs
-		where fs.issue_type_id = #{issue.issueTypeId}
+		from
+		issue_type_field_setting fs
+		where fs.issue_type_id =
+		#{issue.issueTypeId}
 		and fs.field_code in ('i005', 'DUE_DATE')
-		), 'N') as due_date_required_yn,
+		), 'N')
+		as due_date_required_yn,
 		nvl((
 		select max(fs.use_yn)
-		from issue_type_field_setting fs
-		where fs.issue_type_id = #{issue.issueTypeId}
+		from
+		issue_type_field_setting fs
+		where fs.issue_type_id =
+		#{issue.issueTypeId}
 		and fs.field_code in ('i006', 'ESTIMATED_HOURS')
 		), 'N') as estimated_hours_use_yn,
 		nvl((
 		select max(fs.required_yn)
-		from issue_type_field_setting fs
-		where fs.issue_type_id = #{issue.issueTypeId}
+		from
+		issue_type_field_setting fs
+		where fs.issue_type_id =
+		#{issue.issueTypeId}
 		and fs.field_code in ('i006', 'ESTIMATED_HOURS')
 		), 'N') as estimated_hours_required_yn,
 		(
 		select count(*)
-		from project_member pm
+		from
+		project_member pm
 		join team_member tm
-		on pm.team_member_id = tm.team_member_id
+		on pm.team_member_id =
+		tm.team_member_id
 		where pm.project_id = p.project_id
-		and tm.user_id = #{issue.assigneeId}
+		and tm.user_id =
+		#{issue.assigneeId}
 		) +
-		case when p.owner_id = #{issue.assigneeId} then 1 else 0 end as assignee_count,
+		case when p.owner_id = #{issue.assigneeId} then
+		1 else 0 end as assignee_count,
 		(
 		select count(*)
 		from milestone m
-		join project_version v
+		join
+		project_version v
 		on m.version_id = v.version_id
-		and m.project_id = v.project_id
+		and m.project_id =
+		v.project_id
 		where m.project_id = p.project_id
-		and m.version_id = #{issue.versionId}
+		and m.version_id =
+		#{issue.versionId}
 		and m.milestone_id = #{issue.milestoneId}
-		and v.status_code != 'k003'
+		and
+		v.status_code != 'k003'
 		) as milestone_count,
 		(
 		select count(*)
-		from issue parent_issue
+		from issue
+		parent_issue
 		where parent_issue.project_id = p.project_id
-		and parent_issue.issue_id = #{issue.parentIssueId}
+		and
+		parent_issue.issue_id = #{issue.parentIssueId}
 		) as parent_issue_count
 		from project p
 		where p.project_id = #{issue.projectId}
 		and (
-		p.owner_id = #{userId}
+		p.owner_id =
+		#{userId}
 		or exists (
 		select 1
 		from project_member pm
 		join team_member tm
 		on pm.team_member_id = tm.team_member_id
-		where pm.project_id = p.project_id
+		where pm.project_id =
+		p.project_id
 		and tm.user_id = #{userId}
 		)
 		)
@@ -1649,7 +2271,8 @@
 		select count(*)
 		from milestone
 		where project_id = #{projectId}
-		and version_id = #{versionId}
+		and version_id =
+		#{versionId}
 		and milestone_id = #{milestoneId}
 	</select>
 
@@ -1687,19 +2310,12 @@
 	<insert id="insertIssue" parameterType="IssuesVO">
 		<selectKey keyProperty="issueId" resultType="string"
 			order="BEFORE">
-			select
+			SELECT
 			'ISSUE_'
-			|| to_char(sysdate, 'YYMM')
+			|| TO_CHAR(SYSDATE, 'YYMM')
 			|| '_'
-			|| lpad(
-			nvl(max(to_number(substr(issue_id, -4))), 0) + 1,
-			4,
-			'0'
-			)
-			from issue
-			where substr(issue_id, 1, 11) =
-			'ISSUE_' || to_char(sysdate, 'YYMM')
-			|| '_'
+			|| TO_CHAR(SEQ_ISSUE_ID.NEXTVAL, 'FM0000')
+			FROM DUAL
 		</selectKey>
 
 		insert into issue (
@@ -1750,13 +2366,15 @@
 		select
 		i.issue_id,
 		i.issue_no,
-		'#' || lpad(to_char(i.issue_no), 4, '0') as display_issue_no,
+		'#' || lpad(to_char(i.issue_no), 4, '0') as
+		display_issue_no,
 		i.project_id,
 		i.milestone_id,
 		i.version_id,
 		i.issue_type_id,
 		i.issue_status_id,
-		ist.status_name as issue_status_name,
+		ist.status_name as
+		issue_status_name,
 		i.setting_code_id,
 		sc.setting_name,
 		i.assignee_id,
@@ -1772,20 +2390,25 @@
 		i.parent_issue_id
 		from issue i
 		left join issue_status ist
-		on i.issue_status_id = ist.issue_status_id
+		on
+		i.issue_status_id = ist.issue_status_id
 		left join setting_code sc
-		on i.setting_code_id = sc.setting_code_id
-		where i.project_id = #{projectId}
+		on
+		i.setting_code_id = sc.setting_code_id
+		where i.project_id =
+		#{projectId}
 		and i.issue_id = #{issueId}
 		for update
 	</select>
 
 	<select id="countAllowedStatusTransition" resultType="int">
-		select count(*)
+		select
+		count(*)
 		from issue i
 		join project p
 		on i.project_id = p.project_id
-		where i.project_id = #{projectId}
+		where
+		i.project_id = #{projectId}
 		and i.issue_id = #{issueId}
 		and (
 		i.issue_status_id = #{toStatusId}
@@ -1794,18 +2417,24 @@
 		select 1
 		from workflow_transition wt
 		join project_member pm
-		on wt.role_id = pm.role_id
+		on wt.role_id
+		= pm.role_id
 		join team_member tm
-		on pm.team_member_id = tm.team_member_id
+		on pm.team_member_id =
+		tm.team_member_id
 		where pm.project_id = i.project_id
-		and tm.user_id = #{userId}
+		and tm.user_id =
+		#{userId}
 		and wt.issue_type_id = i.issue_type_id
-		and wt.from_status_id = i.issue_status_id
+		and wt.from_status_id =
+		i.issue_status_id
 		and wt.to_status_id = #{toStatusId}
 		and (
 		wt.apply_target_code = 'j001'
-		or (wt.apply_target_code = 'j002' and i.author_id = #{userId})
-		or (wt.apply_target_code = 'j003' and i.assignee_id = #{userId})
+		or (wt.apply_target_code = 'j002' and
+		i.author_id = #{userId})
+		or (wt.apply_target_code = 'j003' and
+		i.assignee_id = #{userId})
 		)
 		)
 		)
@@ -1819,27 +2448,31 @@
 		assignee_id = #{assigneeId, jdbcType=VARCHAR},
 		title = #{title},
 		description = #{description, jdbcType=VARCHAR},
-		start_date = #{startDate, jdbcType=DATE},
+		start_date =
+		#{startDate, jdbcType=DATE},
 		due_date = #{dueDate, jdbcType=DATE},
 		estimated_hours = nvl(#{estimatedHours, jdbcType=INTEGER}, 0),
 		progress_rate = nvl(#{progressRate, jdbcType=INTEGER}, 0),
-		updated_at = sysdate,
+		updated_at =
+		sysdate,
 		milestone_id = #{milestoneId, jdbcType=VARCHAR},
 		parent_issue_id = #{parentIssueId, jdbcType=VARCHAR}
-		where project_id = #{projectId}
+		where project_id =
+		#{projectId}
 		and issue_id = #{issueId}
 	</update>
 
-	<insert id="insertIssueHistoryByProcedure" parameterType="IssuesVO"
-		statementType="CALLABLE">
-		{ call PROC_INSERT_ISSUE_HISTORY(
-			#{issueId, mode=IN, jdbcType=VARCHAR},
-			#{changedBy, mode=IN, jdbcType=VARCHAR},
-			#{changeTypeCode, mode=IN, jdbcType=VARCHAR},
-			#{changeTypeName, mode=IN, jdbcType=VARCHAR},
-			#{reason, mode=IN, jdbcType=VARCHAR},
-			#{beforeValue, mode=IN, jdbcType=VARCHAR},
-			#{afterValue, mode=IN, jdbcType=VARCHAR}
+	<insert id="insertIssueHistoryByProcedure"
+		parameterType="IssuesVO" statementType="CALLABLE">
+		{ call
+		PROC_INSERT_ISSUE_HISTORY(
+		#{issueId, mode=IN, jdbcType=VARCHAR},
+		#{changedBy, mode=IN, jdbcType=VARCHAR},
+		#{changeTypeCode, mode=IN, jdbcType=VARCHAR},
+		#{changeTypeName, mode=IN, jdbcType=VARCHAR},
+		#{reason, mode=IN, jdbcType=VARCHAR},
+		#{beforeValue, mode=IN, jdbcType=VARCHAR},
+		#{afterValue, mode=IN, jdbcType=VARCHAR}
 		) }
 	</insert>
 

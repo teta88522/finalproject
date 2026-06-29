@@ -5,6 +5,7 @@ import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import com.pixcel.app.project.service.IssueStatVO;
 import com.pixcel.app.project.service.ProjectMemberVO;
 import com.pixcel.app.project.service.ProjectModulesVO;
 import com.pixcel.app.project.service.ProjectRoleVO;
@@ -46,4 +47,11 @@ public interface ProjectMapper {
 	public ProjectMemberVO selectProjectMemberDetail(@Param("projectMemberId") String projectMemberId);
 	public int updateProjectMemberRole(ProjectMemberVO projectMemberVO);
 	public int deleteProjectMember(@Param("projectMemberId") String projectMemberId);
+	
+	// 프로젝트 삭제 쿼리 추가
+	public int deleteProject(@Param("projectId") String projectId);
+	void deleteProjectModulesByProjectId(String projectId);
+	void deleteProjectMembersByProjectId(String projectId);
+	
+	public List<IssueStatVO> selectIssueStatByProjectId(@Param("projectId") String projectId);
 }

@@ -22,23 +22,46 @@ public class TestCaseSearchVO {
 	private int totalCount;
 	private int totalPage;
 	
+	private boolean hasNext;
+	
 	public void calculatePagin() {
 		
 		if(page < 1) {
 			page = 1;
 		}
+
 		if(size < 1) {
 			size = 10;
 		}
 		
-		startRow = ((page - 1) * size) + 1;
-		endRow = page * size;
-		
 		if(totalCount > 0 ) {
-			totalPage = (int)Math.ceil( (double) totalCount / size);
-		}else {
+			totalPage = (int)Math.ceil((double) totalCount / size);
+		} else {
 			totalPage = 1;
 		}
+
+		if(page > totalPage) {
+			page = totalPage;
+		}
+
+		startRow = ((page - 1) * size) + 1;
+		endRow = page * size;
+	}
+	
+	public void calculateSimplePaging() {
+
+		if(page < 1) {
+			page = 1;
+		}
+
+		if(size < 1) {
+			size = 10;
+		}
+
+		startRow = ((page - 1) * size) + 1;
+
+		// 다음 페이지 존재 여부 확인용으로 1개 더 조회
+		endRow = page * size + 1;
 	}
 	
 }

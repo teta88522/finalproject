@@ -1,6 +1,8 @@
 package com.pixcel.app.codevalue.web;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.stereotype.Controller;
@@ -35,6 +37,10 @@ public class CodeValueController {
 
 		model.addAttribute("searchVO", searchVO);
 		model.addAttribute("groupNameMap", getGroupNameMap());
+		model.addAttribute("selectedGroupNameText",
+				getSelectedText(searchVO.getSettingGroupNameList(), getGroupNameMap(), "전체"));
+		model.addAttribute("selectedDefaultYnText",
+				getSelectedText(searchVO.getDefaultYnList(), getDefaultYnNameMap(), "전체"));
 		model.addAttribute("codeValueGroupMap", codeValueService.getCodeValueSearchGroupMap(searchVO));
 
 		return "codevalue/list";
@@ -213,5 +219,30 @@ public class CodeValueController {
 		groupNameMap.put("g003", "문서유형");
 
 		return groupNameMap;
+	}
+
+	private Map<String, String> getDefaultYnNameMap() {
+		Map<String, String> defaultYnNameMap = new LinkedHashMap<>();
+		defaultYnNameMap.put("Y", "기본값");
+		defaultYnNameMap.put("N", "일반값");
+		return defaultYnNameMap;
+	}
+
+	private String getSelectedText(List<String> selectedValueList, Map<String, String> labelMap, String defaultText) {
+		if (selectedValueList == null || selectedValueList.isEmpty()) {
+			return defaultText;
+		}
+
+		List<String> selectedLabelList = new ArrayList<>();
+
+		for (String selectedValue : selectedValueList) {
+			String label = labelMap.get(selectedValue);
+
+			if (label != null) {
+				selectedLabelList.add(label);
+			}
+		}
+
+		return selectedLabelList.isEmpty() ? defaultText : String.join(", ", selectedLabelList);
 	}
 }

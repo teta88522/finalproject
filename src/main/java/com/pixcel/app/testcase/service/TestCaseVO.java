@@ -1,11 +1,17 @@
 package com.pixcel.app.testcase.service;
 
+import java.util.List;
+
+import com.pixcel.app.file.service.FileVO;
+
 import lombok.Data;
 
 @Data
 public class TestCaseVO {
 	
 	private String testCaseId;
+	
+	private String projectId;
 	
 	private String versionId;
 	private String versionName;
@@ -32,5 +38,9 @@ public class TestCaseVO {
 	private String createdAt;
 	private String updateAt;
 	
+	private List<TestCaseStepVO> stepList; 
+	private List<String> stepDescriptionList;
+	private List<String> stepExpectedResultList;
+	private List<FileVO> fileList;
 	
 }

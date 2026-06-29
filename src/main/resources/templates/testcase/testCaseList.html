@@ -1,0 +1,506 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{common/layouts/default_layout}">
+<head>
+<meta charset="UTF-8">
+<title>테스트 케이스 목록</title>
+
+<link rel="stylesheet" th:href="@{/css/testcase/testCaseList.css}">
+</head>
+
+<body>
+<div layout:fragment="Content">
+
+    <div class="testcase-list-page">
+
+        <!-- 상단 -->
+        <div class="page-header">
+            <div>
+                <h2 class="page-title">테스트 케이스 목록</h2>
+                <p class="page-sub-title">
+                    프로젝트 버전별 테스트 케이스를 조회합니다.
+                </p>
+            </div>
+
+            <button type="button"
+                    class="add-btn"
+                    th:onclick="|location.href='@{/project/{projectId}/testcases/new(projectId=${projectId})}'|">
+                테스트 케이스 생성
+            </button>
+        </div>
+
+        <!-- 검색 영역 -->
+        <form th:action="@{/project/{projectId}/testcases(projectId=${projectId})}"
+              method="get"
+              class="search-section"
+              th:object="${testCaseSearchVO}">
+
+            <input type="hidden" name="page" value="1">
+
+            <div class="search-row">
+
+                <div class="search-field">
+                    <label for="versionId">버전</label>
+                    <select id="versionId" th:field="*{versionId}">
+                        <option value="">전체</option>
+                        <option th:each="version : ${versionList}"
+                                th:value="${version.versionId}"
+                                th:text="${version.versionName}">
+                            1.0.0
+                        </option>
+                    </select>
+                </div>
+
+                <div class="search-field">
+                    <label for="testTypeCode">유형</label>
+                    <select id="testTypeCode" th:field="*{testTypeCode}">
+                        <option value="">전체</option>
+                        <option value="d001">기능</option>
+                        <option value="d002">UI/UX</option>
+                        <option value="d003">성능</option>
+                        <option value="d004">보안</option>
+                        <option value="d005">데이터</option>
+                        <option value="d006">기타</option>
+                    </select>
+                </div>
+
+                <div class="search-field">
+                    <label for="statusCode">상태</label>
+                    <select id="statusCode" th:field="*{statusCode}">
+                        <option value="">전체</option>
+                        <option value="g001">활성</option>
+                        <option value="g002">비활성</option>
+                    </select>
+                </div>
+
+                <div class="search-field">
+                    <label for="priorityCode">우선순위</label>
+                    <select id="priorityCode" th:field="*{priorityCode}">
+                        <option value="">전체</option>
+                        <option value="c001">상</option>
+                        <option value="c002">중</option>
+                        <option value="c003">하</option>
+                    </select>
+                </div>
+
+                <div class="search-field title-field">
+                    <label for="title">제목</label>
+                    <input type="text"
+                           id="title"
+                           th:field="*{title}"
+                           placeholder="테스트 케이스 제목">
+                </div>
+
+                <div class="search-btn-area">
+                    <button type="button"
+                            class="btn-basic"
+                            th:onclick="|location.href='@{/project/{projectId}/testcases(projectId=${projectId})}'|">
+                        초기화
+                    </button>
+
+                    <button type="submit"
+                            class="btn-primary">
+                        검색
+                    </button>
+                </div>
+
+            </div>
+        </form>
+
+        <!-- 목록 영역 -->
+        <div class="list-section">
+
+            <div class="list-header">
+                <div>
+                    <div class="list-title">테스트 케이스</div>
+                    <div class="list-sub-text">
+                        동일 버전에서 재사용 가능한 테스트 케이스 목록입니다.
+                    </div>
+                </div>
+
+                <div class="list-count">
+                    현재 페이지
+                    <strong th:text="${testCaseSearchVO.page}">1</strong>
+                </div>
+            </div>
+
+            <table class="testcase-table">
+                <thead>
+                    <tr>
+                        <th class="check-col"></th>
+                        <th>ID</th>
+                        <th>제목</th>
+                        <th>버전</th>
+                        <th>유형</th>
+                        <th>상태</th>
+                        <th>우선순위</th>
+                        <th>작성자</th>
+                        <th>작성일</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <tr th:if="${testCaseList == null or #lists.isEmpty(testCaseList)}">
+                        <td colspan="9" class="empty-row">
+                            등록된 테스트 케이스가 없습니다.
+                        </td>
+                    </tr>
+
+                    <tr th:each="testCase : ${testCaseList}">
+                        <td class="check-col">
+                            <input type="checkbox"
+                                   class="case-check"
+                                   th:value="${testCase.testCaseId}">
+                        </td>
+
+                        <td>
+                            <a class="case-link"
+                               th:href="@{/project/{projectId}/testcases/{testCaseId}/edit(
+                                    projectId=${projectId},
+                                    testCaseId=${testCase.testCaseId}
+                               )}"
+                               th:text="${testCase.testCaseId}">
+                                TC_202606_0001
+                            </a>
+                        </td>
+
+                        <td class="title-cell">
+                            <a class="case-title-link"
+                               th:href="@{/project/{projectId}/testcases/{testCaseId}/edit(
+                                    projectId=${projectId},
+                                    testCaseId=${testCase.testCaseId}
+                               )}"
+                               th:text="${testCase.title}">
+                                테스트 케이스 제목
+                            </a>
+                        </td>
+
+                        <td th:text="${testCase.versionName}">
+                            1.0.0
+                        </td>
+
+                        <td th:text="${testCase.testTypeName}">
+                            기능
+                        </td>
+
+                        <td>
+                            <span class="status-badge"
+                                  th:classappend="${testCase.statusCode == 'g001'} ? ' active' : ' inactive'"
+                                  th:text="${testCase.statusName}">
+                                활성
+                            </span>
+                        </td>
+
+                        <td>
+                            <span class="priority-badge"
+                                  th:classappend="${testCase.priorityCode == 'c001'} ? ' high' : (${testCase.priorityCode == 'c002'} ? ' middle' : ' low')"
+                                  th:text="${testCase.priorityName}">
+                                중
+                            </span>
+                        </td>
+
+                        <td th:text="${testCase.createdByName != null ? testCase.createdByName : '-'}">
+                            작성자
+                        </td>
+
+                        <td th:text="${testCase.createdAt}">
+                            2026-06-29
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- 선택 테스트케이스 상세 -->
+            <div class="case-detail-section"
+                 id="caseDetailSection"
+                 style="display:none;">
+
+                <div class="detail-selected-id" id="detailSelectedId">
+                    선택된 테스트 케이스
+                </div>
+
+                <div class="detail-layout">
+
+                    <!-- 왼쪽 기본 정보 -->
+                    <div class="detail-left">
+                        <div class="detail-title">기본 정보</div>
+
+                        <div class="detail-form-row">
+                            <label>제목</label>
+                            <input type="text" id="detailTitle" readonly>
+                        </div>
+
+                        <div class="detail-form-row">
+                            <label>유형</label>
+                            <input type="text" id="detailType" readonly>
+                        </div>
+
+                        <div class="detail-form-row">
+                            <label>상태</label>
+                            <input type="text" id="detailStatus" readonly>
+                        </div>
+
+                        <div class="detail-form-row">
+                            <label>버전</label>
+                            <input type="text" id="detailVersion" readonly>
+                        </div>
+
+                        <div class="detail-form-row">
+                            <label>우선순위</label>
+                            <input type="text" id="detailPriority" readonly>
+                        </div>
+
+                        <div class="detail-form-row">
+                            <label>생성자</label>
+                            <input type="text" id="detailCreatedBy" readonly>
+                        </div>
+
+                        <div class="detail-form-row">
+                            <label>생성일</label>
+                            <input type="text" id="detailCreatedAt" readonly>
+                        </div>
+                    </div>
+
+                    <!-- 오른쪽 상세 정보 -->
+                    <div class="detail-right">
+
+                        <div class="detail-block">
+                            <div class="detail-title">사전 조건</div>
+                            <textarea id="detailPreCondition" readonly></textarea>
+                        </div>
+
+                        <div class="detail-block">
+                            <div class="detail-title">테스트 절차</div>
+
+                            <table class="step-table">
+                                <thead>
+                                    <tr>
+                                        <th>NO</th>
+                                        <th>단계 설명</th>
+                                        <th>예상 결과</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="detailStepBody">
+                                    <tr>
+                                        <td colspan="3">
+                                            선택된 절차가 없습니다.
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="detail-block">
+                            <div class="detail-title">기대 결과</div>
+                            <textarea id="detailExpectedResult" readonly></textarea>
+                        </div>
+
+                        <div class="detail-block">
+                            <div class="detail-title">첨부파일</div>
+
+                            <div class="detail-file-list"
+                                 id="detailFileList">
+                                등록된 첨부파일이 없습니다.
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- COUNT 제거용 이전/다음 페이징 -->
+            <div class="pagination">
+
+                <a class="page-btn"
+                   th:if="${testCaseSearchVO.page > 1}"
+                   th:href="@{/project/{projectId}/testcases(
+                        projectId=${projectId},
+                        page=${testCaseSearchVO.page - 1},
+                        versionId=${testCaseSearchVO.versionId},
+                        testTypeCode=${testCaseSearchVO.testTypeCode},
+                        statusCode=${testCaseSearchVO.statusCode},
+                        priorityCode=${testCaseSearchVO.priorityCode},
+                        title=${testCaseSearchVO.title}
+                   )}">
+                    이전
+                </a>
+
+                <span class="page-current"
+                      th:text="${testCaseSearchVO.page}">
+                    1
+                </span>
+
+                <a class="page-btn"
+                   th:if="${testCaseSearchVO.hasNext}"
+                   th:href="@{/project/{projectId}/testcases(
+                        projectId=${projectId},
+                        page=${testCaseSearchVO.page + 1},
+                        versionId=${testCaseSearchVO.versionId},
+                        testTypeCode=${testCaseSearchVO.testTypeCode},
+                        statusCode=${testCaseSearchVO.statusCode},
+                        priorityCode=${testCaseSearchVO.priorityCode},
+                        title=${testCaseSearchVO.title}
+                   )}">
+                    다음
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <script th:inline="javascript">
+        const projectId = /*[[${projectId}]]*/ "";
+        let currentDetailTestCaseId = "";
+
+        document.addEventListener("DOMContentLoaded", function () {
+            const checks = document.querySelectorAll(".case-check");
+
+            checks.forEach(function (check) {
+                check.addEventListener("change", function () {
+
+                    checks.forEach(function (otherCheck) {
+                        if (otherCheck !== check) {
+                            otherCheck.checked = false;
+                        }
+                    });
+
+                    if (!check.checked) {
+                        hideDetail();
+                        return;
+                    }
+
+                    loadTestCaseDetail(check.value);
+                });
+            });
+        });
+
+        function loadTestCaseDetail(testCaseId) {
+
+            fetch("/project/" + projectId + "/testcases/" + testCaseId)
+                .then(function (response) {
+                    return response.json();
+                })
+                .then(function (data) {
+
+                    if (data == null || data.testCaseId == null) {
+                        alert("테스트 케이스 정보를 조회할 수 없습니다.");
+                        hideDetail();
+                        return;
+                    }
+
+                    showDetail(data);
+                })
+                .catch(function () {
+                    alert("테스트 케이스 상세 조회 중 오류가 발생했습니다.");
+                    hideDetail();
+                });
+        }
+
+        function showDetail(data) {
+
+            document.getElementById("caseDetailSection").style.display = "block";
+
+            currentDetailTestCaseId = data.testCaseId;
+
+            document.getElementById("detailSelectedId").innerText = data.testCaseId;
+
+            document.getElementById("detailTitle").value = data.title || "";
+            document.getElementById("detailType").value = data.testTypeName || "";
+            document.getElementById("detailStatus").value = data.statusName || "";
+            document.getElementById("detailVersion").value = data.versionName || "";
+            document.getElementById("detailPriority").value = data.priorityName || "";
+            document.getElementById("detailCreatedBy").value = data.createdByName || "";
+            document.getElementById("detailCreatedAt").value = data.createdAt || "";
+
+            document.getElementById("detailPreCondition").value = data.preCondition || "";
+            document.getElementById("detailExpectedResult").value = data.expectedResult || "";
+
+            drawStepList(data.stepList);
+            drawFileList(data.fileList);
+        }
+
+        function drawStepList(stepList) {
+
+            const stepBody = document.getElementById("detailStepBody");
+            stepBody.innerHTML = "";
+
+            if (stepList == null || stepList.length === 0) {
+                const emptyRow = document.createElement("tr");
+                emptyRow.innerHTML = '<td colspan="3">등록된 테스트 절차가 없습니다.</td>';
+                stepBody.appendChild(emptyRow);
+                return;
+            }
+
+            stepList.forEach(function (step) {
+                const row = document.createElement("tr");
+
+                row.innerHTML =
+                    "<td>" + escapeHtml(step.stepNo) + "</td>" +
+                    "<td>" + escapeHtml(step.stepDescription || "") + "</td>" +
+                    "<td>" + escapeHtml(step.expectedResult || "") + "</td>";
+
+                stepBody.appendChild(row);
+            });
+        }
+
+        function drawFileList(fileList) {
+
+            const fileBox = document.getElementById("detailFileList");
+            fileBox.innerHTML = "";
+
+            if (fileList == null || fileList.length === 0) {
+                fileBox.innerHTML = '<div class="detail-file-empty">등록된 첨부파일이 없습니다.</div>';
+                return;
+            }
+
+            const allDownloadBox = document.createElement("div");
+            allDownloadBox.className = "detail-file-header";
+
+            const allDownloadLink = document.createElement("a");
+            allDownloadLink.className = "detail-file-download-all";
+            allDownloadLink.href = "/project/" + projectId + "/testcases/" + encodeURIComponent(currentDetailTestCaseId) + "/files/download-all";
+            allDownloadLink.innerText = "전체 다운로드";
+
+            allDownloadBox.appendChild(allDownloadLink);
+            fileBox.appendChild(allDownloadBox);
+
+            fileList.forEach(function (file) {
+                const item = document.createElement("div");
+                item.className = "detail-file-item";
+
+                const fileName = file.originalName || "파일명 없음";
+                const fileSize = file.fileSize != null ? " (" + file.fileSize + " byte)" : "";
+
+                item.innerHTML =
+                    '<div class="detail-file-info">' +
+                        '<span class="detail-file-name">' + escapeHtml(fileName) + '</span>' +
+                        '<span class="detail-file-size">' + escapeHtml(fileSize) + '</span>' +
+                    '</div>' +
+                    '<a class="detail-file-download-btn" href="/project/' + projectId + '/testcases/files/' + encodeURIComponent(file.fileId) + '/download">다운로드</a>';
+
+                fileBox.appendChild(item);
+            });
+        }
+
+        function hideDetail() {
+            document.getElementById("caseDetailSection").style.display = "none";
+            currentDetailTestCaseId = "";
+        }
+
+        function escapeHtml(value) {
+            return String(value)
+                .replaceAll("&", "&amp;")
+                .replaceAll("<", "&lt;")
+                .replaceAll(">", "&gt;")
+                .replaceAll('"', "&quot;")
+                .replaceAll("'", "&#039;");
+        }
+    </script>
+
+</div>
+</body>
+</html>

@@ -20,12 +20,14 @@
 		, owner_id
 		, project_name
 		, identifier
-		, description
+		,
+		description
 		, project_url
 		, status_code
 		, start_date
 		, end_date
-		, created_at
+		,
+		created_at
 		, git_url
 		) VALUES (
 		#{projectId}
@@ -36,7 +38,8 @@
 		, #{projectUrl}
 		, 'a002'
 		, #{startDate}
-		, #{endDate}
+		,
+		#{endDate}
 		, SYSDATE
 		, NVL(#{gitUrl, jdbcType=VARCHAR}, 'none')
 		)
@@ -51,7 +54,8 @@
 				project_module (project_module_id
 				, project_id
 				, module_code)
-				VALUES (sys_guid()
+				VALUES
+				(sys_guid()
 				, #{projectId}
 				, #{code})
 			</foreach>
@@ -84,28 +88,35 @@
 		SELECT ROWNUM AS rn, sq.*
 		FROM (
 		SELECT
-		p.project_id AS "projectId",
+		p.project_id AS
+		"projectId",
 		p.owner_id AS "ownerId",
 		p.project_name AS "projectName",
 		p.identifier AS "identifier",
-		DBMS_LOB.SUBSTR(p.description, 1000, 1) AS "description",
+		DBMS_LOB.SUBSTR(p.description, 1000, 1)
+		AS "description",
 		p.project_url AS "projectUrl",
-		p.status_code AS "statusCode",
+		p.status_code AS
+		"statusCode",
 		c.note AS "statusName",
 		p.start_date AS "startDate",
 		p.end_date AS "endDate",
 		p.created_at AS "createdAt",
-		p.git_url AS "gitUrl",
+		p.git_url AS
+		"gitUrl",
 		u.user_name AS "ownerName"
 		FROM project p
-		LEFT JOIN users u ON p.owner_id = u.user_id
-		LEFT JOIN common_code c ON p.status_code = c.code_id AND c.code_name =
+		LEFT JOIN users u ON
+		p.owner_id = u.user_id
+		LEFT JOIN common_code c ON p.status_code =
+		c.code_id AND c.code_name =
 		'0A'
 		WHERE p.owner_id = #{ownerId}
 		<include refid="searchCondition" />
 		ORDER BY p.created_at DESC, p.project_id DESC
 		) sq
-		WHERE ROWNUM &lt;= #{offset} + #{pageSize}
+		WHERE ROWNUM &lt;=
+		#{offset} + #{pageSize}
 		)
 		WHERE rn &gt; #{offset}
 	</select>
@@ -134,29 +145,37 @@
 		SELECT ROWNUM AS rn, sq.*
 		FROM (
 		SELECT
-		p.project_id AS "projectId",
+		p.project_id AS
+		"projectId",
 		p.owner_id AS "ownerId",
 		p.project_name AS "projectName",
 		p.identifier AS "identifier",
-		DBMS_LOB.SUBSTR(p.description, 1000, 1) AS "description",
+		DBMS_LOB.SUBSTR(p.description, 1000, 1)
+		AS "description",
 		p.project_url AS "projectUrl",
-		p.status_code AS "statusCode",
+		p.status_code AS
+		"statusCode",
 		c.note AS "statusName",
 		p.start_date AS "startDate",
 		p.end_date AS "endDate",
 		p.created_at AS "createdAt",
-		p.git_url AS "gitUrl",
+		p.git_url AS
+		"gitUrl",
 		owner.user_name AS "ownerName"
 		FROM project p
-		LEFT JOIN users owner ON p.owner_id = owner.user_id
-		LEFT JOIN common_code c ON p.status_code = c.code_id AND c.code_name =
+		LEFT JOIN users
+		owner ON p.owner_id = owner.user_id
+		LEFT JOIN common_code c ON
+		p.status_code = c.code_id AND c.code_name =
 		'0A'
 		WHERE EXISTS (
 		SELECT 1
 		FROM project_member pm
-		JOIN team_member tm ON pm.team_member_id = tm.team_member_id
+		JOIN team_member tm ON pm.team_member_id =
+		tm.team_member_id
 		WHERE pm.project_id = p.project_id
-		AND tm.user_id = #{ownerId}
+		AND tm.user_id =
+		#{ownerId}
 		)
 		<if test="searchProjectName != null and searchProjectName != ''">
 			AND p.project_name LIKE '%' || #{searchProjectName} || '%'
@@ -169,7 +188,8 @@
 		</if>
 		ORDER BY p.created_at DESC, p.project_id DESC
 		) sq
-		WHERE ROWNUM &lt;= #{offset} + #{pageSize}
+		WHERE ROWNUM &lt;=
+		#{offset} + #{pageSize}
 		)
 		WHERE rn &gt; #{offset}
 	</select>
@@ -183,12 +203,15 @@
 		LEFT JOIN users owner ON p.owner_id =
 		owner.user_id
 		LEFT JOIN
-		common_code c ON p.status_code = c.code_id AND c.code_name = '0A'
+		common_code c ON p.status_code = c.code_id AND
+		c.code_name = '0A'
 		WHERE EXISTS (
 		SELECT 1
 		FROM project_member pm
-		JOIN team_member tm ON pm.team_member_id = tm.team_member_id
-		WHERE pm.project_id = p.project_id
+		JOIN
+		team_member tm ON pm.team_member_id = tm.team_member_id
+		WHERE
+		pm.project_id = p.project_id
 		AND tm.user_id = #{ownerId}
 		)
 		<if test="searchProjectName != null and searchProjectName != ''">
@@ -214,17 +237,20 @@
 		DBMS_LOB.SUBSTR(p.description, 4000, 1) AS "description",
 		p.project_url AS "projectUrl",
 		p.status_code AS "statusCode",
-		c.note AS "statusName",
+		c.note AS
+		"statusName",
 		p.start_date AS "startDate",
 		p.end_date AS "endDate",
 		p.created_at AS "createdAt",
 		p.git_url AS "gitUrl",
-		u.user_name AS "ownerName"
+		u.user_name AS
+		"ownerName"
 		FROM project p
 		LEFT JOIN users u ON p.owner_id =
 		u.user_id
 		LEFT JOIN common_code c ON p.status_code = c.code_id AND
-		c.code_name = '0A'
+		c.code_name =
+		'0A'
 		WHERE p.project_id = #{projectId}
 	</select>
 
@@ -239,27 +265,35 @@
 		pm.project_group_id AS "projectGroupId",
 		pm.role_id AS "roleId",
 		TO_CHAR(pm.joined_at, 'YYYY/MM/DD') AS "joinedAt",
-		p.project_name AS "projectName",
+		p.project_name AS
+		"projectName",
 		tm.team_id AS "teamId",
 		t.team_name AS "teamName",
 		u.user_id AS "userId",
 		u.login_id AS "loginId",
-		u.user_name AS "userName",
+		u.user_name AS
+		"userName",
 		u.email AS "email",
 		u.phone AS "phone",
-		pg.group_name AS "groupName",
+		pg.group_name AS
+		"groupName",
 		r.role_name AS "roleName"
 		FROM project_member pm
-		JOIN project p ON pm.project_id =
+		JOIN
+		project p ON pm.project_id =
 		p.project_id
-		JOIN team_member tm ON pm.team_member_id =
+		JOIN team_member tm ON
+		pm.team_member_id =
 		tm.team_member_id
-		JOIN users u ON tm.user_id = u.user_id
+		JOIN users u ON tm.user_id =
+		u.user_id
 		LEFT JOIN team
 		t ON tm.team_id = t.team_id
-		LEFT JOIN project_group pg ON
+		LEFT JOIN
+		project_group pg ON
 		pm.project_group_id = pg.project_group_id
-		LEFT JOIN role r ON
+		LEFT JOIN
+		role r ON
 		pm.role_id = r.role_id
 		WHERE pm.project_id = #{projectId}
 		ORDER BY
@@ -271,21 +305,28 @@
 		resultType="com.pixcel.app.project.service.ProjectMemberVO">
 		SELECT
 		tm.team_member_id AS "teamMemberId",
-		t.team_id AS "teamId",
+		t.team_id AS
+		"teamId",
 		t.team_name AS "teamName",
 		u.user_id AS "userId",
-		u.login_id AS "loginId",
+		u.login_id AS
+		"loginId",
 		u.user_name AS "userName",
 		u.email AS "email",
-		u.phone AS "phone",
+		u.phone AS
+		"phone",
 		pm.project_member_id AS "projectMemberId",
-		CASE WHEN pm.project_member_id IS NULL THEN 'N' ELSE 'Y' END AS "joinedYn"
-		FROM project p
+		CASE WHEN
+		pm.project_member_id IS NULL THEN 'N' ELSE 'Y' END AS "joinedYn"
+		FROM
+		project p
 		JOIN team t ON t.created_by = p.owner_id
 		JOIN team_member
-		tm ON tm.team_id = t.team_id
+		tm ON
+		tm.team_id = t.team_id
 		JOIN users u ON tm.user_id = u.user_id
-		LEFT JOIN project_member pm ON pm.project_id = p.project_id AND
+		LEFT JOIN
+		project_member pm ON pm.project_id = p.project_id AND
 		pm.team_member_id = tm.team_member_id
 		WHERE p.project_id = #{projectId}
 		ORDER BY CASE WHEN pm.project_member_id IS NULL THEN 0 ELSE 1 END,
@@ -339,29 +380,38 @@
 		pm.project_group_id AS "projectGroupId",
 		pm.role_id AS "roleId",
 		TO_CHAR(pm.joined_at, 'YYYY/MM/DD') AS "joinedAt",
-		p.project_name AS "projectName",
+		p.project_name AS
+		"projectName",
 		tm.team_id AS "teamId",
 		t.team_name AS "teamName",
 		u.user_id AS "userId",
 		u.login_id AS "loginId",
-		u.user_name AS "userName",
+		u.user_name AS
+		"userName",
 		u.email AS "email",
 		u.phone AS "phone",
-		pg.group_name AS "groupName",
+		pg.group_name AS
+		"groupName",
 		r.role_name AS "roleName"
 		FROM project_member pm
-		JOIN project p ON pm.project_id =
+		JOIN
+		project p ON pm.project_id =
 		p.project_id
-		JOIN team_member tm ON pm.team_member_id =
+		JOIN team_member tm ON
+		pm.team_member_id =
 		tm.team_member_id
-		JOIN users u ON tm.user_id = u.user_id
+		JOIN users u ON tm.user_id =
+		u.user_id
 		LEFT JOIN team
 		t ON tm.team_id = t.team_id
-		LEFT JOIN project_group pg ON
+		LEFT JOIN
+		project_group pg ON
 		pm.project_group_id = pg.project_group_id
-		LEFT JOIN role r ON
+		LEFT JOIN
+		role r ON
 		pm.role_id = r.role_id
-		WHERE pm.project_member_id = #{projectMemberId}
+		WHERE pm.project_member_id =
+		#{projectMemberId}
 	</select>
 
 	<!-- 구성원 역할 수정 -->
@@ -396,4 +446,44 @@
 		WHERE project_id = #{projectId}
 	
 	</select>
+
+	<delete id="deleteProject">
+		DELETE FROM project
+		WHERE project_id = #{projectId}
+	</delete>
+
+	<delete id="deleteProjectModulesByProjectId">
+		DELETE FROM project_module
+		WHERE project_id =
+		#{projectId}
+	</delete>
+
+	<delete id="deleteProjectMembersByProjectId">
+		DELETE FROM project_member
+		WHERE project_id =
+		#{projectId}
+	</delete>
+
+	<select id="selectIssueStatByProjectId"
+		resultType="IssueStatVO">
+		SELECT
+		it.issue_type_id as issueTypeCode,
+		it.issue_type_name as typeName,
+		COUNT(CASE WHEN ist.closed_yn = 'N' THEN 1 END) as inProgressCount,
+		COUNT(CASE WHEN ist.closed_yn = 'Y' THEN 1 END) as doneCount,
+		COUNT(i.issue_id) as totalCount
+		FROM
+		issue_type it
+		LEFT JOIN issue i ON i.issue_type_id = it.issue_type_id
+		AND i.project_id = #{projectId}
+		LEFT JOIN issue_status ist ON ist.issue_status_id = i.issue_status_id
+		WHERE
+		1 = 1
+		GROUP BY
+		it.issue_type_id,
+		it.issue_type_name
+		ORDER BY
+		it.issue_type_id
+	</select>
+
 </mapper>

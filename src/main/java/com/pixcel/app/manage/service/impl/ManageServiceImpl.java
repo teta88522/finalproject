@@ -302,4 +302,53 @@ public class ManageServiceImpl implements ManageService {
 	    return resultMap;
 	}
 
+	@Override
+	@Transactional
+	public Map<String, Object> addGroupMemberList(String projectGroupId,
+	                                              List<String> projectMemberIds,
+	                                              List<String> roleIds,
+	                                              String ownerId) {
+
+	    Map<String, Object> resultMap = new HashMap<>();
+
+	    if (projectMemberIds == null || projectMemberIds.isEmpty()
+	            || roleIds == null || roleIds.isEmpty()) {
+
+	        resultMap.put("result", false);
+	        resultMap.put("message", "선택한 구성원이 없습니다.");
+	        return resultMap;
+	    }
+
+	    if (projectMemberIds.size() != roleIds.size()) {
+	        resultMap.put("result", false);
+	        resultMap.put("message", "구성원과 역할 정보가 일치하지 않습니다.");
+	        return resultMap;
+	    }
+
+	    ManageGroupVO manageGroup = selectManageGroupDetail(projectGroupId, ownerId);
+
+	    if (manageGroup == null) {
+	        resultMap.put("result", false);
+	        resultMap.put("message", "그룹 정보를 찾을 수 없습니다.");
+	        return resultMap;
+	    }
+
+	    for (int i = 0; i < projectMemberIds.size(); i++) {
+	        String projectMemberId = projectMemberIds.get(i);
+	        String roleId = roleIds.get(i);
+
+	        Map<String, Object> addResult =
+	                addGroupMember(projectGroupId, projectMemberId, roleId, ownerId);
+
+	        if (!Boolean.TRUE.equals(addResult.get("result"))) {
+	            throw new RuntimeException(String.valueOf(addResult.get("message")));
+	        }
+	    }
+
+	    resultMap.put("result", true);
+	    resultMap.put("message", "구성원 배정이 완료되었습니다.");
+
+	    return resultMap;
+	}
+
 }

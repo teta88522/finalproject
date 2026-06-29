@@ -270,42 +270,40 @@
 	<select id="selectAssignableGroupMemberList"
         	resultType="com.pixcel.app.manage.service.ManageGroupMemberVO">
 
-    	SELECT
-        	pm.project_member_id      AS "projectMemberId",
-        	pm.project_id             AS "projectId",
-        	pm.project_group_id       AS "projectGroupId",
-        	pm.team_member_id         AS "teamMemberId",
-        	pm.role_id                AS "roleId",
+	SELECT
+    	pm.project_member_id      AS "projectMemberId",
+    	pm.project_id             AS "projectId",
+    	pm.project_group_id       AS "projectGroupId",
+    	pm.team_member_id         AS "teamMemberId",
 
-    	    tm.team_id                AS "teamId",
-	        t.team_name               AS "teamName",
+    	tm.team_id                AS "teamId",
+    	t.team_name               AS "teamName",
 
-        	u.user_id                 AS "userId",
-        	u.login_id                AS "loginId",
-        	u.user_name               AS "userName",
-        	u.email                   AS "email",
-        	u.phone                   AS "phone",
+    	u.user_id                 AS "userId",
+    	u.login_id                AS "loginId",
+    	u.user_name               AS "userName",
+    	u.email                   AS "email",
+    	u.phone                   AS "phone",
 
-        	r.role_name               AS "roleName"
-    	FROM project_group pg
-    	JOIN project p
-        	ON pg.project_id = p.project_id
-    	JOIN project_member pm
-        	ON p.project_id = pm.project_id
-    	JOIN team_member tm
-        	ON pm.team_member_id = tm.team_member_id
-    	JOIN users u
-        	ON tm.user_id = u.user_id
-    	LEFT JOIN team t
-        	ON tm.team_id = t.team_id
-    	LEFT JOIN role r
-        	ON pm.role_id = r.role_id
-    	WHERE pg.project_group_id = #{projectGroupId}
-      	AND p.owner_id = #{ownerId}
-      	AND pm.project_group_id IS NULL
-    	ORDER BY
-        	t.team_name,
-        	u.user_name
+    	NULL                      AS "roleId",
+    	NULL                      AS "roleName"
+	FROM project_group pg
+	JOIN project p
+    	ON pg.project_id = p.project_id
+	JOIN project_member pm
+    	ON p.project_id = pm.project_id
+	JOIN team_member tm
+    	ON pm.team_member_id = tm.team_member_id
+	JOIN users u
+    	ON tm.user_id = u.user_id
+	LEFT JOIN team t
+    	ON tm.team_id = t.team_id
+	WHERE pg.project_group_id = #{projectGroupId}
+  	AND p.owner_id = #{ownerId}
+  	AND pm.project_group_id IS NULL
+	ORDER BY
+    	t.team_name,
+    	u.user_name
 
 	</select>
 	

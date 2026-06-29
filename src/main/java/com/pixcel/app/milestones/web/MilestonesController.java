@@ -5,8 +5,6 @@ import com.pixcel.app.milestones.service.MilestonesVO;
 import com.pixcel.app.user.security.CustomUserDetails;
 import com.pixcel.app.web.AllProjectController;
 
-import jakarta.servlet.http.HttpSession;
-
 import com.pixcel.app.issues.service.IssuesVO;
 import com.pixcel.app.milestones.service.MilestonesMemberDTO;
 

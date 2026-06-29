@@ -1,0 +1,338 @@
+.testcase-create-page {
+    padding: 20px;
+    background-color: #fff;
+    min-height: calc(100vh - 80px);
+    box-sizing: border-box;
+}
+
+/* ==============================
+   상단 제목
+============================== */
+.page-header {
+    margin-bottom: 16px;
+}
+
+.page-title {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 700;
+    color: #222;
+}
+
+/* ==============================
+   전체 레이아웃
+============================== */
+.create-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    border-top: 1px solid #e5e7eb;
+    padding-top: 14px;
+}
+
+.form-card {
+    border: 1px solid #dfe3ea;
+    border-radius: 6px;
+    background-color: #fff;
+    padding: 16px;
+    min-height: 565px;
+    box-sizing: border-box;
+}
+
+.card-title {
+    margin-bottom: 14px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #222;
+}
+
+/* ==============================
+   기본 정보
+============================== */
+.form-row {
+    display: grid;
+    grid-template-columns: 72px 1fr;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 14px;
+}
+
+.form-row label {
+    font-size: 12px;
+    color: #222;
+    font-weight: 600;
+}
+
+.form-row input[type="text"],
+.form-row select {
+    width: 100%;
+    height: 36px;
+    border: 1px solid #d0d5dd;
+    border-radius: 6px;
+    padding: 0 10px;
+    background-color: #fff;
+    color: #222;
+    font-size: 13px;
+    box-sizing: border-box;
+    outline: none;
+}
+
+.form-row input[type="text"]:focus,
+.form-row select:focus,
+.custom-block textarea:focus,
+.step-table input:focus {
+    border-color: #1f3bb3;
+}
+
+/* ==============================
+   파일
+============================== */
+.file-row {
+    align-items: flex-start;
+}
+
+.file-box {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.file-box input[type="file"] {
+    font-size: 12px;
+}
+
+.file-guide {
+    font-size: 11px;
+    color: #8a8f98;
+}
+
+/* ==============================
+   사용자 정의 필드
+============================== */
+.custom-block {
+    margin-bottom: 18px;
+}
+
+.custom-block > label,
+.step-header label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 12px;
+    color: #222;
+    font-weight: 700;
+}
+
+.custom-block textarea {
+    width: 100%;
+    height: 60px;
+    border: 1px solid #d0d5dd;
+    border-radius: 6px;
+    padding: 10px;
+    resize: none;
+    background-color: #fff;
+    color: #222;
+    font-size: 13px;
+    line-height: 1.5;
+    box-sizing: border-box;
+    outline: none;
+}
+
+/* ==============================
+   테스트 절차 테이블
+============================== */
+.step-table {
+    width: 100%;
+    min-width: 0;
+    border-collapse: collapse;
+    table-layout: fixed;
+    margin-left: 0;
+    margin-bottom: 10px;
+    box-shadow: 8px 8px 14px rgba(16, 24, 40, 0.12);
+}
+.step-table th {
+    height: 34px;
+    background-color: #f1f5fb;
+    color: #344054;
+    font-size: 11px;
+    font-weight: 700;
+    text-align: center;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.step-table td {
+    height: 34px;
+    padding: 0 6px;
+    background-color: #fff;
+    color: #222;
+    font-size: 12px;
+    text-align: center;
+    border-bottom: 1px solid #eef1f5;
+    box-sizing: border-box;
+}
+
+.step-table tbody tr:nth-child(even) td {
+    background-color: #f7f9fc;
+}
+
+.step-table th:nth-child(1),
+.step-table td:nth-child(1) {
+    width: 50px;
+}
+
+.step-table th:nth-child(2),
+.step-table td:nth-child(2) {
+    width: 40%;
+}
+
+.step-table th:nth-child(3),
+.step-table td:nth-child(3) {
+    width: 40%;
+}
+
+.step-table th:nth-child(4),
+.step-table td:nth-child(4) {
+    width: 80px;
+}
+.step-table input {
+    width: 100%;
+    height: 28px;
+    border: none;
+    background-color: transparent;
+    color: #222;
+    font-size: 12px;
+    text-align: center;
+    outline: none;
+    box-sizing: border-box;
+}
+
+.step-delete-btn {
+    width: 30px;
+    height: 30px;
+    border: none;
+    background-color: transparent;
+    font-size: 20px;
+    cursor: pointer;
+    line-height: 1;
+}
+
+.step-delete-btn:hover {
+    transform: scale(1.08);
+}
+
+.step-add-btn {
+    height: 34px;
+    padding: 0 14px;
+    margin-left: 12px;
+    border: 1px solid #d0d5dd;
+    border-radius: 6px;
+    background-color: #fff;
+    color: #222;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.step-add-btn:hover {
+    background-color: #f4f6f9;
+}
+
+/* ==============================
+   하단 버튼
+============================== */
+.button-area {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    margin-top: 68px;
+}
+
+.btn-basic,
+.btn-reset,
+.btn-primary {
+    min-width: 58px;
+    height: 32px;
+    padding: 0 14px;
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+    box-sizing: border-box;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-basic {
+    border: 1px solid #d0d5dd;
+    background-color: #fff;
+    color: #222;
+}
+
+.btn-basic:hover {
+    background-color: #f4f6f9;
+}
+
+.btn-reset {
+    border: 1px solid #1f3bb3;
+    background-color: #1f3bb3;
+    color: #fff;
+}
+
+.btn-reset:hover {
+    background-color: #172f91;
+}
+
+.btn-primary {
+    border: 1px solid #1f3bb3;
+    background-color: #1f3bb3;
+    color: #fff;
+}
+
+.btn-primary:hover {
+    background-color: #172f91;
+}
+
+/* ==============================
+   읽기/수정 화면 공통 보정
+============================== */
+input[readonly],
+textarea[readonly] {
+    background-color: #f9fafb;
+}
+
+/* ==============================
+   반응형
+============================== */
+@media (max-width: 1200px) {
+    .create-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .form-card {
+        min-height: auto;
+    }
+
+    .step-table {
+        width: 100%;
+        margin-left: 0;
+    }
+
+    .step-add-btn {
+        margin-left: 0;
+    }
+}
+
+@media (max-width: 768px) {
+    .testcase-create-page {
+        padding: 14px 10px 20px;
+    }
+
+    .form-row {
+        grid-template-columns: 1fr;
+        gap: 6px;
+    }
+
+    .button-area {
+        margin-top: 32px;
+        gap: 8px;
+    }
+}

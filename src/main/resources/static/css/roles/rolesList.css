@@ -1,268 +1,628 @@
- .role-list-page {
-        padding: 28px 32px;
-        background-color: #ffffff;
+/* ==============================
+   역할 목록 페이지
+============================== */
+.role-list-page {
+    width: 100%;
+    min-height: calc(100vh - 90px);
+    padding: 18px 16px 24px 16px;
+    background-color: #f7f8fb;
+    box-sizing: border-box;
+}
+
+.role-page-title {
+    margin: 0 0 14px 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #222;
+}
+
+/* ==============================
+   검색 영역
+============================== */
+.search-section {
+    border: 1px solid #dfe3ea;
+    border-radius: 10px;
+    background-color: #fff;
+    box-shadow: 0 6px 16px rgba(16, 24, 40, 0.05);
+    margin-bottom: 14px;
+    overflow: hidden;
+    box-sizing: border-box;
+}
+
+.search-header {
+    height: 54px;
+    padding: 0 18px;
+    border-bottom: 1px solid #eef1f5;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-sizing: border-box;
+}
+
+.search-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #222;
+}
+
+.add-role-btn {
+    height: 32px;
+    padding: 0 14px;
+    border: 1px solid #1a6fe8;
+    border-radius: 6px;
+    background-color: #1a6fe8;
+    color: #fff;
+    font-size: 13px;
+    cursor: pointer;
+    box-sizing: border-box;
+}
+
+.add-role-btn:hover {
+    background-color: #155fc8;
+}
+
+.search-form-row {
+    display: grid;
+    grid-template-columns: 70px 1fr 50px 1fr 120px;
+    gap: 10px;
+    align-items: center;
+    padding: 16px 18px 10px 18px;
+    box-sizing: border-box;
+}
+
+.search-form-row label {
+    font-size: 13px;
+    color: #344054;
+    white-space: nowrap;
+}
+
+.search-form-row input,
+.search-form-row select {
+    height: 34px;
+    border: 1px solid #d0d5dd;
+    border-radius: 6px;
+    background-color: #fff;
+    padding: 0 10px;
+    font-size: 13px;
+    color: #222;
+    outline: none;
+    box-sizing: border-box;
+}
+
+.search-form-row input:focus,
+.search-form-row select:focus {
+    border-color: #1a6fe8;
+}
+
+.search-btn-area {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    padding: 0 18px 16px 18px;
+    box-sizing: border-box;
+}
+
+.btn-basic {
+    height: 32px;
+    padding: 0 14px;
+    border: 1px solid #d0d5dd;
+    border-radius: 6px;
+    background-color: #fff;
+    color: #344054;
+    font-size: 13px;
+    cursor: pointer;
+    box-sizing: border-box;
+}
+
+.btn-basic:hover {
+    background-color: #f4f6f9;
+}
+
+.btn-basic.btn-primary {
+    border-color: #1a6fe8;
+    background-color: #1a6fe8;
+    color: #fff;
+}
+
+.btn-basic.btn-primary:hover {
+    background-color: #155fc8;
+}
+
+/* ==============================
+   목록/구성원 그리드
+============================== */
+.content-grid {
+    display: grid;
+    grid-template-columns: 0.9fr 1.1fr;
+    gap: 14px;
+    align-items: start;
+}
+
+.content-panel {
+    border: 1px solid #dfe3ea;
+    border-radius: 10px;
+    background-color: #fff;
+    box-shadow: 0 6px 16px rgba(16, 24, 40, 0.06);
+    overflow: hidden;
+    box-sizing: border-box;
+}
+
+.panel-header {
+    min-height: 54px;
+    padding: 14px 18px;
+    border-bottom: 1px solid #eef1f5;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-sizing: border-box;
+}
+
+.panel-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #222;
+}
+
+.panel-sub-text {
+    font-size: 12px;
+    color: #777;
+}
+
+.panel-body {
+    padding: 16px 18px 18px 18px;
+    box-sizing: border-box;
+}
+
+/* ==============================
+   요약 박스
+============================== */
+.summary-box-wrap {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-bottom: 14px;
+}
+
+.summary-box {
+    border: 1px solid #e3e7ee;
+    border-radius: 9px;
+    background-color: #fafbff;
+    padding: 14px 16px;
+    box-sizing: border-box;
+}
+
+.summary-label {
+    margin-bottom: 8px;
+    font-size: 12px;
+    color: #667085;
+}
+
+.summary-value {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1a6fe8;
+}
+
+/* ==============================
+   역할 테이블
+============================== */
+.role-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    table-layout: fixed;
+    border: 1px solid #e3e7ee;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.role-table thead {
+    background-color: #f1f5fb;
+}
+
+.role-table th {
+    height: 38px;
+    padding: 0 12px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #344054;
+    text-align: left;
+    border-bottom: 1px solid #e3e7ee;
+    box-sizing: border-box;
+}
+
+.role-table td {
+    height: 46px;
+    padding: 0 12px;
+    font-size: 13px;
+    color: #222;
+    border-bottom: 1px solid #eef1f5;
+    background-color: #fff;
+    box-sizing: border-box;
+}
+
+.role-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.role-table tbody tr {
+    transition: background-color 0.15s ease;
+}
+
+.role-table tbody tr:hover td {
+    background-color: #f6f9ff;
+}
+
+/* 선택된 역할 행 - JS에서 tr.active 붙음 */
+.role-table tbody tr.active td {
+    background-color: #dbeafe !important;
+    color: #153e75;
+    font-weight: 600;
+    border-top: 1px solid #93c5fd;
+    border-bottom: 1px solid #93c5fd;
+}
+
+.role-table tbody tr.active td:first-child {
+    border-left: 5px solid #1a6fe8;
+    padding-left: 7px;
+}
+
+.role-table tbody tr.active td:last-child {
+    border-right: 1px solid #93c5fd;
+}
+
+.role-table tbody tr.active:hover td {
+    background-color: #c7ddff !important;
+}
+
+/* 컬럼 너비 */
+.role-table th:nth-child(1),
+.role-table td:nth-child(1) {
+    width: 39%;
+}
+
+.role-table th:nth-child(2),
+.role-table td:nth-child(2) {
+    width: 16%;
+    text-align: center;
+}
+
+.role-table th:nth-child(3),
+.role-table td:nth-child(3) {
+    width: 45%;
+    text-align: center;
+}
+
+/* 역할명 링크 */
+.role-name-link {
+    display: inline-flex;
+    align-items: center;
+    max-width: 100%;
+    color: #1f2937;
+    font-size: 13px;
+    font-weight: 500;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.role-name-link:hover {
+    color: #1a6fe8;
+    text-decoration: underline;
+}
+
+.role-table tbody tr.active .role-name-link {
+    color: #0f4fb8;
+    font-weight: 700;
+}
+
+/* ==============================
+   관리 버튼
+============================== */
+.role-table th:nth-child(3),
+.role-table td:nth-child(3) {
+    width: 42%;
+    text-align: center;
+    vertical-align: middle;
+}
+
+.role-btn-group {
+    text-align: center !important;
+    vertical-align: middle !important;
+    white-space: nowrap;
+    padding: 0 10px !important;
+}
+
+.mini-btn {
+    width: 74px;
+    height: 30px;
+    margin: 0 3px;
+    padding: 0;
+    border: 1px solid #cfd6e0;
+    border-radius: 6px;
+    background-color: #fff;
+    color: #344054;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 28px;
+    text-align: center;
+    cursor: pointer;
+    box-sizing: border-box;
+    white-space: nowrap;
+    vertical-align: middle;
+}
+
+.mini-btn:hover {
+    background-color: #f2f6ff;
+    border-color: #9db8e8;
+    color: #1a4fb8;
+}
+
+.mini-btn.delete {
+    width: 56px;
+    color: #d92d20;
+    border-color: #f0b8b5;
+    background-color: #fff;
+}
+
+.mini-btn.delete:hover {
+    background-color: #fff1f0;
+    border-color: #e24b4a;
+    color: #b42318;
+}
+
+.role-table tbody tr.active .mini-btn {
+    background-color: #fff;
+}
+
+.role-table tbody tr.active .mini-btn:hover {
+    background-color: #f2f6ff;
+}
+
+.role-table tbody tr.active .mini-btn.delete:hover {
+    background-color: #fff1f0;
+}
+/* ==============================
+   역할 구성원 영역
+============================== */
+.member-placeholder {
+    min-height: 240px;
+    border: 1px dashed #d0d5dd;
+    border-radius: 8px;
+    background-color: #fafafa;
+    color: #888;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.hidden {
+    display: none !important;
+}
+
+.selected-role-text {
+    margin-bottom: 12px;
+    padding: 12px 14px;
+    border: 1px solid #dbeafe;
+    border-radius: 8px;
+    background-color: #eff6ff;
+    color: #344054;
+    font-size: 13px;
+    box-sizing: border-box;
+}
+
+.selected-role-text span {
+    color: #0f4fb8;
+    font-weight: 700;
+}
+
+/* ==============================
+   구성원 테이블
+============================== */
+.member-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    table-layout: fixed;
+    border: 1px solid #e3e7ee;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.member-table thead {
+    background-color: #f1f5fb;
+}
+
+.member-table th {
+    height: 38px;
+    padding: 0 10px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #344054;
+    text-align: left;
+    border-bottom: 1px solid #e3e7ee;
+    box-sizing: border-box;
+}
+
+.member-table td {
+    height: 42px;
+    padding: 0 10px;
+    font-size: 13px;
+    color: #222;
+    border-bottom: 1px solid #eef1f5;
+    background-color: #fff;
+    box-sizing: border-box;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.member-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.member-table tbody tr:hover td {
+    background-color: #f6f9ff;
+}
+
+.member-table th:nth-child(1),
+.member-table td:nth-child(1) {
+    width: 23%;
+}
+
+.member-table th:nth-child(2),
+.member-table td:nth-child(2) {
+    width: 16%;
+}
+
+.member-table th:nth-child(3),
+.member-table td:nth-child(3) {
+    width: 18%;
+}
+
+.member-table th:nth-child(4),
+.member-table td:nth-child(4) {
+    width: 18%;
+}
+
+.member-table th:nth-child(5),
+.member-table td:nth-child(5) {
+    width: 25%;
+}
+
+/* ==============================
+   페이징
+============================== */
+.pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 16px;
+}
+
+.page-btn {
+    min-width: 30px;
+    height: 30px;
+    padding: 0 8px;
+    border: 1px solid #d0d5dd;
+    border-radius: 6px;
+    background-color: #fff;
+    color: #344054;
+    font-size: 12px;
+    cursor: pointer;
+    box-sizing: border-box;
+}
+
+.page-btn:hover {
+    background-color: #f4f6f9;
+}
+
+.page-btn.active {
+    border-color: #1a6fe8;
+    background-color: #1a6fe8;
+    color: #fff;
+}
+
+/* ==============================
+   빈 행
+============================== */
+.role-table td[colspan],
+.member-table td[colspan] {
+    height: 54px;
+    color: #888;
+    font-size: 13px;
+}
+
+/* ==============================
+   반응형
+============================== */
+@media (max-width: 1200px) {
+    .content-grid {
+        grid-template-columns: 1fr;
     }
 
-    .role-page-title {
-        font-size: 26px;
-        font-weight: 500;
-        color: #111111;
-        margin: 0 0 24px 0;
+    .role-table th:nth-child(1),
+    .role-table td:nth-child(1) {
+        width: 45%;
     }
 
-    .search-section {
-        border: 1px solid #dfe3f0;
-        border-radius: 8px;
-        background-color: #ffffff;
-        padding: 18px 20px;
-        margin-bottom: 18px;
+    .role-table th:nth-child(2),
+    .role-table td:nth-child(2) {
+        width: 15%;
+    }
+
+    .role-table th:nth-child(3),
+    .role-table td:nth-child(3) {
+        width: 40%;
+    }
+}
+
+@media (max-width: 900px) {
+    .search-form-row {
+        grid-template-columns: 70px 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .role-list-page {
+        padding: 14px 10px 20px 10px;
     }
 
     .search-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 14px;
-    }
-
-    .search-title {
-        font-size: 15px;
-        font-weight: 500;
-        color: #333333;
-    }
-
-    .add-role-btn {
-        min-width: 82px;
-        height: 34px;
-        border: none;
-        border-radius: 5px;
-        background-color: #252ba3;
-        color: #ffffff;
-        font-size: 13px;
-        cursor: pointer;
-    }
-
-    .search-form-row {
-        display: grid;
-        grid-template-columns: 80px 1fr 80px 1fr 120px;
+        height: auto;
+        padding: 14px 18px;
+        flex-direction: column;
+        align-items: flex-start;
         gap: 10px;
-        align-items: center;
-    }
-
-    .search-form-row label {
-        font-size: 13px;
-        color: #333333;
-    }
-
-    .search-form-row input,
-    .search-form-row select {
-        height: 32px;
-        border: 1px solid #d7dbe7;
-        border-radius: 5px;
-        padding: 0 10px;
-        font-size: 13px;
-        outline: none;
-    }
-
-    .search-btn-area {
-        display: flex;
-        gap: 8px;
-        justify-content: flex-start;
-        margin-top: 12px;
-    }
-
-    .btn-basic {
-        min-width: 70px;
-        height: 32px;
-        border: 1px solid #d7dbe7;
-        border-radius: 5px;
-        background-color: #ffffff;
-        color: #333333;
-        font-size: 12px;
-        cursor: pointer;
-    }
-
-    .btn-primary {
-        background-color: #252ba3;
-        border-color: #252ba3;
-        color: #ffffff;
-    }
-
-    .content-grid {
-        display: grid;
-        grid-template-columns: 1fr 1.6fr;
-        gap: 18px;
-    }
-
-    .content-panel {
-        border: 1px solid #dfe3f0;
-        border-radius: 8px;
-        background-color: #ffffff;
-        min-height: 500px;
-        overflow: hidden;
     }
 
     .panel-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 16px 18px 10px 18px;
-        border-bottom: 1px solid #eef1f7;
-    }
-
-    .panel-title {
-        font-size: 15px;
-        font-weight: 600;
-        color: #222222;
-    }
-
-    .panel-sub-text {
-        font-size: 12px;
-        color: #777777;
-    }
-
-    .panel-body {
-        padding: 16px 18px 18px 18px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
     }
 
     .summary-box-wrap {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 10px;
-        margin-bottom: 12px;
+        grid-template-columns: 1fr;
     }
 
-    .summary-box {
-        border: 1px solid #dfe3f0;
-        border-radius: 6px;
-        background-color: #fafbfe;
-        padding: 12px 14px;
-        min-height: 64px;
+    .role-table th,
+    .role-table td {
+        padding: 0 8px;
     }
 
-    .summary-label {
-        font-size: 12px;
-        color: #777777;
-        margin-bottom: 6px;
+    .role-table th:nth-child(1),
+    .role-table td:nth-child(1) {
+        width: 36%;
     }
 
-    .summary-value {
-        font-size: 16px;
-        font-weight: 600;
-        color: #222222;
+    .role-table th:nth-child(2),
+    .role-table td:nth-child(2) {
+        width: 16%;
     }
 
-    .role-table,
-    .member-table {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 13px;
-    }
-
-    .role-table thead th,
-    .member-table thead th {
-        background-color: #f5f6fb;
-        color: #333333;
-        font-weight: 500;
-        border-bottom: 1px solid #e4e8f2;
-        padding: 10px 8px;
-        text-align: center;
-    }
-
-    .role-table tbody td,
-    .member-table tbody td {
-        border-bottom: 1px solid #eef1f7;
-        padding: 10px 8px;
-        text-align: center;
-        color: #333333;
-    }
-
-    .role-name-link {
-        color: #2a4dbf;
-        text-decoration: none;
-        cursor: pointer;
-        font-weight: 500;
-    }
-
-    .role-name-link:hover {
-        text-decoration: underline;
-    }
-
-    .role-table tbody tr.active {
-        background-color: #f1f4ff;
-    }
-
-    .mini-btn {
-        min-width: 58px;
-        height: 28px;
-        border: 1px solid #d7dbe7;
-        border-radius: 4px;
-        background-color: #ffffff;
-        font-size: 12px;
-        cursor: pointer;
-        margin: 0 2px;
-    }
-
-    .mini-btn.delete {
-        border-color: #f1b6b6;
-        color: #d54a4a;
-        background-color: #fffafa;
-    }
-
-    .member-placeholder {
-        height: 360px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #888888;
-        font-size: 14px;
-        border: 1px dashed #d7dbe7;
-        border-radius: 6px;
-        background-color: #fafafa;
-    }
-
-    .selected-role-text {
-        margin-bottom: 12px;
-        font-size: 14px;
-        font-weight: 500;
-        color: #222222;
-    }
-
-    .pagination {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        gap: 6px;
-        margin-top: 16px;
-    }
-
-    .page-btn {
-        width: 28px;
-        height: 28px;
-        border: 1px solid #d7dbe7;
-        border-radius: 4px;
-        background-color: #ffffff;
-        font-size: 12px;
-        cursor: pointer;
-    }
-
-    .page-btn.active {
-        background-color: #121f4d;
-        border-color: #121f4d;
-        color: #ffffff;
+    .role-table th:nth-child(3),
+    .role-table td:nth-child(3) {
+        width: 48%;
     }
 
     .role-btn-group {
-        white-space: nowrap;
+        gap: 5px;
+        padding: 0 4px !important;
     }
 
-    .hidden {
-        display: none;
+    .mini-btn {
+        width: 72px;
+        height: 28px;
+        font-size: 11px;
+        line-height: 26px;
     }
 
-    .btn-basic:hover,
-    .add-role-btn:hover,
-    .mini-btn:hover,
-    .page-btn:hover {
-        opacity: 0.9;
+    .mini-btn.delete {
+        width: 52px;
     }
+}

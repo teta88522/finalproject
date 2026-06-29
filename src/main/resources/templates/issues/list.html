@@ -71,13 +71,16 @@
 								<label>유형</label>
 								<details class="filter-dropdown" data-placeholder="전체"
 									data-filter-group="issueType">
-									<summary><span class="filter-selected-text">전체</span></summary>
+									<summary>
+										<span class="filter-selected-text"
+											th:text="${selectedIssueTypeText}">전체</span>
+									</summary>
 									<div class="filter-check-list filter-dropdown-panel">
 										<label class="filter-check-item"
-											th:each="issueType : ${issueTypeList}">
-											<input type="checkbox" name="issueTypeIdList"
-												th:value="${issueType.issueTypeId}"
-												th:checked="${searchVO.issueTypeIdList != null and #lists.contains(searchVO.issueTypeIdList, issueType.issueTypeId)}">
+											th:each="issueType : ${issueTypeList}"> <input
+											type="checkbox" name="issueTypeIdList"
+											th:value="${issueType.issueTypeId}"
+											th:checked="${searchVO.issueTypeIdList != null and #lists.contains(searchVO.issueTypeIdList, issueType.issueTypeId)}">
 											<span th:text="${issueType.issueTypeName}">유형</span>
 										</label>
 									</div>
@@ -88,12 +91,16 @@
 								<label>버전</label>
 								<details class="filter-dropdown" data-placeholder="전체"
 									data-filter-group="version">
-									<summary><span class="filter-selected-text">전체</span></summary>
+									<summary>
+										<span class="filter-selected-text"
+											th:text="${selectedVersionText}">전체</span>
+									</summary>
 									<div class="filter-check-list filter-dropdown-panel">
-										<label class="filter-check-item" th:each="version : ${versionList}">
-											<input type="checkbox" name="versionIdList"
-												th:value="${version.versionId}"
-												th:checked="${searchVO.versionIdList != null and #lists.contains(searchVO.versionIdList, version.versionId)}">
+										<label class="filter-check-item"
+											th:each="version : ${versionList}"> <input
+											type="checkbox" name="versionIdList"
+											th:value="${version.versionId}"
+											th:checked="${searchVO.versionIdList != null and #lists.contains(searchVO.versionIdList, version.versionId)}">
 											<span th:text="${version.versionName}">버전</span>
 										</label>
 									</div>
@@ -109,12 +116,16 @@
 								<label>상태</label>
 								<details class="filter-dropdown" data-placeholder="전체"
 									data-filter-group="status">
-									<summary><span class="filter-selected-text">전체</span></summary>
+									<summary>
+										<span class="filter-selected-text"
+											th:text="${selectedIssueStatusText}">전체</span>
+									</summary>
 									<div class="filter-check-list filter-dropdown-panel">
-										<label class="filter-check-item" th:each="status : ${issueStatusList}">
-											<input type="checkbox" name="issueStatusIdList"
-												th:value="${status.issueStatusId}"
-												th:checked="${searchVO.issueStatusIdList != null and #lists.contains(searchVO.issueStatusIdList, status.issueStatusId)}">
+										<label class="filter-check-item"
+											th:each="status : ${issueStatusList}"> <input
+											type="checkbox" name="issueStatusIdList"
+											th:value="${status.issueStatusId}"
+											th:checked="${searchVO.issueStatusIdList != null and #lists.contains(searchVO.issueStatusIdList, status.issueStatusId)}">
 											<span th:text="${status.issueStatusName}">상태</span>
 										</label>
 									</div>
@@ -125,12 +136,16 @@
 								<label>우선순위</label>
 								<details class="filter-dropdown" data-placeholder="전체"
 									data-filter-group="priority">
-									<summary><span class="filter-selected-text">전체</span></summary>
+									<summary>
+										<span class="filter-selected-text"
+											th:text="${selectedPriorityText}">전체</span>
+									</summary>
 									<div class="filter-check-list filter-dropdown-panel">
-										<label class="filter-check-item" th:each="priority : ${priorityList}">
-											<input type="checkbox" name="settingCodeIdList"
-												th:value="${priority.settingCodeId}"
-												th:checked="${searchVO.settingCodeIdList != null and #lists.contains(searchVO.settingCodeIdList, priority.settingCodeId)}">
+										<label class="filter-check-item"
+											th:each="priority : ${priorityList}"> <input
+											type="checkbox" name="settingCodeIdList"
+											th:value="${priority.settingCodeId}"
+											th:checked="${searchVO.settingCodeIdList != null and #lists.contains(searchVO.settingCodeIdList, priority.settingCodeId)}">
 											<span th:text="${priority.settingName}">우선순위</span>
 										</label>
 									</div>
@@ -141,12 +156,16 @@
 								<label>담당자</label>
 								<details class="filter-dropdown" data-placeholder="전체"
 									data-filter-group="assignee">
-									<summary><span class="filter-selected-text">전체</span></summary>
+									<summary>
+										<span class="filter-selected-text"
+											th:text="${selectedAssigneeText}">전체</span>
+									</summary>
 									<div class="filter-check-list filter-dropdown-panel">
-										<label class="filter-check-item" th:each="assignee : ${assigneeList}">
-											<input type="checkbox" name="assigneeIdList"
-												th:value="${assignee.assigneeId}"
-												th:checked="${searchVO.assigneeIdList != null and #lists.contains(searchVO.assigneeIdList, assignee.assigneeId)}">
+										<label class="filter-check-item"
+											th:each="assignee : ${assigneeList}"> <input
+											type="checkbox" name="assigneeIdList"
+											th:value="${assignee.assigneeId}"
+											th:checked="${searchVO.assigneeIdList != null and #lists.contains(searchVO.assigneeIdList, assignee.assigneeId)}">
 											<span th:text="${assignee.assigneeName}">담당자</span>
 										</label>
 									</div>
@@ -156,31 +175,30 @@
 							<div class="search-field">
 								<label>진척도</label>
 								<details class="filter-dropdown" data-placeholder="전체">
-									<summary><span class="filter-selected-text">전체</span></summary>
+									<summary>
+										<span class="filter-selected-text"
+											th:text="${selectedProgressRangeText}">전체</span>
+									</summary>
 									<div class="filter-check-list filter-dropdown-panel">
-										<label class="filter-check-item">
-											<input type="checkbox" name="progressRangeList" value="0-20"
-												th:checked="${searchVO.progressRangeList != null and #lists.contains(searchVO.progressRangeList, '0-20')}">
+										<label class="filter-check-item"> <input
+											type="checkbox" name="progressRangeList" value="0-20"
+											th:checked="${searchVO.progressRangeList != null and #lists.contains(searchVO.progressRangeList, '0-20')}">
 											<span>0~20%</span>
-										</label>
-										<label class="filter-check-item">
-											<input type="checkbox" name="progressRangeList" value="21-40"
-												th:checked="${searchVO.progressRangeList != null and #lists.contains(searchVO.progressRangeList, '21-40')}">
+										</label> <label class="filter-check-item"> <input
+											type="checkbox" name="progressRangeList" value="21-40"
+											th:checked="${searchVO.progressRangeList != null and #lists.contains(searchVO.progressRangeList, '21-40')}">
 											<span>21~40%</span>
-										</label>
-										<label class="filter-check-item">
-											<input type="checkbox" name="progressRangeList" value="41-60"
-												th:checked="${searchVO.progressRangeList != null and #lists.contains(searchVO.progressRangeList, '41-60')}">
+										</label> <label class="filter-check-item"> <input
+											type="checkbox" name="progressRangeList" value="41-60"
+											th:checked="${searchVO.progressRangeList != null and #lists.contains(searchVO.progressRangeList, '41-60')}">
 											<span>41~60%</span>
-										</label>
-										<label class="filter-check-item">
-											<input type="checkbox" name="progressRangeList" value="61-80"
-												th:checked="${searchVO.progressRangeList != null and #lists.contains(searchVO.progressRangeList, '61-80')}">
+										</label> <label class="filter-check-item"> <input
+											type="checkbox" name="progressRangeList" value="61-80"
+											th:checked="${searchVO.progressRangeList != null and #lists.contains(searchVO.progressRangeList, '61-80')}">
 											<span>61~80%</span>
-										</label>
-										<label class="filter-check-item">
-											<input type="checkbox" name="progressRangeList" value="81-100"
-												th:checked="${searchVO.progressRangeList != null and #lists.contains(searchVO.progressRangeList, '81-100')}">
+										</label> <label class="filter-check-item"> <input
+											type="checkbox" name="progressRangeList" value="81-100"
+											th:checked="${searchVO.progressRangeList != null and #lists.contains(searchVO.progressRangeList, '81-100')}">
 											<span>81~100%</span>
 										</label>
 									</div>
@@ -266,12 +284,11 @@
 							</tr>
 
 							<tr th:each="issue : ${issueList}">
-								<td class="issue-no-cell">
-									<a class="issue-no-badge issue-no-link"
-										th:href="@{|/project/${selectedProjectId}/issues/${issue.issueId}|}"
-										th:classappend="${issue.closedYn == 'Y'} ? ' is-closed' : ' is-open'"
-										th:text="${issue.displayIssueNo}"> #0001 </a>
-								</td>
+								<td class="issue-no-cell"><a
+									class="issue-no-badge issue-no-link"
+									th:href="@{|/project/${selectedProjectId}/issues/${issue.issueId}|}"
+									th:classappend="${issue.closedYn == 'Y'} ? ' is-closed' : ' is-open'"
+									th:text="${issue.displayIssueNo}"> #0001 </a></td>
 
 								<td><span class="cell-text"
 									th:text="${issue.issueTypeName != null ? issue.issueTypeName : '-'}">
@@ -331,7 +348,8 @@
 
 					<div class="issues-page-links">
 
-						<span th:if="${searchVO.hasPreviousPage == null or !searchVO.hasPreviousPage}"
+						<span
+							th:if="${searchVO.hasPreviousPage == null or !searchVO.hasPreviousPage}"
 							class="issues-page-btn is-disabled"> 이전 </span> <a
 							th:if="${searchVO.hasPreviousPage}" class="issues-page-btn"
 							th:href="@{/project/{projectId}/issues(
@@ -349,14 +367,32 @@
 								issueNoSort=${searchVO.issueNoSort}
 							)}">
 							이전 </a>
-
-						<span class="issues-page-btn is-active" th:text="${searchVO.page}">1</span>
-
+						<th:block
+							th:if="${searchVO.pageList != null and searchVO.pageList.size() > 0}"
+							th:each="pageNo : ${searchVO.pageList}">
+							<span th:if="${pageNo == searchVO.page}"
+								class="issues-page-btn is-active" th:text="${pageNo}">1</span>
+							<a th:if="${pageNo != searchVO.page}" class="issues-page-btn"
+								th:href="@{/project/{projectId}/issues(
+									projectId=${selectedProjectId},
+									page=${pageNo},
+									issueTypeIdList=${searchVO.issueTypeIdList},
+									versionIdList=${searchVO.versionIdList},
+									keyword=${searchVO.keyword},
+									issueStatusIdList=${searchVO.issueStatusIdList},
+									settingCodeIdList=${searchVO.settingCodeIdList},
+									assigneeIdList=${searchVO.assigneeIdList},
+									progressRangeList=${searchVO.progressRangeList},
+									startDate=${searchVO.startDate},
+									dueDate=${searchVO.dueDate},
+									issueNoSort=${searchVO.issueNoSort}
+								)}"
+								th:text="${pageNo}">1</a>
+						</th:block>
 						<span
 							th:if="${searchVO.hasNextPage == null or !searchVO.hasNextPage}"
 							class="issues-page-btn is-disabled"> 다음 </span> <a
-							th:if="${searchVO.hasNextPage}"
-							class="issues-page-btn"
+							th:if="${searchVO.hasNextPage}" class="issues-page-btn"
 							th:href="@{/project/{projectId}/issues(
 								projectId=${selectedProjectId},
 								page=${searchVO.page + 1},
@@ -479,7 +515,17 @@
 						return;
 					}
 
-					document.querySelectorAll('.filter-dropdown[data-filter-group]').forEach(function(dropdown) {
+					var optionDropdowns = document.querySelectorAll('.filter-dropdown[data-filter-group]');
+					var needsRemoteOptions = Array.prototype.some.call(optionDropdowns, function(dropdown) {
+						var panel = dropdown.querySelector('.filter-dropdown-panel');
+						return panel && panel.children.length === 0;
+					});
+
+					if (!needsRemoteOptions) {
+						return;
+					}
+
+					optionDropdowns.forEach(function(dropdown) {
 						var panel = dropdown.querySelector('.filter-dropdown-panel');
 
 						if (panel && panel.children.length === 0) {
@@ -521,6 +567,18 @@
 						});
 					});
 				}
+				
+				function hasQuerySelected(dropdown) {
+					var groupName = dropdown.getAttribute('data-filter-group');
+					var config = optionConfig[groupName];
+
+					if (!config) {
+						return false;
+					}
+
+					return queryParams.getAll(config.inputName).length > 0;
+				}
+
 
 				function updateFilterSummary(dropdown) {
 					var checkedLabels = Array.prototype.slice.call(
@@ -532,6 +590,7 @@
 							}).filter(function(text) {
 								return text.length > 0;
 							});
+
 					var summaryText = dropdown.querySelector('.filter-selected-text');
 					var placeholder = dropdown.getAttribute('data-placeholder') || '전체';
 
@@ -540,6 +599,17 @@
 					}
 
 					if (checkedLabels.length === 0) {
+						var currentText = summaryText.textContent.trim();
+						var userChanged = dropdown.dataset.userChanged === 'true';
+
+						// 검색 URL에는 선택값이 있고, 서버가 이미 선택 텍스트를 보여준 상태면
+						// Ajax 로딩 전/실패/지연 때문에 "전체"로 덮어쓰지 않는다.
+						if (!userChanged && hasQuerySelected(dropdown)
+								&& currentText && currentText !== placeholder) {
+							dropdown.classList.add('has-selected');
+							return;
+						}
+
 						summaryText.textContent = placeholder;
 						dropdown.classList.remove('has-selected');
 						return;
@@ -551,7 +621,9 @@
 
 				document.querySelectorAll('.filter-dropdown').forEach(function(dropdown) {
 					updateFilterSummary(dropdown);
+
 					dropdown.addEventListener('change', function() {
+						dropdown.dataset.userChanged = 'true';
 						updateFilterSummary(dropdown);
 					});
 				});

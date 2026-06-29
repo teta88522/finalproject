@@ -3,6 +3,7 @@ package com.pixcel.app.repository.service.impl;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -83,24 +84,27 @@ public class RepositoryServiceImpl implements RepositoryService {
 		// 1. 기존 데이터 확인 (팀원 코드의 target 찾기)
 		RepositoryVO oldData = repositoryMapper.selectRepositoryDetail(repositoryVO.getFileId());
 
-		// 2. 권한 체크 (이건 필수!)
-//	    List<ProjectMemberVO> members = projectService.selectProjectMemberList(oldData.getProjectId());
-//	    boolean isMember = members.stream().anyMatch(member -> member.getUserId().equals(userId));
-//	    if (!isMember) {
-//	        throw new RuntimeException("프로젝트 구성원만 수정할 수 있습니다.");
-//	    }
+		// 2. 기존 데이터 확인
+		if (oldData == null) {
+			throw new RuntimeException("존재하지 않는 파일입니다.");
+		}
 
-		// 3. 기존 파일 죽이기
+		// 3. 권한 체크 (파일을 등록한 사용자만 수정 가능)
+		if (!oldData.getUploadUserId().equals(userId)) {
+			throw new RuntimeException("파일을 등록한 사용자만 수정할 수 있습니다.");
+		}
+
+		// 4. 기존 파일 비활성화
 		repositoryMapper.updateRepositoryUseYn(repositoryVO.getFileId(), "N");
 
-		// 4. 새 버전 정보 세팅
+		// 5. 새 버전 정보 세팅
 		int nextVersion = Integer.parseInt(oldData.getFileVersion()) + 1;
 		repositoryVO.setFileVersion(String.valueOf(nextVersion));
 		repositoryVO.setProjectId(oldData.getProjectId());
 		repositoryVO.setFileCode(oldData.getFileCode());
 		repositoryVO.setVersionId(oldData.getVersionId());
 
-		// 5. 새 파일 저장
+		// 6. 새 파일 저장
 		return registerRepository(repositoryVO, uploadFile);
 	}
 
@@ -148,6 +152,11 @@ public class RepositoryServiceImpl implements RepositoryService {
 		int count = repositoryMapper.isProjectMember(projectId, userId);
 
 		return count > 0;
+	}
+	
+	@Override
+	public List<Map<String, Object>> getSourceCodeList(){
+		return repositoryMapper.selectSourceCodeList();
 	}
 
 }

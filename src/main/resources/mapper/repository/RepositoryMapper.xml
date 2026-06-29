@@ -27,9 +27,13 @@
 				FROM attach_file AT
 				LEFT JOIN common_code C ON AT.file_code = C.code_id
 				<where>
-					AT.file_use_yn = 'g001'
+					AT.file_use_yn = 'n001'
 					<if test="projectId != null and projectId != ''">
 						AND AT.project_id = #{projectId}
+					</if>
+					
+					<if test="fileCode != null and fileCode != ''">
+						AND AT.file_code = #{fileCode}
 					</if>
 				</where>
 				ORDER BY AT.upload_date DESC
@@ -43,8 +47,9 @@
 		resultType="int">
 		SELECT COUNT(*) FROM attach_file
 		<where>
-			file_use_yn = 'g001'
+			file_use_yn = 'n001'
 			<if test="projectId != null and projectId != ''"> AND project_id = #{projectId} </if>
+			<if test="fileCode != null and fileCode != ''"> AND file_code = #{fileCode} </if>
 			<if test="originalName != null and originalName != ''"> AND original_name LIKE '%' || #{originalName} || '%'
 			</if>
 			<if test="uploadUserId != null and uploadUserId != ''"> AND upload_user_id LIKE '%' || #{uploadUserId} || '%'
@@ -119,6 +124,12 @@
 			ORDER BY version_id DESC
 		)
 		WHERE ROWNUM =1
+	</select>
+	
+	<select id="selectSourceCodeList" resultType="map">
+		SELECT code_id, note
+		FROM common_code
+		WHERE code_name = '0F'
 	</select>
 
 	<insert id="insertRepository" parameterType="RepositoryVO">

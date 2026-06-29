@@ -39,4 +39,6 @@ public interface ManageService {
 
 	// 그룹 구성원 제외
 	public Map<String, Object> removeGroupMember(String projectGroupId, String projectMemberId, String ownerId);
+	
+	public Map<String, Object> addGroupMemberList(String projectGroupId, List<String> projectMemberIds, List<String> roleIds, String ownerId);
 }

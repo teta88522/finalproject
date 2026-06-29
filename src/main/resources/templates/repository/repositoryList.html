@@ -32,36 +32,28 @@
 							</div>
 						</div>
 
-						<!-- ⑤ 일감: select → radio -->
+						<!-- 출처: details 드롭다운 + 체크박스 -->
 						<div class="search-field">
-							<label>일감</label>
-							<div class="radio-group">
-								<!-- 전체 선택 -->
-								<label class="radio-label"> <input type="radio"
-									name="projectId" value=""
-									th:checked="${param.projectId == null or param.projectId == ''}">
-									전체
-								</label>
-								<!-- 프로젝트별 radio -->
-								<label class="radio-label" th:each="project : ${projectList}">
-									<input type="radio" name="projectId"
-									th:value="${project.projectId}"
-									th:checked="${#strings.toString(project.projectId) == #strings.toString(param.projectId)}">
-									<span th:text="${project.projectName}">프로젝트명</span>
-								</label>
-							</div>
+							<label>출처</label>
+							<details class="filter-dropdown" id="sourceDropdown">
+								<summary>
+									<span class="filter-selected-text">전체</span>
+								</summary>
+								<div class="filter-dropdown-panel">
+									<label class="filter-check-item" th:each="code : ${sourceList}">
+										<input type="checkbox" name="fileCode"
+										th:value="${code['CODE_ID']}"
+										th:checked="${code['CODE_ID'] == param.fileCode}"> <span
+										th:text="${code['NOTE']}">출처</span>
+									</label>
+								</div>
+							</details>
 						</div>
 
 						<!-- 제목 -->
 						<div class="search-field">
-							<label>제목</label> <input type="text" name="originalName"
-								th:value="${param.originalName}" placeholder="입력">
-						</div>
-
-						<!-- 작성자 -->
-						<div class="search-field">
-							<label>작성자</label> <input type="text" name="uploadUserId"
-								th:value="${param.uploadUserId}" placeholder="입력">
+							<label>파일명</label> <input type="text" name="originalName"
+								th:value="${param.originalName}" placeholder="파일명을 입력해주세요.">
 						</div>
 
 					</div>
@@ -69,8 +61,8 @@
 					<div class="search-btn-area">
 						<a
 							th:href="@{/project/{projectId}/repository(projectId=${projectId})}"
-							class="filter-btn btn-secondary">clean</a>
-						<button type="submit" class="filter-btn btn-primary">apply</button>
+							class="filter-btn btn-secondary">초기화</a>
+						<button type="submit" class="filter-btn btn-primary">검색</button>
 					</div>
 				</form>
 			</div>
@@ -103,17 +95,16 @@
 				</table>
 			</div>
 
-			<!-- 페이징 (기존 유지) -->
+			<!-- 페이징 -->
 			<div class="pagination-area"
 				style="text-align: center; margin-top: 20px;">
 				<ul class="pagination">
 					<li th:classappend="${!repositoryPage.hasPrevious} ? 'disabled'">
 						<a
 						th:href="${repositoryPage.hasPrevious}
-                        ? @{/project/{projectId}/repository(projectId=${projectId}, page=${repositoryPage.page - 1}, startDate=${param.startDate}, endDate=${param.endDate}, originalName=${param.originalName}, uploadUserId=${param.uploadUserId})}
-                        : 'javascript:void(0)'">이전</a>
+						? @{/project/{projectId}/repository(projectId=${projectId}, page=${repositoryPage.page - 1}, startDate=${param.startDate}, endDate=${param.endDate}, originalName=${param.originalName}, uploadUserId=${param.uploadUserId})}
+						: 'javascript:void(0)'">이전</a>
 					</li>
-					<!-- totalPage가 1 이상일 때만 페이지 번호 렌더링 (0이면 sequence(1,0) → [1,0] 버그 방지) -->
 					<th:block th:if="${repositoryPage.totalPage >= 1}">
 						<li
 							th:each="pageNum : ${#numbers.sequence(1, repositoryPage.totalPage)}">
@@ -123,18 +114,40 @@
 							th:classappend="${pageNum == repositoryPage.page} ? 'active'">1</a>
 						</li>
 					</th:block>
-					<!-- 데이터가 없을 때 1페이지 고정 표시 -->
 					<li th:if="${repositoryPage.totalPage == 0}"><a class="active"
 						href="javascript:void(0)">1</a></li>
 					<li th:classappend="${!repositoryPage.hasNext} ? 'disabled'">
 						<a
 						th:href="${repositoryPage.hasNext}
-                        ? @{/project/{projectId}/repository(projectId=${projectId}, page=${repositoryPage.page + 1}, startDate=${param.startDate}, endDate=${param.endDate}, originalName=${param.originalName}, uploadUserId=${param.uploadUserId})}
-                        : 'javascript:void(0)'">다음</a>
+						? @{/project/{projectId}/repository(projectId=${projectId}, page=${repositoryPage.page + 1}, startDate=${param.startDate}, endDate=${param.endDate}, originalName=${param.originalName}, uploadUserId=${param.uploadUserId})}
+						: 'javascript:void(0)'">다음</a>
 					</li>
 				</ul>
 			</div>
 		</div>
+
+		<script>
+		/* 드롭다운 외부 클릭 시 닫기 */
+		document.addEventListener('click', function(e) {
+			document.querySelectorAll('details.filter-dropdown').forEach(function(d) {
+				if (!d.contains(e.target)) d.removeAttribute('open');
+			});
+		});
+ 
+		/* 체크박스 선택 시 summary 텍스트 업데이트 */
+		document.querySelectorAll('details.filter-dropdown').forEach(function(dropdown) {
+			const summary = dropdown.querySelector('.filter-selected-text');
+			const checkboxes = dropdown.querySelectorAll('input[type="checkbox"]');
+ 
+			function updateSummary() {
+				const checked = Array.from(checkboxes).filter(cb => cb.checked).map(cb => cb.nextElementSibling.textContent.trim());
+				summary.textContent = checked.length > 0 ? checked.join(', ') : '전체';
+			}
+ 
+			checkboxes.forEach(cb => cb.addEventListener('change', updateSummary));
+			updateSummary();
+		});
+	</script>
 	</div>
 </body>
 

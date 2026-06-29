@@ -1,0 +1,338 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{common/layouts/default_layout}">
+<head>
+<meta charset="UTF-8">
+<title>테스트 케이스 생성</title>
+
+<link rel="stylesheet" th:href="@{/css/testcase/testCaseAdd.css}">
+</head>
+
+<body>
+<div layout:fragment="Content">
+
+    <div class="testcase-add-page">
+
+        <div class="page-title-area">
+            <h2 class="page-title">테스트 케이스 생성</h2>
+        </div>
+
+        <form th:action="@{/project/{projectId}/testcases/add(projectId=${projectId})}"
+              method="post"
+              enctype="multipart/form-data"
+              th:object="${testCaseVO}"
+              id="testCaseAddForm">
+
+            <div class="content-grid">
+
+                <!-- 좌측 : 기본 정보 -->
+                <div class="content-panel">
+                    <div class="panel-title">기본 정보</div>
+
+                    <div class="form-table">
+
+                        <div class="form-row">
+                            <label for="title">제목</label>
+                            <input type="text"
+                                   id="title"
+                                   th:field="*{title}"
+                                   placeholder="테스트 케이스 제목을 입력"
+                                   required>
+                        </div>
+
+                        <div class="form-row">
+                            <label for="testTypeCode">유형</label>
+                            <select id="testTypeCode"
+                                    th:field="*{testTypeCode}"
+                                    required>
+                                <option value="">선택</option>
+                                <option value="d001">기능 테스트</option>
+                                <option value="d002">UI/UX 테스트</option>
+                                <option value="d003">성능 테스트</option>
+                                <option value="d004">보안 테스트</option>
+                                <option value="d005">데이터 테스트</option>
+                                <option value="d006">기타</option>
+                            </select>
+                        </div>
+
+                        <div class="form-row">
+                            <label for="statusCode">상태</label>
+                            <select id="statusCode"
+                                    th:field="*{statusCode}"
+                                    required>
+                                <option value="g001">활성</option>
+                                <option value="g002">비활성</option>
+                            </select>
+                        </div>
+
+                        <div class="form-row">
+                            <label for="versionId">버전</label>
+                            <select id="versionId"
+                                    th:field="*{versionId}"
+                                    required>
+                                <option value="">선택</option>
+                                <option th:each="version : ${versionList}"
+                                        th:value="${version.versionId}"
+                                        th:text="${version.versionName}">
+                                    현재 버전 (1.0.0)
+                                </option>
+                            </select>
+                        </div>
+
+                        <div class="form-row">
+                            <label for="priorityCode">우선순위</label>
+                            <select id="priorityCode"
+                                    th:field="*{priorityCode}"
+                                    required>
+                                <option value="">선택</option>
+                                <option value="c001">상</option>
+                                <option value="c002">보통</option>
+                                <option value="c003">하</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-row">
+    					<label for="exeEnviroment">실행환경</label>
+    					<input type="text"
+           					   id="exeEnviroment"
+           					   th:field="*{exeEnviroment}"
+           					   placeholder="예: Chrome, Windows"
+           					   required>
+						</div>
+
+                        <div class="form-row file-row">
+                            <label for="attachFiles">첨부파일</label>
+
+                            <div class="file-box">
+                                <input type="file"
+                                       id="attachFiles"
+                                       name="files"
+                                       multiple>
+
+                                <div class="file-guide">
+                                    파일 최대 5MB 이하, 여러파일 선택가능
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- 우측 : 사용자 정의 필드 -->
+                <div class="content-panel">
+                    <div class="panel-title">사용자 정의 필드</div>
+
+                    <div class="right-section">
+
+                        <div class="field-block">
+                            <label for="preCondition">사전 조건</label>
+                            <textarea id="preCondition"
+                                      th:field="*{preCondition}"
+                                      placeholder="테스트 케이스를 생성할 시 해당 테스트 케이스에 맞는 사전 조건을 입력하는 TEXT-AREA 입니다."></textarea>
+                        </div>
+
+                        <div class="field-block">
+                            <label>테스트 절차</label>
+
+                            <div class="step-table-wrap">
+                                <table class="step-table">
+                                    <thead>
+                                        <tr>
+                                            <th>NO</th>
+                                            <th>단계 설명</th>
+                                            <th>예상 결과</th>
+                                            <th>작업</th>
+                                        </tr>
+                                    </thead>
+
+                                    <tbody id="stepTableBody">
+                                        <tr>
+                                            <td class="step-no">1</td>
+                                            <td>
+                                                <input type="text"
+                                                       name="stepDescriptionList"
+                                                       placeholder="사용자 입력란"
+                                                       required>
+                                            </td>
+                                            <td>
+                                                <input type="text"
+                                                       name="stepExpectedResultList"
+                                                       placeholder="사용자 입력란">
+                                            </td>
+                                            <td class="step-action-cell">
+                                                <button type="button"
+                                                        class="icon-delete-btn"
+                                                        onclick="removeStepRow(this)"
+                                                        title="삭제">
+                                                    🗑
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div class="step-add-area">
+                                <button type="button"
+                                        class="step-add-btn"
+                                        onclick="addStepRow()">
+                                    단계 추가
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="field-block">
+                            <label for="expectedResult">기대 결과</label>
+                            <textarea id="expectedResult"
+                                      th:field="*{expectedResult}"
+                                      placeholder="등록한 테스트 절차에 대해 기대하는 기대 결과를 작성하는 TEXT-AREA입니다."></textarea>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- 하단 버튼 -->
+            <div class="bottom-btn-area">
+                <a th:href="@{/project/{projectId}/tests(projectId=${projectId})}"
+                   class="btn-basic">
+                    취소
+                </a>
+
+                <button type="reset"
+                        class="btn-reset"
+                        onclick="resetStepTable();">
+                    원래대로
+                </button>
+
+                <button type="submit"
+                        class="btn-primary">
+                    저장
+                </button>
+            </div>
+
+        </form>
+
+    </div>
+
+    <script>
+        function addStepRow() {
+            const tbody = document.getElementById("stepTableBody");
+            const row = document.createElement("tr");
+
+            row.innerHTML =
+                "<td class='step-no'></td>" +
+                "<td><input type='text' name='stepDescriptionList' placeholder='사용자 입력란' required></td>" +
+                "<td><input type='text' name='stepExpectedResultList' placeholder='사용자 입력란'></td>" +
+                "<td class='step-action-cell'>" +
+                    "<button type='button' class='icon-delete-btn' onclick='removeStepRow(this)' title='삭제'>🗑</button>" +
+                "</td>";
+
+            tbody.appendChild(row);
+            resetStepNo();
+        }
+
+        function removeStepRow(button) {
+            const tbody = document.getElementById("stepTableBody");
+            const rows = tbody.querySelectorAll("tr");
+
+            if (rows.length === 1) {
+                alert("테스트 절차는 최소 1개 이상 필요합니다.");
+                return;
+            }
+
+            button.closest("tr").remove();
+            resetStepNo();
+        }
+
+        function resetStepNo() {
+            const rows = document.querySelectorAll("#stepTableBody tr");
+
+            rows.forEach(function(row, index) {
+                const noCell = row.querySelector(".step-no");
+                noCell.innerText = index + 1;
+            });
+        }
+
+        function resetStepTable() {
+            setTimeout(function() {
+                const tbody = document.getElementById("stepTableBody");
+                tbody.innerHTML =
+                    "<tr>" +
+                        "<td class='step-no'>1</td>" +
+                        "<td><input type='text' name='stepDescriptionList' placeholder='사용자 입력란' required></td>" +
+                        "<td><input type='text' name='stepExpectedResultList' placeholder='사용자 입력란'></td>" +
+                        "<td class='step-action-cell'>" +
+                            "<button type='button' class='icon-delete-btn' onclick='removeStepRow(this)' title='삭제'>🗑</button>" +
+                        "</td>" +
+                    "</tr>";
+            }, 0);
+        }
+
+        document.getElementById("testCaseAddForm").addEventListener("submit", function(event) {
+            const title = document.getElementById("title").value.trim();
+            const testTypeCode = document.getElementById("testTypeCode").value;
+            const statusCode = document.getElementById("statusCode").value;
+            const versionId = document.getElementById("versionId").value;
+            const priorityCode = document.getElementById("priorityCode").value;
+            const exeEnviroment = document.getElementById("exeEnviroment").value.trim();
+
+            if (title === "") {
+                alert("제목을 입력하세요.");
+                document.getElementById("title").focus();
+                event.preventDefault();
+                return false;
+            }
+
+            if (!testTypeCode) {
+                alert("유형을 선택하세요.");
+                document.getElementById("testTypeCode").focus();
+                event.preventDefault();
+                return false;
+            }
+
+            if (!statusCode) {
+                alert("상태를 선택하세요.");
+                document.getElementById("statusCode").focus();
+                event.preventDefault();
+                return false;
+            }
+
+            if (!versionId) {
+                alert("버전을 선택하세요.");
+                document.getElementById("versionId").focus();
+                event.preventDefault();
+                return false;
+            }
+
+            if (!priorityCode) {
+                alert("우선순위를 선택하세요.");
+                document.getElementById("priorityCode").focus();
+                event.preventDefault();
+                return false;
+            }
+            
+            if (exeEnviroment === "") {
+                alert("실행환경을 입력하세요.");
+                document.getElementById("exeEnviroment").focus();
+                event.preventDefault();
+                return false;
+            }
+
+            const stepInputs = document.querySelectorAll("input[name='stepDescriptionList']");
+            for (let i = 0; i < stepInputs.length; i++) {
+                if (stepInputs[i].value.trim() === "") {
+                    alert("테스트 절차의 단계 설명을 입력하세요.");
+                    stepInputs[i].focus();
+                    event.preventDefault();
+                    return false;
+                }
+            }
+        });
+    </script>
+
+</div>
+</body>
+</html>

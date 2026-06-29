@@ -1,0 +1,395 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{common/layouts/default_layout}">
+<head>
+<meta charset="UTF-8">
+<title>테스트 케이스 수정</title>
+
+<link rel="stylesheet" th:href="@{/css/testcase/testCaseEdit.css}">
+</head>
+
+<body>
+<div layout:fragment="Content">
+
+    <div class="testcase-create-page">
+
+        <div class="page-header">
+            <h2 class="page-title">테스트 케이스 수정</h2>
+        </div>
+
+        <form th:action="@{/project/{projectId}/testcases/{testCaseId}/update(
+                    projectId=${projectId},
+                    testCaseId=${testCaseVO.testCaseId}
+              )}"
+              method="post"
+              enctype="multipart/form-data"
+              th:object="${testCaseVO}"
+              id="testCaseEditForm">
+
+            <input type="hidden" th:field="*{testCaseId}">
+            <input type="hidden"
+                   name="exeEnviroment"
+                   th:value="${testCaseVO.exeEnviroment != null ? testCaseVO.exeEnviroment : '기본 환경'}">
+
+            <div class="create-layout">
+
+                <!-- 왼쪽 기본 정보 -->
+                <div class="form-card basic-card">
+                    <div class="card-title">기본 정보</div>
+
+                    <div class="form-row">
+                        <label for="title">제목</label>
+                        <input type="text"
+                               id="title"
+                               th:field="*{title}"
+                               placeholder="테스트 케이스 제목을 입력"
+                               required>
+                    </div>
+
+                    <div class="form-row">
+                        <label for="testTypeCode">유형</label>
+                        <select id="testTypeCode"
+                                th:field="*{testTypeCode}"
+                                required>
+                            <option value="">선택</option>
+                            <option value="d001">기능 테스트</option>
+                            <option value="d002">UI/UX 테스트</option>
+                            <option value="d003">성능 테스트</option>
+                            <option value="d004">보안 테스트</option>
+                            <option value="d005">데이터 테스트</option>
+                            <option value="d006">기타</option>
+                        </select>
+                    </div>
+
+                    <div class="form-row">
+                        <label for="statusCode">상태</label>
+                        <select id="statusCode"
+                                th:field="*{statusCode}"
+                                required>
+                            <option value="">선택</option>
+                            <option value="g001">활성</option>
+                            <option value="g002">비활성</option>
+                        </select>
+                    </div>
+
+                    <div class="form-row">
+                        <label for="versionId">버전</label>
+                        <select id="versionId"
+                                th:field="*{versionId}"
+                                required>
+                            <option value="">선택</option>
+                            <option th:each="version : ${versionList}"
+                                    th:value="${version.versionId}"
+                                    th:text="${version.versionName}">
+                                1.0.0
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="form-row">
+                        <label for="priorityCode">우선순위</label>
+                        <select id="priorityCode"
+                                th:field="*{priorityCode}"
+                                required>
+                            <option value="">선택</option>
+                            <option value="c001">높음</option>
+                            <option value="c002">보통</option>
+                            <option value="c003">낮음</option>
+                        </select>
+                    </div>
+
+                    <div class="form-row file-row">
+                        <label for="attachFiles">첨부파일</label>
+
+                        <div class="file-box">
+                            <input type="file"
+                                   id="attachFiles"
+                                   name="files"
+                                   multiple>
+
+                            <div class="file-guide">
+                                파일 최대 5MB 이하, 여러파일 선택가능
+                            </div>
+
+                            <!-- 기존 첨부파일 있음 -->
+                            <div class="exist-file-list"
+                                 th:if="${fileList != null and !#lists.isEmpty(fileList)}">
+
+                                <div class="exist-file-header">
+                                    <div class="exist-file-title">기존 첨부파일</div>
+
+                                    <a class="file-download-all-btn"
+                                       th:href="@{/project/{projectId}/testcases/{testCaseId}/files/download-all(
+                                            projectId=${projectId},
+                                            testCaseId=${testCaseVO.testCaseId}
+                                       )}">
+                                        전체 다운로드
+                                    </a>
+                                </div>
+
+                                <div class="exist-file-item"
+                                     th:each="file : ${fileList}">
+
+                                    <div class="exist-file-info">
+                                        <span class="file-name"
+                                              th:text="${file.originalName}">
+                                            sample.txt
+                                        </span>
+
+                                        <span class="file-size"
+                                              th:text="${file.fileSize != null ? '(' + file.fileSize + ' byte)' : ''}">
+                                            (1024 byte)
+                                        </span>
+                                    </div>
+
+                                    <a class="file-download-btn"
+                                       th:href="@{/project/{projectId}/testcases/files/{fileId}/download(
+                                            projectId=${projectId},
+                                            fileId=${file.fileId}
+                                       )}">
+                                        다운로드
+                                    </a>
+                                </div>
+                            </div>
+
+                            <!-- 기존 첨부파일 없음 -->
+                            <div class="exist-file-list empty-file-list"
+                                 th:if="${fileList == null or #lists.isEmpty(fileList)}">
+
+                                <div class="exist-file-title">기존 첨부파일</div>
+                                <div class="exist-file-empty">
+                                    등록된 첨부파일이 없습니다.
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 오른쪽 사용자 정의 필드 -->
+                <div class="form-card custom-card">
+                    <div class="card-title">사용자 정의 필드</div>
+
+                    <div class="custom-block">
+                        <label for="preCondition">사전 조건</label>
+                        <textarea id="preCondition"
+                                  th:field="*{preCondition}"
+                                  placeholder="테스트 케이스에 맞는 사전 조건을 입력하세요."></textarea>
+                    </div>
+
+                    <div class="custom-block">
+                        <div class="step-header">
+                            <label>테스트 절차</label>
+                        </div>
+
+                        <table class="step-table">
+                            <thead>
+                                <tr>
+                                    <th>NO</th>
+                                    <th>단계 설명</th>
+                                    <th>예상 결과</th>
+                                    <th>작업</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="stepBody">
+
+                                <tr th:if="${testCaseVO.stepList == null or #lists.isEmpty(testCaseVO.stepList)}">
+                                    <td class="step-no">1</td>
+                                    <td>
+                                        <input type="text"
+                                               name="stepDescriptionList"
+                                               placeholder="사용자 입력란">
+                                    </td>
+                                    <td>
+                                        <input type="text"
+                                               name="stepExpectedResultList"
+                                               placeholder="사용자 입력란">
+                                    </td>
+                                    <td>
+                                        <button type="button"
+                                                class="step-delete-btn"
+                                                onclick="deleteStepRow(this)">
+                                            🗑
+                                        </button>
+                                    </td>
+                                </tr>
+
+                                <tr th:each="step, stat : ${testCaseVO.stepList}">
+                                    <td class="step-no" th:text="${stat.count}">1</td>
+                                    <td>
+                                        <input type="text"
+                                               name="stepDescriptionList"
+                                               th:value="${step.stepDescription}"
+                                               placeholder="사용자 입력란">
+                                    </td>
+                                    <td>
+                                        <input type="text"
+                                               name="stepExpectedResultList"
+                                               th:value="${step.expectedResult}"
+                                               placeholder="사용자 입력란">
+                                    </td>
+                                    <td>
+                                        <button type="button"
+                                                class="step-delete-btn"
+                                                onclick="deleteStepRow(this)">
+                                            🗑
+                                        </button>
+                                    </td>
+                                </tr>
+
+                            </tbody>
+                        </table>
+
+                        <button type="button"
+                                class="step-add-btn"
+                                onclick="addStepRow()">
+                            단계 추가
+                        </button>
+                    </div>
+
+                    <div class="custom-block">
+                        <label for="expectedResult">기대 결과</label>
+                        <textarea id="expectedResult"
+                                  th:field="*{expectedResult}"
+                                  placeholder="등록한 테스트 절차에 대해 기대하는 결과를 작성하세요."></textarea>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="button-area">
+                <a th:href="@{/project/{projectId}/testcases(projectId=${projectId})}"
+                   class="btn-basic">
+                    취소
+                </a>
+
+                <button type="button"
+                        class="btn-reset"
+                        onclick="location.reload();">
+                    원래대로
+                </button>
+
+                <button type="submit"
+                        class="btn-primary">
+                    수정
+                </button>
+            </div>
+
+        </form>
+
+    </div>
+
+    <script>
+        function addStepRow() {
+            const stepBody = document.getElementById("stepBody");
+            const row = document.createElement("tr");
+
+            row.innerHTML = `
+                <td class="step-no"></td>
+                <td>
+                    <input type="text"
+                           name="stepDescriptionList"
+                           placeholder="사용자 입력란">
+                </td>
+                <td>
+                    <input type="text"
+                           name="stepExpectedResultList"
+                           placeholder="사용자 입력란">
+                </td>
+                <td>
+                    <button type="button"
+                            class="step-delete-btn"
+                            onclick="deleteStepRow(this)">
+                        🗑
+                    </button>
+                </td>
+            `;
+
+            stepBody.appendChild(row);
+            resetStepNo();
+        }
+
+        function deleteStepRow(button) {
+            const stepBody = document.getElementById("stepBody");
+
+            if (stepBody.children.length <= 1) {
+                alert("테스트 절차는 최소 1개 이상 필요합니다.");
+                return;
+            }
+
+            button.closest("tr").remove();
+            resetStepNo();
+        }
+
+        function resetStepNo() {
+            const stepNoList = document.querySelectorAll(".step-no");
+
+            stepNoList.forEach(function (stepNo, index) {
+                stepNo.innerText = index + 1;
+            });
+        }
+
+        document.getElementById("testCaseEditForm").addEventListener("submit", function (event) {
+            const title = document.getElementById("title").value.trim();
+            const testTypeCode = document.getElementById("testTypeCode").value;
+            const statusCode = document.getElementById("statusCode").value;
+            const versionId = document.getElementById("versionId").value;
+            const priorityCode = document.getElementById("priorityCode").value;
+
+            if (title === "") {
+                alert("제목을 입력하세요.");
+                document.getElementById("title").focus();
+                event.preventDefault();
+                return false;
+            }
+
+            if (testTypeCode === "") {
+                alert("유형을 선택하세요.");
+                document.getElementById("testTypeCode").focus();
+                event.preventDefault();
+                return false;
+            }
+
+            if (statusCode === "") {
+                alert("상태를 선택하세요.");
+                document.getElementById("statusCode").focus();
+                event.preventDefault();
+                return false;
+            }
+
+            if (versionId === "") {
+                alert("버전을 선택하세요.");
+                document.getElementById("versionId").focus();
+                event.preventDefault();
+                return false;
+            }
+
+            if (priorityCode === "") {
+                alert("우선순위를 선택하세요.");
+                document.getElementById("priorityCode").focus();
+                event.preventDefault();
+                return false;
+            }
+
+            const stepInputs = document.querySelectorAll("input[name='stepDescriptionList']");
+            let hasStep = false;
+
+            stepInputs.forEach(function (input) {
+                if (input.value.trim() !== "") {
+                    hasStep = true;
+                }
+            });
+
+            if (!hasStep) {
+                alert("테스트 절차를 최소 1개 이상 입력하세요.");
+                event.preventDefault();
+                return false;
+            }
+        });
+    </script>
+
+</div>
+</body>
+</html>
