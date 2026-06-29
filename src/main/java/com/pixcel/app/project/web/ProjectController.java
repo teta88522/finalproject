@@ -35,12 +35,22 @@ public class ProjectController {
 
 	/* 프로젝트 등록 처리 */
 	@PostMapping("/myproject/register")
-	public String registerProject(ProjectVO projectVO, @CookieValue(value = "userId", required = false) String userId) {
+	public String registerProject(ProjectVO projectVO, @CookieValue(value = "userId", required = false) String userId,
+			RedirectAttributes redirectAttributes) {
 		if (projectVO.getOwnerId() == null || projectVO.getOwnerId().isEmpty()) {
 			projectVO.setOwnerId(userId);
 		}
+
+		// ✅ 날짜 검증: startDate <= endDate 확인
+		if (projectVO.getStartDate() != null && projectVO.getEndDate() != null) {
+			if (projectVO.getStartDate().after(projectVO.getEndDate())) {
+				redirectAttributes.addFlashAttribute("errorMessage", "시작일이 완료일보다 늦을 수 없습니다.");
+				return "redirect:/myproject/register";
+			}
+		}
+
 		projectService.registerProject(projectVO);
-		return "redirect:/myproject/list";  // ✅ 수정: /project/list → /myproject/list
+		return "redirect:/myproject/list"; // ✅ 수정: /project/list → /myproject/list
 	}
 
 	/* 프로젝트 목록 (검색 + 페이징) */
@@ -86,13 +96,13 @@ public class ProjectController {
 
 		ProjectVO project = projectService.selectProjectDetail(projectId);
 		List<ProjectMemberVO> projectMemberList = projectService.selectProjectMemberList(projectId);
-		List<IssueStatVO> issueStatList = projectService.selectIssueStatByProjectId(projectId);  // ✅ 추가
+		List<IssueStatVO> issueStatList = projectService.selectIssueStatByProjectId(projectId); // ✅ 추가
 
 		model.addAttribute("project", project);
 		model.addAttribute("projectId", projectId);
 		model.addAttribute("subscribeYn", subscribeYn);
 		model.addAttribute("projectMemberList", projectMemberList);
-		model.addAttribute("issueStatList", issueStatList);  // ✅ 추가
+		model.addAttribute("issueStatList", issueStatList); // ✅ 추가
 
 		return "project/projectDetail";
 	}
@@ -199,17 +209,64 @@ public class ProjectController {
 
 		return "redirect:/project/" + projectId + "/settings/members";
 	}
-	
+
+	/* 프로젝트 모듈 설정 */
+	@GetMapping("/project/{projectId}/settings/modules")
+	public String projectModuleSetting(@PathVariable String projectId,
+			@CookieValue(value = "subscribeYn", required = false) String subscribeYn, Model model) {
+		if (!"Y".equals(subscribeYn))
+			return "redirect:/projectdetail/" + projectId;
+
+		ProjectVO project = projectService.selectProjectDetail(projectId);
+		List<ProjectModulesVO> projectModuleList = projectService.selectAllModuleProjects(projectId);
+
+		model.addAttribute("project", project);
+		model.addAttribute("projectId", projectId);
+		model.addAttribute("subscribeYn", subscribeYn);
+		model.addAttribute("projectModuleList", projectModuleList);
+
+		return "settings/projectModuleSetting";
+	}
+
+	/* 프로젝트 모듈 추가 */
+	@PostMapping("/project/{projectId}/settings/modules/add")
+	public String insertProjectModule(@PathVariable String projectId, @RequestParam String moduleCode,
+			@CookieValue(value = "subscribeYn", required = false) String subscribeYn,
+			RedirectAttributes redirectAttributes) {
+		if (!"Y".equals(subscribeYn))
+			return "redirect:/projectdetail/" + projectId;
+
+		Map<String, Object> resultMap = projectService.insertProjectModule(projectId, moduleCode);
+		redirectAttributes.addFlashAttribute("message", resultMap.get("message"));
+
+		return "redirect:/project/" + projectId + "/settings/modules";
+	}
+
+	/* 프로젝트 모듈 삭제 */
+	@PostMapping("/project/{projectId}/settings/modules/delete")
+	public String deleteProjectModule(@PathVariable String projectId, @RequestParam String moduleCode,
+			@CookieValue(value = "subscribeYn", required = false) String subscribeYn,
+			RedirectAttributes redirectAttributes) {
+		if (!"Y".equals(subscribeYn))
+			return "redirect:/projectdetail/" + projectId;
+
+		Map<String, Object> resultMap = projectService.deleteProjectModule(projectId, moduleCode);
+		redirectAttributes.addFlashAttribute("message", resultMap.get("message"));
+
+		return "redirect:/project/" + projectId + "/settings/modules";
+	}
+
 	/* 프로젝트 삭제 */
 	@PostMapping("/myproject/delete")
 	public String deleteProject(@RequestParam String projectId,
-								@CookieValue(value = "subscribeYn", required = false) String subscribeYn,
-								RedirectAttributes redirectAttributes) {
-		if(!"Y".equals(subscribeYn)) return "redirect:/myproject/list";
-		
+			@CookieValue(value = "subscribeYn", required = false) String subscribeYn,
+			RedirectAttributes redirectAttributes) {
+		if (!"Y".equals(subscribeYn))
+			return "redirect:/myproject/list";
+
 		Map<String, Object> resultMap = projectService.deleteProject(projectId);
 		redirectAttributes.addFlashAttribute("message", resultMap.get("message"));
-		
+
 		return "redirect:/myproject/list";
 	}
 }

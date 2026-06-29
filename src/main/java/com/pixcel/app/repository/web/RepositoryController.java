@@ -1,6 +1,8 @@
 package com.pixcel.app.repository.web;
 
 import java.io.File;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
@@ -33,12 +35,32 @@ public class RepositoryController {
 
 	// 1. 자료실 전체 조회 (요청주소 : localhost:8080/repository)
 	@GetMapping
-	public String getRepositoryList(@PathVariable("projectId") String projectId, RepositoryVO searchVO, Model model) {
+	public String getRepositoryList(@PathVariable("projectId") String projectId, RepositoryVO searchVO, Model model,
+			RedirectAttributes rttr) {
 
 		searchVO.setProjectId(projectId);
-		
+
 		model.addAttribute("sourceList", repositoryService.getSourceCodeList());
-		
+
+		// ✅ 추가: 날짜 검증 (startDate > endDate 불가)
+		if (searchVO.getStartDate() != null && !searchVO.getStartDate().isEmpty() && searchVO.getEndDate() != null
+				&& !searchVO.getEndDate().isEmpty()) {
+
+			try {
+				SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+				Date startDate = dateFormat.parse(searchVO.getStartDate());
+				Date endDate = dateFormat.parse(searchVO.getEndDate());
+
+				if (startDate.after(endDate)) {
+					rttr.addFlashAttribute("errorMessage", "시작 날짜가 종료 날짜보다 늦을 수 없습니다.");
+					return "redirect:/project/" + projectId + "/repository";
+				}
+			} catch (Exception e) {
+				rttr.addFlashAttribute("errorMessage", "날짜 형식이 올바르지 않습니다.");
+				return "redirect:/project/" + projectId + "/repository";
+			}
+		}
+
 		// 1. 페이징 기본 설정
 		int amount = 10;
 		if (searchVO.getPage() <= 0)
@@ -48,11 +70,11 @@ public class RepositoryController {
 
 		// 2. 데이터 조회
 		List<RepositoryVO> list = repositoryService.getRepositoryList(searchVO);
-		int total = repositoryService.getTotalCount(searchVO); // 전체 데이터 수 조회[cite: 16, 19]
+		int total = repositoryService.getTotalCount(searchVO);
 
 		// 3. 페이징 계산 로직 추가
 		int totalPages = (int) Math.ceil((double) total / amount);
-		int startPage = ((searchVO.getPage() - 1) / 5) * 5 + 1; // 예: 5개씩 보여줄 경우
+		int startPage = ((searchVO.getPage() - 1) / 5) * 5 + 1;
 		int endPage = Math.min(startPage + 4, totalPages);
 
 		// 4. 계산된 페이징 정보를 searchVO에 담거나 모델에 직접 추가
@@ -65,7 +87,7 @@ public class RepositoryController {
 		// 5. 모델에 데이터 및 페이징 정보 전달
 		model.addAttribute("projectId", projectId);
 		model.addAttribute("repositoryList", list);
-		model.addAttribute("repositoryPage", searchVO); // 뷰에서 'repositoryPage'로 접근 가능하도록 설정
+		model.addAttribute("repositoryPage", searchVO);
 		model.addAttribute("projectList", projectService.findAllProjects());
 
 		return "repository/repositoryList";
@@ -108,11 +130,11 @@ public class RepositoryController {
 
 		repositoryVO.setProjectId(projectId); // 경로에서 받은 ID로 설정 보장
 		repositoryVO.setUploadUserId(userId);
-		
+
 		// [중요] versionId가 누락되지 않도록 설정 (예: 1 또는 서비스에서 조회한 최신 버전 등)
-	    if (repositoryVO.getVersionId() == null) {
-	        repositoryVO.setVersionId("VERSION_ID_2606_0001"); // 실제 사용하는 버전 ID 값으로 교체하세요
-	    }
+		if (repositoryVO.getVersionId() == null) {
+			repositoryVO.setVersionId("VERSION_ID_2606_0001"); // 실제 사용하는 버전 ID 값으로 교체하세요
+		}
 
 		repositoryService.registerRepository(repositoryVO, uploadFile);
 
@@ -135,16 +157,16 @@ public class RepositoryController {
 	public String edit(@PathVariable("projectId") String projectId, RepositoryVO repositoryVO,
 			@RequestParam(value = "uploadFile", required = false) MultipartFile uploadFile,
 			@CookieValue(value = "userId", required = false) String userId, RedirectAttributes rttr) {
-		
+
 		// 1. 로그인 확인
 		if (userId == null) {
 			return "redirect:/login";
 		}
-		
+
 		// 2. 기본 정보 설정
 		repositoryVO.setProjectId(projectId);
 		repositoryVO.setUploadUserId(userId);
-		
+
 		// 3. 권한 체크 및 수정 처리
 		try {
 			repositoryService.modifyRepository(repositoryVO, uploadFile, userId);
@@ -153,7 +175,7 @@ public class RepositoryController {
 			rttr.addFlashAttribute("errorMessage", e.getMessage());
 			return "redirect:/project/" + projectId + "/repository/detail?fileId=" + repositoryVO.getFileId();
 		}
-		
+
 		return "redirect:/project/" + projectId + "/repository/detail?fileId=" + repositoryVO.getFileId();
 	}
 
@@ -187,20 +209,22 @@ public class RepositoryController {
 						"attachment; filename=\"" + encodedName + "\"")
 				.header(org.springframework.http.HttpHeaders.CONTENT_TYPE, "application/octet-stream").body(resource);
 	}
-	
+
 	@GetMapping("/image")
 	@ResponseBody
 	public org.springframework.core.io.Resource getImage(@RequestParam String fileId) throws Exception {
-	    RepositoryVO fileInfo = repositoryService.getRepositoryDetail(fileId);
-	    
-	    // 파일 정보가 없거나 실제 물리 경로에 파일이 없는 경우 방어 코드
-	    if (fileInfo == null || fileInfo.getFilePath() == null) return null;
-	    
-	    File file = new File(fileInfo.getFilePath());
-	    if (!file.exists()) return null;
-	    
-	    // 이미지를 브라우저가 직접 읽을 수 있게 리소스로 반환
-	    return new org.springframework.core.io.FileSystemResource(file);
+		RepositoryVO fileInfo = repositoryService.getRepositoryDetail(fileId);
+
+		// 파일 정보가 없거나 실제 물리 경로에 파일이 없는 경우 방어 코드
+		if (fileInfo == null || fileInfo.getFilePath() == null)
+			return null;
+
+		File file = new File(fileInfo.getFilePath());
+		if (!file.exists())
+			return null;
+
+		// 이미지를 브라우저가 직접 읽을 수 있게 리소스로 반환
+		return new org.springframework.core.io.FileSystemResource(file);
 	}
 
 }

@@ -8,117 +8,132 @@
 </head>
 <body>
 	<div layout:fragment="Content">
-
-
+ 
 		<div class="project-container">
 			<h2 style="font-weight: 700; margin-bottom: 35px; color: #111;">프로젝트</h2>
-
-			<form th:action="@{/myproject/register}" method="post" id="projectForm">
+ 
+			<!-- ✅ 에러 메시지 표시 -->
+			<div th:if="${errorMessage}"
+				class="alert alert-danger alert-dismissible fade show" role="alert">
+				<th:block th:text="${errorMessage}"></th:block>
+				<button type="button" class="btn-close" data-bs-dismiss="alert"
+					aria-label="Close"></button>
+			</div>
+ 
+			<form th:action="@{/myproject/register}" method="post"
+				id="projectForm">
 				<div class="row g-5">
 					<div class="col-xl-8 col-lg-7">
 						<div class="row mb-4">
-							<div class="col-md-6">
+							<div class="col-md-12">
 								<div class="form-section-title">제목</div>
 								<input type="text" class="form-line-control" id="projectName"
-									name="projectName" placeholder="Value" required>
-							</div>
-							<div class="col-md-6">
-								<div class="form-section-title">식별자</div>
-								<input type="text" class="form-line-control" id="identifier"
-									name="identifier" placeholder="Value" required> <input
-									type="hidden" id="ownerId" name="userId" th:value="${userId}">
+									name="projectName" placeholder="프로젝트 이름을 입력하세요" required>
 							</div>
 						</div>
-
+ 
 						<div class="mb-4">
 							<div class="form-section-title">설명</div>
 							<textarea class="form-box-control" id="description"
-								name="description" placeholder="Value"></textarea>
+								name="description" placeholder="프로젝트 설명을 입력하세요"></textarea>
 						</div>
 					</div>
-
+ 
 					<div class="col-xl-4 col-lg-5">
 						<div class="mb-4">
 							<div class="form-section-title">홈페이지 URL</div>
 							<input type="url" class="form-line-control" id="projectUrl"
-								name="projectUrl" placeholder="Value">
+								name="projectUrl" placeholder="https://example.com">
 						</div>
-
+ 
 						<div class="mb-4">
 							<div class="form-section-title">모듈</div>
 							<div class="module-card">
+								<!-- ✅ 모듈 전체 선택 버튼 -->
+								<div style="display: flex; gap: 8px; margin-bottom: 15px;">
+									<button type="button" class="btn btn-sm btn-outline-primary"
+										onclick="document.querySelectorAll('.moduleCheckbox').forEach(cb => cb.checked = true);">
+										전체 선택
+									</button>
+									<button type="button" class="btn btn-sm btn-outline-secondary"
+										onclick="document.querySelectorAll('.moduleCheckbox').forEach(cb => cb.checked = false);">
+										전체 해제
+									</button>
+								</div>
+ 
 								<div class="module-grid">
 									<div class="module-item">
-										<label for="m1" class="m-0 cursor-pointer">일감관리</label> <input
-											type="checkbox" name="moduleCodes" value="h001" id="m1">
+										<label for="m1" class="m-0 cursor-pointer">일감관리</label> 
+										<input type="checkbox" name="moduleCodes" value="h001" id="m1" class="moduleCheckbox">
 									</div>
-									
+ 
 									<div class="module-item">
-										<label for="m3" class="m-0 cursor-pointer">자료실</label> <input
-											type="checkbox" name="moduleCodes" value="h002" id="m3">
+										<label for="m3" class="m-0 cursor-pointer">자료실</label> 
+										<input type="checkbox" name="moduleCodes" value="h002" id="m3" class="moduleCheckbox">
 									</div>
-									
+ 
 									<div class="module-item">
-										<label for="m5" class="m-0 cursor-pointer">저장소</label> <input
-											type="checkbox" name="moduleCodes" value="h003" id="m5">
+										<label for="m5" class="m-0 cursor-pointer">저장소</label> 
+										<input type="checkbox" name="moduleCodes" value="h003" id="m5" class="moduleCheckbox">
 									</div>
-									
+ 
 									<div class="module-item">
-										<label for="m2" class="m-0 cursor-pointer">문서</label> <input
-											type="checkbox" name="moduleCodes" value="h004" id="m2">
+										<label for="m2" class="m-0 cursor-pointer">문서</label> 
+										<input type="checkbox" name="moduleCodes" value="h004" id="m2" class="moduleCheckbox">
 									</div>
-
+ 
 									<div class="module-item">
-										<label for="m4" class="m-0 cursor-pointer">위키</label> <input
-											type="checkbox" name="moduleCodes" value="h005" id="m4">
+										<label for="m4" class="m-0 cursor-pointer">위키</label> 
+										<input type="checkbox" name="moduleCodes" value="h005" id="m4" class="moduleCheckbox">
 									</div>
-
+ 
 									<div class="module-item">
-										<label for="m6" class="m-0 cursor-pointer">게시판</label> <input
-											type="checkbox" name="moduleCodes" value="h006" id="m6">
+										<label for="m6" class="m-0 cursor-pointer">게시판</label> 
+										<input type="checkbox" name="moduleCodes" value="h006" id="m6" class="moduleCheckbox">
 									</div>
-									
+ 
 									<div class="module-item">
-										<label for="m8" class="m-0 cursor-pointer">간트차트</label> <input
-											type="checkbox" name="moduleCodes" value="h007" id="m8">
+										<label for="m8" class="m-0 cursor-pointer">간트차트</label> 
+										<input type="checkbox" name="moduleCodes" value="h007" id="m8" class="moduleCheckbox">
 									</div>
-									
+ 
 									<div class="module-item">
-										<label for="m9" class="m-0 cursor-pointer">칸반</label> <input
-											type="checkbox" name="moduleCodes" value="h008" id="m9">
+										<label for="m9" class="m-0 cursor-pointer">칸반</label> 
+										<input type="checkbox" name="moduleCodes" value="h008" id="m9" class="moduleCheckbox">
 									</div>
-									
+ 
 									<div class="module-item">
-										<label for="m10" class="m-0 cursor-pointer">로드맵</label> <input
-											type="checkbox" name="moduleCodes" value="h009" id="m10">
+										<label for="m10" class="m-0 cursor-pointer">로드맵</label> 
+										<input type="checkbox" name="moduleCodes" value="h009" id="m10" class="moduleCheckbox">
 									</div>
-									
+ 
 									<div class="module-item">
-										<label for="m11" class="m-0 cursor-pointer">마일스톤</label> <input
-											type="checkbox" name="moduleCodes" value="h010" id="m11">
+										<label for="m11" class="m-0 cursor-pointer">마일스톤</label> 
+										<input type="checkbox" name="moduleCodes" value="h010" id="m11" class="moduleCheckbox">
 									</div>
-									
+ 
 									<div class="module-item">
-										<label for="m7" class="m-0 cursor-pointer">달력</label> <input
-											type="checkbox" name="moduleCodes" value="h011" id="m7">
+										<label for="m7" class="m-0 cursor-pointer">달력</label> 
+										<input type="checkbox" name="moduleCodes" value="h011" id="m7" class="moduleCheckbox">
 									</div>
 								</div>
 							</div>
 						</div>
-
-						<div class="row mb-4">
-							<div class="col-6">
-								<div class="form-section-title">시작일</div>
-								<input type="date" class="form-line-control" id="startDate"
-									name="startDate">
-							</div>
-							<div class="col-6">
-								<div class="form-section-title">완료일</div>
-								<input type="date" class="form-line-control" id="endDate"
-									name="endDate">
+ 
+						<!-- ✅ 기간 부분 - Grid 레이아웃 -->
+						<div class="mb-4">
+							<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+								<div>
+									<div class="form-section-title">시작일</div>
+									<input type="date" class="form-line-control" id="startDate" name="startDate">
+								</div>
+								<div>
+									<div class="form-section-title">완료일</div>
+									<input type="date" class="form-line-control" id="endDate" name="endDate">
+								</div>
 							</div>
 						</div>
-
+ 
 						<div class="text-end mt-5">
 							<button type="submit" class="btn-register">등록</button>
 						</div>
@@ -127,6 +142,30 @@
 			</form>
 		</div>
 	</div>
+ 
+	<script>
+		// ✅ 날짜 검증: startDate <= endDate 확인
+		document.getElementById('projectForm').addEventListener('submit', function(e) {
+			const startDate = document.getElementById('startDate').value;
+			const endDate = document.getElementById('endDate').value;
+ 
+			if (startDate && endDate) {
+				if (new Date(startDate) > new Date(endDate)) {
+					e.preventDefault();
+					alert('시작일이 완료일보다 늦을 수 없습니다.');
+					return false;
+				}
+			}
+		});
+ 
+		// ✅ endDate input에 최소값(startDate) 동적 설정
+		document.getElementById('startDate').addEventListener('change', function() {
+			const startDate = this.value;
+			if (startDate) {
+				document.getElementById('endDate').setAttribute('min', startDate);
+			}
+		});
+	</script>
 </body>
 
 </html>

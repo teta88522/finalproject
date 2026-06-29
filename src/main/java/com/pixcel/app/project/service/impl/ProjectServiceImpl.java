@@ -5,6 +5,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -28,6 +29,8 @@ public class ProjectServiceImpl implements ProjectService {
 	@Transactional
 	public int registerProject(ProjectVO projectVO) {
 		int result = 0;
+		// ✅ UUID로 identifier 자동 생성 (대문자 제거, 하이픈 제거)
+		projectVO.setIdentifier(UUID.randomUUID().toString().replace("-", "").substring(0, 20));
 		result += projectMapper.insertProject(projectVO);
 		if (projectVO.getModuleCodes() != null && projectVO.getModuleCodes().size() > 0) {
 			result += projectMapper.insertProjectModules(projectVO);
@@ -172,5 +175,45 @@ public class ProjectServiceImpl implements ProjectService {
 	@Override
 	public List<IssueStatVO> selectIssueStatByProjectId(String projectId) {
 		return projectMapper.selectIssueStatByProjectId(projectId);
+	}
+
+	@Override
+	@Transactional
+	public Map<String, Object> insertProjectModule(String projectId, String moduleCode) {
+	    Map<String, Object> resultMap = new HashMap<>();
+	    try {
+	        int result = projectMapper.insertProjectModule(projectId, moduleCode);
+	        if (result > 0) {
+	            resultMap.put("result", true);
+	            resultMap.put("message", "모듈이 추가되었습니다.");
+	        } else {
+	            resultMap.put("result", false);
+	            resultMap.put("message", "모듈 추가에 실패했습니다.");
+	        }
+	    } catch (Exception e) {
+	        resultMap.put("result", false);
+	        resultMap.put("message", "모듈 추가 중 오류가 발생했습니다.");
+	    }
+	    return resultMap;
+	}
+
+	@Override
+	@Transactional
+	public Map<String, Object> deleteProjectModule(String projectId, String moduleCode) {
+	    Map<String, Object> resultMap = new HashMap<>();
+	    try {
+	        int result = projectMapper.deleteProjectModuleByCode(projectId, moduleCode);
+	        if (result > 0) {
+	            resultMap.put("result", true);
+	            resultMap.put("message", "모듈이 삭제되었습니다.");
+	        } else {
+	            resultMap.put("result", false);
+	            resultMap.put("message", "모듈 삭제에 실패했습니다.");
+	        }
+	    } catch (Exception e) {
+	        resultMap.put("result", false);
+	        resultMap.put("message", "모듈 삭제 중 오류가 발생했습니다.");
+	    }
+	    return resultMap;
 	}
 }

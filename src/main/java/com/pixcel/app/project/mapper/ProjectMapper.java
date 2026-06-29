@@ -54,4 +54,7 @@ public interface ProjectMapper {
 	void deleteProjectMembersByProjectId(String projectId);
 	
 	public List<IssueStatVO> selectIssueStatByProjectId(@Param("projectId") String projectId);
+	
+	public int insertProjectModule(@Param("projectId") String projectId, @Param("moduleCode") String moduleCode);
+	public int deleteProjectModuleByCode(@Param("projectId") String projectId, @Param("moduleCode") String moduleCode);
 }
