@@ -29,13 +29,13 @@
 					</a></li>
 
 					<!-- 로드맵 -->
-					<li><a th:href="@{/roadmap}"> <span
+					<li><a th:href="@{/project/{projectId}/roadmap/roadmap_list(projectId=${projectId})}"> <span
 							class="educate-icon educate-event icon-wrap"></span> <span
 							class="mini-click-non">로드맵</span>
 					</a></li>
 
 					<!-- 마일스톤 -->
-					<li><a th:href="@{/milestones/list}"> <span
+					<li><a th:href="@{/project/{projectId}/milestones/list(projectId=${projectId})}"> <span
 							class="educate-icon educate-event icon-wrap"></span> <span
 							class="mini-click-non">마일스톤</span>
 					</a></li>

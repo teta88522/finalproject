@@ -1,0 +1,375 @@
+.mypage-container {
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 0 15px;
+    font-family: 'Inter', 'Noto Sans KR', sans-serif;
+}
+
+h2 {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 24px;
+    color: #1e293b;
+}
+
+/* ========================================================== */
+/* 1. 개인 정보 영역 (시안 맞춤 연보라 박스 & 3열 그리드) */
+/* ========================================================== */
+.user-info-section {
+    background-color: #d5daf2; 
+    padding: 30px 40px;
+    border-radius: 12px;
+    margin-bottom: 15px;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    column-gap: 40px;
+    row-gap: 20px;
+}
+
+.form-group-custom {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group-custom label {
+    font-size: 14px;
+    font-weight: 500;
+    color: #4e5d78;
+    margin-bottom: 8px;
+}
+
+/* 인포 박스 내의 Input 공통 스타일 */
+.info-grid .form-control {
+    border-radius: 8px !important;
+    border: 1px solid #cdd4ee !important;
+    background-color: #ffffff !important;
+    height: 42px !important;
+    padding: 8px 14px !important;
+    font-size: 14px !important;
+    color: #333333 !important;
+    box-shadow: none !important;
+}
+
+.readonly-id {
+    background-color: #e4e7f5 !important; /* 아이디 필드는 읽기전용 회색 처리 */
+    color: #6c757d !important;
+}
+
+
+.input-inline-btn-group {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.input-inline-btn-group input {
+    width: 100%;
+    padding-right: 90px !important; 
+}
+
+/* 구독그룹 & 비밀번호그룹 (인풋 + 버튼) */
+.subscribe-group,
+.password-group {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.subscribe-group input,
+.password-group input {
+    flex: 1;
+}
+
+/* 구독하기 & 비밀번호 변경 버튼 */
+.input-inline-btn-group .btn-primary,
+.input-inline-btn-group .btn-warning {
+    position: absolute;
+    right: 6px;
+    top: 4px;
+    bottom: 4px;
+    height: calc(100% - 8px) !important; 
+    border-radius: 6px !important;
+    padding: 0 14px !important;
+    font-size: 12px !important;
+    font-weight: 500 !important;
+    border: none !important;
+    cursor: pointer;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* 구독하기 버튼 색상 (시안의 어두운 청록/남색) */
+.input-inline-btn-group .btn-primary {
+    background-color: #1f2d6c !important;
+    color: #ffffff !important;
+}
+
+/* 비밀번호 변경 버튼 색상 (주황/옐로우) */
+.input-inline-btn-group .btn-warning {
+    background-color: #f7941d !important;
+    color: #ffffff !important;
+}
+
+.action-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 45px; /
+}
+
+.btn-primary#btnEdit {
+    background-color: #1f2d6c !important; /* 남색 버튼 */
+    color: #ffffff !important;
+    font-size: 14px !important;
+    font-weight: bold !important;
+    padding: 10px 24px !important;
+    border-radius: 6px !important;
+    border: none !important;
+}
+
+.btn-success#btnSave {
+    background-color: #28a745 !important; /* 수정 완료용 녹색 버튼 */
+    color: #ffffff !important;
+    font-size: 14px !important;
+    font-weight: bold !important;
+    padding: 10px 24px !important;
+    border-radius: 6px !important;
+    border: none !important;
+}
+
+.btn-danger {
+    background-color: #e60000 !important; /* 탈퇴 빨간색 버튼 */
+    color: #ffffff !important;
+    font-size: 14px !important;
+    font-weight: bold !important;
+    padding: 10px 24px !important;
+    border-radius: 6px !important;
+    border: none !important;
+}
+
+
+.project-filter-section {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 24px;
+    margin-bottom: 24px;
+}
+
+.filter-wrap {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr); 
+    gap: 16px;
+    align-items: flex-end;
+}
+
+.filter-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.filter-item label {
+    font-size: 12px;
+    font-weight: 500;
+    color: #64748b;
+    margin-bottom: 6px;
+}
+
+.project-search-wrap {
+    display: flex;
+    gap: 6px;
+}
+
+.project-search-wrap input,
+.project-search-wrap select {
+    flex: 1;
+    height: 38px !important;
+    border-radius: 6px !important;
+    border: 1px solid #cbd5e1 !important;
+    font-size: 13px !important;
+}
+
+.date-range-wrap {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.date-range-wrap input {
+    flex: 1;
+    height: 38px !important;
+    border-radius: 6px !important;
+    border: 1px solid #cbd5e1 !important;
+    font-size: 13px !important;
+}
+
+.filter-item input,
+.filter-item select {
+    height: 38px !important;
+    border-radius: 6px !important;
+    border: 1px solid #cbd5e1 !important;
+    font-size: 13px !important;
+}
+
+/* 필터 초기화 버튼 위치 정렬 */
+.filter-item:last-child {
+    grid-column: span 4;
+    display: flex;
+    align-items: flex-start;
+    margin-top: 10px;
+}
+
+#btnFilterReset {
+    background-color: #ffffff !important;
+    color: #334155 !important;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 6px !important;
+    height: 34px !important;
+    padding: 0 20px !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    cursor: pointer;
+}
+
+
+.project-table-container {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.project-list-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    color: #334155;
+}
+
+.project-list-table th, 
+.project-list-table td {
+    padding: 14px 16px;
+    text-align: left;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.project-list-table thead {
+    background-color: #f8fafc;
+    font-weight: 600;
+}
+
+/* 상태 배지 스타일링 */
+.status-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    text-align: center;
+}
+
+.status-ready {
+    background-color: #ffedd5; /* 연황색 */
+    color: #ea580c;
+}
+
+.status-ing {
+    background-color: #dbeafe; /* 연푸른색 */
+    color: #2563eb;
+}
+
+.status-done {
+    background-color: #f1f5f9; /* 연회색 */
+    color: #475569;
+}
+
+.no-data {
+    text-align: center;
+    color: #94a3b8;
+    padding: 40px !important;
+}
+
+
+.password-modal-dialog {
+    max-width: 400px;
+    margin: 10% auto;
+}
+
+.password-modal-content {
+    border-radius: 12px;
+    overflow: hidden;
+    border: none;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.modal-header-custom {
+    background-color: #1f2d6c; /* 남색 테마 */
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.modal-header-custom h4 {
+    color: #ffffff;
+    margin: 0;
+    font-size: 15px;
+    font-weight: 500;
+}
+
+.modal-header-custom span {
+    color: #ffffff;
+    font-size: 18px;
+    cursor: pointer;
+}
+
+.password-modal-body {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.password-modal-body label {
+    font-size: 12px;
+    font-weight: 500;
+    color: #64748b;
+    margin-bottom: 4px;
+}
+
+.password-modal-body .required {
+    color: #ef4444;
+}
+
+.modal-input {
+    border-radius: 6px !important;
+    border: 1px solid #cbd5e1 !important;
+    font-size: 13px !important;
+    height: 36px !important;
+}
+
+.password-modal-footer {
+    border-top: 1px solid #f1f5f9;
+    padding: 14px 24px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    background-color: #f8fafc;
+}
+
+.password-modal-footer button {
+    font-size: 13px;
+    border-radius: 6px;
+}
+
+.btn-modal-submit {
+    background-color: #1f2d6c !important;
+    border: none !important;
+    color: #ffffff !important;
+}

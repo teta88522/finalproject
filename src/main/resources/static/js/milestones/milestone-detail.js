@@ -1,27 +1,33 @@
 document.addEventListener('DOMContentLoaded', function() {
     
-    // 버튼을 직접 찾지 않고, 문서 전체에서 클릭을 감시합니다.
+    // 1. 이벤트 리스너가 'e'를 인자로 받을 수 있도록 함수 구문을 확인하세요.
     document.addEventListener('click', function(e) {
         
-        // 1. '목록으로' 버튼 클릭 시
-        if (e.target && e.target.id === 'btnList') {
-            location.href = '/milestones/list';
+        // 2. e.target이 존재하는지 먼저 확인
+        if (!e.target) return;
+
+        // 목록 버튼
+        if (e.target.id === 'btnList') {
+            const url = e.target.getAttribute('data-url');
+            if(url) location.href = url;
         }
 
-        // 2. '수정' 버튼 클릭 시
-        if (e.target && e.target.id === 'btnEdit') {
+        // 수정 버튼
+        if (e.target.id === 'btnEdit') {
             const milestoneId = e.target.getAttribute('data-id');
-            location.href = `/milestones/update?id=${milestoneId}`;
+            const baseUrl = e.target.getAttribute('data-url');
+            if(baseUrl) location.href = `${baseUrl}?id=${milestoneId}`;
         }
 
-        // 3. '삭제' 버튼 클릭 시
-        if (e.target && e.target.id === 'btnDelete') {
+        // 삭제 버튼
+        if (e.target.id === 'btnDelete') {
             const milestoneId = e.target.getAttribute('data-id');
+            const actionUrl = e.target.getAttribute('data-url');
             
             if (confirm('정말 이 마일스톤을 삭제하시겠습니까?')) {
                 const form = document.createElement('form');
                 form.method = 'POST';
-                form.action = '/milestones/delete';
+                form.action = actionUrl;
 
                 const input = document.createElement('input');
                 input.type = 'hidden';

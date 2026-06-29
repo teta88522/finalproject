@@ -70,3 +70,13 @@ textarea.form-control { height: 120px; resize: vertical; }
     float: right;
     font-size: 11px;
 }
+
+/* [기술적 이유] 완료 상태(L003)일 때 비활성화(disabled)되는 인풋들의 시인성 및 마우스 포인터 모양을 명확히 정의합니다. */
+input:disabled, select:disabled, textarea:disabled {
+    background-color: #e9ecef !important;
+    color: #6c757d !important;
+    cursor: not-allowed !important;
+}
+.issue-checkbox:disabled {
+    cursor: not-allowed !important;
+}

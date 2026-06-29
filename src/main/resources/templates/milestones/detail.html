@@ -132,14 +132,20 @@
         <!-- ==========================================
              3. 하단 버튼 영역
         =========================================== -->
-        <div class="panel-footer">
-            <button type="button" class="btn-k btn-default" id="btnList">목록으로</button>
-            
-            <div class="btn-group-right">
-                <button type="button" class="btn-k btn-primary" id="btnEdit" th:data-id="${milestone.milestoneId}">수정</button>
-                <button type="button" class="btn-k btn-danger" id="btnDelete" th:data-id="${milestone.milestoneId}">삭제</button>
-            </div>
-        </div>
+		<div class="panel-footer">
+		    <button type="button" class="btn-k btn-default" id="btnList" 
+		            th:data-url="@{/project/{id}/milestones/list(id=${projectId})}">목록으로</button>
+		            
+		    <div class="btn-group-right">
+		        <button type="button" class="btn-k btn-primary" id="btnEdit" 
+		                th:data-id="${milestone.milestoneId}"
+		                th:data-url="@{/project/{id}/milestones/update(id=${projectId})}">수정</button>
+		        
+		        <button type="button" class="btn-k btn-danger" id="btnDelete" 
+		                th:data-id="${milestone.milestoneId}"
+		                th:data-url="@{/project/{id}/milestones/delete(id=${projectId})}">삭제</button>
+		    </div>
+		</div>
 
     </div>
 <script th:src="@{/js/milestones/milestone-detail.js}"></script>

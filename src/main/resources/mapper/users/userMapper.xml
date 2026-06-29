@@ -61,4 +61,61 @@
 		FROM users
 		WHERE login_id = #{loginId}
 	</select>
+
+	<select id="getUserDetail" parameterType="String" resultType="userServiceVO">
+		SELECT
+			user_id
+			,login_id
+			,password
+			,user_name
+			,email
+			,phone
+			,identity_verified_yn
+			,subscribe_yn
+		FROM users
+		WHERE user_id = #{userId}
+	</select>
+	<select id="selectMyProjectList" parameterType="String" resultType="ProjectVO">
+		SELECT
+			p.project_id AS "projectId"
+			,p.owner_id AS "ownerId"
+			,p.project_name AS "projectName"
+			,p.description
+			,p.project_url AS "projectUrl"
+			,p.status_code AS "statusCode"
+			,p.start_date AS "startDate"
+			,p.end_date AS "endDate"
+			,p.created_at AS "createdAt"
+			,c.note AS "statusName"
+			,owner.user_name AS "ownerName"
+		FROM project p
+		LEFT JOIN users owner
+			ON p.owner_id = owner.user_id
+		LEFT JOIN common_code c
+			ON p.status_code = c.code_id
+			AND c.code_name = '0A'
+		WHERE p.owner_id = #{userId}
+		   OR EXISTS (
+				SELECT 1
+				FROM project_member pm
+				JOIN team_member tm
+					ON pm.team_member_id = tm.team_member_id
+				WHERE pm.project_id = p.project_id
+				  AND tm.user_id = #{userId}
+		   )
+		ORDER BY p.created_at DESC
+	</select>
+	<update id="updateUser" parameterType="userServiceVO">
+    UPDATE users
+    SET
+        user_name = #{userName},
+        email = #{email},
+        phone = #{phone}
+    WHERE user_id = #{userId}
+	</update>
+	<update id="updatePassword">
+    UPDATE users
+    SET password = #{password}
+    WHERE user_id = #{userId}
+	</update>
 </mapper>

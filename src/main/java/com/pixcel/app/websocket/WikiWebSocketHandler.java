@@ -11,7 +11,7 @@
 //import org.springframework.web.socket.WebSocketSession;
 //import org.springframework.web.socket.handler.BinaryWebSocketHandler;
 //
-////import com.pixcel.app.redis.RedisPublisher;
+//import com.pixcel.app.redis.RedisPublisher;
 //
 //@Component
 //public class WikiWebSocketHandler extends BinaryWebSocketHandler {
@@ -31,18 +31,18 @@
 //        System.out.println("접속 : " + wikiId);
 //    }
 //
-////    @Override
-////    protected void handleBinaryMessage(WebSocketSession session, BinaryMessage message) throws Exception {
-////
-////        String wikiId = (String) session.getAttributes().get("wikiId");
-////
-////        byte[] payload = message.getPayload().array();
-////
-////        System.out.println("메시지 수신 : " + wikiId);
-////
-////        // 👉 Redis publish
-////        redisPublisher.publish("wiki-room:" + wikiId, payload);
-////    }
+//    @Override
+//    protected void handleBinaryMessage(WebSocketSession session, BinaryMessage message) throws Exception {
+//
+//        String wikiId = (String) session.getAttributes().get("wikiId");
+//
+//        byte[] payload = message.getPayload().array();
+//
+//        System.out.println("메시지 수신 : " + wikiId);
+//
+//        // 👉 Redis publish
+//        redisPublisher.publish("wiki-room:" + wikiId, payload);
+//    }
 //
 //    public void broadcast(String channel, byte[] message) {
 //

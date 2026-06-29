@@ -17,7 +17,7 @@
           alert("[[${errorMessage}]]");
         </script>
         <div class="list-header-controls">
-          <a th:href="@{/roadmap/setting_create}" class="btn btn-primary">
+          <a th:href="@{/project/{projectId}/roadmap/setting_create(projectId=${projectId})}" class="btn btn-primary">
             ➕ 버전 추가
           </a>
 
@@ -68,9 +68,10 @@
               <tr th:each="roadmap : ${roadmapList}">
                 <td>
                   <a
-                    th:href="@{#}"
+				  	th:href="@{/project/{projectId}/roadmap/roadmap_detail(projectId=${projectId}, versionId=${roadmap.versionId})}"
                     class="version-link"
                     th:text="${roadmap.versionName}"
+					
                     >v1.0.0 출시</a
                   >
                 </td>
@@ -112,7 +113,7 @@
 
                 <td>
                   <a
-                    th:href="@{/roadmap/setting_update(versionId=${roadmap.versionId})}"
+                    th:href="@{/project/{projectId}/roadmap/setting_update(projectId=${projectId},versionId=${roadmap.versionId})}"
                     class="btn btn-sm"
                     th:classappend="${roadmap.statusCode == 'k003'} ? 'btn-disabled' : 'btn-default'"
                     th:attr="onclick=${roadmap.statusCode == 'k003'} ? 'return false;' : ''"

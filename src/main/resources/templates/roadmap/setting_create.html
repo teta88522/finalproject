@@ -22,7 +22,7 @@
           <div class="panel-body">
             <form
               id="versionCreateForm"
-              th:action="@{/roadmap/setting_create}"
+              th:action="@{/project/{projectId}/roadmap/setting_create(projectId=${projectId})}"
               method="POST"
               novalidate
             >

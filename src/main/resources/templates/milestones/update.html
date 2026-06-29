@@ -16,11 +16,12 @@
             <h2>마일스톤 수정</h2>
         </div>
         
-        <form id="milestoneForm" th:action="@{/milestones/update}" method="post">
+        <form id="milestoneForm" th:action="@{/project/{projectId}/milestones/update(projectId=${projectId})}" method="post">
             <input type="hidden" id="milestoneId" name="milestoneId" th:value="${milestone.milestoneId}">
             <input type="hidden" id="versionId" name="versionId" th:value="${milestone.versionId}">
             <input type="hidden" id="selectedIssueIds" name="selectedIssueIds" value="">
-
+			<input type="hidden" id="projectId" th:value="${projectId}">
+			
             <div class="panel-body">
                 <div class="content-row">
                     
@@ -87,14 +88,18 @@
                                 <option value="">상태 선택</option>
                                 <option value="L001" th:selected="${milestone.statusCode == 'L001'}">진행 예정</option>
                                 <option value="L002" th:selected="${milestone.statusCode == 'L002'}">진행 중</option>
+                                <option value="L003" th:selected="${milestone.statusCode == 'L003'}">완료</option>
                             </select>
                         </div>
 
-                        <div class="form-group">
-                            <label>시작일 <span class="required">*</span></label>
-                            <input type="date" id="startDate" name="startDate" class="form-control required-input date-input"
-                                   th:value="${#temporals.format(milestone.startDate, 'yyyy-MM-dd')}">
-                        </div>
+						<div class="form-group">
+						    <label>시작일 <span class="required">*</span></label>
+						    <input type="date" id="startDate" name="startDate" class="form-control required-input date-input"
+						           th:value="${#temporals.format(milestone.startDate, 'yyyy-MM-dd')}">
+						    <div id="startDatePastError" class="error-text" style="display: none; color: #dc3545; font-size: 12px; margin-top: 5px;">
+						        시작일은 오늘 날짜 이전으로 설정할 수 없습니다.
+						    </div>
+						</div>
 
                         <div class="form-group">
                             <label>목표 일자 <span class="required">*</span></label>

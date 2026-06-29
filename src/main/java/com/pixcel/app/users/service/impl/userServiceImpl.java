@@ -1,12 +1,14 @@
 package com.pixcel.app.users.service.impl;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.pixcel.app.project.service.ProjectVO;
 import com.pixcel.app.users.mapper.userMapper;
 import com.pixcel.app.users.service.userService;
 import com.pixcel.app.users.service.userServiceVO;
@@ -59,5 +61,60 @@ public class userServiceImpl implements userService {
 		int count = userMapper.checkLoginId(loginId);
 		return count > 0;
 	}
+
+	//김덕모 마이페이지
+	@Override
+	public userServiceVO getUserDetail(String userId) {
+		return userMapper.getUserDetail(userId);
+	}
+	@Override
+	public List<ProjectVO> selectMyProjectList(String userId){
+		return userMapper.selectMyProjectList(userId);
+	}
+	@Override
+	@Transactional
+	public Map<String, Object> updateUser(userServiceVO userVO){
+		Map<String, Object> updateMap = new HashMap<>();
+
+		int update = userMapper.updateUser(userVO);
+
+		if(update > 0){
+			updateMap.put("update",true);
+			updateMap.put("message","프로필 정보가 성공적으로 수정되었습니다");
+		} else {
+			updateMap.put("update", false);
+			updateMap.put("message", "프로필 정보 수정에 실패했습니다. 다시 시도해 주세요.");
+		}
+
+		return updateMap;
+	}
+	@Override
+	@Transactional
+	public Map<String, Object> updatePassword(String userId, String currentPassword, String newPassword){
+		Map<String, Object> updatePasswordMap = new HashMap<>();
+
+		userServiceVO user = userMapper.getUserDetail(userId);
+
+		if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
+    		updatePasswordMap.put("result", false);
+   			updatePasswordMap.put("message", "현재 비밀번호가 일치하지 않습니다.");
+    		return updatePasswordMap; 
+		}
+		String encodedPassword = passwordEncoder.encode(newPassword);	
+
+		int update = userMapper.updatePassword(userId, encodedPassword);
+
+		if (update > 0) {
+   			updatePasswordMap.put("result", true);
+    		updatePasswordMap.put("message", "비밀번호가 성공적으로 변경되었습니다.");
+		} else {
+    		updatePasswordMap.put("result", false);
+    		updatePasswordMap.put("message", "비밀번호 변경에 실패했습니다. 다시 시도해 주세요.");
+		}
+		
+		return updatePasswordMap;
+
+	}
+
 
 }

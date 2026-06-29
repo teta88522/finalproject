@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import com.pixcel.app.milestones.service.MilestonesVO;
 import com.pixcel.app.roadmap.mapper.RoadmapMapper;
 import com.pixcel.app.roadmap.service.RoadmapService;
 import com.pixcel.app.roadmap.service.RoadmapVO;
@@ -46,7 +47,12 @@ public class RoadmapServicelmpl implements RoadmapService {
         return roadmapList;
     }
 	@Override
-	public RoadmapVO getRoadmapDetail(String versionId, String projectId){
-	        return roadmapMapper.getRoadmapDetail(projectId, versionId);
+	public RoadmapVO getRoadmapDetail(String projectId, String versionId){
+	        return roadmapMapper.getRoadmapDetail(versionId, projectId);
 	};
+	@Override
+    public List<MilestonesVO> getRoadmapMilestones(String projectId, String versionId) {
+        // 매퍼의 2번 쿼리 호출
+        return roadmapMapper.getRoadmapMilestones(projectId, versionId);
+    }
 }
