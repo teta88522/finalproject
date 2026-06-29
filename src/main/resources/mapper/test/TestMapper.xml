@@ -504,7 +504,7 @@
             test_case_id,
             sort_order
         )
-        <foreach collection="testCaseIds"
+        <foreach collection="testCaseId"
                  item="testCaseId"
                  index="index"
                  separator="UNION ALL">
