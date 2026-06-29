@@ -29,4 +29,6 @@ public class RoadmapVO {
 	
 	List<MilestonesVO> milestoneList;
 	private int progressRate;
+	private String projectName;
+	private String projectOwnerName;
 }

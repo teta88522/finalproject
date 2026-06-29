@@ -15,24 +15,59 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class ProjectVO {
-	private String projectId;			// PK
-	private String ownerId;				// FK
-	private String projectName;			// 프로젝트 명
-	private String identifier;			// 식별자 명칭
-	private String description;			// 설명
-	private String projectUrl;			// 프로젝트 URL
-	private String statusCode;			// 공통코드(상태)
+	private String projectId;
+	private String ownerId;
+	private String projectName;
+	private String identifier;
+	private String description;
+	private String projectUrl;
+	private String statusCode;
 	@DateTimeFormat(pattern = "yyyy-MM-dd")
-	private Date startDate;				// 시작일
+	private Date startDate;
 	@DateTimeFormat(pattern = "yyyy-MM-dd")
-	private Date endDate;				// 완료일
-	private Date createdAt;				// 등록일자
-	private String gitUrl;				// github URL
-	
-	private List<String> moduleCodes;	// 화면에서 넘어오는 모듈 코드 배열
-	//private List<String> moduleNames;	// 화면에서 넘어오는 모듈 이름 배열
-	
-	//260623 고동현 프로젝트 리스트 화면 표시용으로 VO 추가합니다.
+	private Date endDate;
+	private Date createdAt;
+	private String gitUrl;
+
+	private List<String> moduleCodes;
+
+	// 260623 고동현 프로젝트 리스트 화면 표시용으로 VO 추가합니다.
+	// 화면 표시용
 	private String statusName;
 	private String ownerName;
+
+	// 검색 조건 필드
+	private String searchProjectName;
+	private String searchOwnerName;
+	@DateTimeFormat(pattern = "yyyy-MM-dd")
+	private Date searchStartDate;
+	@DateTimeFormat(pattern = "yyyy-MM-dd")
+	private Date searchEndDate;
+	private String searchStatusCode;
+
+	// 페이징 필드
+	// @Builder.Default: @Builder 사용 시에도 기본값 보장
+	@Builder.Default
+	private int page = 1;
+	@Builder.Default
+	private int pageSize = 10;
+	private int offset;
+	private int totalCount;
+
+	public void calcOffset() {
+		this.offset = (this.page - 1) * this.pageSize;
+	}
+
+	public int getTotalPage() {
+		if (totalCount == 0) return 1;
+		return (int) Math.ceil((double) totalCount / pageSize);
+	}
+
+	public boolean isHasPrevious() {
+		return page > 1;
+	}
+
+	public boolean isHasNext() {
+		return page < getTotalPage();
+	}
 }

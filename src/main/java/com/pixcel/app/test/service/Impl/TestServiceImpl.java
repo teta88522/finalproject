@@ -76,16 +76,8 @@ public class TestServiceImpl implements TestService {
 	@Override
 	@Transactional
 	public int insertTestWithCases(TestVO testVO) {
-		
-		  System.out.println("========== TEST INSERT DEBUG ==========");
-		    System.out.println("testId = " + testVO.getTestId());
-		    System.out.println("title = " + testVO.getTitle());
-		    System.out.println("testCaseIds = " + testVO.getTestCaseId());
-		    System.out.println("=======================================");
-		
+	
 		int result = testMapper.insertTest(testVO);
-		
-		System.out.println("insert 후 testId = " + testVO.getTestId());
 		if(testVO.getTestCaseId() != null && !testVO.getTestCaseId().isEmpty()) {
 			testMapper.insertTestCaseMapping(testVO);
 		}

@@ -24,10 +24,10 @@
 
 				<div th:if="${repository != null}">
 					<div class="repo-meta-info">
-						<span class="repo-meta-item"> 게시일자: 
-						<span th:text="${#dates.format(repository.uploadDate, 'yyyy-MM-dd HH:mm')}"></span>
-						</span> <span class="repo-meta-item"> 작성자: 
-						<span th:text="${repository.userName}"></span>
+						<span class="repo-meta-item"> 게시일자: <span
+							th:text="${#dates.format(repository.uploadDate, 'yyyy-MM-dd HH:mm')}"></span>
+						</span> <span class="repo-meta-item"> 작성자: <span
+							th:text="${repository.userName}"></span>
 						</span>
 					</div>
 
@@ -48,22 +48,32 @@
                  #strings.endsWith(repository.originalName.toLowerCase(), '.jpg') or 
                  #strings.endsWith(repository.originalName.toLowerCase(), '.jpeg') or
                  #strings.endsWith(repository.originalName.toLowerCase(), '.gif')}"
-							th:src="@{/repository/download(fileId=${repository.fileId})}"
+							th:src="@{/project/{projectId}/repository/image(projectId=${projectId}, fileId=${repository.fileId})}"
 							style="max-width: 50%; height: auto; border: 1px solid #dee2e6; border-radius: 4px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); display: block; margin-left: 0; margin-right: auto;" />
 					</div>
 
 					<div class="repo-btn-group">
-						<a href="/repository" class="repo-btn repo-btn-list">목록</a> <a
-							th:href="@{/repository/download(fileId=${repository.fileId})}"
+
+						<a
+							th:href="@{/project/{projectId}/repository(projectId=${projectId})}"
+							class="repo-btn repo-btn-list">목록</a>
+
+						<!-- 파일 다운로드 버튼 (projectId 포함) -->
+						<a
+							th:href="@{/project/{projectId}/repository/download(projectId=${projectId}, fileId=${repository.fileId})}"
 							class="repo-btn repo-btn-download">파일 다운로드</a>
 
 						<th:block
 							th:if="${userId != null && userId == repository.uploadUserId}">
-							<a th:href="@{/repository/edit(fileId=${repository.fileId})}"
+							<!-- 수정 버튼 -->
+							<a
+								th:href="@{/project/{projectId}/repository/edit(projectId=${projectId}, fileId=${repository.fileId})}"
 								class="repo-btn repo-btn-edit">수정</a>
 
-							<form th:action="@{/repository/delete}" method="post"
-								style="display: inline;">
+							<!-- 삭제 버튼 -->
+							<form
+								th:action="@{/project/{projectId}/repository/delete(projectId=${projectId})}"
+								method="post" style="display: inline;">
 								<input type="hidden" name="fileId"
 									th:value="${repository.fileId}">
 								<button type="submit" class="repo-btn repo-btn-delete">삭제</button>
@@ -75,7 +85,9 @@
 				<div th:unless="${repository != null}" class="repo-table-empty">
 					<p>해당 자료를 찾을 수 없습니다.</p>
 					<div style="margin-top: 20px;">
-						<a th:href="@{/repository}" class="repo-btn repo-btn-list">목록으로</a>
+						<a
+							th:href="@{/project/{projectId}/repository(projectId=${projectId})}"
+							class="repo-btn repo-btn-list">목록으로</a>
 					</div>
 				</div>
 

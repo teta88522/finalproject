@@ -2,12 +2,14 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // 1. 설정 버튼 클릭 이벤트 (원하는 링크로 수정하세요)
     const btnSettings = document.getElementById('btnSettings');
-    if(btnSettings) {
-        btnSettings.addEventListener('click', () => {
-            console.log('설정 페이지로 이동합니다.');
-            window.location.href = '/roadmap/setting_list';
-        });
-    }
+	if (btnSettings) {
+	    btnSettings.addEventListener('click', (event) => {
+	        const url = event.currentTarget.dataset.url;
+	        if (url) {
+	            location.href = url;
+	        }
+	    });
+	}
 
     // 2. 아코디언 토글 로직
     const headers = document.querySelectorAll('.toggle-accordion');
@@ -90,7 +92,9 @@ document.addEventListener('DOMContentLoaded', function() {
             // 2차 필터: 하위 마일스톤 & 일감 검색 매칭
             const milestones = item.querySelectorAll('.milestone-block');
             milestones.forEach(mBlock => {
-                const mName = mBlock.querySelector('.m-title-area .title-link').innerText.trim();
+				const mTitleEl = mBlock.querySelector('.m-title-area .title-link');
+				// 2. 요소가 있으면 텍스트를 가져오고, 없으면(미지정 영역이면) "미지정 일감"으로 처리
+				const mName = mTitleEl ? mTitleEl.innerText.trim() : "미지정 일감";
                 let isMilestoneMatch = true;
                 if (valMilestone && mName !== valMilestone) isMilestoneMatch = false;
 

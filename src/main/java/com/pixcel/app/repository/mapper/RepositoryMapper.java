@@ -32,4 +32,6 @@ public interface RepositoryMapper {
 	public String selectMyRecentProjectId(@Param("userId") String userId);
 	
 	public int isProjectMember(@Param("projectId") String projectId, @Param("userId") String userId);
+	
+	public String selectRecentVersionIdByProjectId(@Param("projectId") String projectId);
 }

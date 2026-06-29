@@ -30,7 +30,7 @@
 
             <form
               id="versionUpdateForm"
-              th:action="@{/roadmap/setting_update}"
+              th:action="@{/project/{projectId}/roadmap/setting_update(projectId=${projectId})}"
               method="POST"
               novalidate
             >
@@ -112,7 +112,7 @@
                   <button
                     type="button"
                     class="btn btn-default"
-                    onclick="location.href = '/roadmap/setting_list'"
+                    th:onclick="|location.href='@{/project/{id}/roadmap/setting_list(id=${projectId})}'|"
                   >
                     목록으로
                   </button>
@@ -130,7 +130,7 @@
 
             <form
               id="versionDeleteForm"
-              th:action="@{/roadmap/setting_delete}"
+              th:action="@{/project/{projectid}/roadmap/setting_delete(projectid=${projectId})}"
               method="POST"
               style="display: none"
             >

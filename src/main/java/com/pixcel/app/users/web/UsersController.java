@@ -1,8 +1,10 @@
 package com.pixcel.app.users.web;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -10,17 +12,21 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.pixcel.app.project.service.ProjectVO;
+import com.pixcel.app.user.security.CustomUserDetails;
 import com.pixcel.app.users.service.userService;
 import com.pixcel.app.users.service.userServiceVO;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.RequestBody;
+
 
 @Controller
 @RequiredArgsConstructor
 public class UsersController {
 	
 	 private final userService userService;
-	 
+
 	//회원가입 화면
     @GetMapping("/join")
     public String joinForm(Model model) {
@@ -60,5 +66,38 @@ public class UsersController {
     	return "users/home";
     }
     
+    //김덕모 마이페이지
+    @GetMapping("/mypage")
+    public String myPage(@AuthenticationPrincipal CustomUserDetails userDetails, Model model){
+        String userId = userDetails.getUserId();
+        userServiceVO userDetail = userService.getUserDetail(userId);
+        model.addAttribute("user", userDetail);
+
+        List<ProjectVO> myProjects = userService.selectMyProjectList(userId);
+    	model.addAttribute("projects", myProjects);
+
+        return "users/usersMyPage";
+    }
+
+    @PostMapping("/updateUser")
+    @ResponseBody
+    public  Map<String, Object> updateUser(
+        @AuthenticationPrincipal CustomUserDetails userDetails,
+        userServiceVO userVO){
+            userVO.setUserId(userDetails.getUserId());
+    	    return userService.updateUser(userVO);
+        }
     
+    @PostMapping("/updatePassword")
+    @ResponseBody
+        public Map<String, Object> updatePassword(
+    		@AuthenticationPrincipal CustomUserDetails userDetails,
+    		@RequestParam String currentPassword,
+    		@RequestParam String newPassword) {
+        
+        String userId = userDetails.getUserId();
+    	return userService.updatePassword(userId, currentPassword, newPassword);
+    }
+    
+   
 }

@@ -275,3 +275,46 @@ body {
 	background-color: #f8f9fa;
 	border-color: #dee2e6;
 }
+/* ── radio 칩(chip) 스타일 ── */
+.radio-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 4px 0;
+}
+
+/* 실제 radio input은 숨김 */
+.radio-label input[type="radio"] {
+    display: none;
+}
+
+/* 칩 모양 레이블 */
+.radio-label {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 12px;
+    border: 1px solid #d7dbe7;
+    border-radius: 999px;
+    background-color: #ffffff;
+    font-size: 13px;
+    color: #555;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+    user-select: none;
+    white-space: nowrap;
+}
+
+.radio-label:hover {
+    background-color: #eef3ff;
+    border-color: #007bff;
+    color: #007bff;
+}
+
+/* 선택된 칩 */
+.radio-label:has(input[type="radio"]:checked) {
+    background-color: #007bff;
+    border-color: #007bff;
+    color: #ffffff;
+    font-weight: 600;
+}

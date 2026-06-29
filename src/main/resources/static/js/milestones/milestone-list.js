@@ -1,10 +1,14 @@
 document.addEventListener('DOMContentLoaded', function() {
     
     // 1. 마일스톤 생성 버튼 이동
-    const btnCreateMilestone = document.getElementById('btnCreateMilestone');
-    if(btnCreateMilestone) {
-        btnCreateMilestone.addEventListener('click', () => window.location.href = '/milestones/create');
-    }
+	const btnCreateMilestone = document.getElementById('btnCreateMilestone');
+	if (btnCreateMilestone) {
+	    btnCreateMilestone.addEventListener('click', (e) => {
+	        // HTML에 심어둔 경로를 가져와서 이동
+	        const url = e.target.getAttribute('data-url');
+	        location.assign(url);
+	    });
+	}
     
     // 2. 아코디언 토글
     const headers = document.querySelectorAll('.toggle-accordion');

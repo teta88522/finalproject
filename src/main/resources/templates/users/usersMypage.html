@@ -1,0 +1,236 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{common/layouts/default_layout}">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" th:href="@{/css/users/usersMypage.css}" />
+</head>
+<body>
+<div layout:fragment="Content">
+	<div class="mypage-container">
+		<h2>마이페이지</h2>
+		
+		<!-- 1. 개인 정보 영역 -->
+		<div class="user-info-section">
+			<form id="profileForm" th:action="@{/updateUser}" method="post">
+				<div class="info-grid">
+					<!-- 이름 -->
+					<div class="form-group-custom">
+						<label>이름</label>
+						<input type="text" name="userName" th:value="${user.userName}" readonly class="form-control" />
+					</div>
+					<!-- 이메일 -->
+					<div class="form-group-custom">
+						<label>이메일</label>
+						<input type="email" name="email" th:value="${user.email}" readonly class="form-control" />
+					</div>
+					<!-- 구독여부 -->
+					<div class="form-group-custom">
+						<label>구독여부</label>
+						<div class="input-inline-btn-group">
+							<input type="text" th:value="${user.subscribeYN == 'Y' ? '구독 중' : '미 구독'}" readonly class="form-control" />
+							<button type="button" data-toggle="modal" data-target="#subscribeModal" class="btn btn-primary btn-sm">구독하기</button>
+						</div>
+					</div>
+					<!-- 아이디 -->
+					<div class="form-group-custom">
+						<label>아이디</label>
+						<input type="text" th:value="${user.loginId}" readonly class="form-control readonly-id" />
+					</div>
+					<!-- 전화번호 -->
+					<div class="form-group-custom">
+						<label>전화번호</label>
+						<input type="text" name="phone" th:value="${user.phone}" readonly class="form-control" />
+					</div>
+					<!-- 비밀번호 (암호화 텍스트 박스 + 내부 변경 버튼) -->
+					<div class="form-group-custom">
+						<label>비밀번호</label>
+						<div class="input-inline-btn-group">
+							<input type="password" value="********" readonly class="form-control" />
+							<button type="button" data-toggle="modal" data-target="#passwordChangeModal" class="btn btn-warning btn-sm">변경</button>
+						</div>
+					</div>
+				</div>
+				
+				<!-- 하단 버튼 -->
+				<div class="action-buttons">
+					<button type="button" id="btnEdit" class="btn btn-primary">수정</button>
+					<button type="submit" id="btnSave" class="btn btn-success" style="display: none;">수정 완료</button>
+					<button type="button" class="btn btn-danger">탈퇴</button>
+				</div>
+			</form>
+		</div>
+
+		<!-- 2. 참여 중인 프로젝트 검색/필터 영역 -->
+		<h3>참여중인 프로젝트</h3>
+		<div class="project-filter-section">
+			<div class="filter-wrap">
+				<!-- 프로젝트명 -->
+				<div class="filter-item">
+					<label>프로젝트 명</label>
+					<div class="project-search-wrap">
+						<input type="text" id="filterProjectNameInput" placeholder="프로젝트명 검색" class="form-control" />
+						<select id="filterProjectNameSelect" class="form-control">
+							<option value="">전체</option>
+							<option th:each="p : ${projects}" th:value="${p.projectName}" th:text="${p.projectName}"></option>
+						</select>
+					</div>
+				</div>
+				<!-- 기간 -->
+				<div class="filter-item">
+					<label>시작일 범위</label>
+					<div class="date-range-wrap">
+						<input type="date" id="filterStartDate" class="form-control" />
+						<span>~</span>
+						<input type="date" id="filterEndDate" class="form-control" />
+					</div>
+				</div>
+				<!-- 담당자 -->
+				<div class="filter-item">
+					<label>담당자</label>
+					<input type="text" id="filterOwner" placeholder="담당자 검색" class="form-control filter-owner-input" />
+				</div>
+				<!-- 상태 -->
+				<div class="filter-item">
+					<label>상태</label>
+					<select id="filterStatus" class="form-control filter-status-select">
+						<option value="">전체</option>
+						<option value="a001">예정</option>
+						<option value="a002">진행중</option>
+						<option value="a003">종료</option>
+					</select>
+				</div>
+				<!-- 초기화 -->
+				<div class="filter-item">
+					<button type="button" id="btnFilterReset" class="btn btn-secondary">초기화</button>
+				</div>
+			</div>
+		</div>
+
+		<!-- 3. 프로젝트 목록 테이블 -->
+		<div class="project-table-container">
+			<table class="table project-list-table">
+				<thead>
+					<tr>
+						<th><input type="checkbox" id="checkAll" /></th>
+						<th>프로젝트 명</th>
+						<th>설명</th>
+						<th>관리자</th>
+						<th>홈페이지</th>
+						<th>상태</th>
+						<th>생성일</th>
+						<th>완료일</th>
+					</tr>
+				</thead>
+				<tbody id="projectTableBody">
+					<tr th:each="p : ${projects}" class="project-row"
+					    th:data-project-name="${p.projectName}"
+					    th:data-start-date="${#dates.format(p.startDate, 'yyyy-MM-dd')}"
+					    th:data-end-date="${#dates.format(p.endDate, 'yyyy-MM-dd')}"
+					    th:data-owner-name="${p.ownerName}"
+					    th:data-status-code="${p.statusCode}">
+						<td><input type="checkbox" class="project-check" /></td>
+						<td th:text="${p.projectName}"></td>
+						<td th:text="${p.description}"></td>
+						<td th:text="${p.ownerName}"></td>
+						<td><a th:href="${p.projectUrl}" th:text="${p.projectUrl}" target="_blank"></a></td>
+						<td>
+							<!-- [기술적 이유] 상태 코드에 따라 둥근 파스텔톤 배지 클래스를 동적으로 붙여주어 심미성을 개선합니다. -->
+							<span class="status-badge" 
+							      th:classappend="${p.statusCode == 'a001' ? 'status-ready' : (p.statusCode == 'a002' ? 'status-ing' : 'status-done')}"
+							      th:text="${p.statusCode == 'a001' ? '예정' : (p.statusCode == 'a002' ? '진행중' : '종료')}">
+							</span>
+						</td>
+						<td th:text="${#dates.format(p.createdAt, 'yyyy-MM-dd')}"></td>
+						<td th:text="${#dates.format(p.endDate, 'yyyy-MM-dd')}"></td>
+					</tr>
+					<tr th:if="${#lists.isEmpty(projects)}">
+						<td colspan="8" class="no-data">참여 중인 프로젝트가 없습니다.</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+	</div>
+
+	<!-- 4. 비밀번호 변경 모달 -->
+	<div class="modal fade" id="passwordChangeModal" tabindex="-1" role="dialog">
+		<div class="modal-dialog password-modal-dialog" role="document">
+			<div class="modal-content password-modal-content">
+				<form id="passwordForm" th:action="@{/updatePassword}" method="post">
+					<!-- 헤더 -->
+					<div class="modal-header-custom">
+						<h4>비밀번호 변경하기</h4>
+						<span data-dismiss="modal">✕</span>
+					</div>
+					<!-- 바디 -->
+					<div class="modal-body password-modal-body">
+						<div class="form-group">
+							<label>현재 비밀번호 <span class="required">*</span></label>
+							<input type="password" name="currentPassword" class="form-control modal-input" placeholder="현재 비밀번호를 입력하세요" required />
+						</div>
+						<div class="form-group">
+							<label>새 비밀번호 <span class="required">*</span></label>
+							<input type="password" id="newPassword" name="newPassword" class="form-control modal-input" placeholder="새 비밀번호를 입력하세요" required />
+						</div>
+						<div class="form-group">
+							<label>새 비밀번호 확인 <span class="required">*</span></label>
+							<input type="password" id="confirmPassword" class="form-control modal-input" placeholder="새 비밀번호를 한 번 더 입력하세요" required />
+						</div>
+					</div>
+					<!-- 푸터 -->
+					<div class="modal-footer password-modal-footer">
+						<button type="button" class="btn btn-default btn-sm" data-dismiss="modal">취소</button>
+						<button type="submit" class="btn btn-primary btn-sm btn-modal-submit">변경</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+
+	<div class="modal fade" id="subscribeModal" tabindex="-1" role="dialog">
+		<div class="modal-dialog password-modal-dialog" role="document">
+			<div class="modal-content password-modal-content">
+				<form id="subscribeForm" th:action="@{/subscribe/verify}" method="post">
+					<!-- 헤더 -->
+					<div class="modal-header-custom">
+						<h4>구독 신청 (이메일 인증)</h4>
+						<span data-dismiss="modal">✕</span>
+					</div>
+					<!-- 바디 -->
+					<div class="modal-body password-modal-body">
+						<!-- 이메일 입력 + 발송 버튼 세트 -->
+						<div class="form-group">
+							<label>수신 이메일 <span class="required">*</span></label>
+							<div class="input-inline-btn-group">
+								<input type="email" id="subscribeEmail" name="email" class="form-control" 
+									   th:value="${user.email}" placeholder="이메일 주소를 입력하세요" required />
+								<button type="button" id="btnSendAuthCode" class="btn btn-primary btn-sm">인증코드 발송</button>
+							</div>
+						</div>
+						
+						<!-- 인증번호 입력 + 타이머 세트 (초기에는 입력 불가능하게 막아둠) -->
+						<div class="form-group" id="authCodeGroup">
+							<label>인증코드 6자리 <span class="required">*</span></label>
+							<div class="input-inline-btn-group">
+								<input type="text" id="authCode" name="authCode" class="form-control" 
+									   placeholder="인증코드를 입력하세요" disabled required />
+								<!-- 타이머가 들어갈 공간 (예: 03:00) -->
+								<span id="authTimer" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); font-size: 13px; font-weight: bold; color: #ef4444; display: none;">03:00</span>
+							</div>
+						</div>
+					</div>
+					<!-- 푸터 -->
+					<div class="modal-footer password-modal-footer">
+						<button type="button" class="btn btn-default btn-sm" data-dismiss="modal">취소</button>
+						<button type="submit" id="btnSubmitSubscribe" class="btn btn-primary btn-sm btn-modal-submit" disabled>구독 완료</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+	<script th:src="@{/js/users/userMypage.js}"></script>
+</div>
+</body>
+
+</html>

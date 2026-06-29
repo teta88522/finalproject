@@ -20,9 +20,13 @@
             
             <div class="main-header">
                 <h2>로드맵</h2>
-                <button type="button" class="btn btn-default" id="btnSettings">
-                    <i class="fas fa-cog"></i> 설정
-                </button>
+				<button 
+				    type="button" 
+				    class="btn btn-default" 
+				    id="btnSettings"
+				    th:data-url="@{/project/{id}/roadmap/setting_list(id=${projectId})}">
+				    <i class="fas fa-cog"></i> 설정
+				</button>
             </div>
 
             <hr class="section-divider" />
@@ -68,7 +72,11 @@
                                 <span class="toggle-icon"><i class="fas fa-chevron-down"></i></span>
                                 <span th:if="${roadmap.defaultYn == 'Y'}" class="badge-default">★ 기본</span>
                                 <h4 style="margin:0; font-size: 17px; font-weight: 500;">
-                                    <a th:href="@{/roadmap/roadmap_detail(versionId=${roadmap.versionId})}" class="title-link no-accordion" th:text="${roadmap.versionName}">1.0.0</a>
+									<a th:href="@{/project/{id}/roadmap/roadmap_detail(id=${projectId}, versionId=${roadmap.versionId})}" 
+									   class="title-link no-accordion" 
+									   th:text="${roadmap.versionName}">
+									   1.0.0
+									</a>
                                 </h4>
 								<span class="status-badge"
 								      th:classappend="${roadmap.statusCode == 'k001' ? 'status-k001' : (roadmap.statusCode == 'k002' ? 'status-k002' : 'status-k003')}"
@@ -83,7 +91,7 @@
 							             th:if="${milestone.milestoneId != null and !milestone.milestoneId.startsWith('UNASSIGNED')}">
 							            <div class="m-title-area">
 							                <i class="fas fa-cube" style="color:#006df0; margin-right:5px;"></i>
-							                <a th:href="@{/milestones/detail(id=${milestone.milestoneId})}" class="title-link hover-primary" th:text="${milestone.title}">마일스톤 타이틀</a>
+							                <a th:href="@{/project/{projectId}/milestones/detail(projectId=${projectId},id=${milestone.milestoneId})}" class="title-link hover-primary" th:text="${milestone.title}">마일스톤 타이틀</a>
 							                
 							                <span class="status-badge" style="margin-left:12px;"
 							                      th:if="${milestone.statusCode != null}"

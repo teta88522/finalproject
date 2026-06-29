@@ -8,16 +8,35 @@ document.addEventListener("DOMContentLoaded", function () {
   const startDateInput = document.getElementById("startDate");
   const endDateInput = document.getElementById("endDate");
   const dateErrorDiv = document.getElementById("dateError");
+  const startDatePastError = document.getElementById("startDatePastError"); // [신규] 에러 메시지 변수 추가
+  const projectId = document.getElementById('projectId').value;
 
   // [상태 관리 변수]
-  let selectedIssueIds = new Set(); // 현재 체크되어 서버로 전송될 일감 ID 목록
-  let addedHistoryIds = new Set();  // 💡 한 번이라도 추가된 적 있는 일감 ID 목록 (체크 해제되어도 유지되어 중복 방지)
-  let lockedVersionId = null;       // 처음 추가된 일감에 의해 고정되는 버전 ID
+  let selectedIssueIds = new Set();
+  let addedHistoryIds = new Set();  
+  let lockedVersionId = null;       
   let searchTimeout = null;
 
+  // --- [날짜 선후 관계 설정] ---
+  if (startDateInput && endDateInput) {
+  
+      if (startDateInput.value) {
+          endDateInput.setAttribute('min', startDateInput.value);
+      }
+      
+      // 시작일을 선택(변경)했을 때, 목표일자의 최소 선택 가능 날짜를 시작일로 동기화
+      startDateInput.addEventListener('change', function() {
+          endDateInput.setAttribute('min', this.value); 
+          
+          // 만약 이미 선택해둔 목표일자가 새로 바꾼 시작일보다 빠르다면, 목표일자 초기화
+          if (endDateInput.value && endDateInput.value < this.value) {
+              endDateInput.value = '';
+          }
+      });
+  }
   // 일감 검색 API 호출 함수
   function fetchAndShowIssues(keyword) {
-    let apiUrl = `/milestones/api/issues/search?keyword=${keyword}`;
+    let apiUrl = `/project/${projectId}/milestones/api/issues/search?keyword=${keyword}`;
 
     if (lockedVersionId !== null && lockedVersionId !== "") {
       apiUrl += `&versionId=${lockedVersionId}`;
@@ -58,14 +77,10 @@ document.addEventListener("DOMContentLoaded", function () {
       const li = document.createElement("li");
       li.className = "search-dropdown-item";
 
-      // 💡 조건 1: 한 번이라도 장바구니에 담긴 적이 있는가? (체크를 풀었어도 true)
       const isUsed = addedHistoryIds.has(issue.issueId);
-      
-      // 💡 조건 2: 잠긴 버전이 있고, 현재 검색된 일감의 버전이 그와 다른가?
       const isDifferentVersion = (lockedVersionId !== null && lockedVersionId !== "" && issue.versionId !== lockedVersionId);
 
       if (isUsed || isDifferentVersion) {
-        // [선택 불가 상태 스타일 스타일 및 문구 처리]
         li.style.color = "#ccc";
         li.style.cursor = "not-allowed";
         
@@ -75,7 +90,6 @@ document.addEventListener("DOMContentLoaded", function () {
           li.innerHTML = `<strong>${issue.versionName}</strong> - ${issue.title} <span style="font-size:0.85em; color:#e74c3c; margin-left:5px;">(버전 불일치)</span>`;
         }
       } else {
-        // [선택 가능 상태]
         li.innerHTML = `
             <strong>${issue.versionName || '버전 없음'}</strong> - ${issue.title}
             <span class="badge badge-right" style="color: #0056b3;">${issue.issueStatusName || "미정"}</span>
@@ -114,11 +128,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const newCheckbox = tr.querySelector(".issue-checkbox");
     
-    // 현재 선택 목록과 중복 방지 히스토리 목록에 각각 추가
     selectedIssueIds.add(issue.issueId);
     addedHistoryIds.add(issue.issueId);
 
-    // 첫 번째 일감 등록 시 버전 필드 잠금 설정
     if (!lockedVersionId) {
       lockedVersionId = issue.versionId;
       if (versionIdInput) versionIdInput.value = lockedVersionId;
@@ -130,53 +142,50 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   // [체크박스 해제 및 선택 시 로직 함수]
-    function handleCheckboxChange() {
-      const clickedIssueId = this.value;
-      const clickedVersionId = this.getAttribute("data-version-id");
+  function handleCheckboxChange() {
+    const clickedIssueId = this.value;
+    const clickedVersionId = this.getAttribute("data-version-id");
 
-      if (this.checked) {
-        selectedIssueIds.add(clickedIssueId);
-        if (!lockedVersionId) {
-          lockedVersionId = clickedVersionId;
-          if (versionIdInput) versionIdInput.value = lockedVersionId;
-        }
-      } else {
-        selectedIssueIds.delete(clickedIssueId);
-        
-        // 체크가 모두 풀리면 버전 잠금 해제
-        if (selectedIssueIds.size === 0) {
-          lockedVersionId = null;
-          if (versionIdInput) versionIdInput.value = "";
-        }
+    if (this.checked) {
+      selectedIssueIds.add(clickedIssueId);
+      if (!lockedVersionId) {
+        lockedVersionId = clickedVersionId;
+        if (versionIdInput) versionIdInput.value = lockedVersionId;
       }
+    } else {
+      selectedIssueIds.delete(clickedIssueId);
       
-      updateHiddenInput();
-      updateCheckboxUI(); // 💡 상태가 변할 때마다 전체 체크박스 UI 갱신
+      if (selectedIssueIds.size === 0) {
+        lockedVersionId = null;
+        if (versionIdInput) versionIdInput.value = "";
+      }
     }
+    
+    updateHiddenInput();
+    updateCheckboxUI(); 
+  }
 
-    // 💡 [신규 추가] 표에 있는 모든 체크박스의 활성/비활성 상태를 갱신하는 함수
-    function updateCheckboxUI() {
-      const allCheckboxes = document.querySelectorAll(".issue-checkbox");
+  // 표에 있는 모든 체크박스의 활성/비활성 상태를 갱신하는 함수
+  function updateCheckboxUI() {
+    const allCheckboxes = document.querySelectorAll(".issue-checkbox");
+    
+    allCheckboxes.forEach(cb => {
+      const cbVersionId = cb.getAttribute("data-version-id");
+      const tr = cb.closest("tr"); 
       
-      allCheckboxes.forEach(cb => {
-        const cbVersionId = cb.getAttribute("data-version-id");
-        const tr = cb.closest("tr"); // 체크박스가 포함된 행(행 전체 색상 변경용)
-        
-        // 잠긴 버전이 존재하고, 현재 체크박스의 버전이 그 잠긴 버전과 다를 때
-        if (lockedVersionId !== null && cbVersionId !== lockedVersionId) {
-          cb.disabled = true;                // 체크박스 클릭 차단
-          tr.style.color = "#ccc";           // 글씨를 회색으로 변경
-          tr.style.backgroundColor = "#f9f9f9"; // 배경을 살짝 어둡게 (선택 사항)
-          tr.title = "현재 선택된 일감들과 버전이 달라 추가할 수 없습니다."; // 마우스 호버 시 툴팁
-        } else {
-          // 조건에 맞거나 아무것도 잠기지 않았을 때는 원상복구
-          cb.disabled = false;
-          tr.style.color = "";
-          tr.style.backgroundColor = "";
-          tr.title = "";
-        }
-      });
-    }
+      if (lockedVersionId !== null && cbVersionId !== lockedVersionId) {
+        cb.disabled = true;                
+        tr.style.color = "#ccc";           
+        tr.style.backgroundColor = "#f9f9f9"; 
+        tr.title = "현재 선택된 일감들과 버전이 달라 추가할 수 없습니다."; 
+      } else {
+        cb.disabled = false;
+        tr.style.color = "";
+        tr.style.backgroundColor = "";
+        tr.title = "";
+      }
+    });
+  }
 
   // hidden input 태그에 값 동기화
   function updateHiddenInput() {
@@ -196,10 +205,11 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 
-  // 폼 서브밋 검증
+  // --- [폼 서브밋 시 최종 날짜 검증 로직 추가] ---
   form.addEventListener("submit", function (event) {
     let isValid = true;
 
+    // 1. 필수 입력값 체크
     const requiredInputs = document.querySelectorAll(".required-input");
     requiredInputs.forEach((input) => {
       if (input.value.trim() === "") {
@@ -210,20 +220,17 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     });
 
+    // 2. 날짜 논리 검증 (시작일이 목표일보다 늦을 수 없음)
     if (startDateInput.value && endDateInput.value) {
-      const startDate = new Date(startDateInput.value);
-      const endDate = new Date(endDateInput.value);
-
-      if (startDate > endDate) {
-        startDateInput.classList.add("error-border");
-        endDateInput.classList.add("error-border");
-        dateErrorDiv.style.display = "block";
-        isValid = false;
-      } else {
-        startDateInput.classList.remove("error-border");
-        endDateInput.classList.remove("error-border");
-        dateErrorDiv.style.display = "none";
-      }
+        if (startDateInput.value > endDateInput.value) {
+            startDateInput.classList.add("error-border");
+            endDateInput.classList.add("error-border");
+            dateErrorDiv.style.display = "block";
+            isValid = false;
+        } else {
+            endDateInput.classList.remove("error-border");
+            dateErrorDiv.style.display = "none";
+        }
     }
 
     if (!isValid) {
