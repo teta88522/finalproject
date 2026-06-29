@@ -4,17 +4,24 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ModelAttribute;
+
+import com.pixcel.app.project.service.ProjectModulesVO;
+import com.pixcel.app.project.service.ProjectService;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 
 @ControllerAdvice
 public class GlobalControllerAdvice {
-
+	
+	@Autowired
+	private ProjectService projectService;
+	
     // admin 사이드바 URL 목록
     private static final List<String> ADMIN_URIS = List.of(
         "/admin", "/codevalue", "/issuetype", "/issuestatus","/workflow"
@@ -50,6 +57,17 @@ public class GlobalControllerAdvice {
             model.addAttribute("menuType", "admin");
         } else if (isProject) {
             model.addAttribute("menuType", "project");
+            String[] paths = uri.split("/");
+
+            if (paths.length >= 3) {
+                String projectId = paths[2];
+                
+                List<String> moduleCodes = projectService.selectAllModuleProjects(projectId)
+                        .stream()
+                        .map(ProjectModulesVO::getModuleCode)
+                        .toList();
+                model.addAttribute("moduleCodes", moduleCodes);
+            }
         } else if (isTeam) {
         	model.addAttribute("menuType", "team");
         }

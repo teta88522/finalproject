@@ -4,105 +4,386 @@
       layout:decorate="~{common/layouts/default_layout}">
 <head>
 <meta charset="UTF-8">
+<style>
+  .wiki-wrap {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    padding: 24px;
+  }
+  .wiki-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+  .wiki-title-input {
+    width: 100%;
+    font-size: 28px;
+    font-weight: 700;
+    border: none;
+    outline: none;
+    padding: 8px 0;
+    border-bottom: 2px solid #3d6ef5;
+    margin-bottom: 16px;
+    color: #1a1a1a;
+  }
+  .wiki-tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 0;
+    border-bottom: 2px solid #e0e0e0;
+  }
+  .wiki-tab {
+    padding: 8px 20px;
+    cursor: pointer;
+    font-size: 14px;
+    color: #888;
+    border: 1px solid transparent;
+    border-bottom: none;
+    border-radius: 6px 6px 0 0;
+    background: none;
+  }
+  .wiki-tab.active {
+    color: #3d6ef5;
+    border-color: #e0e0e0;
+    background: #fff;
+    margin-bottom: -2px;
+    font-weight: 600;
+  }
+  .wiki-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    padding: 8px;
+    background: #f8f9fa;
+    border: 1px solid #e0e0e0;
+    border-top: none;
+  }
+  .toolbar-btn {
+    padding: 4px 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: #fff;
+    cursor: pointer;
+    font-size: 13px;
+    color: #333;
+    min-width: 32px;
+    text-align: center;
+  }
+  .toolbar-btn:hover { background: #e8eeff; border-color: #3d6ef5; color: #3d6ef5; }
+  .toolbar-btn.active { background: #3d6ef5; color: #fff; border-color: #3d6ef5; }
+  .toolbar-divider { width: 1px; background: #ddd; margin: 2px 4px; }
 
+  #editor {
+    min-height: 600px;
+    border: 1px solid #e0e0e0;
+    border-top: none;
+    border-radius: 0 0 8px 8px;
+  }
+  .tiptap {
+    outline: none;
+    min-height: 600px;
+    cursor: text;
+    font-size: 15px;
+    line-height: 1.8;
+    color: #1a1a1a;
+    padding: 16px;
+  }
+  .tiptap h1 { font-size: 26px; font-weight: 700; border-bottom: 2px solid #3d6ef5; padding-bottom: 6px; margin: 24px 0 12px; }
+  .tiptap h2 { font-size: 21px; font-weight: 700; border-bottom: 1px solid #ddd; padding-bottom: 4px; margin: 20px 0 10px; }
+  .tiptap h3 { font-size: 17px; font-weight: 700; margin: 16px 0 8px; }
+  .tiptap h4 { font-size: 15px; font-weight: 700; margin: 12px 0 6px; }
+  .tiptap blockquote { border-left: 4px solid #3d6ef5; background: #f0f4ff; padding: 10px 16px; margin: 12px 0; border-radius: 0 6px 6px 0; color: #444; }
+  .tiptap pre { background: #1e1e1e; color: #d4d4d4; padding: 16px; border-radius: 8px; font-size: 13px; overflow-x: auto; margin: 12px 0; }
+  .tiptap code { background: #f0f0f0; padding: 2px 6px; border-radius: 4px; font-size: 13px; color: #e53e3e; }
+  .tiptap pre code { background: none; color: inherit; padding: 0; }
+  .tiptap table { border-collapse: collapse; width: 100%; margin: 12px 0; }
+  .tiptap th { background: #f0f4ff; border: 1px solid #ddd; padding: 8px 12px; font-weight: 600; }
+  .tiptap td { border: 1px solid #ddd; padding: 8px 12px; }
+  .tiptap tr:nth-child(even) td { background: #fafafa; }
+  .tiptap ul { padding-left: 24px; margin: 8px 0; }
+  .tiptap ol { padding-left: 24px; margin: 8px 0; }
+  .tiptap li { margin: 4px 0; }
+  .tiptap hr { border: none; border-top: 2px solid #eee; margin: 20px 0; }
+  .tiptap a { color: #3d6ef5; text-decoration: underline; }
+  .tiptap p.is-editor-empty:first-child::before {
+    color: #aaa; content: attr(data-placeholder);
+    float: left; height: 0; pointer-events: none;
+  }
+
+  .wiki-preview {
+    display: none;
+    min-height: 600px;
+    padding: 16px;
+    border: 1px solid #e0e0e0;
+    border-top: none;
+    border-radius: 0 0 8px 8px;
+    font-size: 15px;
+    line-height: 1.8;
+    color: #1a1a1a;
+  }
+  .wiki-preview.active { display: block; }
+  .wiki-preview h1 { font-size: 26px; font-weight: 700; border-bottom: 2px solid #3d6ef5; padding-bottom: 6px; margin: 24px 0 12px; }
+  .wiki-preview h2 { font-size: 21px; font-weight: 700; border-bottom: 1px solid #ddd; padding-bottom: 4px; margin: 20px 0 10px; }
+  .wiki-preview h3 { font-size: 17px; font-weight: 700; margin: 16px 0 8px; }
+  .wiki-preview h4 { font-size: 15px; font-weight: 700; margin: 12px 0 6px; }
+  .wiki-preview blockquote { border-left: 4px solid #3d6ef5; background: #f0f4ff; padding: 10px 16px; margin: 12px 0; border-radius: 0 6px 6px 0; }
+  .wiki-preview pre { background: #1e1e1e; color: #d4d4d4; padding: 16px; border-radius: 8px; font-size: 13px; overflow-x: auto; }
+  .wiki-preview table { border-collapse: collapse; width: 100%; margin: 12px 0; }
+  .wiki-preview th { background: #f0f4ff; border: 1px solid #ddd; padding: 8px 12px; font-weight: 600; }
+  .wiki-preview td { border: 1px solid #ddd; padding: 8px 12px; }
+  .wiki-preview ul { padding-left: 24px; margin: 8px 0; }
+  .wiki-preview ol { padding-left: 24px; margin: 8px 0; }
+  .wiki-preview a { color: #3d6ef5; text-decoration: underline; }
+
+  .wiki-toc {
+    background: #f8f9fa;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 20px;
+    display: inline-block;
+    min-width: 200px;
+  }
+  .wiki-toc-title { font-weight: 700; margin-bottom: 8px; font-size: 14px; }
+  .wiki-toc ol { padding-left: 20px; margin: 0; }
+  .wiki-toc li { margin: 4px 0; font-size: 13px; }
+  .wiki-toc a { color: #3d6ef5; text-decoration: none; }
+  .wiki-toc a:hover { text-decoration: underline; }
+
+  .collaboration-cursor__caret {
+    border-left: 1px solid #0d0d0d; border-right: 1px solid #0d0d0d;
+    margin-left: -1px; margin-right: -1px; pointer-events: none;
+    position: relative; word-break: normal;
+  }
+  .collaboration-cursor__label {
+    border-radius: 3px 3px 3px 0; color: #fff; font-size: 12px;
+    font-weight: 600; left: -1px; line-height: normal;
+    padding: 0.1rem 0.3rem; position: absolute; top: -1.4em;
+    user-select: none; white-space: nowrap;
+  }
+
+  .version-panel { width: 280px; border-left: 1px solid #e0e0e0; padding: 16px; overflow-y: auto; max-height: 700px; display: none; }
+  .version-panel.open { display: block; }
+  .version-item { padding: 10px; border-bottom: 1px solid #f0f0f0; cursor: pointer; border-radius: 6px; margin-bottom: 4px; }
+  .version-item:hover { background: #f5f5f5; }
+  .version-item .version-no { font-size: 12px; color: #888; }
+  .version-item .version-date { font-size: 11px; color: #aaa; margin-top: 4px; }
+</style>
 </head>
 <body>
 <div layout:fragment="Content">
 <div class="product-status mg-b-15">
-    <div class="container-fluid">
-        <div class="row">
-            <div class="col-lg-12">
-                <div class="product-status-wrap" style="background:#fff; border-radius:12px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); padding:20px;">
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-lg-12">
+        <div class="wiki-wrap">
 
-                    <!-- 상단 툴바 -->
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-                        <h4 style="margin:0; font-size:16px; font-weight:500; color:#333;">wiki</h4>
-                        <button id="toggleVersionBtn"
-                                onclick="toggleVersionPanel()"
-                                style="padding:6px 14px; border:1px solid #ddd; border-radius:6px; background:#fff; cursor:pointer; font-size:13px;">
-                            버전 히스토리
-                        </button>
-                    </div>
+          <!-- 헤더 -->
+          <div class="wiki-header">
+            <h4 style="margin:0; font-size:16px; color:#888;">📄 위키</h4>
+            <button onclick="toggleVersionPanel()"
+                    style="padding:6px 14px; border:1px solid #ddd; border-radius:6px; background:#fff; cursor:pointer; font-size:13px;">
+              버전 히스토리
+            </button>
+          </div>
 
-                    <!-- 제목 -->
-                    <input id="wikiTitle" type="text" placeholder="제목을 입력하세요"
-                           style="width:100%; font-size:24px; font-weight:600; border:none; outline:none; padding:8px 0; border-bottom:1px solid #e0e0e0; margin-bottom:16px;"/>
+          <!-- 제목 -->
+          <input id="wikiTitle" type="text" class="wiki-title-input" placeholder="제목을 입력하세요"/>
 
-                    <!-- 에디터 + 버전패널 -->
-                    <div style="display:flex; gap:16px;">
+          <!-- 에디터 + 버전패널 -->
+          <div style="display:flex; gap:16px;">
+            <div style="flex:1;">
 
-                        <!-- 에디터 -->
-                        <div id="editor"
-                             th:data-wiki-id="${wikiId}"
-                             style="flex:1; min-height:500px; border:1px solid #e0e0e0; border-radius:8px; padding:16px;">
-                        </div>
+              <!-- 탭 -->
+              <div class="wiki-tabs">
+                <button class="wiki-tab active" onclick="switchTab('edit')">✏️ 편집</button>
+                <button class="wiki-tab" onclick="switchTab('preview')">👁️ 미리보기</button>
+              </div>
 
-                        <!-- 버전 히스토리 패널 -->
-                        <div id="versionPanel" class="version-panel">
-                            <h6 style="margin:0 0 12px 0; font-weight:600;">버전 히스토리</h6>
-                            <div id="versionList"></div>
-                        </div>
+              <!-- 툴바 -->
+              <div class="wiki-toolbar" id="wikiToolbar">
+                <button class="toolbar-btn" onclick="execCmd('bold')"><b>B</b></button>
+                <button class="toolbar-btn" onclick="execCmd('italic')"><i>I</i></button>
+                <button class="toolbar-btn" onclick="execCmd('strike')"><s>S</s></button>
+                <div class="toolbar-divider"></div>
+                <button class="toolbar-btn" onclick="execCmd('h2')">H2</button>
+                <button class="toolbar-btn" onclick="execCmd('h3')">H3</button>
+                <button class="toolbar-btn" onclick="execCmd('h4')">H4</button>
+                <div class="toolbar-divider"></div>
+                <button class="toolbar-btn" onclick="execCmd('bulletList')">• 목록</button>
+                <button class="toolbar-btn" onclick="execCmd('orderedList')">1. 목록</button>
+                <div class="toolbar-divider"></div>
+                <button class="toolbar-btn" onclick="execCmd('blockquote')">❝ 인용</button>
+                <button class="toolbar-btn" onclick="execCmd('codeBlock')">&lt;/&gt; 코드</button>
+                <button class="toolbar-btn" onclick="execCmd('table')">⊞ 표</button>
+                <button class="toolbar-btn" onclick="execCmd('hr')">— 구분선</button>
+                <button class="toolbar-btn" onclick="execCmd('link')">🔗 링크</button>
+              </div>
 
-                    </div>
+              <!-- 에디터 영역 -->
+              <div id="editor"
+                   th:data-wiki-id="${wikiId}"
+                   style="min-height:600px; display:block;">
+              </div>
 
-                </div>
+              <!-- 미리보기 영역 -->
+              <div id="wikiPreview" class="wiki-preview"></div>
+
             </div>
+
+            <!-- 버전 히스토리 패널 -->
+            <div id="versionPanel" class="version-panel">
+              <h6 style="margin:0 0 12px 0; font-weight:600;">버전 히스토리</h6>
+              <div id="versionList"></div>
+            </div>
+          </div>
+
         </div>
+      </div>
     </div>
+  </div>
 </div>
+
+<script th:src="@{/js/bundle.js}"></script>
 <script>
-    // wikiId를 hidden input으로 받아오기
-    const wikiId = document.getElementById('editor').dataset.wikiId;
+  const wikiId = document.getElementById('editor').dataset.wikiId
 
-    function toggleVersionPanel() {
-        const panel = document.getElementById('versionPanel')
-        panel.classList.toggle('open')
+  function switchTab(tab) {
+    const tabs = document.querySelectorAll('.wiki-tab')
+    const editorEl = document.getElementById('editor')
+    const previewEl = document.getElementById('wikiPreview')
+    const toolbar = document.getElementById('wikiToolbar')
 
-        if (panel.classList.contains('open')) {
-            loadVersionList()
+    if (tab === 'edit') {
+      tabs[0].classList.add('active')
+      tabs[1].classList.remove('active')
+      editorEl.style.display = 'block'
+      toolbar.style.display = 'flex'
+      previewEl.classList.remove('active')
+    } else {
+      tabs[0].classList.remove('active')
+      tabs[1].classList.add('active')
+      editorEl.style.display = 'none'
+      toolbar.style.display = 'none'
+      previewEl.classList.add('active')
+      if (window.editor) {
+        const html = window.editor.getHTML()
+        previewEl.innerHTML = generateToc(html) + html
+      }
+    }
+  }
+
+  function generateToc(html) {
+    const parser = new DOMParser()
+    const doc = parser.parseFromString(html, 'text/html')
+    const headings = doc.querySelectorAll('h2, h3, h4')
+    if (headings.length === 0) return ''
+    let toc = '<div class="wiki-toc"><div class="wiki-toc-title">목차</div><ol>'
+    headings.forEach((h, i) => {
+      const level = parseInt(h.tagName[1])
+      const text = h.textContent
+      const indent = (level - 2) * 16
+      toc += `<li style="margin-left:${indent}px"><a href="#heading-${i}">${text}</a></li>`
+    })
+    toc += '</ol></div>'
+    return toc
+  }
+
+  function execCmd(cmd) {
+    if (!window.editor) return
+    const e = window.editor
+    switch(cmd) {
+      case 'bold': e.chain().focus().toggleBold().run(); break
+      case 'italic': e.chain().focus().toggleItalic().run(); break
+      case 'strike': e.chain().focus().toggleStrikethrough().run(); break
+      case 'h2': e.chain().focus().toggleHeading({ level: 2 }).run(); break
+      case 'h3': e.chain().focus().toggleHeading({ level: 3 }).run(); break
+      case 'h4': e.chain().focus().toggleHeading({ level: 4 }).run(); break
+      case 'bulletList': e.chain().focus().toggleBulletList().run(); break
+      case 'orderedList': e.chain().focus().toggleOrderedList().run(); break
+      case 'blockquote': e.chain().focus().toggleBlockquote().run(); break
+      case 'codeBlock': e.chain().focus().toggleCodeBlock().run(); break
+      case 'table':
+    	  e.chain().focus().insertContent({
+    	    type: 'table',
+    	    content: [
+    	      {
+    	        type: 'tableRow',
+    	        content: [
+    	          { type: 'tableHeader', content: [{ type: 'paragraph', content: [{ type: 'text', text: '제목1' }] }] },
+    	          { type: 'tableHeader', content: [{ type: 'paragraph', content: [{ type: 'text', text: '제목2' }] }] },
+    	          { type: 'tableHeader', content: [{ type: 'paragraph', content: [{ type: 'text', text: '제목3' }] }] },
+    	        ]
+    	      },
+    	      {
+    	        type: 'tableRow',
+    	        content: [
+    	          { type: 'tableCell', content: [{ type: 'paragraph' }] },
+    	          { type: 'tableCell', content: [{ type: 'paragraph' }] },
+    	          { type: 'tableCell', content: [{ type: 'paragraph' }] },
+    	        ]
+    	      },
+    	      {
+    	        type: 'tableRow',
+    	        content: [
+    	          { type: 'tableCell', content: [{ type: 'paragraph' }] },
+    	          { type: 'tableCell', content: [{ type: 'paragraph' }] },
+    	          { type: 'tableCell', content: [{ type: 'paragraph' }] },
+    	        ]
+    	      },
+    	    ]
+    	  }).run()
+    	  break
+      case 'hr': e.chain().focus().setHorizontalRule().run(); break
+      case 'link':
+        const url = prompt('링크 URL을 입력하세요')
+        if (url) e.chain().focus().setLink({ href: url }).run()
+        break
+    }
+  }
+
+  function toggleVersionPanel() {
+    const panel = document.getElementById('versionPanel')
+    panel.classList.toggle('open')
+    if (panel.classList.contains('open')) loadVersionList()
+  }
+
+  function loadVersionList() {
+    fetch(`/wiki/versions/${wikiId}`)
+      .then(res => res.json())
+      .then(list => {
+        const container = document.getElementById('versionList')
+        container.innerHTML = ''
+        if (list.length === 0) {
+          container.innerHTML = '<p style="color:#aaa; font-size:13px;">저장된 버전이 없습니다.</p>'
+          return
         }
-    }
+        list.forEach(v => {
+          const div = document.createElement('div')
+          div.className = 'version-item'
+          div.innerHTML = `
+            <div style="font-size:13px; font-weight:500;">${v.title || '제목없음'}</div>
+            <div class="version-no">${v.versionNo}</div>
+            <div class="version-date">${v.createdAt}</div>
+          `
+          div.onclick = () => restoreVersion(v.versionId)
+          container.appendChild(div)
+        })
+      })
+  }
 
-    function loadVersionList() {
-        fetch(`/wiki/versions/${wikiId}`)
-            .then(res => res.json())
-            .then(list => {
-                const container = document.getElementById('versionList')
-                container.innerHTML = ''
-
-                if (list.length === 0) {
-                    container.innerHTML = '<p style="color:#aaa; font-size:13px;">저장된 버전이 없습니다.</p>'
-                    return
-                }
-
-                list.forEach(v => {
-                    const div = document.createElement('div')
-                    div.className = 'version-item'
-                    div.innerHTML = `
-                        <div style="font-size:13px; font-weight:500;">${v.title || '제목없음'}</div>
-                        <div class="version-no">${v.versionNo}</div>
-                        <div class="version-date">${v.createdAt}</div>
-                    `
-                    div.onclick = () => restoreVersion(v.versionId)
-                    container.appendChild(div)
-                })
-            })
-            .catch(err => console.error('버전 목록 로드 실패:', err))
-    }
-
-    function restoreVersion(versionId) {
-        if (!confirm('이 버전으로 복원하시겠습니까?')) return
-
-        fetch(`/wiki/version/${versionId}`)
-            .then(res => res.json())
-            .then(data => {
-                if (data && data.content && window.editor) {
-                    window.editor.commands.setContent(JSON.parse(data.content))
-                    console.log('복원 완료')
-                }
-            })
-            .catch(err => console.error('복원 실패:', err))
-    }
+  function restoreVersion(versionId) {
+    if (!confirm('이 버전으로 복원하시겠습니까?')) return
+    fetch(`/wiki/version/${versionId}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.content && window.editor) {
+          window.editor.commands.setContent(JSON.parse(data.content))
+        }
+      })
+  }
 </script>
 </div>
 </body>

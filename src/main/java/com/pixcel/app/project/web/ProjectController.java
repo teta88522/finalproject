@@ -99,14 +99,7 @@ public class ProjectController {
 
 		ProjectVO project = projectService.selectProjectDetail(projectId);
 		List<ProjectMemberVO> projectMemberList = projectService.selectProjectMemberList(projectId);
-		
-		// 류송지 추가
-		List<ProjectModulesVO> projectModule = projectService.selectAllModuleProjects(projectId);
-		List<String> moduleCodes = projectModule.stream()
-			    .map(ProjectModulesVO::getModuleCode)
-			    .toList();
 
-		model.addAttribute("moduleCodes", moduleCodes);
 		model.addAttribute("project", project);
 		model.addAttribute("projectId", projectId);
 		model.addAttribute("subscribeYn", subscribeYn);

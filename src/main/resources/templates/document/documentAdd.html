@@ -51,8 +51,11 @@
                             <option value="" selected disabled>Select milestone</option>
                             <option th:each="milestone : ${milestoneList}"
                                     th:value="${milestone.milestoneId}"
-                                    th:text="${milestone.title}">
+                                    th:text="${milestone.title}"
+                                    th:data-version-id="${milestone.versionId}">
+                                    <span th:text="${milestone.versionId}"></span>
                             </option>
+
                         </select>
                     </div>
 
@@ -95,7 +98,34 @@
         </div>
     </div>
 </div>
+<script th:inline="javascript">
+
+const versionSelect = document.getElementById("versionSelect");
+const milestoneSelect = document.getElementById("milestoneSelect");
+
+versionSelect.addEventListener("change", function () {
+    const versionId = this.value;
+
+    milestoneSelect.selectedIndex = 0;
+
+    Array.from(milestoneSelect.options).forEach(option => {
+        if (!option.value) return; // 기본 placeholder
+
+        const optionVersionId = option.dataset.versionId || "";
+
+        if (versionId) {
+            // 버전 선택된 경우: 해당 버전만 허용
+            option.hidden = optionVersionId !== versionId;
+            option.disabled = optionVersionId !== versionId;
+        } else {
+            // 버전 미선택: 버전 없는 것만 허용
+            const isGlobal = optionVersionId === "";
+            option.hidden = !isGlobal;
+            option.disabled = !isGlobal;
+        }
+    });
+});
+</script>
 </div>
 </body>
-
 </html>
