@@ -36,7 +36,9 @@ public class RepositoryController {
 	public String getRepositoryList(@PathVariable("projectId") String projectId, RepositoryVO searchVO, Model model) {
 
 		searchVO.setProjectId(projectId);
-
+		
+		model.addAttribute("sourceList", repositoryService.getSourceCodeList());
+		
 		// 1. 페이징 기본 설정
 		int amount = 10;
 		if (searchVO.getPage() <= 0)
@@ -133,8 +135,25 @@ public class RepositoryController {
 	public String edit(@PathVariable("projectId") String projectId, RepositoryVO repositoryVO,
 			@RequestParam(value = "uploadFile", required = false) MultipartFile uploadFile,
 			@CookieValue(value = "userId", required = false) String userId, RedirectAttributes rttr) {
+		
+		// 1. 로그인 확인
+		if (userId == null) {
+			return "redirect:/login";
+		}
+		
+		// 2. 기본 정보 설정
 		repositoryVO.setProjectId(projectId);
-		repositoryService.modifyRepository(repositoryVO, uploadFile, userId);
+		repositoryVO.setUploadUserId(userId);
+		
+		// 3. 권한 체크 및 수정 처리
+		try {
+			repositoryService.modifyRepository(repositoryVO, uploadFile, userId);
+		} catch (RuntimeException e) {
+			// 권한 없음 또는 파일 없음 등의 오류 처리
+			rttr.addFlashAttribute("errorMessage", e.getMessage());
+			return "redirect:/project/" + projectId + "/repository/detail?fileId=" + repositoryVO.getFileId();
+		}
+		
 		return "redirect:/project/" + projectId + "/repository/detail?fileId=" + repositoryVO.getFileId();
 	}
 

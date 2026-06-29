@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.pixcel.app.project.mapper.ProjectMapper;
+import com.pixcel.app.project.service.IssueStatVO;
 import com.pixcel.app.project.service.ProjectMemberVO;
 import com.pixcel.app.project.service.ProjectModulesVO;
 import com.pixcel.app.project.service.ProjectRoleVO;
@@ -144,5 +145,31 @@ public class ProjectServiceImpl implements ProjectService {
 	public List<ProjectModulesVO> selectAllModuleProjects() {
 		return null;
 	}
+	
+	@Override
+	@Transactional
+	public Map<String, Object> deleteProject(String projectId){
+		Map<String, Object> resultMap = new HashMap<>();
+		
+		// 프로젝트 모듈 삭제
+		projectMapper.deleteProjectModulesByProjectId(projectId);
+		
+		// 프로젝트 멤버 삭제
+		projectMapper.deleteProjectMembersByProjectId(projectId);
+		
+		// 프로젝트 삭제
+		int deleteResult = projectMapper.deleteProject(projectId);
+		if(deleteResult <= 0) {
+			resultMap.put("result", false);
+			resultMap.put("message", "프로젝트 삭제에 실패했습니다.");
+			return resultMap;
+		}
+		resultMap.put("result", true);
+		return resultMap;
+	}
 
+	@Override
+	public List<IssueStatVO> selectIssueStatByProjectId(String projectId) {
+		return projectMapper.selectIssueStatByProjectId(projectId);
+	}
 }

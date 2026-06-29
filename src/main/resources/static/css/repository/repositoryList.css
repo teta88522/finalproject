@@ -275,46 +275,91 @@ body {
 	background-color: #f8f9fa;
 	border-color: #dee2e6;
 }
-/* ── radio 칩(chip) 스타일 ── */
-.radio-group {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    padding: 4px 0;
+/* ── filter-dropdown (details + checkbox) ── */
+.filter-dropdown {
+    position: relative;
+    display: block;
 }
 
-/* 실제 radio input은 숨김 */
-.radio-label input[type="radio"] {
-    display: none;
-}
-
-/* 칩 모양 레이블 */
-.radio-label {
-    display: inline-flex;
-    align-items: center;
-    padding: 4px 12px;
+.filter-dropdown > summary {
+    height: 32px;
     border: 1px solid #d7dbe7;
-    border-radius: 999px;
-    background-color: #ffffff;
+    border-radius: 5px;
+    padding: 0 28px 0 10px;
     font-size: 13px;
-    color: #555;
+    color: #333;
+    background-color: #fff;
+    display: flex;
+    align-items: center;
     cursor: pointer;
-    font-weight: 500;
-    transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+    list-style: none;
     user-select: none;
+    position: relative;
+}
+
+.filter-dropdown > summary::-webkit-details-marker { display: none; }
+
+.filter-dropdown > summary::after {
+    content: "";
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%) rotate(45deg);
+    width: 6px;
+    height: 6px;
+    border-right: 2px solid #888;
+    border-bottom: 2px solid #888;
+    transition: transform 0.15s;
+}
+
+.filter-dropdown[open] > summary::after {
+    transform: translateY(-25%) rotate(225deg);
+}
+
+.filter-dropdown > summary:focus { outline: none; }
+
+.filter-dropdown[open] > summary {
+    border-color: #252ba3;
+}
+
+.filter-dropdown-panel {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    min-width: 100%;
+    background: #fff;
+    border: 1px solid #d7dbe7;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.10);
+    padding: 6px 0;
+    z-index: 100;
+}
+
+.filter-check-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px;
+    font-size: 13px;
+    color: #333;
+    cursor: pointer;
     white-space: nowrap;
 }
 
-.radio-label:hover {
-    background-color: #eef3ff;
-    border-color: #007bff;
-    color: #007bff;
+.filter-check-item:hover {
+    background-color: #f4f6fb;
 }
 
-/* 선택된 칩 */
-.radio-label:has(input[type="radio"]:checked) {
-    background-color: #007bff;
-    border-color: #007bff;
-    color: #ffffff;
-    font-weight: 600;
+.filter-check-item input[type="checkbox"] {
+    accent-color: #252ba3;
+    width: 14px;
+    height: 14px;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.filter-selected-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }

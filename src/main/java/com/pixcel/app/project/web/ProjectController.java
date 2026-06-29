@@ -10,56 +10,45 @@ import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-//import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-//import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.pixcel.app.project.service.IssueStatVO;
 import com.pixcel.app.project.service.ProjectMemberVO;
 import com.pixcel.app.project.service.ProjectRoleVO;
 import com.pixcel.app.project.service.ProjectService;
 import com.pixcel.app.project.service.ProjectVO;
 
 @Controller
-//@RequestMapping("/project")	// 비동기(JSON) 데이터 통신을 위한 컨트롤러 선언
-// 프로젝트 관련 기본 URL 경로 설정 (/API는 안붙였는데 나중에 오류 생기면 추가하기)
 public class ProjectController {
 
 	@Autowired
 	private ProjectService projectService;
 
 	/* 프로젝트 등록 폼 */
-	@GetMapping("/project/register")
+	@GetMapping("/myproject/register")
 	public String registerForm(Model model, @CookieValue(value = "userId", required = false) String userId) {
 		model.addAttribute("userId", userId);
 		return "project/project";
 	}
 
 	/* 프로젝트 등록 처리 */
-	@PostMapping("/project/register")
+	@PostMapping("/myproject/register")
 	public String registerProject(ProjectVO projectVO, @CookieValue(value = "userId", required = false) String userId) {
 		if (projectVO.getOwnerId() == null || projectVO.getOwnerId().isEmpty()) {
 			projectVO.setOwnerId(userId);
 		}
 		projectService.registerProject(projectVO);
-		return "redirect:/project/list";
+		return "redirect:/myproject/list";  // ✅ 수정: /project/list → /myproject/list
 	}
 
-	// 260623 고동현 추가 - projectList 관련
-	// 관리자 = subscribeYn = Y
-	// 관리자일 경우 - 본인이 생성한 프로젝트만 조회한다. 또한 프로젝트 생성 및 관리 버튼이 노출된다.
-	// 일반이용자 = subscribeYn = N
-	// 일반이용자일 경우 - 본인이 소속된 프로젝트가 조회된다. 프로젝트 생성 및 관리 버튼은 미노출된다.
-
 	/* 프로젝트 목록 (검색 + 페이징) */
-	@GetMapping("/project/list")
+	@GetMapping("/myproject/list")
 	public String projectListForm(Model model, @CookieValue(value = "userId", required = false) String userId,
 			@CookieValue(value = "subscribeYn", required = false) String subscribeYn,
-			// 검색 파라미터
 			@RequestParam(value = "searchProjectName", required = false) String searchProjectName,
 			@RequestParam(value = "searchOwnerName", required = false) String searchOwnerName,
 			@RequestParam(value = "searchStatusCode", required = false) String searchStatusCode,
-			// 페이징 파라미터
 			@RequestParam(value = "page", defaultValue = "1") int page,
 			@RequestParam(value = "pageSize", defaultValue = "10") int pageSize) {
 
@@ -67,15 +56,13 @@ public class ProjectController {
 			subscribeYn = "N";
 		}
 
-		// 검색+페이징 조건을 ProjectVO에 담아 전달
 		ProjectVO searchVO = new ProjectVO();
-		searchVO.setOwnerId(userId); // 사용자 식별용
+		searchVO.setOwnerId(userId);
 		searchVO.setSearchProjectName(searchProjectName);
 		searchVO.setSearchOwnerName(searchOwnerName);
 		searchVO.setSearchStatusCode(searchStatusCode);
 		searchVO.setPage(page);
 		searchVO.setPageSize(pageSize);
-
 
 		List<ProjectVO> projectList;
 		if ("Y".equals(subscribeYn)) {
@@ -86,7 +73,7 @@ public class ProjectController {
 
 		model.addAttribute("projectList", projectList);
 		model.addAttribute("subscribeYn", subscribeYn);
-		model.addAttribute("searchVO", searchVO); // 페이징·검색 정보 화면 전달
+		model.addAttribute("searchVO", searchVO);
 
 		return "project/projectList";
 	}
@@ -98,11 +85,13 @@ public class ProjectController {
 
 		ProjectVO project = projectService.selectProjectDetail(projectId);
 		List<ProjectMemberVO> projectMemberList = projectService.selectProjectMemberList(projectId);
+		List<IssueStatVO> issueStatList = projectService.selectIssueStatByProjectId(projectId);  // ✅ 추가
 
 		model.addAttribute("project", project);
 		model.addAttribute("projectId", projectId);
 		model.addAttribute("subscribeYn", subscribeYn);
 		model.addAttribute("projectMemberList", projectMemberList);
+		model.addAttribute("issueStatList", issueStatList);  // ✅ 추가
 
 		return "project/projectDetail";
 	}
@@ -112,7 +101,7 @@ public class ProjectController {
 	public String projectMemberSetting(@PathVariable String projectId,
 			@CookieValue(value = "subscribeYn", required = false) String subscribeYn, Model model) {
 		if (!"Y".equals(subscribeYn))
-			return "redirect:/project/" + projectId;
+			return "redirect:/projectdetail/" + projectId;
 
 		ProjectVO project = projectService.selectProjectDetail(projectId);
 		List<ProjectMemberVO> projectMemberList = projectService.selectProjectMemberList(projectId);
@@ -130,7 +119,7 @@ public class ProjectController {
 	public String projectMemberAddForm(@PathVariable String projectId,
 			@CookieValue(value = "subscribeYn", required = false) String subscribeYn, Model model) {
 		if (!"Y".equals(subscribeYn))
-			return "redirect:/project/" + projectId;
+			return "redirect:/projectdetail/" + projectId;
 
 		ProjectVO project = projectService.selectProjectDetail(projectId);
 		List<ProjectMemberVO> candidateList = projectService.selectProjectMemberCandidateList(projectId);
@@ -152,7 +141,7 @@ public class ProjectController {
 			@CookieValue(value = "subscribeYn", required = false) String subscribeYn,
 			RedirectAttributes redirectAttributes) {
 		if (!"Y".equals(subscribeYn))
-			return "redirect:/project/" + projectId;
+			return "redirect:/projectdetail/" + projectId;
 
 		projectMemberVO.setProjectId(projectId);
 		Map<String, Object> resultMap = projectService.insertProjectMember(projectMemberVO);
@@ -166,7 +155,7 @@ public class ProjectController {
 	public String projectMemberUpdateForm(@PathVariable String projectId, @PathVariable String projectMemberId,
 			@CookieValue(value = "subscribeYn", required = false) String subscribeYn, Model model) {
 		if (!"Y".equals(subscribeYn))
-			return "redirect:/project/" + projectId;
+			return "redirect:/projectdetail/" + projectId;
 
 		ProjectVO project = projectService.selectProjectDetail(projectId);
 		ProjectMemberVO projectMember = projectService.selectProjectMemberDetail(projectMemberId);
@@ -187,7 +176,7 @@ public class ProjectController {
 			@CookieValue(value = "subscribeYn", required = false) String subscribeYn,
 			RedirectAttributes redirectAttributes) {
 		if (!"Y".equals(subscribeYn))
-			return "redirect:/project/" + projectId;
+			return "redirect:/projectdetail/" + projectId;
 
 		projectMemberVO.setProjectId(projectId);
 		Map<String, Object> resultMap = projectService.updateProjectMemberRole(projectMemberVO);
@@ -202,12 +191,24 @@ public class ProjectController {
 			@CookieValue(value = "subscribeYn", required = false) String subscribeYn,
 			RedirectAttributes redirectAttributes) {
 		if (!"Y".equals(subscribeYn))
-			return "redirect:/project/" + projectId;
+			return "redirect:/projectdetail/" + projectId;
 
 		Map<String, Object> resultMap = projectService.deleteProjectMember(projectMemberId);
 		redirectAttributes.addFlashAttribute("message", resultMap.get("message"));
 
 		return "redirect:/project/" + projectId + "/settings/members";
 	}
-
+	
+	/* 프로젝트 삭제 */
+	@PostMapping("/myproject/delete")
+	public String deleteProject(@RequestParam String projectId,
+								@CookieValue(value = "subscribeYn", required = false) String subscribeYn,
+								RedirectAttributes redirectAttributes) {
+		if(!"Y".equals(subscribeYn)) return "redirect:/myproject/list";
+		
+		Map<String, Object> resultMap = projectService.deleteProject(projectId);
+		redirectAttributes.addFlashAttribute("message", resultMap.get("message"));
+		
+		return "redirect:/myproject/list";
+	}
 }

@@ -73,24 +73,25 @@
 										<th>진행 중</th>
 										<th>완료됨</th>
 										<th>합계</th>
-										<th class="col-action"></th>
 									</tr>
 								</thead>
 								<tbody>
 									<!-- 일감 데이터가 있을 때 -->
 									<th:block
 										th:if="${issueStatList != null and !#lists.isEmpty(issueStatList)}">
-										<tr th:each="stat : ${issueStatList}">
+										<tr th:each="stat : ${issueStatList}" class="tracker-row"
+											th:data-project-id="${projectId}"
+											th:data-issue-type-code="${stat.issueTypeCode}"
+											th:onclick="'goToIssueList(this)'"
+											onmouseover="this.style.backgroundColor='#f0f0f0'"
+											onmouseout="this.style.backgroundColor='white'">
 											<td th:text="${stat.typeName}">-</td>
-											<td th:text="${stat.inProgressCount}">0</td>
-											<td th:text="${stat.doneCount}">0</td>
-											<td th:text="${stat.totalCount}">0</td>
-											<td class="col-action">
-												<button type="button" class="btn-more" title="더보기">⋮</button>
-											</td>
+											<td class="count-cell" th:text="${stat.inProgressCount}">0</td>
+											<td class="count-cell" th:text="${stat.doneCount}">0</td>
+											<td class="count-cell" th:text="${stat.totalCount}">0</td>
 										</tr>
 									</th:block>
-									<!-- 일감 데이터가 없을 때: 분류별 빈 행 + ⋮ 버튼 유지 -->
+									<!-- 일감 데이터가 없을 때: 분류별 빈 행 -->
 									<th:block
 										th:if="${issueStatList == null or #lists.isEmpty(issueStatList)}">
 										<tr
@@ -99,9 +100,6 @@
 											<td class="count-cell">0</td>
 											<td class="count-cell">0</td>
 											<td class="count-cell">0</td>
-											<td class="col-action">
-												<button type="button" class="btn-more" title="더보기">⋮</button>
-											</td>
 										</tr>
 									</th:block>
 								</tbody>
@@ -111,45 +109,30 @@
 				</div>
 
 			</div>
-
-			<!-- 오른쪽 컬럼: 구성원 -->
-			<div class="detail-right">
-				<div class="detail-section">
-					<div class="section-body">
-						<h2 class="section-title">구성원</h2>
-						<div class="member-list">
-							<!-- 구성원 데이터가 있을 때 -->
-							<th:block
-								th:if="${projectMemberList != null and !#lists.isEmpty(projectMemberList)}">
-								<!-- 팀별 그룹핑: teamName 기준으로 묶어서 표시 -->
-								<th:block th:each="member : ${projectMemberList}">
-									<!-- 팀 라벨: 이전 멤버와 팀명이 다를 때만 출력 -->
-									<div class="member-team-label"
-										th:if="${memberStat.first or member.teamName != projectMemberList[__${memberStat.index - 1}__].teamName}"
-										th:text="${member.teamName != null ? member.teamName : '미지정'}">팀명</div>
-									<div class="member-card">
-										<div class="member-avatar"
-											th:text="${member.userName != null ? #strings.substring(member.userName, 0, 1) : '?'}">?</div>
-										<div class="member-info">
-											<span class="member-name" th:text="${member.userName}">이름</span>
-											<span class="member-role"
-												th:text="${member.roleName != null ? member.roleName : (member.groupName != null ? member.groupName : '-')}">역할</span>
-										</div>
-									</div>
-								</th:block>
-							</th:block>
-							<!-- 구성원이 없을 때 -->
-							<div class="empty-members"
-								th:if="${projectMemberList == null or #lists.isEmpty(projectMemberList)}">
-								<p>등록된 구성원이 없습니다.</p>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-
 		</div>
 
 	</div>
+
+	<script th:inline="javascript">
+		/**
+		 * 일감 목록 페이지로 이동
+		 * 해당 유형의 일감을 필터링하여 표시
+		 */
+		function goToIssueList(row) {
+			const projectId = row.dataset.projectId;
+			const issueTypeCode = row.dataset.issueTypeCode;
+
+			if (!projectId || !issueTypeCode) {
+				console.error('필수 데이터가 없습니다.');
+				return;
+			}
+
+			// 일감 목록 페이지로 이동 (유형별 필터링)
+			// 실제 경로는 프로젝트의 일감 페이지 URL에 맞게 수정하세요
+			location.href = '/project/' + encodeURIComponent(projectId)
+					+ '/issue?typeCode=' + encodeURIComponent(issueTypeCode);
+		}
+	</script>
+
 </body>
 </html>

@@ -51,7 +51,7 @@ public class RepositoryVO {
 	@Builder.Default
 	private String fileVersion = "1";
 	@Builder.Default
-	private String fileUseYn = "g001";
+	private String fileUseYn = "n001";
 	@Builder.Default
 	private String connectAddress = "-";
 	

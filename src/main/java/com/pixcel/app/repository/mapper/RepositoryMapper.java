@@ -1,6 +1,7 @@
 package com.pixcel.app.repository.mapper;
 
 import java.util.List;
+import java.util.Map;
 
 import org.apache.ibatis.annotations.Param;
 
@@ -34,4 +35,6 @@ public interface RepositoryMapper {
 	public int isProjectMember(@Param("projectId") String projectId, @Param("userId") String userId);
 	
 	public String selectRecentVersionIdByProjectId(@Param("projectId") String projectId);
+	
+	public List<Map<String, Object>> selectSourceCodeList();
 }

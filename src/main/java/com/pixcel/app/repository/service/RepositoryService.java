@@ -1,6 +1,7 @@
 package com.pixcel.app.repository.service;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.web.multipart.MultipartFile;
 
@@ -28,4 +29,6 @@ public interface RepositoryService {
 	
 	// 프로젝트 구성원인지 확인하는 메서드
 	public boolean isProjectMember(String projectId, String userId);
+	
+	public List<Map<String, Object>> getSourceCodeList();
 }
