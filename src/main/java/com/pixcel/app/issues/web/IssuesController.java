@@ -1,8 +1,11 @@
 package com.pixcel.app.issues.web;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.CookieValue;
@@ -224,6 +227,16 @@ public class IssuesController {
 		}
 
 		Map<String, Object> pageData = issuesService.getIssueListPageData(projectId, searchVO, userId);
+		List<IssuesVO> issueTypeList = (List<IssuesVO>) pageData.get("issueTypeList");
+		List<IssuesVO> issueStatusList = (List<IssuesVO>) pageData.get("issueStatusList");
+		List<IssuesVO> versionList = (List<IssuesVO>) pageData.get("versionList");
+		List<IssuesVO> priorityList = (List<IssuesVO>) pageData.get("priorityList");
+		List<IssuesVO> assigneeList = (List<IssuesVO>) pageData.get("assigneeList");
+		List<IssuesVO> selectedIssueTypeList = (List<IssuesVO>) pageData.get("selectedIssueTypeList");
+		List<IssuesVO> selectedIssueStatusList = (List<IssuesVO>) pageData.get("selectedIssueStatusList");
+		List<IssuesVO> selectedVersionList = (List<IssuesVO>) pageData.get("selectedVersionList");
+		List<IssuesVO> selectedPriorityList = (List<IssuesVO>) pageData.get("selectedPriorityList");
+		List<IssuesVO> selectedAssigneeList = (List<IssuesVO>) pageData.get("selectedAssigneeList");
 
 		model.addAttribute("projectInfo", pageData.get("projectInfo"));
 		model.addAttribute("projectId", projectId);
@@ -232,11 +245,23 @@ public class IssuesController {
 		model.addAttribute("searchVO", searchVO);
 		model.addAttribute("issueList", pageData.get("issueList"));
 
-		model.addAttribute("issueTypeList", pageData.get("issueTypeList"));
-		model.addAttribute("issueStatusList", pageData.get("issueStatusList"));
-		model.addAttribute("versionList", pageData.get("versionList"));
-		model.addAttribute("priorityList", pageData.get("priorityList"));
-		model.addAttribute("assigneeList", pageData.get("assigneeList"));
+		model.addAttribute("issueTypeList", issueTypeList);
+		model.addAttribute("issueStatusList", issueStatusList);
+		model.addAttribute("versionList", versionList);
+		model.addAttribute("priorityList", priorityList);
+		model.addAttribute("assigneeList", assigneeList);
+		model.addAttribute("selectedIssueTypeText", getSelectedOptionText(searchVO.getIssueTypeIdList(),
+				selectedIssueTypeList, IssuesVO::getIssueTypeId, IssuesVO::getIssueTypeName, "전체"));
+		model.addAttribute("selectedVersionText", getSelectedOptionText(searchVO.getVersionIdList(), selectedVersionList,
+				IssuesVO::getVersionId, IssuesVO::getVersionName, "전체"));
+		model.addAttribute("selectedIssueStatusText", getSelectedOptionText(searchVO.getIssueStatusIdList(),
+				selectedIssueStatusList, IssuesVO::getIssueStatusId, IssuesVO::getIssueStatusName, "전체"));
+		model.addAttribute("selectedPriorityText", getSelectedOptionText(searchVO.getSettingCodeIdList(), selectedPriorityList,
+				IssuesVO::getSettingCodeId, IssuesVO::getSettingName, "전체"));
+		model.addAttribute("selectedAssigneeText", getSelectedOptionText(searchVO.getAssigneeIdList(), selectedAssigneeList,
+				IssuesVO::getAssigneeId, IssuesVO::getAssigneeName, "전체"));
+		model.addAttribute("selectedProgressRangeText",
+				getSelectedText(searchVO.getProgressRangeList(), getProgressRangeNameMap(), "전체"));
 
 		model.addAttribute("canCreateIssue", pageData.get("canCreateIssue"));
 		model.addAttribute("canCreateMilestone", pageData.get("canCreateMilestone"));
@@ -322,6 +347,57 @@ public class IssuesController {
 			IssuesVO issue = (IssuesVO) issueObject;
 			issue.setProjectId(projectId);
 		}
+	}
+
+	private String getSelectedOptionText(List<String> selectedValueList, List<IssuesVO> optionList,
+			Function<IssuesVO, String> valueGetter, Function<IssuesVO, String> labelGetter, String defaultText) {
+		if (selectedValueList == null || selectedValueList.isEmpty() || optionList == null || optionList.isEmpty()) {
+			return defaultText;
+		}
+
+		List<String> selectedLabelList = new ArrayList<>();
+
+		for (IssuesVO option : optionList) {
+			String value = valueGetter.apply(option);
+
+			if (selectedValueList.contains(value)) {
+				String label = labelGetter.apply(option);
+
+				if (label != null) {
+					selectedLabelList.add(label);
+				}
+			}
+		}
+
+		return selectedLabelList.isEmpty() ? defaultText : String.join(", ", selectedLabelList);
+	}
+
+	private Map<String, String> getProgressRangeNameMap() {
+		Map<String, String> progressRangeNameMap = new LinkedHashMap<>();
+		progressRangeNameMap.put("0-20", "0~20%");
+		progressRangeNameMap.put("21-40", "21~40%");
+		progressRangeNameMap.put("41-60", "41~60%");
+		progressRangeNameMap.put("61-80", "61~80%");
+		progressRangeNameMap.put("81-100", "81~100%");
+		return progressRangeNameMap;
+	}
+
+	private String getSelectedText(List<String> selectedValueList, Map<String, String> labelMap, String defaultText) {
+		if (selectedValueList == null || selectedValueList.isEmpty()) {
+			return defaultText;
+		}
+
+		List<String> selectedLabelList = new ArrayList<>();
+
+		for (String selectedValue : selectedValueList) {
+			String label = labelMap.get(selectedValue);
+
+			if (label != null) {
+				selectedLabelList.add(label);
+			}
+		}
+
+		return selectedLabelList.isEmpty() ? defaultText : String.join(", ", selectedLabelList);
 	}
 
 	// ==============================

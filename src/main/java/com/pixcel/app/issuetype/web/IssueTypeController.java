@@ -1,5 +1,7 @@
 package com.pixcel.app.issuetype.web;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.stereotype.Controller;
@@ -31,10 +33,13 @@ public class IssueTypeController {
 
 		searchVO.setUserId(loginUserId);
 		Map<String, Object> pageData = issueTypeService.getIssueTypeListPageData(searchVO);
+		List<IssueTypeVO> issueStatusList = (List<IssueTypeVO>) pageData.get("issueStatusList");
 
 		model.addAttribute("searchVO", searchVO);
 		model.addAttribute("issueTypeList", pageData.get("issueTypeList"));
-		model.addAttribute("issueStatusList", pageData.get("issueStatusList"));
+		model.addAttribute("issueStatusList", issueStatusList);
+		model.addAttribute("selectedInitialStatusText",
+				getSelectedStatusText(searchVO.getInitialStatusIdList(), issueStatusList, "전체"));
 
 		return "issuetype/list";
 	}
@@ -183,5 +188,27 @@ public class IssueTypeController {
 		}
 
 		return userId;
+	}
+
+	private String getSelectedStatusText(List<String> selectedStatusIdList, List<IssueTypeVO> issueStatusList,
+			String defaultText) {
+		if (selectedStatusIdList == null || selectedStatusIdList.isEmpty() || issueStatusList == null
+				|| issueStatusList.isEmpty()) {
+			return defaultText;
+		}
+
+		List<String> selectedLabelList = new ArrayList<>();
+
+		for (IssueTypeVO status : issueStatusList) {
+			if (selectedStatusIdList.contains(status.getIssueStatusId())) {
+				String label = status.getStatusName();
+
+				if (label != null) {
+					selectedLabelList.add(label);
+				}
+			}
+		}
+
+		return selectedLabelList.isEmpty() ? defaultText : String.join(", ", selectedLabelList);
 	}
 }

@@ -6,6 +6,7 @@
 <head>
 <title>업무흐름 복사</title>
 <link rel="stylesheet" th:href="@{/css/common-ui.css}">
+<link rel="stylesheet" th:href="@{/css/common-filter.css}">
 <link rel="stylesheet" th:href="@{/css/workflow/workflow.css}">
 </head>
 
@@ -169,11 +170,108 @@
 		</div>
 		<!-- 업무흐름 복사 추가 끝 -->
 
-		<script>
+		<script th:inline="javascript">
 			document.addEventListener('DOMContentLoaded', function() {
+				const copySelectIds = [
+					'sourceIssueTypeId',
+					'sourceRoleId',
+					'targetIssueTypeId',
+					'targetRoleId'
+				];
+				const selectedCopyApplyTargets = /*[[${workflowVO.copyApplyTargetCodeList}]]*/ null;
 				const loadingForm = document.querySelector('.workflow-loading-form');
 				const loadingOverlay = document.querySelector('.workflow-processing-overlay');
 				const loadingMessage = document.querySelector('.workflow-processing-message');
+
+				function updateFilterSummary(dropdown) {
+					const checkedInput = dropdown.querySelector('input[type="radio"]:checked');
+					const summaryText = dropdown.querySelector('.filter-selected-text');
+					const placeholder = dropdown.getAttribute('data-placeholder') || '선택';
+					const label = checkedInput ? checkedInput.closest('.filter-check-item') : null;
+					const text = label ? label.innerText.trim() : '';
+
+					if (!summaryText) {
+						return;
+					}
+
+					if (!text || !checkedInput || !checkedInput.value) {
+						summaryText.textContent = placeholder;
+						dropdown.classList.remove('has-selected');
+						return;
+					}
+
+					summaryText.textContent = text;
+					dropdown.classList.add('has-selected');
+				}
+
+				function buildRadioDropdown(select) {
+					const dropdown = document.createElement('details');
+					const summary = document.createElement('summary');
+					const summaryText = document.createElement('span');
+					const panel = document.createElement('div');
+					const radioName = select.id + 'Radio';
+
+					dropdown.className = 'filter-dropdown workflow-copy-radio-dropdown';
+					dropdown.setAttribute('data-placeholder', '선택');
+					summaryText.className = 'filter-selected-text';
+					summaryText.textContent = '선택';
+					panel.className = 'filter-check-list filter-dropdown-panel';
+
+					summary.appendChild(summaryText);
+					dropdown.appendChild(summary);
+					dropdown.appendChild(panel);
+
+					Array.from(select.options).forEach(function(option) {
+						const item = document.createElement('label');
+						const input = document.createElement('input');
+						const text = document.createElement('span');
+
+						item.className = 'filter-check-item';
+						input.type = 'radio';
+						input.name = radioName;
+						input.value = option.value;
+						input.checked = option.selected;
+						text.textContent = option.textContent.trim();
+
+						input.addEventListener('change', function() {
+							select.value = input.value;
+							updateFilterSummary(dropdown);
+							dropdown.removeAttribute('open');
+						});
+
+						item.appendChild(input);
+						item.appendChild(text);
+						panel.appendChild(item);
+					});
+
+					select.classList.add('workflow-copy-native-select');
+					select.insertAdjacentElement('afterend', dropdown);
+					updateFilterSummary(dropdown);
+				}
+
+				copySelectIds.forEach(function(selectId) {
+					const select = document.getElementById(selectId);
+
+					if (select) {
+						buildRadioDropdown(select);
+					}
+				});
+
+				document.addEventListener('click', function(event) {
+					document.querySelectorAll('.workflow-copy-radio-dropdown[open]').forEach(function(dropdown) {
+						if (!dropdown.contains(event.target)) {
+							dropdown.removeAttribute('open');
+						}
+					});
+				});
+
+				if (Array.isArray(selectedCopyApplyTargets)) {
+					const selectedTargetSet = new Set(selectedCopyApplyTargets.map(String));
+
+					document.querySelectorAll('input[name="copyApplyTargetCodeList"]').forEach(function(input) {
+						input.checked = selectedTargetSet.has(input.value);
+					});
+				}
 
 				if (!loadingForm || !loadingOverlay) {
 					return;

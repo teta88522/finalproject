@@ -39,7 +39,7 @@
                         <div class="search-field">
                             <label>그룹</label>
                             <details class="filter-dropdown" data-placeholder="전체">
-                                <summary><span class="filter-selected-text">전체</span></summary>
+                                <summary><span class="filter-selected-text" th:text="${selectedGroupNameText}">전체</span></summary>
                                 <div class="filter-check-list filter-dropdown-panel">
                                     <label class="filter-check-item">
                                         <input type="checkbox" name="settingGroupNameList" value="g001"
@@ -72,7 +72,7 @@
                         <div class="search-field">
                             <label>기본값 여부</label>
                             <details class="filter-dropdown" data-placeholder="전체">
-                                <summary><span class="filter-selected-text">전체</span></summary>
+                                <summary><span class="filter-selected-text" th:text="${selectedDefaultYnText}">전체</span></summary>
                                 <div class="filter-check-list filter-dropdown-panel">
                                     <label class="filter-check-item">
                                         <input type="checkbox" name="defaultYnList" value="Y"
@@ -233,7 +233,6 @@
         </div>
     </div>
 
-</div>
 <script>
     (function() {
         function updateFilterSummary(dropdown) {
@@ -251,6 +250,14 @@
 
             if (!summaryText) {
                 return;
+            }
+
+            if (!dropdown.dataset.summaryInitialized) {
+                dropdown.dataset.summaryInitialized = 'true';
+                if (summaryText.textContent.trim() && summaryText.textContent.trim() !== placeholder) {
+                    dropdown.classList.add('has-selected');
+                    return;
+                }
             }
 
             if (checkedLabels.length === 0) {
@@ -279,5 +286,6 @@
         });
     })();
 </script>
+</div>
 </body>
 </html>
