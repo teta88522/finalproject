@@ -6,104 +6,70 @@
 <meta charset="UTF-8">
 <link rel="stylesheet" th:href="@{/css/gantt/dhtmlxgantt.css}">
 <script th:src="@{/js/gantt/dhtmlxgantt.js}"></script>
-<!--  -->
 <link rel="stylesheet" th:href="@{/css/gantt/gantt.css}" />
 </head>
 <body>
 <div layout:fragment="Content">
 	
     <div class="container-fluid">
-<div class="kiaalap-panel main-box" style="margin-bottom: 20px;">
-    <div class="main-header" style="margin-bottom: 25px;">
-        <h2 style="font-size: 25px; font-weight: bold; margin: 0; color: #2c3e50;">간트차트</h2>
-    </div>
-    
-    <h5 style="font-size: 15px; font-weight: bold; margin-bottom: 12px; color: #333;">필터</h5>
-    
-    <div class="js-filter-row">
-        <div class="js-filter-group">
-            <label>📦 마일스톤</label>
-            <select id="f_milestone" onchange="filterGantt()">
-                <option value="all">전체 마일스톤</option>
-            </select>
-        </div>
-        <div class="js-filter-group">
-            <label>📌 상태</label>
-            <select id="f_status" onchange="filterGantt()">
-                <option value="all">전체 상태</option>
-            </select>
-        </div>
-        <div class="js-filter-group">
-            <label>👤 담당자</label>
-            <select id="f_assignee" onchange="filterGantt()">
-                <option value="all">전체 담당자</option>
-            </select>
-        </div>
-        <div class="js-filter-group search-group">
-            <label>🔍 일감 검색</label>
-            <input type="text" id="f_text" placeholder="일감 제목 입력..." onkeyup="filterGantt()" />
-        </div>
-        <div class="js-filter-group">
-            <label>📅 기간 검색</label>
-            <div style="display: flex; gap: 5px;">
-                <input type="date" id="f_start" onchange="filterGantt()" style="width: 50%;" />
-                <input type="date" id="f_end" onchange="filterGantt()" style="width: 50%;" />
-            </div>
-        </div>
-    </div>
-</div>
+		<div class="kiaalap-panel main-box" style="margin-bottom: 20px;">
+		    <div class="main-header" style="margin-bottom: 25px;">
+		        <h2 style="font-size: 25px; font-weight: bold; margin: 0; color: #2c3e50;">간트차트</h2>
+		    </div>
+		    
+		    <h5 style="font-size: 15px; font-weight: bold; margin-bottom: 12px; color: #333;">필터</h5>
+		    
+		    <div class="js-filter-row">
+		        <div class="js-filter-group">
+		            <label>📦 마일스톤</label>
+		            <select id="f_milestone" onchange="filterGantt()">
+		                <option value="all">전체 마일스톤</option>
+		            </select>
+		        </div>
+		        <div class="js-filter-group">
+		            <label>📌 상태</label>
+		            <select id="f_status" onchange="filterGantt()">
+		                <option value="all">전체 상태</option>
+		            </select>
+		        </div>
+		        <div class="js-filter-group">
+		            <label>👤 담당자</label>
+		            <select id="f_assignee" onchange="filterGantt()">
+		                <option value="all">전체 담당자</option>
+		            </select>
+		        </div>
+		        <div class="js-filter-group search-group">
+		            <label>🔍 일감 검색</label>
+		            <input type="text" id="f_text" placeholder="일감 제목 입력..." onkeyup="filterGantt()" />
+		        </div>
+		        <div class="js-filter-group">
+		            <label>📅 기간 검색</label>
+		            <div style="display: flex; gap: 5px;">
+		                <input type="date" id="f_start" onchange="filterGantt()" style="width: 50%;" />
+		                <input type="date" id="f_end" onchange="filterGantt()" style="width: 50%;" />
+		            </div>
+		        </div>
+		    </div>
+		</div>
 		
-        <div id="gantt_container"></div>
+		<!-- [수정]: 필터 아래, 간트차트 위에 우측 정렬로 깔끔하게 배치되는 ➕/➖ 버튼 -->
+		<div class="gantt-toolbar" style="display: flex; justify-content: flex-end; gap: 8px; margin-bottom: 12px;">
+			<button type="button" id="btnZoomIn" class="btn btn-default btn-sm" style="font-weight: bold; border-radius: 4px; padding: 5px 12px;">➕ 줌 인</button>
+			<button type="button" id="btnZoomOut" class="btn btn-default btn-sm" style="font-weight: bold; border-radius: 4px; padding: 5px 12px;">➖ 줌 아웃</button>
+		</div>
+		
+		<!-- 간트차트 컨테이너 -->
+		<div id="gantt_container" style="width: 100%; height: 500px;"></div>
 
     </div>
 
 	<input type="hidden" id="globalProjectId" th:value="${projectId}" />
 	<script th:inline="javascript">
-	document.addEventListener("DOMContentLoaded", function () {
-		
-		const projectId = document.getElementById('globalProjectId').value;
-		
-		gantt.config.autosize = "y";
-		
-		gantt.config.date_format = "%Y-%m-%d";
-		gantt.config.readonly = true;
-		gantt.config.columns = [
-			{ name : "text", label: "마일스톤 / 일감명", tree : true, width:200},
-			{ name : "assigneeName", label : "담당자", align : "center", width: 80 },
-		    { name : "issueStatusName", label : "상태", align : "center", width: 80 },
-			{ name : "start_date", label :"시작일" ,align : "center", width:120},
-			{ name : "end_date", label :"종료일" ,align : "center", width:120},
-			{ name : "duration", label : "기간(일)",align: "center", width: 80},
-			{ name : "progress", label:"진행률",align:"center", width:80 , template: function(obj){
-				return Math.round((obj.progress || 0) * 100) +"%";
-			}}
-		];
-		gantt.config.scales = [
-		    { unit: "month", step: 1, format: "%Y년 %m월" }, // 상단: 2026년 06월
-		    { 
-		        unit: "day", 
-		        step: 1, 
-		        format: function(date) {
-		            const days = ["일", "월", "화", "수", "목", "금", "토"];
-		            const dayName = days[date.getDay()]; // 요일 가져오기
-		            
-		            const dayNumber = gantt.date.date_to_str("%d")(date); 
-		            
-		            return dayNumber + " (" + dayName + ")"; 
-		        } 
-		    }
-		];
-		
-		gantt.config.smart_rendering = true;
-		gantt.config.fit_tasks = true;
-		gantt.init("gantt_container");
-
-		gantt.load(`/project/${projectId}/gantt/api/data`) 
-	});
-
+		// [기술적 이유] 외부 정적 파일인 gantt.js가 타임리프의 projectId 변수를 참조하여 API 비동기 조회를 수행할 수 있도록 전역 window 영역에 마인딩합니다.
+		window.projectId = /*[[${projectId}]]*/ '';
 	</script>
 	
-      <script th:src="@{/js/gantt/gantt.js}"></script>
+	<script th:src="@{/js/gantt/gantt.js}"></script>
 </div>
 
 </body>
