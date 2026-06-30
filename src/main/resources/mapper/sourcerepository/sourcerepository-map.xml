@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.pixcel.app.sourcerepository.mapper.sourcerepositoryMapper">
+
+	<!-- ResultMap: DB 칼럼 → VO 속성 매핑 (LEFT JOIN 포함) -->
+    <resultMap id="sourcerepositoryResultMap" type="sourcerepositoryVO">
+        <id column="commit_id" property="commitId" />
+        <result column="project_id" property="projectId" />
+        <result column="issue_id" property="issueId" />
+        <result column="branch_name" property="branchName" />
+        <result column="commit_hash" property="commitHash" />
+        <result column="commit_message" property="commitMessage" />
+        <result column="author_name" property="authorName" />
+        <result column="author_email" property="authorEmail" />
+        <result column="committed_at" property="committedAt" />
+        <result column="created_at" property="createdAt" />
+        <!-- LEFT JOIN 정보 -->
+        <result column="issue_title" property="issueTitle" />
+        <result column="issue_status_id" property="issueStatusId" />
+        <result column="progress_rate" property="progressRate" />
+    </resultMap>
+
+    <!-- INSERT 단일 Commit 저장 -->
+    <insert id="insertSourcerepositoryCommit" parameterType="sourcerepositoryVO">
+        INSERT INTO commit_log (
+            commit_id,
+            project_id,
+            issue_id,
+            branch_name,
+            commit_hash,
+            commit_message,
+            author_name,
+            author_email,
+            committed_at,
+            created_at
+        ) VALUES (
+            #{commitId},
+            #{projectId},
+            #{issueId},
+            #{branchName},
+            #{commitHash},
+            #{commitMessage},
+            #{authorName},
+            #{authorEmail},
+            #{committedAt},
+            #{createdAt}
+        )
+    </insert>
+
+    <!-- INSERT 배치 (여러 Commit 한번에 저장) -->
+    <insert id="insertSourcerepositoryCommits" parameterType="java.util.List">
+        INSERT INTO commit_log (
+            commit_id,
+            project_id,
+            issue_id,
+            branch_name,
+            commit_hash,
+            commit_message,
+            author_name,
+            author_email,
+            committed_at,
+            created_at
+        ) VALUES
+        <foreach collection="commits" item="item" separator=",">
+            (
+                #{item.commitId},
+                #{item.projectId},
+                #{item.issueId},
+                #{item.branchName},
+                #{item.commitHash},
+                #{item.commitMessage},
+                #{item.authorName},
+                #{item.authorEmail},
+                #{item.committedAt},
+                #{item.createdAt}
+            )
+        </foreach>
+    </insert>
+
+    <!-- SELECT 프로젝트+브랜치별 Commit (페이지네이션 + LEFT JOIN) -->
+    <select id="selectSourcerepositoryCommitsByProjectAndBranch" resultMap="sourcerepositoryResultMap">
+        SELECT
+            cl.commit_id,
+            cl.project_id,
+            cl.issue_id,
+            cl.branch_name,
+            cl.commit_hash,
+            cl.commit_message,
+            cl.author_name,
+            cl.author_email,
+            cl.committed_at,
+            cl.created_at,
+            i.title AS issue_title,
+            i.issue_status_id,
+            i.progress_rate
+        FROM commit_log cl
+        LEFT JOIN issue i ON i.issue_id = cl.issue_id
+        WHERE cl.project_id = #{projectId}
+        AND cl.branch_name = #{branchName}
+        ORDER BY cl.committed_at DESC
+        OFFSET #{offset} ROWS FETCH NEXT #{limit} ROWS ONLY
+    </select>
+
+    <!-- COUNT 프로젝트+브랜치별 Commit 총 개수 -->
+    <select id="countSourcerepositoryCommitsByProjectAndBranch" resultType="int">
+        SELECT COUNT(*)
+        FROM commit_log
+        WHERE project_id = #{projectId}
+        AND branch_name = #{branchName}
+    </select>
+
+    <!-- SELECT SHA로 특정 Commit 조회 -->
+    <select id="selectSourcerepositoryCommitBySha" resultMap="sourcerepositoryResultMap">
+        SELECT
+            cl.commit_id,
+            cl.project_id,
+            cl.issue_id,
+            cl.branch_name,
+            cl.commit_hash,
+            cl.commit_message,
+            cl.author_name,
+            cl.author_email,
+            cl.committed_at,
+            cl.created_at,
+            i.title AS issue_title,
+            i.issue_status_id,
+            i.progress_rate
+        FROM commit_log cl
+        LEFT JOIN issue i ON i.issue_id = cl.issue_id
+        WHERE cl.commit_hash = #{commitHash}
+    </select>
+
+    <!-- SELECT 중복 체크 (같은 SHA가 있는지) -->
+    <select id="existsSourcerepositoryCommitBySha" resultType="int">
+        SELECT
+            CASE WHEN COUNT(*) > 0 THEN 1 ELSE 0 END
+        FROM commit_log
+        WHERE commit_hash = #{commitHash}
+    </select>
+
+    <!-- DELETE 단일 Commit 삭제 -->
+    <delete id="deleteSourcerepositoryCommit">
+        DELETE FROM commit_log
+        WHERE commit_id = #{commitId}
+    </delete>
+
+    <!-- DELETE 브랜치별 Commit 삭제 -->
+    <delete id="deleteSourcerepositoryCommitsByBranch">
+        DELETE FROM commit_log
+        WHERE project_id = #{projectId}
+        AND branch_name = #{branchName}
+    </delete>
+
+    <!-- SELECT 프로젝트별 모든 Commit 조회 -->
+    <select id="selectSourcerepositoryCommitsByProjectId" resultMap="sourcerepositoryResultMap">
+        SELECT
+            cl.commit_id,
+            cl.project_id,
+            cl.issue_id,
+            cl.branch_name,
+            cl.commit_hash,
+            cl.commit_message,
+            cl.author_name,
+            cl.author_email,
+            cl.committed_at,
+            cl.created_at,
+            i.title AS issue_title,
+            i.issue_status_id,
+            i.progress_rate
+        FROM commit_log cl
+        LEFT JOIN issue i ON i.issue_id = cl.issue_id
+        WHERE cl.project_id = #{projectId}
+        ORDER BY cl.committed_at DESC
+    </select>
+
+    <!-- SELECT 이슈별 모든 Commit 조회 -->
+    <select id="selectSourcerepositoryCommitsByIssueId" resultMap="sourcerepositoryResultMap">
+        SELECT
+            cl.commit_id,
+            cl.project_id,
+            cl.issue_id,
+            cl.branch_name,
+            cl.commit_hash,
+            cl.commit_message,
+            cl.author_name,
+            cl.author_email,
+            cl.committed_at,
+            cl.created_at,
+            i.title AS issue_title,
+            i.issue_status_id,
+            i.progress_rate
+        FROM commit_log cl
+        LEFT JOIN issue i ON i.issue_id = cl.issue_id
+        WHERE cl.issue_id = #{issueId}
+        ORDER BY cl.committed_at DESC
+    </select>
+    
+</mapper>

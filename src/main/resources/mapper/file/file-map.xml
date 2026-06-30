@@ -36,6 +36,9 @@
             file_use_yn
         from attach_file
         where connect_address = #{connectAddress}
+        <if test="documentVersionId != null and documentVersionId != '' and documentVersionId != 0">
+        AND document_version_id = #{documentVersionId}
+        </if>
     </select>
     
     <!-- 문서에 zip 다운로드 -->
@@ -90,6 +93,9 @@
             file_size,
             upload_user_id,
             file_version,
+            <if test="documentVersionId != null and documentVersionId != '' and documentVersionId != 0">
+            document_version_id,
+            </if>
             connect_address
         ) values (
             #{fileId},
@@ -102,6 +108,9 @@
             #{fileSize},
             #{uploadUserId},
             #{fileVersion},
+            <if test="documentVersionId != null and documentVersionId != '' and documentVersionId != 0">
+            #{documentVersionId},
+            </if>
             #{connectAddress}
         )
     </insert>
@@ -138,5 +147,77 @@
             #{downloadUserId}
         )
     </insert>
+    
+    <!-- 문서에 개별다운로드 -->
+    <select id="selectByDocumentVersion" parameterType="int" resultType="FileVO">
+        select
+            file_id,
+            project_id,
+            version_id,
+            file_code,
+            original_name,
+            stored_name,
+            file_path,
+            file_size,
+            upload_user_id,
+            upload_date,
+            file_version,
+            file_use_yn,
+            connect_address,
+			document_version_id
+        from attach_file
+        where document_version_id = #{documentVersionId}
 
+    </select>
+    
+    <!-- 파일 등록 -->
+    <insert id="copyFile" parameterType="FileVO">
+        <selectKey keyProperty="fileId"
+           resultType="string"
+           order="BEFORE">
+    SELECT
+        'ATTACH_FILE_'
+        || TO_CHAR(SYSDATE, 'YYMM')
+        || '_'
+        || LPAD(
+            NVL(
+                MAX(TO_NUMBER(SUBSTR(file_id, -4))),
+                0
+            ) + 1,
+            4,
+            '0'
+        )
+    FROM attach_file
+    WHERE file_id LIKE 'ATTACH_FILE_' || TO_CHAR(SYSDATE, 'YYMM') || '_%'
+
+</selectKey>
+
+        insert into attach_file (
+            file_id,
+            project_id,
+            version_id,
+            file_code,
+            original_name,
+            stored_name,
+            file_path,
+            file_size,
+            upload_user_id,
+            file_version,
+            document_version_id,
+            connect_address
+        ) values (
+            #{fileId},
+            #{projectId},
+            #{versionId},
+            #{fileCode},
+            #{originalName},
+            #{storedName},
+            #{filePath},
+            #{fileSize},
+            #{uploadUserId},
+            #{fileVersion},
+            #{documentVersionId},
+            #{connectAddress}
+        )
+    </insert>
 </mapper>

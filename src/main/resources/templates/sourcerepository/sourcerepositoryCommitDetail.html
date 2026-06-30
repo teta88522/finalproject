@@ -1,0 +1,106 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{common/layouts/default_layout}">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet"
+	th:href="@{/css/sourcerepository/sourcerepositoryCommitDetail.css}">
+</head>
+<body>
+	<div layout:fragment="Content">
+		<div class="detail-container">
+			<!-- Breadcrumb -->
+			<div class="detail-breadcrumb">
+				<a
+					th:href="@{/project/{projectId}/sourcerepository(projectId=${projectId})}">저장소
+					관리</a> / <a
+					th:href="@{/project/{projectId}/sourcerepository/commits(projectId=${projectId}, branch=${branch})}">
+					Commit 목록 </a> / <span>상세 보기</span>
+			</div>
+
+			<!-- Header -->
+			<div class="detail-header">
+				<h1 th:text="${commit.commitMessage}">Fix #123 - Update login</h1>
+
+				<div class="detail-commit-info">
+					<div class="detail-info-item">
+						<div class="detail-info-label">Commit SHA</div>
+						<div class="detail-info-value" th:text="${commit.commitHash}">abc123def456</div>
+					</div>
+					<div class="detail-info-item">
+						<div class="detail-info-label">Branch</div>
+						<div class="detail-info-value normal" th:text="${branch}">master</div>
+					</div>
+					<div class="detail-info-item">
+						<div class="detail-info-label">Author</div>
+						<div class="detail-info-value normal"
+							th:text="${commit.authorName}">John Doe</div>
+					</div>
+					<div class="detail-info-item">
+						<div class="detail-info-label">Committed</div>
+						<div class="detail-info-value normal"
+							th:text="${#temporals.format(commit.committedAt, 'yyyy-MM-dd HH:mm:ss')}">
+							2024-06-30 14:30:00</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- Message Card -->
+			<div class="detail-card">
+				<h3>📝 커밋 메시지</h3>
+				<div class="detail-commit-message-box"
+					th:text="${commit.commitMessage}">Fix #123 - Update login</div>
+			</div>
+
+			<!-- Details Card -->
+			<div class="detail-card">
+				<h3>ℹ️ 상세 정보</h3>
+
+				<div class="detail-meta-grid">
+					<div class="detail-meta-item">
+						<div class="detail-meta-label">작가 이름</div>
+						<div class="detail-meta-value" th:text="${commit.authorName}">John
+							Doe</div>
+					</div>
+					<div class="detail-meta-item">
+						<div class="detail-meta-label">작가 이메일</div>
+						<div class="detail-meta-value" th:text="${commit.authorEmail}">john@example.com</div>
+					</div>
+					<div class="detail-meta-item">
+						<div class="detail-meta-label">커밋 날짜</div>
+						<div class="detail-meta-value"
+							th:text="${#temporals.format(commit.committedAt, 'yyyy-MM-dd')}">
+							2024-06-30</div>
+					</div>
+					<div class="detail-meta-item">
+						<div class="detail-meta-label">커밋 시간</div>
+						<div class="detail-meta-value"
+							th:text="${#temporals.format(commit.committedAt, 'HH:mm:ss')}">
+							14:30:00</div>
+					</div>
+				</div>
+
+				<!-- Issue Link -->
+				<div th:if="${commit.issueId and commit.issueId != '-'}">
+					<div class="detail-issue-badge"
+						th:text="'연동 이슈: #' + ${commit.issueId}">연동 이슈: #123</div>
+				</div>
+				<div th:if="!${commit.issueId} or ${commit.issueId == '-'}">
+					<div class="detail-issue-badge none">연동 이슈 없음</div>
+				</div>
+			</div>
+
+			<!-- Actions -->
+			<div class="detail-actions">
+				<a
+					th:href="@{/project/{projectId}/sourcerepository/commits(projectId=${projectId}, branch=${branch})}"
+					class="detail-btn detail-btn-secondary"> ← 목록으로 돌아가기 </a> <a
+					th:href="@{/project/{projectId}/sourcerepository(projectId=${projectId})}"
+					class="detail-btn detail-btn-secondary"> 🏠 저장소 메인 </a>
+			</div>
+		</div>
+	</div>
+</body>
+
+</html>

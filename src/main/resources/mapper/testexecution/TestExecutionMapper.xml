@@ -1,0 +1,293 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.pixcel.app.testexecution.mapper.TestExecutionMapper">
+
+    <!-- 테스트 수행 화면 상단 기본정보 -->
+    <select id="selectTestExecutionInfo"
+            resultType="com.pixcel.app.testexecution.service.TestExecutionVO">
+
+        SELECT
+            pv.project_id AS "projectId",
+            t.test_id AS "testId",
+            t.title AS "testTitle",
+            t.version_id AS "versionId",
+            pv.version_name AS "versionName",
+            t.team_name AS "teamName",
+
+            t.status_code AS "statusCode",
+            CASE t.status_code
+                WHEN 'a001' THEN '예정'
+                WHEN 'a002' THEN '진행중'
+                WHEN 'a003' THEN '종료'
+                ELSE t.status_code
+            END AS "statusName",
+
+            t.priority_code AS "priorityCode",
+            CASE t.priority_code
+                WHEN 'c001' THEN '상'
+                WHEN 'c002' THEN '중'
+                WHEN 'c003' THEN '하'
+                ELSE t.priority_code
+            END AS "priorityName",
+
+            t.test_type_code AS "testTypeCode",
+            CASE t.test_type_code
+                WHEN 'd001' THEN '기능'
+                WHEN 'd002' THEN 'UI/UX'
+                WHEN 'd003' THEN '성능'
+                WHEN 'd004' THEN '보안'
+                WHEN 'd005' THEN '데이터'
+                WHEN 'd006' THEN '기타'
+                ELSE t.test_type_code
+            END AS "testTypeName",
+
+            t.assignee_id AS "assigneeId",
+            assignee.user_name AS "assigneeName",
+
+            t.created_by AS "createdBy",
+            creator.user_name AS "createdByName",
+
+            t.description AS "description",
+            TO_CHAR(t.start_date, 'YYYY-MM-DD') AS "startDate",
+            TO_CHAR(t.end_date, 'YYYY-MM-DD') AS "endDate",
+            TO_CHAR(t.created_at, 'YYYY-MM-DD') AS "createdAt",
+            TO_CHAR(t.updated_at, 'YYYY-MM-DD') AS "updatedAt"
+
+        FROM test t
+        JOIN project_version pv
+            ON t.version_id = pv.version_id
+        LEFT JOIN users assignee
+            ON t.assignee_id = assignee.user_id
+        LEFT JOIN users creator
+            ON t.created_by = creator.user_id
+
+        WHERE t.test_id = #{testId}
+          AND pv.project_id = #{projectId}
+
+    </select>
+
+
+    <!-- 테스트에 매핑된 테스트케이스 + 최신 수행결과 -->
+    <select id="selectExecutionCaseList"
+            parameterType="string"
+            resultType="com.pixcel.app.testexecution.service.TestExecutionVO">
+
+        WITH latest_execution AS (
+            SELECT
+                execution_id,
+                mapping_id,
+                executor_id,
+                result_status_code,
+                execution_comment,
+                retry_no,
+                executed_at
+            FROM (
+                SELECT
+                    te.execution_id,
+                    te.mapping_id,
+                    te.executor_id,
+                    te.result_status_code,
+                    te.execution_comment,
+                    te.retry_no,
+                    te.executed_at,
+                    ROW_NUMBER() OVER (
+                        PARTITION BY te.mapping_id
+                        ORDER BY te.retry_no DESC, te.executed_at DESC, te.created_at DESC, te.execution_id DESC
+                    ) AS rn
+                FROM test_execution te
+            )
+            WHERE rn = 1
+        )
+        SELECT
+            tcm.mapping_id AS "mappingId",
+            tcm.test_id AS "testId",
+            tcm.sort_order AS "sortOrder",
+
+            tc.test_case_id AS "testCaseId",
+            tc.title AS "testCaseTitle",
+
+            tc.test_type_code AS "testCaseTypeCode",
+            CASE tc.test_type_code
+                WHEN 'd001' THEN '기능'
+                WHEN 'd002' THEN 'UI/UX'
+                WHEN 'd003' THEN '성능'
+                WHEN 'd004' THEN '보안'
+                WHEN 'd005' THEN '데이터'
+                WHEN 'd006' THEN '기타'
+                ELSE tc.test_type_code
+            END AS "testCaseTypeName",
+
+            tc.priority_code AS "testCasePriorityCode",
+            CASE tc.priority_code
+                WHEN 'c001' THEN '상'
+                WHEN 'c002' THEN '중'
+                WHEN 'c003' THEN '하'
+                ELSE tc.priority_code
+            END AS "testCasePriorityName",
+
+            tc.pre_condition AS "preCondition",
+            tc.expected_result AS "expectedResult",
+
+            le.execution_id AS "executionId",
+            le.executor_id AS "executorId",
+            executor.user_name AS "executorName",
+
+            NVL(le.result_status_code, 'o001') AS "resultStatusCode",
+            CASE NVL(le.result_status_code, 'o001')
+                WHEN 'o001' THEN '미수행'
+                WHEN 'o002' THEN '진행중'
+                WHEN 'o003' THEN '성공'
+                WHEN 'o004' THEN '실패'
+                ELSE NVL(le.result_status_code, 'o001')
+            END AS "resultStatusName",
+
+            le.execution_comment AS "executionComment",
+            NVL(le.retry_no, -1) AS "retryNo",
+            NVL(le.retry_no + 1, 0) AS "nextRetryNo",
+            TO_CHAR(le.executed_at, 'YYYY-MM-DD HH24:MI') AS "executedAt"
+
+        FROM test_case_mapping tcm
+        JOIN test_case tc
+            ON tcm.test_case_id = tc.test_case_id
+        LEFT JOIN latest_execution le
+            ON tcm.mapping_id = le.mapping_id
+        LEFT JOIN users executor
+            ON le.executor_id = executor.user_id
+
+        WHERE tcm.test_id = #{testId}
+
+        ORDER BY tcm.sort_order ASC
+
+    </select>
+
+
+    <!-- 다음 재수행차수 -->
+    <select id="selectNextRetryNo"
+            parameterType="string"
+            resultType="int">
+
+        SELECT
+            NVL(MAX(retry_no) + 1, 0)
+        FROM test_execution
+        WHERE mapping_id = #{mappingId}
+
+    </select>
+
+
+<!-- 테스트 실행결과 개별 저장 -->
+<insert id="insertTestExecution"
+        parameterType="com.pixcel.app.testexecution.service.TestExecutionVO">
+
+    INSERT INTO test_execution (
+        execution_id,
+        mapping_id,
+        executor_id,
+        result_status_code,
+        execution_comment,
+        retry_no,
+        executed_at,
+        created_at
+    )
+    SELECT
+        'EXEC_' || TO_CHAR(SYSDATE, 'YYYYMM') || '_' ||
+        LPAD(
+            NVL((
+                SELECT MAX(TO_NUMBER(SUBSTR(execution_id, -4))) + 1
+                FROM test_execution
+                WHERE execution_id LIKE 'EXEC_' || TO_CHAR(SYSDATE, 'YYYYMM') || '_%'
+            ), 1),
+            4,
+            '0'
+        ) AS execution_id,
+
+        #{mappingId} AS mapping_id,
+        #{executorId} AS executor_id,
+        NVL(#{resultStatusCode}, 'o001') AS result_status_code,
+        #{executionComment} AS execution_comment,
+
+        NVL((
+            SELECT MAX(retry_no) + 1
+            FROM test_execution
+            WHERE mapping_id = #{mappingId}
+        ), 0) AS retry_no,
+
+        SYSDATE AS executed_at,
+        SYSDATE AS created_at
+    FROM dual
+
+</insert>
+    
+    <!-- 테스트 실행결과 전체 저장 - bulk insert -->
+<insert id="insertTestExecutionList"
+        parameterType="com.pixcel.app.testexecution.service.TestExecutionVO">
+
+    INSERT INTO test_execution (
+        execution_id,
+        mapping_id,
+        executor_id,
+        result_status_code,
+        execution_comment,
+        retry_no,
+        executed_at,
+        created_at
+    )
+    WITH input_data AS (
+        <foreach collection="mappingIdList"
+                 item="mappingId"
+                 index="index"
+                 separator="UNION ALL">
+            SELECT
+                #{index} AS ord,
+                #{mappingId} AS mapping_id,
+                #{resultStatusCodeList[${index}]} AS result_status_code,
+                #{executionCommentList[${index}]} AS execution_comment
+            FROM dual
+        </foreach>
+    ),
+    current_max AS (
+        SELECT
+            NVL(MAX(TO_NUMBER(SUBSTR(execution_id, -4))), 0) AS max_no
+        FROM test_execution
+        WHERE execution_id LIKE 'EXEC_' || TO_CHAR(SYSDATE, 'YYYYMM') || '_%'
+    ),
+    retry_data AS (
+        SELECT
+            mapping_id,
+            NVL(MAX(retry_no) + 1, 0) AS next_retry_no
+        FROM test_execution
+        WHERE mapping_id IN (
+            SELECT mapping_id
+            FROM input_data
+        )
+        GROUP BY mapping_id
+    )
+    SELECT
+        'EXEC_' || TO_CHAR(SYSDATE, 'YYYYMM') || '_' ||
+        LPAD(
+            current_max.max_no + ROW_NUMBER() OVER (ORDER BY input_data.ord),
+            4,
+            '0'
+        ) AS execution_id,
+
+        input_data.mapping_id AS mapping_id,
+        #{executorId} AS executor_id,
+
+        NVL(input_data.result_status_code, 'o001') AS result_status_code,
+        input_data.execution_comment AS execution_comment,
+
+        NVL(retry_data.next_retry_no, 0) AS retry_no,
+
+        SYSDATE AS executed_at,
+        SYSDATE AS created_at
+
+    FROM input_data
+    CROSS JOIN current_max
+    LEFT JOIN retry_data
+        ON input_data.mapping_id = retry_data.mapping_id
+
+</insert>
+
+</mapper>

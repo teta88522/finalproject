@@ -1,0 +1,101 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{common/layouts/default_layout}">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet"
+	th:href="@{/css/sourcerepository/sourcerepositoryCommitList.css}">
+</head>
+<body>
+	<div layout:fragment="Content">
+		<div class="list-container">
+			<!-- Header -->
+			<div class="list-header">
+				<div>
+					<h2>📝 Commit 목록</h2>
+					<div class="list-header-meta"
+						th:text="'총 ' + ${totalElements} + '개 커밋'">총 0개 커밋</div>
+				</div>
+				<div class="list-header-meta" th:text="'Branch: ' + ${branch}">Branch:
+					master</div>
+			</div>
+
+			<!-- Controls -->
+			<div class="list-controls">
+				<form method="get" style="display: flex; gap: 10px; width: 100%;">
+					<select name="branch" onchange="this.form.submit()">
+						<option value="master" th:selected="${branch == 'master'}">📌
+							master</option>
+						<option value="develop" th:selected="${branch == 'develop'}">🔧
+							develop</option>
+						<option value="main" th:selected="${branch == 'main'}">⭐
+							main</option>
+					</select>
+					<button type="submit">조회</button>
+				</form>
+			</div>
+
+			<!-- Commit List -->
+			<div class="list-commit-list" th:if="${!commits.isEmpty()}">
+				<div class="list-commit-item" th:each="commit : ${commits}">
+					<div class="list-commit-header">
+						<div class="list-commit-message" th:text="${commit.commitMessage}">
+							Fix #123 - Update login</div>
+						<div class="list-commit-sha" th:text="${commit.commitHash}">abc123def456</div>
+					</div>
+
+					<div class="list-commit-meta">
+						<div class="list-commit-author">
+							<span>✍️</span> <span th:text="${commit.authorName}">John
+								Doe</span>
+						</div>
+						<div th:if="${commit.issueId and commit.issueId != '-'}"
+							class="list-commit-issue" th:text="'#' + ${commit.issueId}">
+							#123</div>
+						<div th:if="!${commit.issueId} or ${commit.issueId == '-'}"
+							class="list-commit-issue none">이슈 없음</div>
+					</div>
+
+					<div class="list-commit-footer">
+						<div class="list-commit-date"
+							th:text="${#temporals.format(commit.committedAt, 'yyyy-MM-dd HH:mm:ss')}">
+							2024-06-30 14:30:00</div>
+						<a
+							th:href="@{/project/{projectId}/sourcerepository/commit/{sha}(projectId=${projectId}, sha=${commit.commitHash}, branch=${branch})}"
+							class="list-commit-link"> 상세 보기 → </a>
+					</div>
+				</div>
+			</div>
+
+			<!-- Empty State -->
+			<div class="list-empty-state" th:if="${commits.isEmpty()}">
+				<p>💭 조회된 커밋이 없습니다</p>
+				<p style="font-size: 13px;">GitHub 동기화를 시도해보세요</p>
+			</div>
+
+			<!-- Pagination -->
+			<div class="list-pagination" th:if="${totalPages > 1}">
+				<!-- Previous Page -->
+				<a th:if="${hasPreviousPage}"
+					th:href="@{/project/{projectId}/sourcerepository/commits(projectId=${projectId}, branch=${branch}, page=${currentPage - 1})}"
+					class="list-pagination-link">← 이전</a> <span
+					th:if="!${hasPreviousPage}" class="disabled">← 이전</span>
+
+				<!-- Page Numbers -->
+				<a th:each="p : ${#numbers.sequence(startPage, endPage)}"
+					th:href="@{/project/{projectId}/sourcerepository/commits(projectId=${projectId}, branch=${branch}, page=${p})}"
+					th:text="${p}" th:class="${p == currentPage ? 'active' : ''}">
+					1 </a>
+
+				<!-- Next Page -->
+				<a th:if="${hasNextPage}"
+					th:href="@{/project/{projectId}/sourcerepository/commits(projectId=${projectId}, branch=${branch}, page=${currentPage + 1})}"
+					class="list-pagination-link">다음 →</a> <span th:if="!${hasNextPage}"
+					class="disabled">다음 →</span>
+			</div>
+		</div>
+	</div>
+</body>
+
+</html>

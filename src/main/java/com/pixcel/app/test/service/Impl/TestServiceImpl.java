@@ -12,6 +12,7 @@ import com.pixcel.app.test.service.TestService;
 import com.pixcel.app.test.service.TestSummaryVO;
 import com.pixcel.app.test.service.TestUserVO;
 import com.pixcel.app.test.service.TestVO;
+import com.pixcel.app.testcase.service.TestCaseVO;
 
 import lombok.RequiredArgsConstructor;
 
@@ -87,5 +88,33 @@ public class TestServiceImpl implements TestService {
 	@Override
 	public List<TestGroupVO> selectProjectGroupList(String projectId) {
 		return testMapper.selectProjectGroupList(projectId);
+	}
+
+	@Override
+	public TestVO selectTestDetail(String projectId, String testId) {
+		return testMapper.selectTestDetail(projectId, testId);
+	}
+
+	@Override
+	public List<TestCaseVO> selectMappedTestCaseList(String testId) {
+		return testMapper.selectMappedTestCaseList(testId);
+	}
+
+	@Override
+	public int checkTestOwner(TestVO testVO) {
+		return testMapper.checkTestOwner(testVO);
+	}
+
+	@Override
+	@Transactional
+	public int updateTestWithCases(TestVO testVO) {
+		int result = testMapper.updateTest(testVO);
+		testMapper.deleteTestCaseMapping(testVO.getTestId());
+		
+		if(testVO.getTestCaseId() != null && !testVO.getTestCaseId().isEmpty()) {
+			testMapper.insertTestCaseMapping(testVO);
+		}
+		
+		return result;
 	}
 }

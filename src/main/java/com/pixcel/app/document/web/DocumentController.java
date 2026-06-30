@@ -91,6 +91,7 @@ public class DocumentController {
 		MilestoneSearchVO vo = new MilestoneSearchVO();
 		vo.setProjectId(projectId);
 		List<MilestonesVO> milestoneList = milestonesService.getMilestoneList(vo.getProjectId());
+		System.out.println(milestoneList);
 	    model.addAttribute("milestoneList", milestoneList);
 	    
 	    List<CodeValueVO> codeValueList = codeValueService.getCodeValueListByGroup(userId,"g003");
@@ -135,6 +136,7 @@ public class DocumentController {
 		uploadDTO.setFileCode("f001");
 		uploadDTO.setUploadUserId(userId);
 		uploadDTO.setConnectAddress(documentVO.getDocumentId());
+		uploadDTO.setDocumentVersionId(versionId);
 
 		fileService.uploadFile(files, uploadDTO);
 		
@@ -148,7 +150,10 @@ public class DocumentController {
 		System.out.println(documentId);
 	    DocumentVO docDetail = documentService.selectDetail(documentId);
 	    model.addAttribute("docDetail",docDetail);
-	    List<FileVO> fileList = fileService.selectAll(documentId);
+	    int documentVersionId = docDetail.getDocumentVersionId();
+	    System.out.println(documentVersionId);
+	    List<FileVO> fileList = fileService.selectAll(documentId, documentVersionId);
+	    System.out.println(fileList);
 	    model.addAttribute("fileList",fileList);
 	    model.addAttribute("projectId",projectId);
         return "document/documentDetail";
@@ -157,7 +162,8 @@ public class DocumentController {
 	@GetMapping("/detail/{documentId}/download")
 	public void downloadFileAll(@PathVariable String documentId,HttpServletResponse response, @PathVariable("projectId") String projectId,@CookieValue(value="userId", required =false)String userId) throws IOException{
 		System.out.println(documentId);
-		fileService.downloadAll(documentId, response, userId);
+		int documentVersion = documentService.selectNextDocumentVersion(documentId) - 1;
+		fileService.downloadAll(documentId, response, userId, documentVersion);
 	}
 	
 	@GetMapping("/detail/{documentId}/{fileId}/download")
@@ -172,9 +178,10 @@ public class DocumentController {
 		System.out.println(documentId);
 	    DocumentVO docDetail = documentService.selectDetail(documentId);
 	    model.addAttribute("docDetail",docDetail);
+	    int documentVersion = docDetail.getDocumentVersionId();
 	    int documentVersionId = documentService.selectNextDocumentVersion(documentId);
 	    model.addAttribute("documentVersionId",documentVersionId);
-	    List<FileVO> fileList = fileService.selectAll(documentId);
+	    List<FileVO> fileList = fileService.selectAll(documentId, documentVersion);
 	    model.addAttribute("fileList",fileList);
 	    model.addAttribute("projectId",projectId);
         return "document/documentUpdate";
@@ -185,6 +192,7 @@ public class DocumentController {
     public String documentUpdateProc(@CookieValue(value="userId", required =false)String userId, DocumentVO documentVO, @PathVariable("projectId") String projectId, @RequestParam("files") List<MultipartFile> files, @PathVariable String documentId) {
 		
 		int versionId = documentService.selectNextDocumentVersion(documentId);
+		int oldVersionId = versionId - 1;
 		DocumentVO document = documentService.selectDetail(documentId);
 		logger.debug(documentVO.toString());
 		System.out.print(documentVO);
@@ -192,7 +200,6 @@ public class DocumentController {
 		documentVO.setDocumentVersionId(versionId);
 		documentService.updateDocument(documentVO);
 		System.out.println(documentVO.getDocumentId());
-		
 		
 		
 		DocumentHistoryVO documentHistoryVO = new DocumentHistoryVO();
@@ -204,12 +211,15 @@ public class DocumentController {
 		documentService.addDocumentHistory(documentHistoryVO);
 		
 		
+		fileService.copyOldFiles(oldVersionId , versionId , files);
+		
 		FileDTO uploadDTO = new FileDTO();
-		uploadDTO.setProjectId("PROJECT_ID_2606_0001");
+		uploadDTO.setProjectId(projectId);
 		uploadDTO.setVersionId(document.getVersionId());
 		uploadDTO.setFileCode("f001");
 		uploadDTO.setUploadUserId(userId);
 		uploadDTO.setConnectAddress(documentVO.getDocumentId());
+		uploadDTO.setDocumentVersionId(versionId);
 
 		fileService.uploadFile(files, uploadDTO);
 		
@@ -228,7 +238,7 @@ public class DocumentController {
 	    if (historydocList != null && !historydocList.isEmpty()) {
 	    	noTotal = historydocList.get(0).getTotalCnt();
 	    }
-	    
+	    model.addAttribute("noTotal",noTotal);
 	    model.addAttribute("projectId",projectId);
         return "document/documentHistoryList";
     }
@@ -240,7 +250,8 @@ public class DocumentController {
 		System.out.println(documentHistoryId);
 	    DocumentVO docDetail = documentService.selectHistoryDetail(documentHistoryId);
 	    model.addAttribute("docDetail",docDetail);
-	    List<FileVO> fileList = fileService.selectAll(documentHistoryId);
+	    int documentVersionId = docDetail.getDocumentVersionId();
+	    List<FileVO> fileList = fileService.selectAll(documentHistoryId, documentVersionId);
 	    model.addAttribute("fileList",fileList);
 	    model.addAttribute("projectId",projectId);
         return "document/documentHistoryDetail";

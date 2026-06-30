@@ -64,4 +64,9 @@ public class TestCaseServiceImpl implements TestCaseService {
 	    return result;
 	}
 
+	@Override
+	public int checkTestCaseOwner(TestCaseVO testCaseVO) {
+		return testCaseMapper.checkTestCaseOwner(testCaseVO);
+	}
+
 }

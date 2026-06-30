@@ -1,10 +1,10 @@
 <!doctype html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thyleaf/layout"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{common/layouts/default_layout}">
 <head>
 <meta charset="UTF-8">
-<title>테스트 목록 - 사용자</title>
+<title>테스트 목록</title>
 
 <link rel="stylesheet" th:href="@{/css/test/testList.css}">
 </head>
@@ -12,248 +12,255 @@
 <body>
 <div layout:fragment="Content">
 
-    <div class="test-list-page">
+    <div class="test-list-wrap">
 
-        <div class="test-page-header">
+        <div class="page-title-area">
             <div>
-                <h1 class="test-page-title">테스트 목록</h1>
-                <p class="test-page-sub-title">
-                    테스트를 조회하고 본인이 생성한 테스트의 결과를 등록할 수 있습니다.
-                </p>
+                <h2>테스트 목록</h2>
+                <p class="page-desc">참여 중인 프로젝트 테스트를 조회하고 관리합니다.</p>
             </div>
 
-            <div class="test-user-info">
-                <span>사용자</span>
-                <strong th:text="${loginId}">loginId</strong>
-            </div>
+            <a th:href="@{/project/{projectId}/tests/new(projectId=${projectId})}"
+               class="btn-create">
+                테스트 생성
+            </a>
         </div>
 
-        <div class="summary-grid summary-grid-4">
+        <!-- 요약 카드 -->
+        <section class="summary-section">
             <div class="summary-card">
-                <span>전체 테스트</span>
-                <strong th:text="${testSummary != null and testSummary.totalCount != null ? testSummary.totalCount : 0}">0</strong>
+                <span class="summary-label">전체 테스트</span>
+                <strong th:text="${testSummary != null ? testSummary.totalCount : 0}">0</strong>
             </div>
 
             <div class="summary-card expected">
-                <span>예정</span>
-                <strong th:text="${testSummary != null and testSummary.expectedCount != null ? testSummary.expectedCount : 0}">0</strong>
+                <span class="summary-label">예정</span>
+                <strong th:text="${testSummary != null ? testSummary.expectedCount : 0}">0</strong>
             </div>
 
-            <div class="summary-card summary-progress">
-                <span>진행중</span>
-                <strong th:text="${testSummary != null and testSummary.progressCount != null ? testSummary.progressCount : 0}">0</strong>
+            <div class="summary-card progress">
+                <span class="summary-label">진행중</span>
+                <strong th:text="${testSummary != null ? testSummary.progressCount : 0}">0</strong>
             </div>
 
             <div class="summary-card end">
-                <span>종료</span>
-                <strong th:text="${testSummary != null and testSummary.endCount != null ? testSummary.endCount : 0}">0</strong>
+                <span class="summary-label">종료</span>
+                <strong th:text="${testSummary != null ? testSummary.endCount : 0}">0</strong>
             </div>
-        </div>
+        </section>
 
-        <div class="search-section">
-            <div class="search-header">
-                <div>
-                    <div class="section-title">검색조건</div>
-                    <div class="section-sub-text">
-                        프로젝트, 버전, 팀명, 테스트명, 상태, 유형, 우선순위 기준으로 조회합니다.
-                    </div>
-                </div>
+        <!-- 검색 조건 -->
+        <section class="search-section">
+            <div class="section-title">검색 조건</div>
 
-                <a th:href="@{/project/{projectId}/tests/new(projectId=${projectId})}"
-                   class="btn-basic btn-primary">
-                    테스트 생성
-                </a>
-            </div>
+            <form th:action="@{/project/{projectId}/tests(projectId=${projectId})}"
+                  method="get"
+                  th:object="${testSearchVO}"
+                  id="testSearchForm">
 
-            <form th:action="@{/project/{projectId}/tests(projectId=${projectId})}" method="get">
-                <div class="search-form-row">
+                <div class="search-grid">
 
-                    <div class="search-field">
-                        <label for="projectName">프로젝트</label>
-                        <input type="text"
-                               id="projectName"
-                               name="projectName"
-                               th:value="${testSearchVO.projectName}"
-                               placeholder="프로젝트명 입력">
-                    </div>
+                    <label for="projectName">프로젝트</label>
+                    <input type="text"
+                           id="projectName"
+                           th:field="*{projectName}"
+                           placeholder="프로젝트명">
 
-                    <div class="search-field">
-                        <label for="versionName">버전</label>
-                        <input type="text"
-                               id="versionName"
-                               name="versionName"
-                               th:value="${testSearchVO.versionName}"
-                               placeholder="버전명 입력">
-                    </div>
+                    <label for="versionName">버전</label>
+                    <input type="text"
+                           id="versionName"
+                           th:field="*{versionName}"
+                           placeholder="버전명">
 
-                    <div class="search-field">
-                        <label for="teamName">팀명</label>
-                        <input type="text"
-                               id="teamName"
-                               name="teamName"
-                               th:value="${testSearchVO.teamName}"
-                               placeholder="팀명 입력">
-                    </div>
+                    <label for="teamName">그룹</label>
+                    <input type="text"
+                           id="teamName"
+                           th:field="*{teamName}"
+                           placeholder="그룹명">
 
-                    <div class="search-field">
-                        <label for="title">테스트명</label>
-                        <input type="text"
-                               id="title"
-                               name="title"
-                               th:value="${testSearchVO.title}"
-                               placeholder="테스트명 입력">
-                    </div>
+                    <label for="title">테스트명</label>
+                    <input type="text"
+                           id="title"
+                           th:field="*{title}"
+                           placeholder="테스트명">
 
-                    <div class="search-field">
-                        <label for="statusCode">상태</label>
-                        <select id="statusCode" name="statusCode">
-                            <option value="">전체</option>
-                            <option value="a001" th:selected="${testSearchVO.statusCode == 'a001'}">예정</option>
-                            <option value="a002" th:selected="${testSearchVO.statusCode == 'a002'}">진행중</option>
-                            <option value="a003" th:selected="${testSearchVO.statusCode == 'a003'}">종료</option>
-                        </select>
-                    </div>
+                    <label for="statusCode">상태</label>
+                    <select id="statusCode" th:field="*{statusCode}">
+                        <option value="">전체</option>
+                        <option value="a001">예정</option>
+                        <option value="a002">진행중</option>
+                        <option value="a003">종료</option>
+                    </select>
 
-                    <div class="search-field">
-                        <label for="testTypeCode">테스트 유형</label>
-                        <select id="testTypeCode" name="testTypeCode">
-                            <option value="">전체</option>
-                            <option value="d001" th:selected="${testSearchVO.testTypeCode == 'd001'}">기능</option>
-                            <option value="d002" th:selected="${testSearchVO.testTypeCode == 'd002'}">UI/UX</option>
-                            <option value="d003" th:selected="${testSearchVO.testTypeCode == 'd003'}">성능</option>
-                            <option value="d004" th:selected="${testSearchVO.testTypeCode == 'd004'}">보안</option>
-                            <option value="d005" th:selected="${testSearchVO.testTypeCode == 'd005'}">데이터</option>
-                            <option value="d006" th:selected="${testSearchVO.testTypeCode == 'd006'}">기타</option>
-                        </select>
-                    </div>
+                    <label for="testTypeCode">유형</label>
+                    <select id="testTypeCode" th:field="*{testTypeCode}">
+                        <option value="">전체</option>
+                        <option value="d001">기능</option>
+                        <option value="d002">UI/UX</option>
+                        <option value="d003">성능</option>
+                        <option value="d004">보안</option>
+                        <option value="d005">데이터</option>
+                        <option value="d006">기타</option>
+                    </select>
 
-                    <div class="search-field">
-                        <label for="priorityCode">우선순위</label>
-                        <select id="priorityCode" name="priorityCode">
-                            <option value="">전체</option>
-                            <option value="c001" th:selected="${testSearchVO.priorityCode == 'c001'}">상</option>
-                            <option value="c002" th:selected="${testSearchVO.priorityCode == 'c002'}">중</option>
-                            <option value="c003" th:selected="${testSearchVO.priorityCode == 'c003'}">하</option>
-                        </select>
-                    </div>
+                    <label for="priorityCode">우선순위</label>
+                    <select id="priorityCode" th:field="*{priorityCode}">
+                        <option value="">전체</option>
+                        <option value="c001">상</option>
+                        <option value="c002">중</option>
+                        <option value="c003">하</option>
+                    </select>
 
+                    <label for="assigneeName">담당자</label>
+                    <input type="text"
+                           id="assigneeName"
+                           th:field="*{assigneeName}"
+                           placeholder="담당자명">
                 </div>
 
                 <div class="search-btn-area">
                     <a th:href="@{/project/{projectId}/tests(projectId=${projectId})}"
-                       class="btn-basic">
+                       class="btn-reset">
                         초기화
                     </a>
 
-                    <button type="submit" class="btn-basic btn-primary">
+                    <button type="submit" class="btn-search">
                         검색
                     </button>
                 </div>
             </form>
-        </div>
+        </section>
 
-        <div class="list-section">
-            <div class="list-header">
-                <div>
-                    <div class="section-title">테스트 목록</div>
-                    <div class="section-sub-text">
-                        조회 가능한 테스트 목록입니다.
-                    </div>
-                </div>
-
+        <!-- 목록 -->
+        <section class="list-section">
+            <div class="list-top">
+                <div class="section-title">테스트 목록</div>
                 <div class="list-count">
-                    총
-                    <strong th:text="${testList == null ? 0 : #lists.size(testList)}">0</strong>
-                    건
+                    총 <strong th:text="${testSummary != null ? testSummary.totalCount : 0}">0</strong>건
                 </div>
             </div>
 
-            <div class="test-table-wrap">
+            <div class="table-box">
                 <table class="test-table">
                     <thead>
                         <tr>
+                            <th>테스트 ID</th>
+                            <th>테스트명</th>
                             <th>프로젝트</th>
                             <th>버전</th>
-                            <th>팀명</th>
-                            <th>테스트명</th>
-                            <th>상태</th>
+                            <th>그룹</th>
                             <th>유형</th>
+                            <th>상태</th>
                             <th>우선순위</th>
                             <th>담당자</th>
+                            <th>케이스 수</th>
                             <th>시작일</th>
                             <th>종료일</th>
-                            <th>진행률</th>
+                            <th>작성자</th>
+                            <th>등록일</th>
                             <th>관리</th>
                         </tr>
                     </thead>
 
                     <tbody>
                         <tr th:if="${testList == null or #lists.isEmpty(testList)}">
-                            <td colspan="12" class="empty-row">
-                                등록된 테스트가 없습니다.
+                            <td colspan="15" class="empty-row">
+                                조회된 테스트가 없습니다.
                             </td>
                         </tr>
 
                         <tr th:each="test : ${testList}">
-                            <td th:text="${test.projectName}">프로젝트</td>
-                            <td th:text="${test.versionName}">버전</td>
-                            <td th:text="${test.teamName}">팀명</td>
+                            <td class="id-cell">
+                                <a th:href="@{/project/{projectId}/tests/{testId}(
+                                        projectId=${projectId},
+                                        testId=${test.testId}
+                                   )}"
+                                   th:text="${test.testId}">
+                                    TEST_ID
+                                </a>
+                            </td>
 
                             <td class="test-name-cell">
-                                <a th:href="@{/project/{projectId}/test/{testId}(projectId=${projectId}, testId=${test.testId})}"
+                                <a th:href="@{/project/{projectId}/tests/{testId}(
+                                        projectId=${projectId},
+                                        testId=${test.testId}
+                                   )}"
                                    th:text="${test.title}">
                                     테스트명
                                 </a>
                             </td>
 
+                            <td th:text="${test.projectName}">프로젝트</td>
+                            <td th:text="${test.versionName}">버전</td>
+                            <td th:text="${test.teamName}">그룹</td>
+                            <td th:text="${test.testTypeName}">유형</td>
+
                             <td>
                                 <span class="status-badge"
+                                      th:classappend="${test.statusCode == 'a001' ? ' expected' : (test.statusCode == 'a002' ? ' progress' : ' end')}"
                                       th:text="${test.statusName}">
                                     상태
                                 </span>
                             </td>
 
-                            <td th:text="${test.testTypeName}">유형</td>
-                            <td th:text="${test.priorityName}">우선순위</td>
-                            <td th:text="${test.assigneeName}">담당자</td>
-                            <td th:text="${test.startDate}">시작일</td>
-                            <td th:text="${test.endDate}">종료일</td>
-
                             <td>
-                                <div class="progress-bar">
-                                    <div class="progress-fill"
-                                         th:style="'width:' + ${test.progressRate} + '%'">
-                                    </div>
-                                </div>
-                                <span class="progress-text"
-                                      th:text="${test.progressRate + '%'}">0%</span>
+                                <span class="priority-badge"
+                                      th:classappend="${test.priorityCode == 'c001' ? ' high' : (test.priorityCode == 'c003' ? ' low' : ' middle')}"
+                                      th:text="${test.priorityName}">
+                                    우선순위
+                                </span>
                             </td>
 
-                            <td class="action-cell">
-                                <a th:href="@{/project/{projectId}/test/{testId}(projectId=${projectId}, testId=${test.testId})}"
-                                   class="mini-btn">
-                                    상세
-                                </a>
+                            <td th:text="${test.assigneeName != null ? test.assigneeName : '-'}">담당자</td>
+                            <td th:text="${test.totalCaseCount}">0</td>
+                            <td th:text="${test.startDate}">2026-01-01</td>
+                            <td th:text="${test.endDate}">2026-01-08</td>
+                            <td th:text="${test.createdByName != null ? test.createdByName : test.createdBy}">작성자</td>
+                            <td th:text="${test.createdAt}">2026-01-01</td>
 
-                                <a th:if="${test.createdBy == loginUserId}"
-                                   th:href="@{/project/{projectId}/test/{testId}/edit(projectId=${projectId}, testId=${test.testId})}"
-                                   class="mini-btn">
+                            <td>
+                                <a th:if="${subscribeYn == 'Y' or test.createdBy == loginUserId}"
+                                   th:href="@{/project/{projectId}/tests/{testId}/edit(
+                                        projectId=${projectId},
+                                        testId=${test.testId}
+                                   )}"
+                                   class="btn-row-edit">
                                     수정
                                 </a>
 
-                                <a th:if="${test.createdBy == loginUserId}"
-                                   th:href="@{/project/{projectId}/test/{testId}/result(projectId=${projectId}, testId=${test.testId})}"
-                                   class="mini-btn">
-                                    결과등록
-                                </a>
+                                <span th:unless="${subscribeYn == 'Y' or test.createdBy == loginUserId}"
+                                      class="text-muted">
+                                    -
+                                </span>
                             </td>
                         </tr>
                     </tbody>
                 </table>
             </div>
-        </div>
+        </section>
 
     </div>
+
+    <script th:inline="javascript">
+        const message = /*[[${message}]]*/ null;
+
+        if (message != null) {
+            alert(message);
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const form = document.getElementById('testSearchForm');
+
+            if (form) {
+                form.addEventListener('keydown', function (event) {
+                    if (event.key === 'Enter') {
+                        event.preventDefault();
+                        form.submit();
+                    }
+                });
+            }
+        });
+    </script>
 
 </div>
 </body>

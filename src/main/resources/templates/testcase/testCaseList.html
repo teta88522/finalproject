@@ -353,8 +353,13 @@
     </div>
 
     <script th:inline="javascript">
+    	const message = /*[[${message}]]*/null;
         const projectId = /*[[${projectId}]]*/ "";
         let currentDetailTestCaseId = "";
+        
+        if(message != null){
+        	alert(message);
+        }
 
         document.addEventListener("DOMContentLoaded", function () {
             const checks = document.querySelectorAll(".case-check");

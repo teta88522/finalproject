@@ -359,4 +359,17 @@
     	WHERE test_case_id = #{testCaseId}
 
 	</delete>
+	
+	<!-- 테스트케이스 작성자 확인 -->
+	<select id="checkTestCaseOwner"
+        	parameterType="com.pixcel.app.testcase.service.TestCaseVO"
+        	resultType="int">
+
+    	SELECT
+        	COUNT(*)
+    	FROM test_case
+    	WHERE test_case_id = #{testCaseId}
+      	AND created_by = #{createdBy}
+
+	</select>
 </mapper>

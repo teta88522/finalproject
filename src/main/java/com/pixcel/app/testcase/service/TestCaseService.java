@@ -16,4 +16,7 @@ public interface TestCaseService {
 	public TestCaseVO selectTestCaseDetail(String projectId, String testCaseId);
 	
 	public int updateTestCaseWithSteps(TestCaseVO testCaseVO);
+	
+	//권한체크
+	public int checkTestCaseOwner(TestCaseVO testCaseVO);
 }

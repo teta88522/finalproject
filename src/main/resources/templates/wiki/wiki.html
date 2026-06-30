@@ -31,7 +31,6 @@
   .wiki-tabs {
     display: flex;
     gap: 4px;
-    margin-bottom: 0;
     border-bottom: 2px solid #e0e0e0;
   }
   .wiki-tab {
@@ -72,44 +71,24 @@
     text-align: center;
   }
   .toolbar-btn:hover { background: #e8eeff; border-color: #3d6ef5; color: #3d6ef5; }
-  .toolbar-btn.active { background: #3d6ef5; color: #fff; border-color: #3d6ef5; }
   .toolbar-divider { width: 1px; background: #ddd; margin: 2px 4px; }
 
-  #editor {
+  #markdownInput {
+    width: 100%;
     min-height: 600px;
+    padding: 16px;
+    font-size: 14px;
+    font-family: 'Courier New', monospace;
     border: 1px solid #e0e0e0;
     border-top: none;
     border-radius: 0 0 8px 8px;
-  }
-  .tiptap {
     outline: none;
-    min-height: 600px;
-    cursor: text;
-    font-size: 15px;
+    resize: none;
     line-height: 1.8;
     color: #1a1a1a;
-    padding: 16px;
-  }
-  .tiptap h1 { font-size: 26px; font-weight: 700; border-bottom: 2px solid #3d6ef5; padding-bottom: 6px; margin: 24px 0 12px; }
-  .tiptap h2 { font-size: 21px; font-weight: 700; border-bottom: 1px solid #ddd; padding-bottom: 4px; margin: 20px 0 10px; }
-  .tiptap h3 { font-size: 17px; font-weight: 700; margin: 16px 0 8px; }
-  .tiptap h4 { font-size: 15px; font-weight: 700; margin: 12px 0 6px; }
-  .tiptap blockquote { border-left: 4px solid #3d6ef5; background: #f0f4ff; padding: 10px 16px; margin: 12px 0; border-radius: 0 6px 6px 0; color: #444; }
-  .tiptap pre { background: #1e1e1e; color: #d4d4d4; padding: 16px; border-radius: 8px; font-size: 13px; overflow-x: auto; margin: 12px 0; }
-  .tiptap code { background: #f0f0f0; padding: 2px 6px; border-radius: 4px; font-size: 13px; color: #e53e3e; }
-  .tiptap pre code { background: none; color: inherit; padding: 0; }
-  .tiptap table { border-collapse: collapse; width: 100%; margin: 12px 0; }
-  .tiptap th { background: #f0f4ff; border: 1px solid #ddd; padding: 8px 12px; font-weight: 600; }
-  .tiptap td { border: 1px solid #ddd; padding: 8px 12px; }
-  .tiptap tr:nth-child(even) td { background: #fafafa; }
-  .tiptap ul { padding-left: 24px; margin: 8px 0; }
-  .tiptap ol { padding-left: 24px; margin: 8px 0; }
-  .tiptap li { margin: 4px 0; }
-  .tiptap hr { border: none; border-top: 2px solid #eee; margin: 20px 0; }
-  .tiptap a { color: #3d6ef5; text-decoration: underline; }
-  .tiptap p.is-editor-empty:first-child::before {
-    color: #aaa; content: attr(data-placeholder);
-    float: left; height: 0; pointer-events: none;
+    background: #fafafa;
+    box-sizing: border-box;
+    display: block;
   }
 
   .wiki-preview {
@@ -128,14 +107,20 @@
   .wiki-preview h2 { font-size: 21px; font-weight: 700; border-bottom: 1px solid #ddd; padding-bottom: 4px; margin: 20px 0 10px; }
   .wiki-preview h3 { font-size: 17px; font-weight: 700; margin: 16px 0 8px; }
   .wiki-preview h4 { font-size: 15px; font-weight: 700; margin: 12px 0 6px; }
-  .wiki-preview blockquote { border-left: 4px solid #3d6ef5; background: #f0f4ff; padding: 10px 16px; margin: 12px 0; border-radius: 0 6px 6px 0; }
-  .wiki-preview pre { background: #1e1e1e; color: #d4d4d4; padding: 16px; border-radius: 8px; font-size: 13px; overflow-x: auto; }
+  .wiki-preview blockquote { border-left: 4px solid #3d6ef5; background: #f0f4ff; padding: 10px 16px; margin: 12px 0; border-radius: 0 6px 6px 0; color: #444; }
+  .wiki-preview pre { background: #1e1e1e; color: #d4d4d4; padding: 16px; border-radius: 8px; font-size: 13px; overflow-x: auto; margin: 12px 0; }
+  .wiki-preview code { background: #f0f0f0; padding: 2px 6px; border-radius: 4px; font-size: 13px; color: #e53e3e; }
+  .wiki-preview pre code { background: none; color: inherit; padding: 0; }
   .wiki-preview table { border-collapse: collapse; width: 100%; margin: 12px 0; }
   .wiki-preview th { background: #f0f4ff; border: 1px solid #ddd; padding: 8px 12px; font-weight: 600; }
   .wiki-preview td { border: 1px solid #ddd; padding: 8px 12px; }
-  .wiki-preview ul { padding-left: 24px; margin: 8px 0; }
-  .wiki-preview ol { padding-left: 24px; margin: 8px 0; }
+  .wiki-preview tr:nth-child(even) td { background: #fafafa; }
+  .wiki-preview ul { padding-left: 24px; margin: 8px 0; list-style-type: disc; }
+  .wiki-preview ol { padding-left: 24px; margin: 8px 0; list-style-type: decimal; }
+  .wiki-preview li { margin: 4px 0; display: list-item; }
+  .wiki-preview hr { border: none; border-top: 2px solid #eee; margin: 20px 0; }
   .wiki-preview a { color: #3d6ef5; text-decoration: underline; }
+  .wiki-preview p { margin: 8px 0; }
 
   .wiki-toc {
     background: #f8f9fa;
@@ -147,22 +132,10 @@
     min-width: 200px;
   }
   .wiki-toc-title { font-weight: 700; margin-bottom: 8px; font-size: 14px; }
-  .wiki-toc ol { padding-left: 20px; margin: 0; }
-  .wiki-toc li { margin: 4px 0; font-size: 13px; }
+  .wiki-toc ol { padding-left: 20px; margin: 0; list-style-type: decimal; }
+  .wiki-toc li { margin: 4px 0; font-size: 13px; display: list-item; }
   .wiki-toc a { color: #3d6ef5; text-decoration: none; }
   .wiki-toc a:hover { text-decoration: underline; }
-
-  .collaboration-cursor__caret {
-    border-left: 1px solid #0d0d0d; border-right: 1px solid #0d0d0d;
-    margin-left: -1px; margin-right: -1px; pointer-events: none;
-    position: relative; word-break: normal;
-  }
-  .collaboration-cursor__label {
-    border-radius: 3px 3px 3px 0; color: #fff; font-size: 12px;
-    font-weight: 600; left: -1px; line-height: normal;
-    padding: 0.1rem 0.3rem; position: absolute; top: -1.4em;
-    user-select: none; white-space: nowrap;
-  }
 
   .version-panel { width: 280px; border-left: 1px solid #e0e0e0; padding: 16px; overflow-y: auto; max-height: 700px; display: none; }
   .version-panel.open { display: block; }
@@ -187,6 +160,10 @@
                     style="padding:6px 14px; border:1px solid #ddd; border-radius:6px; background:#fff; cursor:pointer; font-size:13px;">
               버전 히스토리
             </button>
+            <button onclick="saveAndView()"
+            	style="padding:6px 18px; border:none; border-radius:6px; background:#3d6ef5; color:#fff; cursor:pointer; font-size:13px; font-weight:600;">
+      			💾 저장
+   			 </button>
           </div>
 
           <!-- 제목 -->
@@ -204,31 +181,31 @@
 
               <!-- 툴바 -->
               <div class="wiki-toolbar" id="wikiToolbar">
-                <button class="toolbar-btn" onclick="execCmd('bold')"><b>B</b></button>
-                <button class="toolbar-btn" onclick="execCmd('italic')"><i>I</i></button>
-                <button class="toolbar-btn" onclick="execCmd('strike')"><s>S</s></button>
+                <button class="toolbar-btn" onclick="insertMd('**', '**')"><b>B</b></button>
+                <button class="toolbar-btn" onclick="insertMd('*', '*')"><i>I</i></button>
+                <button class="toolbar-btn" onclick="insertMd('~~', '~~')"><s>S</s></button>
                 <div class="toolbar-divider"></div>
-                <button class="toolbar-btn" onclick="execCmd('h2')">H2</button>
-                <button class="toolbar-btn" onclick="execCmd('h3')">H3</button>
-                <button class="toolbar-btn" onclick="execCmd('h4')">H4</button>
+                <button class="toolbar-btn" onclick="insertLine('## ')">H2</button>
+                <button class="toolbar-btn" onclick="insertLine('### ')">H3</button>
+                <button class="toolbar-btn" onclick="insertLine('#### ')">H4</button>
                 <div class="toolbar-divider"></div>
-                <button class="toolbar-btn" onclick="execCmd('bulletList')">• 목록</button>
-                <button class="toolbar-btn" onclick="execCmd('orderedList')">1. 목록</button>
+                <button class="toolbar-btn" onclick="insertLine('- ')">• 목록</button>
+                <button class="toolbar-btn" onclick="insertLine('1. ')">1. 목록</button>
                 <div class="toolbar-divider"></div>
-                <button class="toolbar-btn" onclick="execCmd('blockquote')">❝ 인용</button>
-                <button class="toolbar-btn" onclick="execCmd('codeBlock')">&lt;/&gt; 코드</button>
-                <button class="toolbar-btn" onclick="execCmd('table')">⊞ 표</button>
-                <button class="toolbar-btn" onclick="execCmd('hr')">— 구분선</button>
-                <button class="toolbar-btn" onclick="execCmd('link')">🔗 링크</button>
+                <button class="toolbar-btn" onclick="insertLine('> ')">❝ 인용</button>
+                <button class="toolbar-btn" onclick="insertCodeBlock()">&lt;/&gt; 코드</button>
+                <button class="toolbar-btn" onclick="insertTable()">⊞ 표</button>
+                <button class="toolbar-btn" onclick="insertLine('---')">— 구분선</button>
+                <button class="toolbar-btn" onclick="insertLink()">🔗 링크</button>
               </div>
 
-              <!-- 에디터 영역 -->
-              <div id="editor"
-                   th:data-wiki-id="${wikiId}"
-                   style="min-height:600px; display:block;">
-              </div>
+              <!-- 편집 탭 -->
+              <textarea id="markdownInput"
+                        th:data-wiki-id="${wikiId}"
+                        th:data-project-id="${projectId}"
+                        placeholder="마크다운으로 입력하세요..."></textarea>
 
-              <!-- 미리보기 영역 -->
+              <!-- 미리보기 탭 -->
               <div id="wikiPreview" class="wiki-preview"></div>
 
             </div>
@@ -248,30 +225,30 @@
 
 <script th:src="@{/js/bundle.js}"></script>
 <script>
-  const wikiId = document.getElementById('editor').dataset.wikiId
+  const wikiId = document.getElementById('markdownInput').dataset.wikiId
+  const projectId = document.getElementById('markdownInput').dataset.projectId
 
   function switchTab(tab) {
     const tabs = document.querySelectorAll('.wiki-tab')
-    const editorEl = document.getElementById('editor')
+    const textarea = document.getElementById('markdownInput')
     const previewEl = document.getElementById('wikiPreview')
     const toolbar = document.getElementById('wikiToolbar')
 
     if (tab === 'edit') {
       tabs[0].classList.add('active')
       tabs[1].classList.remove('active')
-      editorEl.style.display = 'block'
+      textarea.style.display = 'block'
       toolbar.style.display = 'flex'
       previewEl.classList.remove('active')
     } else {
       tabs[0].classList.remove('active')
       tabs[1].classList.add('active')
-      editorEl.style.display = 'none'
+      textarea.style.display = 'none'
       toolbar.style.display = 'none'
       previewEl.classList.add('active')
-      if (window.editor) {
-        const html = window.editor.getHTML()
-        previewEl.innerHTML = generateToc(html) + html
-      }
+      const md = textarea.value
+      const html = window.marked.parse(md)
+      previewEl.innerHTML = generateToc(html) + html
     }
   }
 
@@ -291,57 +268,55 @@
     return toc
   }
 
-  function execCmd(cmd) {
-    if (!window.editor) return
-    const e = window.editor
-    switch(cmd) {
-      case 'bold': e.chain().focus().toggleBold().run(); break
-      case 'italic': e.chain().focus().toggleItalic().run(); break
-      case 'strike': e.chain().focus().toggleStrikethrough().run(); break
-      case 'h2': e.chain().focus().toggleHeading({ level: 2 }).run(); break
-      case 'h3': e.chain().focus().toggleHeading({ level: 3 }).run(); break
-      case 'h4': e.chain().focus().toggleHeading({ level: 4 }).run(); break
-      case 'bulletList': e.chain().focus().toggleBulletList().run(); break
-      case 'orderedList': e.chain().focus().toggleOrderedList().run(); break
-      case 'blockquote': e.chain().focus().toggleBlockquote().run(); break
-      case 'codeBlock': e.chain().focus().toggleCodeBlock().run(); break
-      case 'table':
-    	  e.chain().focus().insertContent({
-    	    type: 'table',
-    	    content: [
-    	      {
-    	        type: 'tableRow',
-    	        content: [
-    	          { type: 'tableHeader', content: [{ type: 'paragraph', content: [{ type: 'text', text: '제목1' }] }] },
-    	          { type: 'tableHeader', content: [{ type: 'paragraph', content: [{ type: 'text', text: '제목2' }] }] },
-    	          { type: 'tableHeader', content: [{ type: 'paragraph', content: [{ type: 'text', text: '제목3' }] }] },
-    	        ]
-    	      },
-    	      {
-    	        type: 'tableRow',
-    	        content: [
-    	          { type: 'tableCell', content: [{ type: 'paragraph' }] },
-    	          { type: 'tableCell', content: [{ type: 'paragraph' }] },
-    	          { type: 'tableCell', content: [{ type: 'paragraph' }] },
-    	        ]
-    	      },
-    	      {
-    	        type: 'tableRow',
-    	        content: [
-    	          { type: 'tableCell', content: [{ type: 'paragraph' }] },
-    	          { type: 'tableCell', content: [{ type: 'paragraph' }] },
-    	          { type: 'tableCell', content: [{ type: 'paragraph' }] },
-    	        ]
-    	      },
-    	    ]
-    	  }).run()
-    	  break
-      case 'hr': e.chain().focus().setHorizontalRule().run(); break
-      case 'link':
-        const url = prompt('링크 URL을 입력하세요')
-        if (url) e.chain().focus().setLink({ href: url }).run()
-        break
-    }
+  function insertMd(before, after) {
+    const ta = document.getElementById('markdownInput')
+    const start = ta.selectionStart
+    const end = ta.selectionEnd
+    const selected = ta.value.substring(start, end)
+    const newText = before + (selected || '텍스트') + after
+    ta.value = ta.value.substring(0, start) + newText + ta.value.substring(end)
+    ta.focus()
+    ta.dispatchEvent(new Event('input'))
+  }
+
+  function insertLine(prefix) {
+    const ta = document.getElementById('markdownInput')
+    const start = ta.selectionStart
+    const lineStart = ta.value.lastIndexOf('\n', start - 1) + 1
+    ta.value = ta.value.substring(0, lineStart) + prefix + ta.value.substring(lineStart)
+    ta.focus()
+    ta.dispatchEvent(new Event('input'))
+  }
+
+  function insertCodeBlock() {
+    const ta = document.getElementById('markdownInput')
+    const start = ta.selectionStart
+    const insert = '\n```\n코드 입력\n```\n'
+    ta.value = ta.value.substring(0, start) + insert + ta.value.substring(start)
+    ta.focus()
+    ta.dispatchEvent(new Event('input'))
+  }
+
+  function insertTable() {
+    const ta = document.getElementById('markdownInput')
+    const start = ta.selectionStart
+    const insert = '\n| 제목1 | 제목2 | 제목3 |\n|---|---|---|\n| 내용 | 내용 | 내용 |\n'
+    ta.value = ta.value.substring(0, start) + insert + ta.value.substring(start)
+    ta.focus()
+    ta.dispatchEvent(new Event('input'))
+  }
+
+  function insertLink() {
+    const url = prompt('링크 URL을 입력하세요')
+    if (!url) return
+    const ta = document.getElementById('markdownInput')
+    const start = ta.selectionStart
+    const end = ta.selectionEnd
+    const selected = ta.value.substring(start, end) || '링크텍스트'
+    const insert = `[${selected}](${url})`
+    ta.value = ta.value.substring(0, start) + insert + ta.value.substring(end)
+    ta.focus()
+    ta.dispatchEvent(new Event('input'))
   }
 
   function toggleVersionPanel() {
@@ -351,12 +326,12 @@
   }
 
   function loadVersionList() {
-    fetch(`/wiki/versions/${wikiId}`)
+    fetch(`/project/${projectId}/wiki/versions/${wikiId}`)
       .then(res => res.json())
       .then(list => {
         const container = document.getElementById('versionList')
         container.innerHTML = ''
-        if (list.length === 0) {
+        if (!Array.isArray(list) || list.length === 0) {
           container.innerHTML = '<p style="color:#aaa; font-size:13px;">저장된 버전이 없습니다.</p>'
           return
         }
@@ -372,18 +347,43 @@
           container.appendChild(div)
         })
       })
+      .catch(err => console.error('버전 목록 로드 실패:', err))
   }
 
   function restoreVersion(versionId) {
     if (!confirm('이 버전으로 복원하시겠습니까?')) return
-    fetch(`/wiki/version/${versionId}`)
+    fetch(`/project/${projectId}/wiki/version/${versionId}`)
       .then(res => res.json())
       .then(data => {
-        if (data && data.content && window.editor) {
-          window.editor.commands.setContent(JSON.parse(data.content))
+        if (data && data.content) {
+          const content = JSON.parse(data.content)
+          const text = typeof content === 'string' ? content : (content.markdown || '')
+          const ta = document.getElementById('markdownInput')
+          ta.value = text
+          ta.dispatchEvent(new Event('input'))
         }
       })
+      .catch(err => console.error('복원 실패:', err))
   }
+  function saveAndView() {
+	  const textarea = document.getElementById('markdownInput')
+	  const title = document.getElementById('wikiTitle')?.value || '제목없음'
+	  const content = JSON.stringify({ markdown: textarea.value })
+
+	  fetch(`/project/${projectId}/wiki/save`, {
+	    method: 'POST',
+	    headers: { 'Content-Type': 'application/json' },
+	    body: JSON.stringify({ wikiId, title, content })
+	  })
+	  .then(res => res.text())
+	  .then(() => {
+	    location.href = `/project/${projectId}/wiki/${wikiId}`
+	  })
+	  .catch(err => {
+	    console.error('저장 실패:', err)
+	    alert('저장에 실패했습니다.')
+	  })
+	}
 </script>
 </div>
 </body>

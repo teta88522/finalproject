@@ -70,13 +70,16 @@
 								th:href="@{/project/{projectId}/repository/edit(projectId=${projectId}, fileId=${repository.fileId})}"
 								class="repo-btn repo-btn-edit">수정</a>
 
-							<!-- 삭제 버튼 -->
+							<!-- ✅ 삭제 버튼 - confirm 팝업 추가 -->
 							<form
 								th:action="@{/project/{projectId}/repository/delete(projectId=${projectId})}"
-								method="post" style="display: inline;">
+								method="post" style="display: inline;"
+								class="deleteRepositoryForm">
 								<input type="hidden" name="fileId"
 									th:value="${repository.fileId}">
-								<button type="submit" class="repo-btn repo-btn-delete">삭제</button>
+								<button type="submit" class="repo-btn repo-btn-delete"
+									onclick="return confirm('정말 이 파일을 삭제하시겠습니까?\n삭제된 파일은 복구할 수 없습니다.');">
+									삭제</button>
 							</form>
 						</th:block>
 					</div>

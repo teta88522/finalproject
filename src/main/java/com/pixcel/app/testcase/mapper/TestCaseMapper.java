@@ -31,4 +31,7 @@ public interface TestCaseMapper {
     public int updateTestCase(TestCaseVO testCaseVO);
 
     public int deleteTestCaseStep(String testCaseId);
+    
+    //권한체크
+    public int checkTestCaseOwner(TestCaseVO testCaseVO);
 }

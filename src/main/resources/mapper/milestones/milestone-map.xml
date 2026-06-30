@@ -112,6 +112,7 @@
         <result property="managerName" column="MANAGER_NAME"/> 
         <result property="statusCode" column="STATUS_CODE"/>
         <result property="versionName" column="VERSION_NAME"/>
+        <result property="versionId" column="VERSION_ID"/>
         <result property="totalProgressRate" column="TOTAL_PROGRESS_RATE"/>
 
         <collection property="issueList" ofType="IssuesVO">
@@ -131,6 +132,7 @@
             M.START_DATE,
             M.END_DATE,
             M.STATUS_CODE,
+            V.VERSION_ID,
             V.VERSION_NAME,
             U.USER_NAME AS MANAGER_NAME, 
             

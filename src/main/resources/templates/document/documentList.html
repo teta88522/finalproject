@@ -66,7 +66,7 @@
                                     <td style="padding:10px 12px;"><input type="checkbox"></td>
                                     <td style="padding:10px 12px;">
                                         <i class="fa fa-file-text-o" style="margin-right:7px; color:#7b8cde;"></i>
-                                        <a href="#" style="color:#333; text-decoration:none; font-weight:500;" th:text="${categoryNo.title}"></a>
+                                        <a th:href="@{/project/{projectId}/document/detail/{documentId}(projectId=${projectId},documentId=${categoryNo.documentId})}" style="color:#333; text-decoration:none; font-weight:500;" th:text="${categoryNo.title}"></a>
                                     </td>
                                     <td style="padding:10px 12px;">
                                         <span style="font-size:11px; padding:3px 9px; background:#eef2ff; color:#5566cc; border-radius:20px;" th:text="${categoryNo.statusName}"></span>

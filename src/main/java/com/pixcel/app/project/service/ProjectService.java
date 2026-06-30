@@ -38,4 +38,8 @@ public interface ProjectService {
 	
 	// ✅ 추가: 일감 추적 데이터 조회
 	public List<IssueStatVO> selectIssueStatByProjectId(String projectId);
+	
+	// ✅ 추가: 프로젝트 모듈 추가/삭제
+	public Map<String, Object> insertProjectModule(String projectId, String moduleCode);
+	public Map<String, Object> deleteProjectModule(String projectId, String moduleCode);
 }

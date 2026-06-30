@@ -83,6 +83,7 @@ public class FileServiceImpl implements FileService{
 					vo.setUploadUserId(req.getUploadUserId());
 					vo.setFileVersion(nextVersion);
 					vo.setConnectAddress(connectAddress);
+					vo.setDocumentVersionId(req.getDocumentVersionId());
 					System.out.print(vo);
 					fileMapper.insertFile(vo);
 					
@@ -99,8 +100,8 @@ public class FileServiceImpl implements FileService{
 
 	@Override
 	@Transactional
-	public void downloadAll(String connectAddress, HttpServletResponse response, String userId) throws IOException {
-		List<FileVO> files = fileMapper.downloadAll(connectAddress);
+	public void downloadAll(String connectAddress, HttpServletResponse response, String userId, Integer documentVersionId) throws IOException {
+		List<FileVO> files = fileMapper.downloadAll(connectAddress, documentVersionId);
 		
 		if(files == null || files.isEmpty()) {
 			throw new RuntimeException("다운로드할 파일이 없습니다.");
@@ -177,11 +178,40 @@ public class FileServiceImpl implements FileService{
 		}
 		
 	}
+	@Override
+	public List<FileVO> selectAll(String connectAddress, Integer documentVersionId) {
+		return fileMapper.downloadAll(connectAddress, documentVersionId);
+	}
 
 
 	@Override
-	public List<FileVO> selectAll(String connectAddress) {
-		return fileMapper.downloadAll(connectAddress);
+	public List<FileVO> selectByDocumentVersion(int documentVersionId) {
+		return fileMapper.selectByDocumentVersion(documentVersionId);
+	}
+
+
+	@Override
+	public void copyOldFiles(int oldDocumentVersionId, int newDocumentVersionId, List<MultipartFile> uploadFiles) {
+		
+		System.out.println("oldVersion = " + oldDocumentVersionId);
+	    System.out.println("newVersion = " + newDocumentVersionId);
+
+		
+		List<FileVO> oldFiles = fileMapper.selectByDocumentVersion(oldDocumentVersionId);
+		List<String> uplaodNames = uploadFiles.stream()
+											.filter(f -> !f.isEmpty())
+											.map(MultipartFile::getOriginalFilename)
+											.toList();
+		System.out.println(oldFiles);
+		for(FileVO file : oldFiles) {
+			if(uplaodNames.contains(file.getOriginalName())) {
+				continue;
+			}
+			file.setFileId(null);
+			file.setDocumentVersionId(newDocumentVersionId);
+			fileMapper.copyFile(file);
+		}
+		
 	}
 	
 }

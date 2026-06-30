@@ -2,6 +2,8 @@ package com.pixcel.app.test.service;
 
 import java.util.List;
 
+import com.pixcel.app.testcase.service.TestCaseVO;
+
 public interface TestService {
 	
 	// 관리자 테스트 요약
@@ -23,6 +25,18 @@ public interface TestService {
     public int insertTestWithCases(TestVO testVO);
     
     public List<TestGroupVO> selectProjectGroupList(String projectId); 
+    
+    // 테스트 상세 조회
+    public TestVO selectTestDetail(String projectId, String testId);
+    
+    // 테스트에 매핑된 테스트케이스 목록
+    public List<TestCaseVO> selectMappedTestCaseList(String testId);
+    
+    // 테스트 수정 권한 확인
+    public int checkTestOwner(TestVO testVO);
+    
+    // 테스트 수정 + 테스트케이스매핑 수정
+    public int updateTestWithCases(TestVO testVO);
     
     
 

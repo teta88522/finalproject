@@ -124,7 +124,7 @@
 
 					<!-- 저장소 -->
 					<li th:if="${moduleCodes.contains('h004')}">
-					<a th:href="@{/sourcerepository}"> <span
+					<a th:href="@{/project/{projectId}/sourcerepository(projectId=${projectId})}"> <span
 							class="educate-icon educate-event icon-wrap"></span> <span
 							class="mini-click-non">저장소</span>
 					</a>

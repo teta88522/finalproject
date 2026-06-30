@@ -29,4 +29,6 @@ public class FileVO {
 	private int fileVersion;
 //	private String fileUseYn;
 	private String connectAddress;
+	private Integer documentVersionId;
+
 }

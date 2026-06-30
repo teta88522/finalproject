@@ -15,4 +15,5 @@ public class FileDTO {
 	private String fileCode;
 	private String uploadUserId;
 	private String connectAddress;
+	private Integer documentVersionId;
 }

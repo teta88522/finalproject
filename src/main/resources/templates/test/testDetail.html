@@ -1,0 +1,364 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{common/layouts/default_layout}">
+<head>
+<meta charset="UTF-8">
+<title>테스트 수행</title>
+
+<link rel="stylesheet" th:href="@{/css/test/testDetail.css}">
+</head>
+
+<body>
+<div layout:fragment="Content">
+
+    <div class="test-detail-wrap">
+
+        <div class="page-title-area">
+            <div>
+                <h2>테스트 수행</h2>
+                <p class="page-desc">테스트 케이스별 실행결과를 작성합니다.</p>
+            </div>
+
+            <div class="top-btn-area">
+                <a th:href="@{/project/{projectId}/tests(projectId=${projectId})}"
+                   class="btn-basic">
+                    목록
+                </a>
+
+                <a th:href="@{/project/{projectId}/tests/{testId}/edit(
+                        projectId=${projectId},
+                        testId=${testId}
+                   )}"
+                   class="btn-primary">
+                    테스트 수정
+                </a>
+            </div>
+        </div>
+
+        <!-- 기본 정보 -->
+        <section class="box-section">
+            <div class="box-title">테스트 기본 정보</div>
+
+            <div class="info-grid">
+                <div class="info-item">
+                    <span>테스트 ID</span>
+                    <strong th:text="${testInfo.testId}">TEST_ID</strong>
+                </div>
+
+                <div class="info-item">
+                    <span>테스트명</span>
+                    <strong th:text="${testInfo.testTitle}">테스트명</strong>
+                </div>
+
+                <div class="info-item">
+                    <span>버전</span>
+                    <strong th:text="${testInfo.versionName}">버전</strong>
+                </div>
+
+                <div class="info-item">
+                    <span>그룹</span>
+                    <strong th:text="${testInfo.teamName}">그룹</strong>
+                </div>
+
+                <div class="info-item">
+                    <span>상태</span>
+                    <strong th:text="${testInfo.statusName}">상태</strong>
+                </div>
+
+                <div class="info-item">
+                    <span>우선순위</span>
+                    <strong th:text="${testInfo.priorityName}">우선순위</strong>
+                </div>
+
+                <div class="info-item">
+                    <span>유형</span>
+                    <strong th:text="${testInfo.testTypeName}">유형</strong>
+                </div>
+
+                <div class="info-item">
+                    <span>담당자</span>
+                    <strong th:text="${testInfo.assigneeName != null ? testInfo.assigneeName : '-'}">담당자</strong>
+                </div>
+
+                <div class="info-item">
+                    <span>시작일</span>
+                    <strong th:text="${testInfo.startDate}">시작일</strong>
+                </div>
+
+                <div class="info-item">
+                    <span>종료일</span>
+                    <strong th:text="${testInfo.endDate}">종료일</strong>
+                </div>
+            </div>
+
+            <div class="description-box">
+                <span>설명</span>
+                <p th:text="${testInfo.description != null ? testInfo.description : '-'}">설명</p>
+            </div>
+        </section>
+
+        <!-- 수행 결과 -->
+        <section class="box-section execution-section">
+            <div class="box-title">테스트 케이스 수행 결과</div>
+
+            <!-- 전체 저장 form -->
+            <form th:action="@{/project/{projectId}/tests/{testId}/executions/save-all(
+                        projectId=${projectId},
+                        testId=${testId}
+                  )}"
+                  method="post"
+                  id="executionSaveAllForm">
+
+                <div class="table-box">
+                    <table class="execution-table">
+                        <thead>
+                            <tr>
+                                <th>No</th>
+                                <th>테스트 케이스</th>
+                                <th>유형</th>
+                                <th>우선순위</th>
+                                <th>기대결과</th>
+                                <th>현재 결과</th>
+                                <th>수행 상태</th>
+                                <th>코멘트</th>
+                                <th>재수행</th>
+                                <th>수행자</th>
+                                <th>수행일시</th>
+                                <th>개별저장</th>
+                                <th>버그</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            <tr th:if="${executionCaseList == null or #lists.isEmpty(executionCaseList)}">
+                                <td colspan="13" class="empty-row">
+                                    매핑된 테스트 케이스가 없습니다.
+                                </td>
+                            </tr>
+
+                            <tr th:each="item : ${executionCaseList}"
+                                th:data-mapping-id="${item.mappingId}">
+
+                                <td th:text="${item.sortOrder}">1</td>
+
+                                <td class="case-title-cell">
+                                    <input type="hidden"
+                                           name="mappingIdList"
+                                           th:value="${item.mappingId}">
+
+                                    <div class="case-title"
+                                         th:text="${item.testCaseTitle}">
+                                        테스트 케이스명
+                                    </div>
+
+                                    <div class="case-sub"
+                                         th:text="${item.testCaseId}">
+                                        TC_ID
+                                    </div>
+                                </td>
+
+                                <td th:text="${item.testCaseTypeName}">기능</td>
+
+                                <td>
+                                    <span class="priority-badge"
+                                          th:classappend="${item.testCasePriorityCode == 'c001' ? ' high' : (item.testCasePriorityCode == 'c003' ? ' low' : ' middle')}"
+                                          th:text="${item.testCasePriorityName}">
+                                        중
+                                    </span>
+                                </td>
+
+                                <td class="expected-cell"
+                                    th:title="${item.expectedResult}"
+                                    th:text="${item.expectedResult != null ? item.expectedResult : '-'}">
+                                    기대결과
+                                </td>
+
+                                <td>
+                                    <span class="result-badge"
+                                          th:classappend="${item.resultStatusCode == 'o001' ? ' not-run' : (item.resultStatusCode == 'o002' ? ' progress' : (item.resultStatusCode == 'o003' ? ' success' : ' fail'))}"
+                                          th:text="${item.resultStatusName}">
+                                        미수행
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <select name="resultStatusCodeList"
+                                            class="result-select">
+                                        <option value="o001"
+                                                th:selected="${item.resultStatusCode == 'o001'}">
+                                            미수행
+                                        </option>
+                                        <option value="o002"
+                                                th:selected="${item.resultStatusCode == 'o002'}">
+                                            진행중
+                                        </option>
+                                        <option value="o003"
+                                                th:selected="${item.resultStatusCode == 'o003'}">
+                                            성공
+                                        </option>
+                                        <option value="o004"
+                                                th:selected="${item.resultStatusCode == 'o004'}">
+                                            실패
+                                        </option>
+                                    </select>
+                                </td>
+
+                                <td>
+                                    <input type="text"
+                                           name="executionCommentList"
+                                           class="comment-input"
+                                           th:value="${item.executionComment}"
+                                           maxlength="255"
+                                           placeholder="수행 코멘트">
+                                </td>
+
+                                <td th:text="${item.nextRetryNo}">0</td>
+
+                                <td th:text="${item.executorName != null ? item.executorName : '-'}">
+                                    수행자
+                                </td>
+
+                                <td th:text="${item.executedAt != null ? item.executedAt : '-'}">
+                                    수행일시
+                                </td>
+
+                                <td>
+                                    <button type="button"
+                                            class="btn-save-row"
+                                            th:data-mapping-id="${item.mappingId}">
+                                        저장
+                                    </button>
+                                </td>
+
+                                <td>
+                                    <a th:if="${item.executionId != null and item.resultStatusCode == 'o004'}"
+                                       th:href="@{/project/{projectId}/bugs/new(
+                                            projectId=${projectId},
+                                            executionId=${item.executionId}
+                                       )}"
+                                       class="btn-bug">
+                                        등록
+                                    </a>
+
+                                    <span th:unless="${item.executionId != null and item.resultStatusCode == 'o004'}"
+                                          class="text-muted">
+                                        -
+                                    </span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="execution-btn-area">
+                    <button type="submit" class="btn-save-all">
+                        실행결과 전체 저장
+                    </button>
+                </div>
+
+            </form>
+        </section>
+
+    </div>
+
+<script th:inline="javascript">
+    const message = /*[[${message}]]*/ null;
+    const projectId = /*[[${projectId}]]*/ '';
+    const testId = /*[[${testId}]]*/ '';
+
+    if (message != null) {
+        alert(message);
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const rowSaveButtons = document.querySelectorAll('.btn-save-row');
+
+        rowSaveButtons.forEach(function (button) {
+            button.addEventListener('click', function () {
+                const row = button.closest('tr');
+
+                if (row == null) {
+                    return;
+                }
+
+                const mappingId = button.dataset.mappingId;
+                const resultSelect = row.querySelector('.result-select');
+                const commentInput = row.querySelector('.comment-input');
+
+                const resultStatusCode = resultSelect == null ? 'o001' : resultSelect.value;
+                const executionComment = commentInput == null ? '' : commentInput.value;
+
+                const formData = new URLSearchParams();
+                formData.append('mappingId', mappingId);
+                formData.append('resultStatusCode', resultStatusCode);
+                formData.append('executionComment', executionComment);
+
+                button.disabled = true;
+                button.textContent = '저장중';
+
+                fetch('/project/' + projectId + '/tests/' + testId + '/executions/save-ajax', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+                    },
+                    body: formData.toString()
+                })
+                .then(function (response) {
+                    if (!response.ok) {
+                        throw new Error('저장 실패');
+                    }
+
+                    return response.json();
+                })
+                .then(function (data) {
+                    if (data.resultStatusCode === 'LOGIN_REQUIRED') {
+                        alert(data.resultStatusName);
+                        location.href = '/login';
+                        return;
+                    }
+
+                    if (data.resultStatusCode === 'ERROR') {
+                        alert(data.resultStatusName);
+                        button.textContent = '저장';
+                        button.disabled = false;
+                        return;
+                    }
+
+                    const badge = row.querySelector('.result-badge');
+
+                    if (badge != null) {
+                        badge.className = 'result-badge';
+                        badge.textContent = data.resultStatusName;
+
+                        if (data.resultStatusCode === 'o001') {
+                            badge.classList.add('not-run');
+                        } else if (data.resultStatusCode === 'o002') {
+                            badge.classList.add('progress');
+                        } else if (data.resultStatusCode === 'o003') {
+                            badge.classList.add('success');
+                        } else if (data.resultStatusCode === 'o004') {
+                            badge.classList.add('fail');
+                        }
+                    }
+
+                    button.textContent = '저장됨';
+
+                    setTimeout(function () {
+                        button.textContent = '저장';
+                        button.disabled = false;
+                    }, 700);
+                })
+                .catch(function () {
+                    alert('저장 중 오류가 발생했습니다.');
+                    button.textContent = '저장';
+                    button.disabled = false;
+                });
+            });
+        });
+    });
+</script>
+
+</div>
+</body>
+</html>

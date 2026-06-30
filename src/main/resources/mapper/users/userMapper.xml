@@ -56,7 +56,7 @@
 			,user_name
 			,email
 			,phone
-			,identity_verified_yn
+			,identity_verified_yn AS authYN
 			,subscribe_yn
 		FROM users
 		WHERE login_id = #{loginId}

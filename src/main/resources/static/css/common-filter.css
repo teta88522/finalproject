@@ -51,6 +51,8 @@
     align-items: end;
 }
 
+
+
 /* label + input/select 한 세트 */
 .search-section .search-field {
     display: flex;

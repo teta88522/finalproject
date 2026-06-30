@@ -485,5 +485,17 @@
 		ORDER BY
 		it.issue_type_id
 	</select>
+	
+	<!-- ✅ 추가: 프로젝트 모듈 추가 -->
+	<insert id="insertProjectModule">
+		INSERT INTO project_module (project_module_id, project_id, module_code)
+		VALUES (sys_guid(), #{projectId}, #{moduleCode})
+	</insert>
+	
+	<!-- ✅ 추가: 프로젝트 모듈 삭제 (코드로) -->
+	<delete id="deleteProjectModuleByCode">
+		DELETE FROM project_module
+		WHERE project_id = #{projectId} AND module_code = #{moduleCode}
+	</delete>
 
 </mapper>

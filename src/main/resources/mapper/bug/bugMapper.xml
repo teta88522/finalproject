@@ -1,0 +1,281 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.pixcel.app.mapper.BugMapper">
+
+    <!-- 버그 목록 -->
+    <select id="selectBugList" parameterType="BugSearchVO" resultType="BugVO">
+        SELECT
+            b.bug_id AS bugId,
+            b.execution_id AS executionId,
+            b.title AS title,
+            b.bug_type_code AS bugTypeCode,
+            b.severity_code AS severityCode,
+            b.priority_code AS priorityCode,
+            b.bug_status_code AS bugStatusCode,
+            b.found_version AS foundVersion,
+            b.test_env AS testEnv,
+            b.description AS description,
+            b.actual_result AS actualResult,
+            b.reproduce_step AS reproduceStep,
+            b.expected_result AS expectedResult,
+            b.assignee_id AS assigneeId,
+            b.reporter_id AS reporterId,
+            b.occurred_at AS occurredAt,
+            b.created_at AS createdAt,
+            b.updated_at AS updatedAt,
+
+            t.test_id AS testId,
+            t.title AS testName,
+
+            pv.version_id AS versionId,
+            pv.version_name AS versionName,
+
+            p.project_id AS projectId,
+            p.project_name AS projectName,
+
+            bugType.note AS bugTypeName,
+            severity.note AS severityName,
+            priority.note AS priorityName,
+            bugStatus.note AS bugStatusName,
+
+            assignee.user_name AS assigneeName,
+            reporter.user_name AS reporterName
+
+        FROM bug b
+        JOIN test_execution te
+            ON b.execution_id = te.execution_id
+        JOIN test_case_mapping tcm
+            ON te.mapping_id = tcm.mapping_id
+        JOIN test t
+            ON tcm.test_id = t.test_id
+        JOIN project_version pv
+            ON t.version_id = pv.version_id
+        JOIN project p
+            ON pv.project_id = p.project_id
+
+        LEFT JOIN users assignee
+            ON b.assignee_id = assignee.user_id
+        LEFT JOIN users reporter
+            ON b.reporter_id = reporter.user_id
+
+        LEFT JOIN common_code bugType
+            ON b.bug_type_code = bugType.code_id
+        LEFT JOIN common_code severity
+            ON b.severity_code = severity.code_id
+        LEFT JOIN common_code priority
+            ON b.priority_code = priority.code_id
+        LEFT JOIN common_code bugStatus
+            ON b.bug_status_code = bugStatus.code_id
+
+        WHERE 1 = 1
+
+        <if test="projectId != null and projectId != ''">
+            AND p.project_id = #{projectId}
+        </if>
+
+        <if test="projectName != null and projectName != ''">
+            AND p.project_name LIKE '%' || #{projectName} || '%'
+        </if>
+
+        <if test="bugStatusCode != null and bugStatusCode != ''">
+            AND b.bug_status_code = #{bugStatusCode}
+        </if>
+
+        <if test="assigneeId != null and assigneeId != ''">
+            AND b.assignee_id = #{assigneeId}
+        </if>
+
+        <if test="severityCode != null and severityCode != ''">
+            AND b.severity_code = #{severityCode}
+        </if>
+
+        <if test="priorityCode != null and priorityCode != ''">
+            AND b.priority_code = #{priorityCode}
+        </if>
+
+        <if test="reporterId != null and reporterId != ''">
+            AND b.reporter_id = #{reporterId}
+        </if>
+
+        <if test="foundVersion != null and foundVersion != ''">
+            AND b.found_version LIKE '%' || #{foundVersion} || '%'
+        </if>
+
+        <if test="title != null and title != ''">
+            AND b.title LIKE '%' || #{title} || '%'
+        </if>
+
+        ORDER BY b.created_at DESC
+    </select>
+
+
+    <!-- 버그 상세 -->
+    <select id="selectBugDetail" parameterType="String" resultType="BugVO">
+        SELECT
+            b.bug_id AS bugId,
+            b.execution_id AS executionId,
+            b.title AS title,
+            b.bug_type_code AS bugTypeCode,
+            b.severity_code AS severityCode,
+            b.priority_code AS priorityCode,
+            b.bug_status_code AS bugStatusCode,
+            b.found_version AS foundVersion,
+            b.test_env AS testEnv,
+            b.description AS description,
+            b.actual_result AS actualResult,
+            b.reproduce_step AS reproduceStep,
+            b.expected_result AS expectedResult,
+            b.assignee_id AS assigneeId,
+            b.reporter_id AS reporterId,
+            b.occurred_at AS occurredAt,
+            b.created_at AS createdAt,
+            b.updated_at AS updatedAt,
+
+            t.test_id AS testId,
+            t.title AS testName,
+
+            pv.version_id AS versionId,
+            pv.version_name AS versionName,
+
+            p.project_id AS projectId,
+            p.project_name AS projectName,
+
+            bugType.note AS bugTypeName,
+            severity.note AS severityName,
+            priority.note AS priorityName,
+            bugStatus.note AS bugStatusName,
+
+            assignee.user_name AS assigneeName,
+            reporter.user_name AS reporterName
+
+        FROM bug b
+        JOIN test_execution te
+            ON b.execution_id = te.execution_id
+        JOIN test_case_mapping tcm
+            ON te.mapping_id = tcm.mapping_id
+        JOIN test t
+            ON tcm.test_id = t.test_id
+        JOIN project_version pv
+            ON t.version_id = pv.version_id
+        JOIN project p
+            ON pv.project_id = p.project_id
+
+        LEFT JOIN users assignee
+            ON b.assignee_id = assignee.user_id
+        LEFT JOIN users reporter
+            ON b.reporter_id = reporter.user_id
+
+        LEFT JOIN common_code bugType
+            ON b.bug_type_code = bugType.code_id
+        LEFT JOIN common_code severity
+            ON b.severity_code = severity.code_id
+        LEFT JOIN common_code priority
+            ON b.priority_code = priority.code_id
+        LEFT JOIN common_code bugStatus
+            ON b.bug_status_code = bugStatus.code_id
+
+        WHERE b.bug_id = #{bugId}
+    </select>
+
+
+    <!-- 버그 등록 -->
+    <insert id="insertBug" parameterType="BugVO">
+        <selectKey keyProperty="bugId" resultType="String" order="BEFORE">
+            SELECT 'BUG_' || TO_CHAR(SYSDATE, 'YYYYMM') || '_' ||
+                   LPAD(
+                       NVL(
+                           MAX(
+                               TO_NUMBER(SUBSTR(bug_id, 12))
+                           ),
+                           0
+                       ) + 1,
+                       4,
+                       '0'
+                   )
+            FROM bug
+            WHERE bug_id LIKE 'BUG_' || TO_CHAR(SYSDATE, 'YYYYMM') || '_%'
+        </selectKey>
+
+        INSERT INTO bug
+        (
+            bug_id,
+            execution_id,
+            title,
+            bug_type_code,
+            severity_code,
+            priority_code,
+            bug_status_code,
+            found_version,
+            test_env,
+            description,
+            actual_result,
+            reproduce_step,
+            expected_result,
+            assignee_id,
+            reporter_id,
+            occurred_at,
+            created_at
+        )
+        VALUES
+        (
+            #{bugId},
+            #{executionId},
+            #{title},
+            #{bugTypeCode},
+            #{severityCode},
+            #{priorityCode},
+            #{bugStatusCode},
+            #{foundVersion},
+            #{testEnv},
+            #{description},
+            #{actualResult},
+            #{reproduceStep},
+            #{expectedResult},
+            #{assigneeId},
+            #{reporterId},
+            #{occurredAt},
+            SYSDATE
+        )
+    </insert>
+
+
+    <!-- 버그 수정 -->
+    <update id="updateBug" parameterType="BugVO">
+        UPDATE bug
+        SET
+            title = #{title},
+            bug_type_code = #{bugTypeCode},
+            severity_code = #{severityCode},
+            priority_code = #{priorityCode},
+            bug_status_code = #{bugStatusCode},
+            found_version = #{foundVersion},
+            test_env = #{testEnv},
+            description = #{description},
+            actual_result = #{actualResult},
+            reproduce_step = #{reproduceStep},
+            expected_result = #{expectedResult},
+            assignee_id = #{assigneeId},
+            occurred_at = #{occurredAt},
+            updated_at = SYSDATE
+        WHERE bug_id = #{bugId}
+    </update>
+
+
+    <!-- admin용 전체 삭제 -->
+    <delete id="deleteBug" parameterType="String">
+        DELETE FROM bug
+        WHERE bug_id = #{bugId}
+    </delete>
+
+
+    <!-- 일반 사용자용 본인 등록 버그 삭제 -->
+    <delete id="deleteBugByReporter" parameterType="BugVO">
+        DELETE FROM bug
+        WHERE bug_id = #{bugId}
+          AND reporter_id = #{loginUserId}
+    </delete>
+
+</mapper>

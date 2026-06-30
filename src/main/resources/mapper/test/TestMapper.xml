@@ -61,97 +61,41 @@
 
 
     <!-- 관리자 테스트 목록 -->
-    <select id="selectAdminTestList"
-            parameterType="com.pixcel.app.test.service.TestSearchVO"
-            resultType="com.pixcel.app.test.service.TestVO">
+	<select id="selectAdminTestList"
+        parameterType="com.pixcel.app.test.service.TestSearchVO"
+        resultType="com.pixcel.app.test.service.TestVO">
 
+    WITH base_t AS (
         SELECT
-            t.test_id AS "testId",
-            t.version_id AS "versionId",
-            pv.project_id AS "projectId",
-            p.project_name AS "projectName",
-            pv.version_name AS "versionName",
-            t.title AS "title",
-            t.priority_code AS "priorityCode",
-            priority.note AS "priorityName",
-            t.test_type_code AS "testTypeCode",
-            test_type.note AS "testTypeName",
-            t.status_code AS "statusCode",
-            status.note AS "statusName",
-            t.assignee_id AS "assigneeId",
-            assignee.user_name AS "assigneeName",
-            assignee.login_id AS "assigneeLoginId",
-            t.created_by AS "createdBy",
-            creator.user_name AS "createdByName",
-            creator.login_id AS "createdByLoginId",
-            t.description AS "description",
-            TO_CHAR(t.start_date, 'YYYY-MM-DD') AS "startDate",
-            TO_CHAR(t.end_date, 'YYYY-MM-DD') AS "endDate",
-            TO_CHAR(t.created_at, 'YYYY-MM-DD') AS "createdAt",
-            TO_CHAR(t.updated_at, 'YYYY-MM-DD') AS "updatedAt",
-            t.team_name AS "teamName",
-
-            NVL(tc_count.total_case_count, 0) AS "totalCaseCount",
-            NVL(ex_count.execution_count, 0) AS "executionCount",
-            NVL(ex_count.success_count, 0) AS "successCount",
-            NVL(ex_count.fail_count, 0) AS "failCount",
-            NVL(ex_count.hold_count, 0) AS "holdCount",
-            NVL(ex_count.progress_count, 0) AS "progressCount",
-
-            CASE
-                WHEN NVL(tc_count.total_case_count, 0) = 0 THEN 0
-                ELSE ROUND((NVL(ex_count.execution_count, 0) / tc_count.total_case_count) * 100)
-            END AS "progressRate"
-
+            t.test_id,
+            t.version_id,
+            pv.project_id,
+            p.project_name,
+            pv.version_name,
+            t.title,
+            t.priority_code,
+            t.test_type_code,
+            t.status_code,
+            t.assignee_id,
+            t.created_by,
+            t.description,
+            t.start_date,
+            t.end_date,
+            t.created_at,
+            t.updated_at,
+            t.team_name
         FROM test t
         JOIN project_version pv
             ON t.version_id = pv.version_id
         JOIN project p
             ON pv.project_id = p.project_id
 
-        LEFT JOIN common_code status
-            ON t.status_code = status.code_id
-           AND status.code_name = '0A'
+        <if test="assigneeName != null and assigneeName != ''">
+        JOIN users assignee_filter
+            ON t.assignee_id = assignee_filter.user_id
+        </if>
 
-        LEFT JOIN common_code priority
-            ON t.priority_code = priority.code_id
-           AND priority.code_name = '0C'
-
-        LEFT JOIN common_code test_type
-            ON t.test_type_code = test_type.code_id
-           AND test_type.code_name = '0D'
-
-        LEFT JOIN users assignee
-            ON t.assignee_id = assignee.user_id
-
-        LEFT JOIN users creator
-            ON t.created_by = creator.user_id
-
-        LEFT JOIN (
-            SELECT
-                test_id,
-                COUNT(*) AS total_case_count
-            FROM test_case_mapping
-            GROUP BY test_id
-        ) tc_count
-            ON t.test_id = tc_count.test_id
-
-        LEFT JOIN (
-            SELECT
-                tcm.test_id,
-                COUNT(te.execution_id) AS execution_count,
-                SUM(CASE WHEN te.result_status_code = 'a003' THEN 1 ELSE 0 END) AS success_count,
-                SUM(CASE WHEN te.result_status_code = 'a004' THEN 1 ELSE 0 END) AS fail_count,
-                SUM(CASE WHEN te.result_status_code = 'a005' THEN 1 ELSE 0 END) AS hold_count,
-                SUM(CASE WHEN te.result_status_code = 'a002' THEN 1 ELSE 0 END) AS progress_count
-            FROM test_case_mapping tcm
-            LEFT JOIN test_execution te
-                ON tcm.mapping_id = te.mapping_id
-            GROUP BY tcm.test_id
-        ) ex_count
-            ON t.test_id = ex_count.test_id
-
-        WHERE p.project_id = #{projectId}
+        WHERE pv.project_id = #{projectId}
           AND p.owner_id = #{loginUserId}
 
         <if test="projectName != null and projectName != ''">
@@ -183,14 +127,90 @@
         </if>
 
         <if test="assigneeName != null and assigneeName != ''">
-            AND assignee.user_name LIKE '%' || #{assigneeName} || '%'
+            AND assignee_filter.user_name LIKE '%' || #{assigneeName} || '%'
         </if>
+    ),
+    tc_count AS (
+        SELECT
+            tcm.test_id,
+            COUNT(*) AS total_case_count
+        FROM test_case_mapping tcm
+        JOIN base_t bt
+            ON tcm.test_id = bt.test_id
+        GROUP BY tcm.test_id
+    )
+    SELECT
+        bt.test_id AS "testId",
+        bt.version_id AS "versionId",
+        bt.project_id AS "projectId",
+        bt.project_name AS "projectName",
+        bt.version_name AS "versionName",
+        bt.title AS "title",
 
-        ORDER BY
-            t.created_at DESC,
-            t.test_id DESC
+        bt.priority_code AS "priorityCode",
+        CASE bt.priority_code
+            WHEN 'c001' THEN '상'
+            WHEN 'c002' THEN '중'
+            WHEN 'c003' THEN '하'
+            ELSE bt.priority_code
+        END AS "priorityName",
 
-    </select>
+        bt.test_type_code AS "testTypeCode",
+        CASE bt.test_type_code
+            WHEN 'd001' THEN '기능'
+            WHEN 'd002' THEN 'UI/UX'
+            WHEN 'd003' THEN '성능'
+            WHEN 'd004' THEN '보안'
+            WHEN 'd005' THEN '데이터'
+            WHEN 'd006' THEN '기타'
+            ELSE bt.test_type_code
+        END AS "testTypeName",
+
+        bt.status_code AS "statusCode",
+        CASE bt.status_code
+            WHEN 'a001' THEN '예정'
+            WHEN 'a002' THEN '진행중'
+            WHEN 'a003' THEN '종료'
+            ELSE bt.status_code
+        END AS "statusName",
+
+        bt.assignee_id AS "assigneeId",
+        assignee.user_name AS "assigneeName",
+        assignee.login_id AS "assigneeLoginId",
+
+        bt.created_by AS "createdBy",
+        creator.user_name AS "createdByName",
+        creator.login_id AS "createdByLoginId",
+
+        bt.description AS "description",
+        TO_CHAR(bt.start_date, 'YYYY-MM-DD') AS "startDate",
+        TO_CHAR(bt.end_date, 'YYYY-MM-DD') AS "endDate",
+        TO_CHAR(bt.created_at, 'YYYY-MM-DD') AS "createdAt",
+        TO_CHAR(bt.updated_at, 'YYYY-MM-DD') AS "updatedAt",
+        bt.team_name AS "teamName",
+
+        NVL(tc_count.total_case_count, 0) AS "totalCaseCount",
+
+        0 AS "executionCount",
+        0 AS "successCount",
+        0 AS "failCount",
+        0 AS "holdCount",
+        0 AS "progressCount",
+        0 AS "progressRate"
+
+    FROM base_t bt
+    LEFT JOIN users assignee
+        ON bt.assignee_id = assignee.user_id
+    LEFT JOIN users creator
+        ON bt.created_by = creator.user_id
+    LEFT JOIN tc_count
+        ON bt.test_id = tc_count.test_id
+
+    ORDER BY
+        bt.created_at DESC,
+        bt.test_id DESC
+
+</select>
 
 
     <!-- 일반 사용자 테스트 요약 -->
@@ -249,96 +269,40 @@
 
     <!-- 일반 사용자 테스트 목록 -->
     <select id="selectUserTestList"
-            parameterType="com.pixcel.app.test.service.TestSearchVO"
-            resultType="com.pixcel.app.test.service.TestVO">
+        parameterType="com.pixcel.app.test.service.TestSearchVO"
+        resultType="com.pixcel.app.test.service.TestVO">
 
+    WITH base_t AS (
         SELECT
-            t.test_id AS "testId",
-            t.version_id AS "versionId",
-            pv.project_id AS "projectId",
-            p.project_name AS "projectName",
-            pv.version_name AS "versionName",
-            t.title AS "title",
-            t.priority_code AS "priorityCode",
-            priority.note AS "priorityName",
-            t.test_type_code AS "testTypeCode",
-            test_type.note AS "testTypeName",
-            t.status_code AS "statusCode",
-            status.note AS "statusName",
-            t.assignee_id AS "assigneeId",
-            assignee.user_name AS "assigneeName",
-            assignee.login_id AS "assigneeLoginId",
-            t.created_by AS "createdBy",
-            creator.user_name AS "createdByName",
-            creator.login_id AS "createdByLoginId",
-            t.description AS "description",
-            TO_CHAR(t.start_date, 'YYYY-MM-DD') AS "startDate",
-            TO_CHAR(t.end_date, 'YYYY-MM-DD') AS "endDate",
-            TO_CHAR(t.created_at, 'YYYY-MM-DD') AS "createdAt",
-            TO_CHAR(t.updated_at, 'YYYY-MM-DD') AS "updatedAt",
-            t.team_name AS "teamName",
-
-            NVL(tc_count.total_case_count, 0) AS "totalCaseCount",
-            NVL(ex_count.execution_count, 0) AS "executionCount",
-            NVL(ex_count.success_count, 0) AS "successCount",
-            NVL(ex_count.fail_count, 0) AS "failCount",
-            NVL(ex_count.hold_count, 0) AS "holdCount",
-            NVL(ex_count.progress_count, 0) AS "progressCount",
-
-            CASE
-                WHEN NVL(tc_count.total_case_count, 0) = 0 THEN 0
-                ELSE ROUND((NVL(ex_count.execution_count, 0) / tc_count.total_case_count) * 100)
-            END AS "progressRate"
-
+            t.test_id,
+            t.version_id,
+            pv.project_id,
+            p.project_name,
+            pv.version_name,
+            t.title,
+            t.priority_code,
+            t.test_type_code,
+            t.status_code,
+            t.assignee_id,
+            t.created_by,
+            t.description,
+            t.start_date,
+            t.end_date,
+            t.created_at,
+            t.updated_at,
+            t.team_name
         FROM test t
         JOIN project_version pv
             ON t.version_id = pv.version_id
         JOIN project p
             ON pv.project_id = p.project_id
 
-        LEFT JOIN common_code status
-            ON t.status_code = status.code_id
-           AND status.code_name = '0A'
+        <if test="assigneeName != null and assigneeName != ''">
+        JOIN users assignee_filter
+            ON t.assignee_id = assignee_filter.user_id
+        </if>
 
-        LEFT JOIN common_code priority
-            ON t.priority_code = priority.code_id
-           AND priority.code_name = '0C'
-
-        LEFT JOIN common_code test_type
-            ON t.test_type_code = test_type.code_id
-           AND test_type.code_name = '0D'
-
-        LEFT JOIN users assignee
-            ON t.assignee_id = assignee.user_id
-
-        LEFT JOIN users creator
-            ON t.created_by = creator.user_id
-
-        LEFT JOIN (
-            SELECT
-                test_id,
-                COUNT(*) AS total_case_count
-            FROM test_case_mapping
-            GROUP BY test_id
-        ) tc_count
-            ON t.test_id = tc_count.test_id
-
-        LEFT JOIN (
-            SELECT
-                tcm.test_id,
-                COUNT(te.execution_id) AS execution_count,
-                SUM(CASE WHEN te.result_status_code = 'a003' THEN 1 ELSE 0 END) AS success_count,
-                SUM(CASE WHEN te.result_status_code = 'a004' THEN 1 ELSE 0 END) AS fail_count,
-                SUM(CASE WHEN te.result_status_code = 'a005' THEN 1 ELSE 0 END) AS hold_count,
-                SUM(CASE WHEN te.result_status_code = 'a002' THEN 1 ELSE 0 END) AS progress_count
-            FROM test_case_mapping tcm
-            LEFT JOIN test_execution te
-                ON tcm.mapping_id = te.mapping_id
-            GROUP BY tcm.test_id
-        ) ex_count
-            ON t.test_id = ex_count.test_id
-
-        WHERE p.project_id = #{projectId}
+        WHERE pv.project_id = #{projectId}
 
         <if test="projectName != null and projectName != ''">
             AND p.project_name LIKE '%' || #{projectName} || '%'
@@ -369,14 +333,90 @@
         </if>
 
         <if test="assigneeName != null and assigneeName != ''">
-            AND assignee.user_name LIKE '%' || #{assigneeName} || '%'
+            AND assignee_filter.user_name LIKE '%' || #{assigneeName} || '%'
         </if>
+    ),
+    tc_count AS (
+        SELECT
+            tcm.test_id,
+            COUNT(*) AS total_case_count
+        FROM test_case_mapping tcm
+        JOIN base_t bt
+            ON tcm.test_id = bt.test_id
+        GROUP BY tcm.test_id
+    )
+    SELECT
+        bt.test_id AS "testId",
+        bt.version_id AS "versionId",
+        bt.project_id AS "projectId",
+        bt.project_name AS "projectName",
+        bt.version_name AS "versionName",
+        bt.title AS "title",
 
-        ORDER BY
-            t.created_at DESC,
-            t.test_id DESC
+        bt.priority_code AS "priorityCode",
+        CASE bt.priority_code
+            WHEN 'c001' THEN '상'
+            WHEN 'c002' THEN '중'
+            WHEN 'c003' THEN '하'
+            ELSE bt.priority_code
+        END AS "priorityName",
 
-    </select>
+        bt.test_type_code AS "testTypeCode",
+        CASE bt.test_type_code
+            WHEN 'd001' THEN '기능'
+            WHEN 'd002' THEN 'UI/UX'
+            WHEN 'd003' THEN '성능'
+            WHEN 'd004' THEN '보안'
+            WHEN 'd005' THEN '데이터'
+            WHEN 'd006' THEN '기타'
+            ELSE bt.test_type_code
+        END AS "testTypeName",
+
+        bt.status_code AS "statusCode",
+        CASE bt.status_code
+            WHEN 'a001' THEN '예정'
+            WHEN 'a002' THEN '진행중'
+            WHEN 'a003' THEN '종료'
+            ELSE bt.status_code
+        END AS "statusName",
+
+        bt.assignee_id AS "assigneeId",
+        assignee.user_name AS "assigneeName",
+        assignee.login_id AS "assigneeLoginId",
+
+        bt.created_by AS "createdBy",
+        creator.user_name AS "createdByName",
+        creator.login_id AS "createdByLoginId",
+
+        bt.description AS "description",
+        TO_CHAR(bt.start_date, 'YYYY-MM-DD') AS "startDate",
+        TO_CHAR(bt.end_date, 'YYYY-MM-DD') AS "endDate",
+        TO_CHAR(bt.created_at, 'YYYY-MM-DD') AS "createdAt",
+        TO_CHAR(bt.updated_at, 'YYYY-MM-DD') AS "updatedAt",
+        bt.team_name AS "teamName",
+
+        NVL(tc_count.total_case_count, 0) AS "totalCaseCount",
+
+        0 AS "executionCount",
+        0 AS "successCount",
+        0 AS "failCount",
+        0 AS "holdCount",
+        0 AS "progressCount",
+        0 AS "progressRate"
+
+    FROM base_t bt
+    LEFT JOIN users assignee
+        ON bt.assignee_id = assignee.user_id
+    LEFT JOIN users creator
+        ON bt.created_by = creator.user_id
+    LEFT JOIN tc_count
+        ON bt.test_id = tc_count.test_id
+
+    ORDER BY
+        bt.created_at DESC,
+        bt.test_id DESC
+
+</select>
 
 
     <!-- 프로젝트 버전 목록 -->
@@ -526,5 +566,133 @@
         </foreach>
 
     </insert>
+    
+    
+    <!-- 테스트 상세 조회 -->
+	<select id="selectTestDetail"
+	        resultType="com.pixcel.app.test.service.TestVO">
+
+    	SELECT
+        	t.test_id AS "testId",
+	        t.version_id AS "versionId",
+    	    t.title AS "title",
+        	t.priority_code AS "priorityCode",
+	        t.test_type_code AS "testTypeCode",
+    	    t.status_code AS "statusCode",
+        	t.assignee_id AS "assigneeId",
+	        t.description AS "description",
+    	    TO_CHAR(t.start_date, 'YYYY-MM-DD') AS "startDate",
+        	TO_CHAR(t.end_date, 'YYYY-MM-DD') AS "endDate",
+	        t.created_by AS "createdBy",
+    	    TO_CHAR(t.created_at, 'YYYY-MM-DD') AS "createdAt",
+	        TO_CHAR(t.updated_at, 'YYYY-MM-DD') AS "updatedAt",
+    	    t.team_name AS "teamName"
+
+	    FROM test t
+    	JOIN project_version pv
+        	ON t.version_id = pv.version_id
+
+	    WHERE t.test_id = #{testId}
+    	  AND pv.project_id = #{projectId}
+
+	</select>
+
+
+	<!-- 테스트에 매핑된 테스트케이스 목록 -->
+	<select id="selectMappedTestCaseList"
+        	parameterType="string"
+        	resultType="com.pixcel.app.testcase.service.TestCaseVO">
+    	SELECT
+	        tc.test_case_id      AS "testCaseId",
+        	tc.version_id        AS "versionId",
+    	    pv.version_name      AS "versionName",
+
+	        tc.title             AS "title",
+
+        	tc.test_type_code    AS "testTypeCode",
+    	    CASE tc.test_type_code
+	            WHEN 'd001' THEN '기능'
+            	WHEN 'd002' THEN 'UI/UX'
+        	    WHEN 'd003' THEN '성능'
+    	        WHEN 'd004' THEN '보안'
+	            WHEN 'd005' THEN '데이터'
+            	WHEN 'd006' THEN '기타'
+        	    ELSE tc.test_type_code
+    	    END AS "testTypeName",
+
+	        tc.status_code       AS "statusCode",
+        	CASE tc.status_code
+    	        WHEN 'g001' THEN '활성'
+	            WHEN 'g002' THEN '비활성'
+            	ELSE tc.status_code
+        	END AS "statusName",
+
+    	    tc.priority_code     AS "priorityCode",
+	        CASE tc.priority_code
+        	    WHEN 'c001' THEN '상'
+    	        WHEN 'c002' THEN '중'
+	            WHEN 'c003' THEN '하'
+            	ELSE tc.priority_code
+        	END AS "priorityName",
+
+    	    tc.expected_result   AS "expectedResult"
+
+	    FROM test_case_mapping tcm
+	    JOIN test_case tc
+    	    ON tcm.test_case_id = tc.test_case_id
+	    JOIN project_version pv
+    	    ON tc.version_id = pv.version_id
+
+	    WHERE tcm.test_id = #{testId}
+
+	    ORDER BY tcm.sort_order ASC
+
+	</select>
+
+
+	<!-- 테스트 작성자 확인 -->
+	<select id="checkTestOwner"
+        	parameterType="com.pixcel.app.test.service.TestVO"
+        	resultType="int">
+
+    	SELECT
+	        COUNT(*)
+    	FROM test
+    	WHERE test_id = #{testId}
+    	  AND created_by = #{createdBy}
+
+	</select>
+
+
+	<!-- 테스트 수정 -->
+	<update id="updateTest"
+        	parameterType="com.pixcel.app.test.service.TestVO">
+
+    	UPDATE test
+    	SET
+        	version_id = #{versionId},
+        	title = #{title},
+        	priority_code = #{priorityCode},
+        	test_type_code = #{testTypeCode},
+        	status_code = #{statusCode},
+        	assignee_id = #{assigneeId},
+        	description = #{description},
+        	start_date = TO_DATE(#{startDate}, 'YYYY-MM-DD'),
+        	end_date = TO_DATE(#{endDate}, 'YYYY-MM-DD'),
+        	updated_at = SYSDATE,
+        	team_name = #{teamName}
+    	WHERE test_id = #{testId}
+
+	</update>
+
+
+	<!-- 기존 테스트-테스트케이스 매핑 삭제 -->
+	<delete id="deleteTestCaseMapping"
+        	parameterType="string">
+
+    	DELETE FROM test_case_mapping
+    	WHERE test_id = #{testId}
+
+	</delete>
 
 </mapper>

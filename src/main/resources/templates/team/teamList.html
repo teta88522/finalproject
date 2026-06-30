@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{common/layouts/default_layout}">
+
+<head>
+<title>일감 상태 관리</title>
+<link rel="stylesheet" th:href="@{/css/issuestatus/issuestatus.css}">
+<style>
+.search-form-row {
+  display: flex !important;
+  flex-direction: row;
+  gap: 12px;
+  flex-wrap: nowrap;
+}
+
+.search-field {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.search-field input {
+  width: 100%;
+}
+</style>
+</head>
+
+<body>
+	<div layout:fragment="Content">
+
+		<div class="issue-status-page issue-status-list-page">
+			<div class="container-fluid">
+
+				<div class="issue-status-header">
+					<div>
+						<h3>팀 관리</h3>
+						<p>팀을 관리합니다.</p>
+					</div>
+				</div>
+
+				<div class="search-section issuestatus-search">
+					<div class="search-header">
+						<div class="search-title">검색조건</div>
+
+						<button
+        					type="button"
+        					data-toggle="modal"
+        					data-target="#createTeamModal"
+        					style="display:flex; align-items:center; gap:6px; font-size:13px; padding:6px 14px; border:1px solid #ddd; border-radius:6px; background:#fff; color:#555; cursor:pointer;">
+        					<i class="fa fa-plus" style="font-size:11px;"></i>
+        					팀 추가
+    					</button>
+					</div>
+
+					<form th:action="@{/issuestatus/list}" method="get">
+						<div class="search-form-row">
+
+							<div class="search-field">
+								<label for="statusName">팀코드</label> <input type="text"
+									id="statusName" name="statusName"
+									th:value="${searchVO != null ? searchVO.statusName : ''}"
+									placeholder="input">
+							</div>
+							
+							<div class="search-field">
+								<label for="statusName">팀명</label> <input type="text"
+									id="statusName" name="statusName"
+									th:value="${searchVO != null ? searchVO.statusName : ''}"
+									placeholder="input">
+							</div>
+							
+							<div class="search-field">
+								<label for="statusName">팀장명</label> <input type="text"
+									id="statusName" name="statusName"
+									th:value="${searchVO != null ? searchVO.statusName : ''}"
+									placeholder="input">
+							</div>
+
+						</div>
+
+						<div class="search-btn-area">
+							<a th:href="@{/issuestatus/list}"
+								class="btn btn-custon-rounded-four btn-default filter-btn">
+								초기화 </a>
+
+							<button type="submit"
+								class="btn btn-custon-rounded-four btn-primary filter-btn">
+								검색</button>
+						</div>
+					</form>
+				</div>
+
+				<div th:if="${message}" class="page-message page-message-success"
+					th:text="${message}"></div>
+
+				<div th:if="${errorMessage}" class="page-message page-message-error"
+					th:text="${errorMessage}"></div>
+
+				<div class="issue-status-card issue-status-list-card">
+					<div class="issue-status-card-title">
+						<h4>일감 상태 목록</h4>
+					</div>
+
+					<div class="issue-status-table-wrap">
+						<table class="table table-hover issue-status-table">
+							<colgroup>
+								<col style="width: 70px;">
+								<col style="width: 220px;">
+								<col>
+								<col style="width: 130px;">
+								<col style="width: 160px;">
+							</colgroup>
+
+							<thead>
+								<tr>
+									<th>번호</th>
+									<th>상태명</th>
+									<th>설명</th>
+									<th style="text-align: center;">종료 여부</th>
+									<th style="text-align: center;">관리</th>
+								</tr>
+							</thead>
+
+							<tbody>
+								<tr th:if="${#lists.isEmpty(issueStatusList)}">
+									<td colspan="5" class="issue-status-empty">등록된 일감 상태가
+										없습니다.</td>
+								</tr>
+
+								<tr th:each="status, stat : ${issueStatusList}">
+									<td th:text="${stat.count}">1</td>
+
+									<td><span class="status-name"
+										th:text="${status.statusName}" th:title="${status.statusName}">
+											신규 </span></td>
+
+									<td><span class="status-desc"
+										th:text="${status.statusAnswer != null ? status.statusAnswer : '-'}"
+										th:title="${status.statusAnswer != null ? status.statusAnswer : '-'}">
+											설명 </span></td>
+
+									<td class="center"><span th:if="${status.closedYn == 'Y'}"
+										class="status-badge-closed"> 종료 </span> <span
+										th:if="${status.closedYn != 'Y'}" class="status-badge-open">
+											진행 </span></td>
+
+									<td>
+										<div class="table-actions">
+											<a class="btn btn-custon-rounded-four btn-default"
+												th:href="@{/issuestatus/update(issueStatusId=${status.issueStatusId})}">
+												수정 </a>
+
+											<form th:action="@{/issuestatus/delete}" method="post"
+												class="inline-form"
+												onsubmit="return confirm('이 일감 상태를 삭제하시겠습니까?');">
+												<input type="hidden" name="issueStatusId"
+													th:value="${status.issueStatusId}">
+
+												<button type="submit"
+													class="btn btn-custon-rounded-four btn-danger">삭제
+												</button>
+											</form>
+										</div>
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+
+			</div>
+		</div>
+	<div class="modal fade" id="#createTeamModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="team" style="border-radius:20px;">
+    <div class="modal-content" style="border-radius:20px; overflow:hidden; border:none;">
+
+      <!-- form 추가 -->
+      <form th:action=@{/project/{projectId}/team/addteam(projectId=${projectId})} method="post">
+
+        <!-- 헤더 -->
+        <div style="background:#1a6fe8; padding:18px 24px; display:flex; align-items:center; justify-content:space-between;">
+          <h4 style="color:#fff; margin:0; font-size:15px; font-weight:500;">
+            새 팀 만들기
+          </h4>
+          <span data-dismiss="modal" style="color:#fff; font-size:18px; cursor:pointer;">✕</span>
+        </div>
+
+        <!-- 바디 -->
+        <div class="modal-body" style="padding:24px;">
+          <div class="form-group">
+            <label style="font-size:13px; color:#555;">
+              팀명 <span style="color:#e24b4a">*</span>
+            </label>
+
+            <input
+              type="text"
+              name="teamName"
+              class="form-control"
+              placeholder="팀명을 입력하세요"
+              required
+              style="border-radius:10px; border:1px solid #ddd; font-size:13px; height:36px;">
+          </div>
+          <label style="font-size:13px; color:#555;">
+              팀장 <span style="color:#e24b4a">*</span>
+            </label>
+
+            <input
+              type="text"
+              name="teamName"
+              class="form-control"
+              placeholder="팀장ID를 입력하세요"
+              required
+              style="border-radius:10px; border:1px solid #ddd; font-size:13px; height:36px;">
+          </div>
+        </div>
+
+        <!-- 푸터 -->
+        <div class="modal-footer" style="border-top:1px solid #f0f0f0; padding:14px 24px 20px;">
+          <button
+            type="button"
+            class="btn btn-default btn-custon-three btn-custon-rounded-three"
+            data-dismiss="modal">
+            취소
+          </button>
+
+          <button
+            type="submit"
+            class="btn btn-primary btn-custon-three btn-custon-rounded-three">
+            생성
+          </button>
+        </div>
+
+      </form>
+
+    </div>
+  </div>
+</div>
+	<script>
+		(function() {
+			function updateFilterSummary(dropdown) {
+				var checkedLabels = Array.prototype.slice.call(
+						dropdown.querySelectorAll('input[type="checkbox"]:checked, input[type="radio"]:checked'))
+						.map(function(input) {
+							var label = input.closest('.filter-check-item');
+							return label ? label.innerText.trim() : '';
+						}).filter(function(text) {
+							return text.length > 0;
+						});
+				var summaryText = dropdown.querySelector('.filter-selected-text');
+				var placeholder = dropdown.getAttribute('data-placeholder') || '전체';
+
+				if (!summaryText) {
+					return;
+				}
+
+				if (!dropdown.dataset.summaryInitialized) {
+					dropdown.dataset.summaryInitialized = 'true';
+					if (summaryText.textContent.trim() && summaryText.textContent.trim() !== placeholder) {
+						dropdown.classList.add('has-selected');
+						return;
+					}
+				}
+
+				if (checkedLabels.length === 0) {
+					summaryText.textContent = placeholder;
+					dropdown.classList.remove('has-selected');
+					return;
+				}
+
+				summaryText.textContent = checkedLabels.join(', ');
+				dropdown.classList.add('has-selected');
+			}
+
+			document.querySelectorAll('.filter-dropdown').forEach(function(dropdown) {
+				updateFilterSummary(dropdown);
+				dropdown.addEventListener('change', function() {
+					updateFilterSummary(dropdown);
+				});
+			});
+
+			document.addEventListener('click', function(event) {
+				document.querySelectorAll('.filter-dropdown[open]').forEach(function(dropdown) {
+					if (!dropdown.contains(event.target)) {
+						dropdown.removeAttribute('open');
+					}
+				});
+			});
+		})();
+	</script>
+	</div>
+</body>
+</html>

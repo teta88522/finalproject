@@ -12,9 +12,9 @@
 
 <body>
 	<div layout:fragment="Content">
-
+ 
 		<div class="project-list-page" th:data-subscribe-yn="${subscribeYn}">
-
+ 
 			<!-- 상단 제목 -->
 			<div class="project-page-header">
 				<div>
@@ -23,7 +23,7 @@
 						있습니다.</p>
 				</div>
 			</div>
-
+ 
 			<!-- 검색 조건 영역 -->
 			<div class="search-section project-search-class">
 				<div class="search-header">
@@ -34,10 +34,10 @@
 							class="search-action-btn manage">프로젝트 관리</a>
 					</div>
 				</div>
-
+ 
 				<form id="searchForm" th:action="@{/myproject/list}" method="get">
 					<div class="search-form-row">
-
+ 
 						<!-- 프로젝트 명 -->
 						<div class="search-field">
 							<label for="searchProjectName">프로젝트 명</label> <input type="text"
@@ -45,7 +45,7 @@
 								th:value="${searchVO != null ? searchVO.searchProjectName : ''}"
 								placeholder="프로젝트 명을 입력해주세요.">
 						</div>
-
+ 
 						<!-- 생성자 -->
 						<div class="search-field">
 							<label for="searchOwnerName">생성자</label> <input type="text"
@@ -53,8 +53,8 @@
 								th:value="${searchVO != null ? searchVO.searchOwnerName : ''}"
 								placeholder="생성자 명을 입력해주세요.">
 						</div>
-
-						<!-- 프로젝트 상태 - details 드롭다운 + 체크박스 -->
+ 
+						<!-- ✅ 프로젝트 상태 - 다중선택 (체크박스) -->
 						<div class="search-field">
 							<label>프로젝트 상태</label>
 							<details class="filter-dropdown" id="statusDropdown">
@@ -62,25 +62,27 @@
 									<span class="filter-selected-text">전체</span>
 								</summary>
 								<div class="filter-dropdown-panel">
-									<label class="filter-check-item"> <input
-										type="checkbox" name="searchStatusCode" value="a001"
-										th:checked="${searchVO != null and searchVO.searchStatusCode != null and #strings.contains(searchVO.searchStatusCode, 'a001')}">
+									<label class="filter-check-item"> 
+										<input type="checkbox" name="searchStatusCode" value="a001"
+											th:checked="${searchVO != null and searchVO.searchStatusCode != null and searchVO.searchStatusCode.contains('a001')}">
 										<span>예정</span>
-									</label> <label class="filter-check-item"> <input
-										type="checkbox" name="searchStatusCode" value="a002"
-										th:checked="${searchVO != null and searchVO.searchStatusCode != null and #strings.contains(searchVO.searchStatusCode, 'a002')}">
+									</label> 
+									<label class="filter-check-item"> 
+										<input type="checkbox" name="searchStatusCode" value="a002"
+											th:checked="${searchVO != null and searchVO.searchStatusCode != null and searchVO.searchStatusCode.contains('a002')}">
 										<span>진행중</span>
-									</label> <label class="filter-check-item"> <input
-										type="checkbox" name="searchStatusCode" value="a003"
-										th:checked="${searchVO != null and searchVO.searchStatusCode != null and #strings.contains(searchVO.searchStatusCode, 'a003')}">
+									</label> 
+									<label class="filter-check-item"> 
+										<input type="checkbox" name="searchStatusCode" value="a003"
+											th:checked="${searchVO != null and searchVO.searchStatusCode != null and searchVO.searchStatusCode.contains('a003')}">
 										<span>종료</span>
 									</label>
 								</div>
 							</details>
 						</div>
-
+ 
 					</div>
-
+ 
 					<div class="search-btn-area">
 						<a th:href="@{/myproject/list}" class="btn-basic">초기화</a>
 						<button type="button" class="btn-basic btn-primary"
@@ -88,7 +90,7 @@
 					</div>
 				</form>
 			</div>
-
+ 
 			<!-- 프로젝트 목록 영역 -->
 			<div class="project-list-section">
 				<div class="list-header">
@@ -104,12 +106,13 @@
 						건
 					</div>
 				</div>
-
+ 
 				<div class="project-table-wrap">
 					<table class="project-table">
 						<thead>
 							<tr>
-								<th>식별자</th>
+								<!-- ✅ 수정: subscribe_yn이 Y일 때만 식별자 열 표시 -->
+								<th th:if="${subscribeYn == 'Y'}">식별자</th>
 								<th>프로젝트 명</th>
 								<th>설명</th>
 								<th>생성자</th>
@@ -128,7 +131,8 @@
 							<tr th:each="project : ${projectList}"
 								th:data-project-id="${project.projectId}"
 								onclick="goProjectDetail(this)">
-								<td th:text="${project.identifier}">identifier</td>
+								<!-- ✅ 수정: subscribe_yn이 Y일 때만 식별자 표시 -->
+								<td th:if="${subscribeYn == 'Y'}" th:text="${project.identifier}">identifier</td>
 								<td class="project-name-cell"><span
 									th:text="${project.projectName}">프로젝트명</span></td>
 								<td class="desc-cell" th:text="${project.description}">프로젝트
@@ -157,7 +161,7 @@
 						</tbody>
 					</table>
 				</div>
-
+ 
 				<!-- 페이징 영역 -->
 				<div class="pagination"
 					th:if="${searchVO != null and searchVO.totalPage > 0}">
@@ -165,7 +169,7 @@
 						th:classappend="${!searchVO.hasPrevious} ? ' disabled'"
 						th:disabled="${!searchVO.hasPrevious}"
 						th:onclick="${searchVO.hasPrevious} ? 'goPage(' + (searchVO.page - 1) + ')' : 'return false'">&lt;</button>
-
+ 
 					<th:block
 						th:each="pageNum : ${#numbers.sequence(1, searchVO.totalPage)}">
 						<button type="button" class="page-btn"
@@ -174,7 +178,7 @@
 							<span th:text="${pageNum}">1</span>
 						</button>
 					</th:block>
-
+ 
 					<button type="button" class="page-btn"
 						th:classappend="${!searchVO.hasNext} ? ' disabled'"
 						th:disabled="${!searchVO.hasNext}"
@@ -182,7 +186,7 @@
 				</div>
 			</div>
 		</div>
-
+ 
 		<script th:inline="javascript">
 		/* 드롭다운 외부 클릭 시 닫기 */
 		document.addEventListener('click', function(e) {
@@ -191,7 +195,7 @@
 			});
 		});
  
-		/* 체크박스 선택 시 summary 텍스트 업데이트 */
+		/* ✅ 체크박스 선택 시 summary 텍스트 업데이트 */
 		document.querySelectorAll('details.filter-dropdown').forEach(function(dropdown) {
 			const summary = dropdown.querySelector('.filter-selected-text');
 			const checkboxes = dropdown.querySelectorAll('input[type="checkbox"]');
@@ -224,18 +228,39 @@
 			const statusChecked = document.querySelectorAll('input[name="searchStatusCode"]:checked').length > 0;
  
 			if (!projectName && !ownerName && !statusChecked) {
-				alert('검색 조건을 하나 이상 입력하거나 선택해 주세요.\n(프로젝트명, 생성자 입력 또는 예정/진행중/종료 중 하나를 선택하세요.)');
+				alert('검색 조건을 하나 이상 입력하거나 선택해 주세요.\n(프로젝트명, 생성자 입력 또는 상태 중 하나를 선택하세요.)');
 				return;
 			}
-			let pageInput = document.querySelector('#searchForm input[name="page"]');
+			
+			// ✅ 다중선택된 status 값들을 쉼표로 구분하여 전송
+			let form = document.getElementById('searchForm');
+			
+			// 기존 hidden input 제거
+			let oldStatusInputs = form.querySelectorAll('input[name="searchStatusCode"][type="hidden"]');
+			oldStatusInputs.forEach(input => input.remove());
+			
+			// 선택된 checkbox 값들을 hidden input으로 변환
+			let checkedBoxes = Array.from(document.querySelectorAll('input[name="searchStatusCode"]:checked'));
+			let statusValues = checkedBoxes.map(cb => cb.value).join(',');
+			
+			// status 값을 hidden input으로 추가
+			if (statusValues) {
+				let hiddenInput = document.createElement('input');
+				hiddenInput.type = 'hidden';
+				hiddenInput.name = 'searchStatusCode';
+				hiddenInput.value = statusValues;
+				form.appendChild(hiddenInput);
+			}
+			
+			let pageInput = form.querySelector('input[name="page"]');
 			if (!pageInput) {
 				pageInput = document.createElement('input');
 				pageInput.type = 'hidden';
 				pageInput.name = 'page';
-				document.getElementById('searchForm').appendChild(pageInput);
+				form.appendChild(pageInput);
 			}
 			pageInput.value = 1;
-			document.getElementById('searchForm').submit();
+			form.submit();
 		}
  
 		function goProjectDetail(row) {
@@ -244,35 +269,16 @@
 			location.href = '/projectdetail/' + encodeURIComponent(projectId);
 		}
  
-		function goProjectEdit(button) {
-			const projectId = button.dataset.projectId;
-			if (!projectId) return;
-			location.href = '/project/update/' + encodeURIComponent(projectId);
-		}
- 
-		function deleteProject(button) {
-			const projectId = button.dataset.projectId;
-			const projectName = button.dataset.projectName;
-			if (!projectId) return;
-			if (!confirm("'" + projectName + "' 프로젝트를 삭제하시겠습니까?")) return;
-			console.log('삭제 대상 projectId =', projectId);
-		}
-		
-		// project 삭제
 		function deleteProject(button){
-			// 클릭된 버튼에 저장된 프로젝트 ID와 이름을 가져옴.
 			const projectId = button.dataset.projectId;
 			const projectName = button.dataset.projectName;
 			if (!projectId) return;
 			
-			// 브라우저 기본 확인 창을 띄운 뒤 확인을 눌렀을 경우에만 다음 코드 실행
-			if (confirm("'" + projectName + "' 프로젝트를 삭제하시겠습니까 ?")){
-				// 동적으로 폼 생성 후 전송
+			if (confirm("'" + projectName + "' 프로젝트를 삭제하시겠습니까?")){
 				const form = document.createElement('form');
 				form.method = "POST";
 				form.action = '/myproject/delete';
 				
-				// 삭제해야 할 프로젝트의 ID를 숨겨진 입력필드에 담아서 form에 포함함.
 				const input = document.createElement('input');
 				input.type = 'hidden';
 				input.name = 'projectId';
@@ -284,7 +290,7 @@
 			}
 		}
 	</script>
-
+ 
 	</div>
 </body>
 </html>

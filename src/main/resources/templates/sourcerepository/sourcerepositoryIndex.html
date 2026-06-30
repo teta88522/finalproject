@@ -1,0 +1,76 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{common/layouts/default_layout}">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet"
+	th:href="@{/css/sourcerepository/sourcerepositoryIndex.css}">
+</head>
+<body>
+	<div layout:fragment="Content">
+		<div class="index-container">
+		
+			<!-- Alert Messages -->
+			<div th:if="${errorMessage}"
+				style="color: red; padding: 10px; background: #ffebee; margin-bottom: 20px;">
+				<span th:text="${errorMessage}"></span>
+			</div>
+
+			<div th:if="${successMessage}"
+				style="color: green; padding: 10px; background: #e8f5e9; margin-bottom: 20px;">
+				<span th:text="${successMessage}"></span>
+			</div>
+			
+			<!-- Header -->
+			<div class="index-header">
+				<h1>📦 저장소 관리</h1>
+				<p>GitHub 저장소의 커밋 이력을 조회하고 관리합니다</p>
+			</div>
+
+			<!-- Info Grid -->
+			<div class="index-info-grid">
+				<div class="index-info-card">
+					<div class="label">프로젝트 ID</div>
+					<div class="value" th:text="${projectId}">-</div>
+				</div>
+				<div class="index-info-card">
+					<div class="label">Repository</div>
+					<div class="value">pixcel-project</div>
+				</div>
+				<div class="index-info-card">
+					<div class="label">Branch</div>
+					<div class="value">master, develop</div>
+				</div>
+			</div>
+
+			<!-- Actions -->
+			<div class="index-actions">
+				<a
+					th:href="@{/project/{projectId}/sourcerepository/commits(projectId=${projectId}, branch='master')}"
+					class="index-btn index-btn-primary"> 📋 Commit 목록 보기 </a>
+				<form
+					th:action="@{/project/{projectId}/sourcerepository/sync(projectId=${projectId})}"
+					method="post" style="display: inline;">
+					<button type="submit" class="index-btn index-btn-secondary">
+						🔄 GitHub 동기화</button>
+				</form>
+			</div>
+
+			<!-- Features -->
+			<div class="index-features">
+				<h3>✨ 기능</h3>
+				<ul class="index-feature-list">
+					<li>GitHub 저장소의 커밋 이력 자동 동기화</li>
+					<li>커밋 메시지에서 이슈 ID 자동 파싱 (#123 형식)</li>
+					<li>브랜치별 커밋 조회 (마스터, 디벨롭 등)</li>
+					<li>커밋 상세 정보 조회 (메시지, 작가, 날짜 등)</li>
+					<li>이슈와 커밋 연동</li>
+					<li>페이지네이션 지원</li>
+				</ul>
+			</div>
+		</div>
+	</div>
+</body>
+
+</html>
