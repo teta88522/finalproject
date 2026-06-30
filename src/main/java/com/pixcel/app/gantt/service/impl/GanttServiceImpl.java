@@ -44,6 +44,7 @@ public class GanttServiceImpl implements GanttService{
 			}
 			ganttDataList.add(mTask);
 			
+			
 		if(mVO.getIssueList() != null) {
 			for(IssuesVO iVO : mVO.getIssueList()) {
 				if(iVO.getIssueId() == null) continue;

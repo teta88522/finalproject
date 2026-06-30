@@ -1,0 +1,109 @@
+/* board-create.css */
+
+.form-panel {
+    max-width: 800px;
+    margin: 0 auto; 
+    background-color: #fff;
+    border: 1px solid #e5e5e5;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.panel-header {
+    padding: 20px 25px;
+    border-bottom: 1px solid #eeeeee;
+}
+
+.panel-header h2 {
+    margin: 0;
+    font-size: 18px;
+    color: #333;
+}
+
+.panel-body {
+    padding: 25px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    color: #444;
+}
+
+.required {
+    color: #d80027;
+    margin-left: 3px;
+}
+
+.form-control {
+    width: 100%;
+    padding: 10px 12px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    transition: border-color 0.2s;
+    font-family: inherit;
+}
+
+.form-control:focus {
+    border-color: #006df0;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(0, 109, 240, 0.1);
+}
+
+textarea.form-control {
+    resize: vertical; 
+}
+
+.form-actions {
+    margin-top: 40px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+    text-align: right;
+}
+
+.form-actions .btn {
+    margin-left: 10px;
+    padding: 10px 20px;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    border: 1px solid transparent;
+}
+
+.btn-default {
+    background-color: #fff;
+    border-color: #ccc;
+    color: #333;
+}
+
+.btn-default:hover {
+    background-color: #f8f9fa;
+}
+
+.btn-primary {
+    background-color: #006df0;
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: #0056c0;
+}
+
+.border-red {
+    border: 2px solid #ff4d4f !important;
+}
+
+.error-message {
+    color: #ff4d4f;
+    font-size: 0.85em;
+    margin-top: 5px;
+    display: block;
+}

@@ -1,0 +1,93 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{common/layouts/default_layout}">
+<head>
+    <title>모든 게시판</title>
+    <link rel="stylesheet" th:href="@{/css/notice/board_list.css}" />
+</head>
+<body>
+    <div layout:fragment="Content">
+        <div class="board-dashboard-container">
+            
+            <div class="dashboard-header">
+                <div class="header-titles">
+                    <h2>모든 게시판</h2>
+                    <p>프로젝트 내의 모든 게시판을 확인하고 최신 게시글을 확인할 수 있습니다.</p>
+                </div>
+                <div class="header-actions">
+                    <a th:href="@{/project/{projectId}/notice/BoardCreate(projectId=${projectId})}" class="btn btn-primary">
+                         새 게시판
+                    </a>
+                </div>
+            </div>
+
+            <div class="dashboard-section">
+                <h3 class="section-title">게시판 목록</h3>
+                <div class="table-responsive">
+                    <table class="board-table">
+                        <colgroup>
+                            <col style="width: 25%;">
+                            <col style="width: 45%;">
+                            <col style="width: 15%;">
+                            <col style="width: 15%;">
+                        </colgroup>
+                        <thead>
+                            <tr>
+                                <th>게시판</th>
+                                <th>설명</th>
+                                <th>글 수</th>
+                                <th>생성자</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="board : ${boardList}">
+                                <td>
+                                    <a th:href="@{/board/{id}/posts(id=${board.boardId})}" class="board-name-link">
+                                   
+                                        <span th:text="${board.boardName}">자유게시판</span>
+                                    </a>
+                                </td>
+                                <td class="text-muted" th:text="${board.description}">설명입니다.</td>
+                                <td class="text-center text-muted">-</td>
+                                <td class="text-center">
+                    				<span class="text-muted" th:text="${board.userName}">홍길동</span>
+               					 </td>
+                            </tr>
+                            
+                            <tr th:if="${#lists.isEmpty(boardList)}">
+                                <td colspan="4" class="empty-state">
+                                    생성된 게시판이 없습니다. 우측 상단의 '새 게시판' 버튼을 눌러보세요!
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="dashboard-widgets">
+                <div class="widget-card">
+                    <h3 class="section-title">최신 게시글</h3>
+                    <div class="widget-content">
+                        <div class="empty-widget">
+                            <i class="far fa-folder-open"></i>
+                            <p>아직 등록된 게시글이 없습니다.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="widget-card">
+                    <h3 class="section-title">인기 게시글 (준비중)</h3>
+                    <div class="widget-content">
+                        <div class="empty-widget">
+                            <i class="fas fa-chart-line"></i>
+                            <p>데이터가 모이면 보여드릴게요!</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</body>
+</html>
