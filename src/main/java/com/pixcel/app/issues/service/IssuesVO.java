@@ -124,10 +124,20 @@ public class IssuesVO {
 	private String issueNoSort;
 	private List<String> issueTypeIdList;
 	private List<String> versionIdList;
+	private List<String> milestoneIdList;
 	private List<String> issueStatusIdList;
 	private List<String> settingCodeIdList;
 	private List<String> assigneeIdList;
 	private List<String> progressRangeList;
+
+	/*
+	 * 일감 보고서 집계용 필드
+	 */
+	private Integer openCount;
+	private Integer closedCount;
+	private Integer totalCount;
+	private Integer optionSort;
+	private Integer rowSort;
 
 	/*
 	 * ISSUE_HISTORY fields

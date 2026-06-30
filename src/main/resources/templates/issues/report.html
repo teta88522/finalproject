@@ -1,0 +1,222 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{common/layouts/default_layout}">
+
+<head>
+<meta charset="UTF-8">
+<title>일감 보고서</title>
+
+<link rel="stylesheet" th:href="@{/css/common-ui.css}">
+<link rel="stylesheet" th:href="@{/css/issues/issues.css}">
+</head>
+
+<body>
+	<div layout:fragment="Content">
+		<div class="issues-report-page">
+			<div class="container-fluid">
+				<div class="issues-header">
+					<div>
+						<h3>일감 보고서</h3>
+						<p>
+							<span th:text="${projectInfo.projectName}">프로젝트명</span> 프로젝트의 일감 현황입니다.
+						</p>
+					</div>
+
+					<div class="issues-list-actions">
+						<a th:href="@{/project/{projectId}/issues(projectId=${selectedProjectId})}"
+							class="btn btn-custon-rounded-four btn-default"> 전체조회 </a>
+					</div>
+				</div>
+
+				<div class="issues-report-grid">
+					<section class="issues-card issues-report-section">
+						<h4>유형</h4>
+						<table class="issues-report-table">
+							<thead>
+								<tr>
+									<th>분류</th>
+									<th>진행 중</th>
+									<th>완료</th>
+									<th>합계</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr th:if="${#lists.isEmpty(issueTypeReportList)}">
+									<td colspan="4" class="empty-row">집계할 일감이 없습니다.</td>
+								</tr>
+								<tr th:each="row : ${issueTypeReportList}">
+									<td th:text="${row.issueTypeName}">유형</td>
+									<td><a th:if="${row.openCount > 0 and row.issueTypeId != null}"
+										th:href="@{/project/{projectId}/issues(projectId=${selectedProjectId}, page=1, issueTypeIdList=${row.issueTypeId}, closedYn='N')}"
+										th:text="${row.openCount}">0</a> <span
+										th:if="${row.openCount == 0 or row.issueTypeId == null}"
+										th:text="${row.openCount}">0</span></td>
+									<td><a th:if="${row.closedCount > 0 and row.issueTypeId != null}"
+										th:href="@{/project/{projectId}/issues(projectId=${selectedProjectId}, page=1, issueTypeIdList=${row.issueTypeId}, closedYn='Y')}"
+										th:text="${row.closedCount}">0</a> <span
+										th:if="${row.closedCount == 0 or row.issueTypeId == null}"
+										th:text="${row.closedCount}">0</span></td>
+									<td><a th:if="${row.totalCount > 0 and row.issueTypeId != null}"
+										th:href="@{/project/{projectId}/issues(projectId=${selectedProjectId}, page=1, issueTypeIdList=${row.issueTypeId})}"
+										th:text="${row.totalCount}">0</a> <span
+										th:if="${row.totalCount == 0 or row.issueTypeId == null}"
+										th:text="${row.totalCount}">0</span></td>
+								</tr>
+							</tbody>
+						</table>
+					</section>
+
+					<section class="issues-card issues-report-section">
+						<h4>버전</h4>
+						<table class="issues-report-table">
+							<thead>
+								<tr>
+									<th>분류</th>
+									<th>진행 중</th>
+									<th>완료</th>
+									<th>합계</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr th:if="${#lists.isEmpty(versionReportList)}">
+									<td colspan="4" class="empty-row">집계할 일감이 없습니다.</td>
+								</tr>
+								<tr th:each="row : ${versionReportList}">
+									<td th:text="${row.versionName}">버전</td>
+									<td><a th:if="${row.openCount > 0 and row.versionId != null}"
+										th:href="@{/project/{projectId}/issues(projectId=${selectedProjectId}, page=1, versionIdList=${row.versionId}, closedYn='N')}"
+										th:text="${row.openCount}">0</a> <span
+										th:if="${row.openCount == 0 or row.versionId == null}"
+										th:text="${row.openCount}">0</span></td>
+									<td><a th:if="${row.closedCount > 0 and row.versionId != null}"
+										th:href="@{/project/{projectId}/issues(projectId=${selectedProjectId}, page=1, versionIdList=${row.versionId}, closedYn='Y')}"
+										th:text="${row.closedCount}">0</a> <span
+										th:if="${row.closedCount == 0 or row.versionId == null}"
+										th:text="${row.closedCount}">0</span></td>
+									<td><a th:if="${row.totalCount > 0 and row.versionId != null}"
+										th:href="@{/project/{projectId}/issues(projectId=${selectedProjectId}, page=1, versionIdList=${row.versionId})}"
+										th:text="${row.totalCount}">0</a> <span
+										th:if="${row.totalCount == 0 or row.versionId == null}"
+										th:text="${row.totalCount}">0</span></td>
+								</tr>
+							</tbody>
+						</table>
+					</section>
+
+					<section class="issues-card issues-report-section">
+						<h4>우선순위</h4>
+						<table class="issues-report-table">
+							<thead>
+								<tr>
+									<th>분류</th>
+									<th>진행 중</th>
+									<th>완료</th>
+									<th>합계</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr th:if="${#lists.isEmpty(priorityReportList)}">
+									<td colspan="4" class="empty-row">집계할 일감이 없습니다.</td>
+								</tr>
+								<tr th:each="row : ${priorityReportList}">
+									<td th:text="${row.settingName}">우선순위</td>
+									<td><a th:if="${row.openCount > 0 and row.settingCodeId != null}"
+										th:href="@{/project/{projectId}/issues(projectId=${selectedProjectId}, page=1, settingCodeIdList=${row.settingCodeId}, closedYn='N')}"
+										th:text="${row.openCount}">0</a> <span
+										th:if="${row.openCount == 0 or row.settingCodeId == null}"
+										th:text="${row.openCount}">0</span></td>
+									<td><a th:if="${row.closedCount > 0 and row.settingCodeId != null}"
+										th:href="@{/project/{projectId}/issues(projectId=${selectedProjectId}, page=1, settingCodeIdList=${row.settingCodeId}, closedYn='Y')}"
+										th:text="${row.closedCount}">0</a> <span
+										th:if="${row.closedCount == 0 or row.settingCodeId == null}"
+										th:text="${row.closedCount}">0</span></td>
+									<td><a th:if="${row.totalCount > 0 and row.settingCodeId != null}"
+										th:href="@{/project/{projectId}/issues(projectId=${selectedProjectId}, page=1, settingCodeIdList=${row.settingCodeId})}"
+										th:text="${row.totalCount}">0</a> <span
+										th:if="${row.totalCount == 0 or row.settingCodeId == null}"
+										th:text="${row.totalCount}">0</span></td>
+								</tr>
+							</tbody>
+						</table>
+					</section>
+
+					<section class="issues-card issues-report-section">
+						<h4>담당자</h4>
+						<table class="issues-report-table">
+							<thead>
+								<tr>
+									<th>분류</th>
+									<th>진행 중</th>
+									<th>완료</th>
+									<th>합계</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr th:if="${#lists.isEmpty(assigneeReportList)}">
+									<td colspan="4" class="empty-row">집계할 일감이 없습니다.</td>
+								</tr>
+								<tr th:each="row : ${assigneeReportList}">
+									<td th:text="${row.assigneeName}">담당자</td>
+									<td><a th:if="${row.openCount > 0}"
+										th:href="@{/project/{projectId}/issues(projectId=${selectedProjectId}, page=1, assigneeIdList=${row.assigneeId}, closedYn='N')}"
+										th:text="${row.openCount}">0</a> <span
+										th:if="${row.openCount == 0}" th:text="${row.openCount}">0</span></td>
+									<td><a th:if="${row.closedCount > 0}"
+										th:href="@{/project/{projectId}/issues(projectId=${selectedProjectId}, page=1, assigneeIdList=${row.assigneeId}, closedYn='Y')}"
+										th:text="${row.closedCount}">0</a> <span
+										th:if="${row.closedCount == 0}" th:text="${row.closedCount}">0</span></td>
+									<td><a th:if="${row.totalCount > 0}"
+										th:href="@{/project/{projectId}/issues(projectId=${selectedProjectId}, page=1, assigneeIdList=${row.assigneeId})}"
+										th:text="${row.totalCount}">0</a> <span
+										th:if="${row.totalCount == 0}" th:text="${row.totalCount}">0</span></td>
+								</tr>
+							</tbody>
+						</table>
+					</section>
+
+					<section class="issues-card issues-report-section">
+						<h4>마일스톤</h4>
+						<table class="issues-report-table">
+							<thead>
+								<tr>
+									<th>분류</th>
+									<th>진행 중</th>
+									<th>완료</th>
+									<th>합계</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr th:if="${#lists.isEmpty(milestoneReportList)}">
+									<td colspan="4" class="empty-row">집계할 일감이 없습니다.</td>
+								</tr>
+								<tr th:each="row : ${milestoneReportList}">
+									<td th:text="${row.milestoneTitle}">마일스톤</td>
+									<td><a th:if="${row.openCount > 0}"
+										th:href="@{/project/{projectId}/issues(projectId=${selectedProjectId}, page=1, milestoneIdList=${row.milestoneId}, closedYn='N')}"
+										th:text="${row.openCount}">0</a> <span
+										th:if="${row.openCount == 0}" th:text="${row.openCount}">0</span></td>
+									<td><a th:if="${row.closedCount > 0}"
+										th:href="@{/project/{projectId}/issues(projectId=${selectedProjectId}, page=1, milestoneIdList=${row.milestoneId}, closedYn='Y')}"
+										th:text="${row.closedCount}">0</a> <span
+										th:if="${row.closedCount == 0}" th:text="${row.closedCount}">0</span></td>
+									<td><a th:if="${row.totalCount > 0}"
+										th:href="@{/project/{projectId}/issues(projectId=${selectedProjectId}, page=1, milestoneIdList=${row.milestoneId})}"
+										th:text="${row.totalCount}">0</a> <span
+										th:if="${row.totalCount == 0}" th:text="${row.totalCount}">0</span></td>
+								</tr>
+							</tbody>
+						</table>
+					</section>
+				</div>
+			</div>
+		</div>
+
+		<script>
+			(function() {
+				document.body.classList.add('issues-report-body');
+			})();
+		</script>
+	</div>
+</body>
+</html>

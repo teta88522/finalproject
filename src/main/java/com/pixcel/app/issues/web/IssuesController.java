@@ -22,6 +22,7 @@ import com.pixcel.app.file.service.FileService;
 import com.pixcel.app.file.service.FileVO;
 import com.pixcel.app.issues.service.IssuesService;
 import com.pixcel.app.issues.service.IssuesVO;
+import com.pixcel.app.timelog.service.TimelogService;
 import com.pixcel.app.web.LoginRequiredException;
 
 import lombok.RequiredArgsConstructor;
@@ -30,6 +31,7 @@ import lombok.RequiredArgsConstructor;
 public class IssuesController {
 	private final IssuesService issuesService;
 	private final FileService fileService;
+	private final TimelogService timelogService;
 
 	@GetMapping("/issues")
 	public String issues() {
@@ -42,7 +44,6 @@ public class IssuesController {
 	@GetMapping("/project/{projectId}/issues")
 	public String issueList(@CookieValue(value = "userId", required = false) String userId,
 			@PathVariable("projectId") String projectId, IssuesVO searchVO, Model model) {
-
 		String loginUserId = getLoginUserId(userId);
 
 		normalizeIssueListDateSearch(searchVO, model);
@@ -57,6 +58,14 @@ public class IssuesController {
 			@PathVariable("projectId") String projectId) {
 		String loginUserId = getLoginUserId(userId);
 		return issuesService.getIssueListFilterData(projectId, loginUserId);
+	}
+
+	@GetMapping("/project/{projectId}/issues/report")
+	public String issueReport(@CookieValue(value = "userId", required = false) String userId,
+			@PathVariable("projectId") String projectId, Model model) {
+		String loginUserId = getLoginUserId(userId);
+		addReportModel(model, loginUserId, projectId);
+		return "issues/report";
 	}
 
 	// ==============================
@@ -146,7 +155,9 @@ public class IssuesController {
 			int uploadFileCount = uploadIssueFiles(issue, loginUserId, files);
 			int deleteFileCount = deleteIssueFiles(projectId, issueId, loginUserId, deleteFileIds);
 
-			issuesService.recordIssueFileAddHistory(issueId, loginUserId, uploadFileCount);
+			if (uploadFileCount > 0) {
+				issuesService.recordIssueFileAddHistory(issueId, loginUserId, uploadFileCount);
+			}
 			redirectAttributes.addFlashAttribute("message", buildUpdateMessage(uploadFileCount, deleteFileCount));
 
 			if (selectedFileCount > uploadFileCount) {
@@ -266,8 +277,12 @@ public class IssuesController {
 				selectedIssueTypeList, IssuesVO::getIssueTypeId, IssuesVO::getIssueTypeName, "전체"));
 		model.addAttribute("selectedVersionText", getSelectedOptionText(searchVO.getVersionIdList(), selectedVersionList,
 				IssuesVO::getVersionId, IssuesVO::getVersionName, "전체"));
-		model.addAttribute("selectedIssueStatusText", getSelectedOptionText(searchVO.getIssueStatusIdList(),
-				selectedIssueStatusList, IssuesVO::getIssueStatusId, IssuesVO::getIssueStatusName, "전체"));
+		String selectedIssueStatusText = getSelectedOptionText(searchVO.getIssueStatusIdList(), selectedIssueStatusList,
+				IssuesVO::getIssueStatusId, IssuesVO::getIssueStatusName, "전체");
+		if ("전체".equals(selectedIssueStatusText)) {
+			selectedIssueStatusText = getClosedYnSearchText(searchVO.getClosedYn());
+		}
+		model.addAttribute("selectedIssueStatusText", selectedIssueStatusText);
 		model.addAttribute("selectedPriorityText", getSelectedOptionText(searchVO.getSettingCodeIdList(), selectedPriorityList,
 				IssuesVO::getSettingCodeId, IssuesVO::getSettingName, "전체"));
 		model.addAttribute("selectedAssigneeText", getSelectedOptionText(searchVO.getAssigneeIdList(), selectedAssigneeList,
@@ -279,6 +294,19 @@ public class IssuesController {
 		model.addAttribute("canCreateMilestone", pageData.get("canCreateMilestone"));
 	}
 
+	private void addReportModel(Model model, String userId, String projectId) {
+		Map<String, Object> pageData = issuesService.getIssueReportPageData(projectId, userId);
+
+		model.addAttribute("projectInfo", pageData.get("projectInfo"));
+		model.addAttribute("projectId", projectId);
+		model.addAttribute("selectedProjectId", projectId);
+		model.addAttribute("issueTypeReportList", pageData.get("issueTypeReportList"));
+		model.addAttribute("versionReportList", pageData.get("versionReportList"));
+		model.addAttribute("priorityReportList", pageData.get("priorityReportList"));
+		model.addAttribute("assigneeReportList", pageData.get("assigneeReportList"));
+		model.addAttribute("milestoneReportList", pageData.get("milestoneReportList"));
+	}
+
 	private void normalizeIssueListDateSearch(IssuesVO searchVO, Model model) {
 		if (searchVO == null || searchVO.getStartDate() == null || searchVO.getDueDate() == null) {
 			return;
@@ -288,6 +316,16 @@ public class IssuesController {
 			searchVO.setDueDate(null);
 			model.addAttribute("errorMessage", "완료기한은 시작일보다 빠를 수 없습니다.");
 		}
+	}
+
+	private String getClosedYnSearchText(String closedYn) {
+		if ("N".equalsIgnoreCase(closedYn)) {
+			return "진행 중";
+		}
+		if ("Y".equalsIgnoreCase(closedYn)) {
+			return "완료";
+		}
+		return "전체";
 	}
 
 	private void addDetailModel(Model model, String userId, String projectId, String issueId) {
@@ -329,6 +367,13 @@ public class IssuesController {
 		model.addAttribute("deletedIssueMessage", pageData.get("deletedIssueMessage"));
 		model.addAttribute("canUpdateIssue", pageData.get("canUpdateIssue"));
 		model.addAttribute("canDeleteIssue", pageData.get("canDeleteIssue"));
+
+		if (!deletedIssue) {
+			Map<String, Object> timeLogSummary = timelogService.getIssueTimelogSummary(projectId, issueId);
+			model.addAttribute("timeLogSummaryList", timeLogSummary.get("timeLogSummaryList"));
+			model.addAttribute("timeLogTotalHours", timeLogSummary.get("timeLogTotalHours"));
+			model.addAttribute("timeLogTotalCount", timeLogSummary.get("timeLogTotalCount"));
+		}
 	}
 	// ==============================
 	// 일감 생성 화면 데이터
@@ -465,18 +510,7 @@ public class IssuesController {
 			return 0;
 		}
 
-		int deleteCount = 0;
-
-		for (String fileId : deleteFileIds) {
-			if (fileId == null || fileId.trim().isEmpty()) {
-				continue;
-			}
-
-			issuesService.deleteIssueFile(projectId, issueId, fileId, userId);
-			deleteCount++;
-		}
-
-		return deleteCount;
+		return issuesService.deleteIssueFiles(projectId, issueId, deleteFileIds, userId);
 	}
 
 	private String buildUpdateMessage(int uploadFileCount, int deleteFileCount) {
@@ -521,4 +555,5 @@ public class IssuesController {
 		}
 		return userId;
 	}
+
 }

@@ -43,6 +43,7 @@ public interface IssuesMapper {
 
 	IssuesVO selectIssueDetail(@Param("projectId") String projectId, @Param("issueId") String issueId,
 			@Param("userId") String userId, @Param("updatePermissionCode") String updatePermissionCode,
+			@Param("updateOwnPermissionCode") String updateOwnPermissionCode,
 			@Param("deletePermissionCode") String deletePermissionCode);
 
 	int countIssueDetailAccess(@Param("projectId") String projectId, @Param("issueId") String issueId,
@@ -89,6 +90,8 @@ public interface IssuesMapper {
 
 	List<IssuesVO> selectIssueListSelectedOptionRows(IssuesVO searchVO);
 
+	List<IssuesVO> selectIssueReportRows(@Param("projectId") String projectId);
+
 	IssuesVO selectIssueCreateSaveValidation(@Param("issue") IssuesVO issue, @Param("userId") String userId,
 			@Param("permissionCode") String permissionCode);
 
@@ -117,6 +120,10 @@ public interface IssuesMapper {
 	int insertIssue(IssuesVO issue);
 
 	IssuesVO selectIssueForUpdate(@Param("projectId") String projectId, @Param("issueId") String issueId);
+
+	int countIssueUpdatePermission(@Param("projectId") String projectId, @Param("issueId") String issueId,
+			@Param("userId") String userId, @Param("updatePermissionCode") String updatePermissionCode,
+			@Param("updateOwnPermissionCode") String updateOwnPermissionCode);
 
 	int countAllowedStatusTransition(@Param("projectId") String projectId, @Param("issueId") String issueId,
 			@Param("toStatusId") String toStatusId, @Param("userId") String userId);

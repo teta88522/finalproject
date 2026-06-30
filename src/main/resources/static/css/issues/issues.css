@@ -250,20 +250,19 @@ body.issues-create-body {
 }
 
 /* ==============================
-   일감 전체조회 - 화면 고정
+   일감 전체조회
 ============================== */
 body.issues-list-body {
-	overflow: hidden;
+	overflow: auto;
 }
 
 .issues-list-page {
-	height: calc(100vh - 126px);
+	min-height: calc(100vh - 126px);
 	padding: 6px 0;
-	overflow: hidden;
+	overflow: visible;
 }
 
 .issues-list-page .container-fluid {
-	height: 100%;
 	display: flex;
 	flex-direction: column;
 	min-height: 0;
@@ -348,7 +347,7 @@ body.issues-list-body {
    일감 전체조회 - 테이블
 ============================== */
 .issues-table-card {
-	flex: 1 1 auto;
+	flex: 0 0 auto;
 	min-height: 0;
 	background: #ffffff;
 	border: 1px solid #e7e7e7;
@@ -356,7 +355,7 @@ body.issues-list-body {
 	padding: 0;
 	box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
 	overflow-x: auto;
-	overflow-y: hidden;
+	overflow-y: visible;
 }
 
 .issues-list-table {
@@ -636,24 +635,97 @@ body.issues-list-body {
 }
 
 /* ==============================
+   일감 보고서
+============================== */
+body.issues-report-body {
+	overflow: auto;
+}
+
+.issues-report-page {
+	min-height: calc(100vh - 126px);
+	padding: 8px 0 18px;
+}
+
+.issues-report-grid {
+	display: grid;
+	gap: 12px;
+}
+
+.issues-report-section {
+	padding: 0;
+	overflow: hidden;
+}
+
+.issues-report-section h4 {
+	margin: 0;
+	padding: 12px 14px 10px;
+	border-bottom: 1px solid #eeeeee;
+	font-size: 16px;
+	font-weight: 700;
+	color: #333333;
+}
+
+.issues-report-table {
+	width: 100%;
+	border-collapse: collapse;
+	table-layout: fixed;
+}
+
+.issues-report-table th,
+.issues-report-table td {
+	height: 36px;
+	padding: 8px 12px;
+	border-bottom: 1px solid #f0f1f5;
+	font-size: 13px;
+	vertical-align: middle;
+}
+
+.issues-report-table th {
+	background: #f4f6fb;
+	color: #333333;
+	font-weight: 700;
+	text-align: center;
+}
+
+.issues-report-table th:first-child,
+.issues-report-table td:first-child {
+	text-align: left;
+}
+
+.issues-report-table td {
+	text-align: center;
+	color: #444444;
+}
+
+.issues-report-table tbody tr:last-child td {
+	border-bottom: 0;
+}
+
+.issues-report-table a {
+	font-weight: 700;
+	color: #252ba3;
+	text-decoration: none;
+}
+
+.issues-report-table a:hover,
+.issues-report-table a:focus {
+	text-decoration: underline;
+}
+
+/* ==============================
    일감 상세조회
 ============================== */
 body.issues-detail-body {
-	overflow: hidden;
+	overflow: auto;
 }
 
 .issues-detail-page {
-	height: calc(100vh - 126px);
+	min-height: calc(100vh - 126px);
 	padding: 8px 0;
-	overflow: hidden;
-}
-
-.issues-detail-page.has-open-history {
-	overflow: hidden;
+	overflow: visible;
 }
 
 .issues-detail-page .container-fluid {
-	height: 100%;
 	min-height: 0;
 	display: flex;
 	flex-direction: column;
@@ -688,7 +760,7 @@ body.issues-detail-body {
 	grid-template-columns: minmax(0, 1fr) 300px;
 	gap: 12px;
 	align-items: start;
-	overflow: hidden;
+	overflow: visible;
 }
 
 .issues-detail-main, .issues-detail-side {
@@ -697,11 +769,10 @@ body.issues-detail-body {
 }
 
 .issues-detail-main {
-	height: 100%;
 	display: grid;
 	gap: 10px;
 	padding-right: 4px;
-	overflow-y: auto;
+	overflow: visible;
 }
 
 .issues-detail-summary {
@@ -998,6 +1069,87 @@ body.issues-detail-body {
 	padding: 0 14px 14px;
 }
 
+.issues-detail-bottom-grid {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) minmax(320px, 0.8fr);
+	gap: 10px;
+	align-items: start;
+}
+
+.issues-detail-timelog-card {
+	padding: 12px 14px;
+}
+
+.issues-timelog-summary {
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 10px;
+	margin-bottom: 8px;
+	padding-bottom: 8px;
+	border-bottom: 1px solid #eeeeee;
+}
+
+.issues-timelog-summary h4 {
+	margin: 0 0 4px;
+	font-size: 16px;
+	font-weight: 700;
+}
+
+.issues-timelog-summary p {
+	margin: 0;
+	color: #777777;
+	font-size: 12px;
+}
+
+.issues-timelog-list {
+	display: grid;
+	gap: 6px;
+}
+
+.issues-timelog-item {
+	display: block;
+	padding: 8px 9px;
+	border: 1px solid #edf0f6;
+	border-radius: 6px;
+	background: #fafbfe;
+	color: #444444;
+	text-decoration: none;
+}
+
+.issues-timelog-item:hover,
+.issues-timelog-item:focus {
+	border-color: #cfd6ee;
+	background: #f4f6fb;
+	color: #333333;
+	text-decoration: none;
+}
+
+.issues-timelog-meta {
+	display: flex;
+	align-items: center;
+	gap: 7px;
+	margin-bottom: 4px;
+	color: #777777;
+	font-size: 12px;
+	flex-wrap: wrap;
+}
+
+.issues-timelog-meta strong {
+	color: #252ba3;
+	font-size: 12px;
+}
+
+.issues-timelog-desc {
+	display: block;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: #333333;
+	font-size: 13px;
+	font-weight: 600;
+}
+
 .issues-detail-side-card {
 	position: sticky;
 	top: 8px;
@@ -1036,6 +1188,59 @@ body.issues-detail-body {
 	margin: 0;
 }
 
+.issues-loading-overlay {
+	position: fixed;
+	inset: 0;
+	z-index: 2000;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 24px;
+	background: rgba(255, 255, 255, 0.72);
+	backdrop-filter: blur(2px);
+}
+
+.issues-loading-overlay[hidden] {
+	display: none;
+}
+
+.issues-loading-box {
+	min-width: 160px;
+	min-height: 112px;
+	padding: 22px 24px;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 14px;
+	border: 1px solid #dddddd;
+	border-radius: 8px;
+	background: #ffffff;
+	box-shadow: 0 12px 32px rgba(0, 0, 0, 0.14);
+	color: #333333;
+}
+
+.issues-loading-box strong {
+	font-size: 16px;
+	font-weight: 700;
+	line-height: 1.2;
+}
+
+.issues-loading-spinner {
+	width: 32px;
+	height: 32px;
+	border: 3px solid #e5e5e5;
+	border-top-color: #252ba3;
+	border-radius: 50%;
+	animation: issues-loading-spin 0.8s linear infinite;
+}
+
+@keyframes issues-loading-spin {
+	to {
+		transform: rotate(360deg);
+	}
+}
+
 /* ==============================
    반응형
 ============================== */
@@ -1052,13 +1257,18 @@ body.issues-detail-body {
 	.issues-detail-info-grid {
 		grid-template-columns: repeat(2, minmax(0, 1fr));
 	}
+	.issues-detail-bottom-grid {
+		grid-template-columns: 1fr;
+	}
 }
 
 @media ( max-width : 992px) {
-	body.issues-create-body, body.issues-list-body, body.issues-detail-body {
+	body.issues-create-body, body.issues-list-body, body.issues-detail-body,
+	body.issues-report-body {
 		overflow: auto;
 	}
-	.issues-create-page, .issues-list-page, .issues-detail-page {
+	.issues-create-page, .issues-list-page, .issues-detail-page,
+	.issues-report-page {
 		height: auto;
 		overflow: visible;
 	}

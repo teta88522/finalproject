@@ -40,7 +40,7 @@
 						<form th:if="${canDeleteIssue}" class="issues-inline-delete-form"
 							th:action="@{/project/{projectId}/issues/{issueId}/delete(projectId=${selectedProjectId}, issueId=${issue.issueId})}"
 							method="post"
-							onsubmit="return confirm('삭제하면 일감이 삭제됩니다. 작업내역은 보존됩니다. 삭제하시겠습니까?');">
+							data-confirm-message="삭제하면 일감이 삭제됩니다. 작업내역은 보존됩니다. 삭제하시겠습니까?">
 							<input type="hidden" name="redirectTo" value="detail">
 							<button type="submit" class="btn btn-custon-rounded-four btn-danger">삭제</button>
 						</form>
@@ -233,38 +233,73 @@
 									th:href="@{/project/{projectId}/issues/{issueId}/files/download(projectId=${selectedProjectId}, issueId=${issue.issueId})}">전체 다운로드</a>
 							</div>
 
-							<details class="issues-card issues-detail-history-card">
-								<summary class="issues-history-summary">
-									<span>변경 이력</span>
-									<strong id="issueHistoryCount"
-										th:text="|${#lists.size(historyGroupList)}건|">0건</strong>
-								</summary>
+							<div class="issues-detail-bottom-grid">
+								<details class="issues-card issues-detail-history-card">
+									<summary class="issues-history-summary">
+										<span>변경 이력</span>
+										<strong id="issueHistoryCount"
+											th:text="|${#lists.size(historyGroupList)}건|">0건</strong>
+									</summary>
 
-								<div id="issueHistoryList" class="issues-history-list"
-									th:style="${#lists.isEmpty(historyGroupList)} ? 'display: none;' : ''">
-									<div class="issues-history-item" th:each="group : ${historyGroupList}">
-										<div class="issues-history-meta">
-											<strong th:text="${group.changeTypeDisplayName}">일감 수정</strong>
-											<span th:text="${group.changedByName != null ? group.changedByName : group.changedBy}">사용자</span>
-											<span th:text="${group.changedAt != null ? #dates.format(group.changedAt, 'yyyy-MM-dd HH:mm') : '-'}">2026-06-28 12:00</span>
+									<div id="issueHistoryList" class="issues-history-list"
+										th:style="${#lists.isEmpty(historyGroupList)} ? 'display: none;' : ''">
+										<div class="issues-history-item" th:each="group : ${historyGroupList}">
+											<div class="issues-history-meta">
+												<strong th:text="${group.changeTypeDisplayName}">일감 수정</strong>
+												<span th:text="${group.changedByName != null ? group.changedByName : group.changedBy}">사용자</span>
+												<span th:text="${group.changedAt != null ? #dates.format(group.changedAt, 'yyyy-MM-dd HH:mm') : '-'}">2026-06-28 12:00</span>
+											</div>
+											<div class="issues-history-change"
+												th:each="history : ${group.historyList}">
+												<span class="issues-history-field"
+													th:text="${history.fieldName != null ? history.fieldName : '변경'}">제목</span>
+												<span th:text="${history.beforeValue}">before</span>
+												<span class="issues-history-arrow">→</span>
+												<span th:text="${history.afterValue}">after</span>
+											</div>
+											<p th:if="${group.reason}" th:text="${group.reason}">변경 사유</p>
 										</div>
-										<div class="issues-history-change"
-											th:each="history : ${group.historyList}">
-											<span class="issues-history-field"
-												th:text="${history.fieldName != null ? history.fieldName : '변경'}">제목</span>
-											<span th:text="${history.beforeValue}">before</span>
-											<span class="issues-history-arrow">→</span>
-											<span th:text="${history.afterValue}">after</span>
-										</div>
-										<p th:if="${group.reason}" th:text="${group.reason}">변경 사유</p>
 									</div>
-								</div>
 
-								<div id="issueHistoryEmpty" class="issues-empty-box"
-									th:style="${#lists.isEmpty(historyGroupList)} ? '' : 'display: none;'">
-									변경 이력이 없습니다.
-								</div>
-							</details>
+									<div id="issueHistoryEmpty" class="issues-empty-box"
+										th:style="${#lists.isEmpty(historyGroupList)} ? '' : 'display: none;'">
+										변경 이력이 없습니다.
+									</div>
+								</details>
+
+								<section id="timeLogSection" class="issues-card issues-detail-timelog-card">
+									<div class="issues-timelog-summary">
+										<div>
+											<h4>소요시간</h4>
+											<p>
+												<span th:text="|총 ${timeLogTotalHours != null ? timeLogTotalHours : 0} 시간|">총 0 시간</span>
+												<span th:text="| / ${timeLogTotalCount != null ? timeLogTotalCount : 0}건|"> / 0건</span>
+											</p>
+										</div>
+										<a class="btn btn-custon-rounded-four btn-primary btn-xs"
+											th:href="@{/project/{projectId}/issues/timelog/create(projectId=${selectedProjectId}, issueId=${issue.issueId})}">등록</a>
+									</div>
+
+									<div class="issues-timelog-list"
+										th:if="${timeLogSummaryList != null and !#lists.isEmpty(timeLogSummaryList)}">
+										<a class="issues-timelog-item" th:each="timeLog : ${timeLogSummaryList}"
+											th:href="@{/project/{projectId}/issues/{issueId}/timelog/{timeLogId}(projectId=${selectedProjectId}, issueId=${issue.issueId}, timeLogId=${timeLog.timeLogId})}">
+											<span class="issues-timelog-meta">
+												<strong th:text="${timeLog.workTypeName != null ? timeLog.workTypeName : '작업'}">작업</strong>
+												<span th:text="${timeLog.workDate != null ? timeLog.workDate : '-'}">2026-06-30</span>
+												<span th:text="|${timeLog.hours}시간|">1시간</span>
+											</span>
+											<span class="issues-timelog-desc"
+												th:text="${timeLog.descriptionPreview != null ? timeLog.descriptionPreview : timeLog.description}">작업 내용</span>
+										</a>
+									</div>
+
+									<div class="issues-empty-box"
+										th:if="${timeLogSummaryList == null or #lists.isEmpty(timeLogSummaryList)}">
+										등록된 소요시간이 없습니다.
+									</div>
+								</section>
+							</div>
 						</div>
 
 						<div class="issues-detail-side">
@@ -332,6 +367,14 @@
 			</div>
 		</div>
 
+		<div id="issueLoadingOverlay" class="issues-loading-overlay" hidden
+			aria-live="polite" aria-busy="true">
+			<div class="issues-loading-box">
+				<span class="issues-loading-spinner"></span>
+				<strong id="issueLoadingMessage">수정중</strong>
+			</div>
+		</div>
+
 		<script th:inline="javascript">
 			(function() {
 				document.body.classList.add('issues-detail-body');
@@ -350,13 +393,37 @@
 				var pendingFileList = document.getElementById('issuePendingFileList');
 				var deleteFileContainer = document.getElementById('issueDeleteFileContainer');
 				var pendingDeleteFileIds = {};
-				var detailPage = document.querySelector('.issues-detail-page');
-				var historyCard = document.querySelector('.issues-detail-history-card');
+				var updateForm = document.getElementById('issueUpdateForm');
+				var deleteForm = document.querySelector('.issues-inline-delete-form');
 
-				if (historyCard && detailPage) {
-					historyCard.addEventListener('toggle', function() {
-						detailPage.classList.toggle('has-open-history',
-								historyCard.open);
+				function showLoading(message) {
+					var overlay = document.getElementById('issueLoadingOverlay');
+					var messageBox = document.getElementById('issueLoadingMessage');
+
+					if (messageBox) {
+						messageBox.textContent = message;
+					}
+					if (overlay) {
+						overlay.hidden = false;
+					}
+				}
+
+				if (updateForm) {
+					updateForm.addEventListener('submit', function() {
+						showLoading('수정중');
+					});
+				}
+
+				if (deleteForm) {
+					deleteForm.addEventListener('submit', function(event) {
+						var message = deleteForm.getAttribute('data-confirm-message');
+
+						if (message && !confirm(message)) {
+							event.preventDefault();
+							return;
+						}
+
+						showLoading('삭제중');
 					});
 				}
 

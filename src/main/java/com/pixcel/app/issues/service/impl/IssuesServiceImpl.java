@@ -59,7 +59,7 @@ public class IssuesServiceImpl implements IssuesService {
 	private static final String PERMISSION_ISSUE_CREATE_NAME = "일감 추가";
 
 	private static final String PERMISSION_ISSUE_UPDATE_CODE = "p009";
-	private static final String PERMISSION_ISSUE_UPDATE_NAME = "일감 편집";
+	private static final String PERMISSION_ISSUE_UPDATE_OWN_CODE = "p011";
 
 	private static final String PERMISSION_ISSUE_DELETE_CODE = "p010";
 	private static final String PERMISSION_ISSUE_DELETE_NAME = "일감 삭제";
@@ -149,6 +149,7 @@ public class IssuesServiceImpl implements IssuesService {
 		validateIssueListAccess(projectInfo);
 
 		List<IssuesVO> issueList = selectIssueList(projectId, searchVO);
+		Map<String, Object> selectedFilterData = buildSelectedIssueListFilterData(searchVO);
 
 		Map<String, Object> pageData = new HashMap<>();
 		pageData.put("projectInfo", projectInfo);
@@ -158,7 +159,7 @@ public class IssuesServiceImpl implements IssuesService {
 		pageData.put("versionList", Collections.emptyList());
 		pageData.put("priorityList", Collections.emptyList());
 		pageData.put("assigneeList", Collections.emptyList());
-		pageData.putAll(buildSelectedIssueListFilterData(searchVO));
+		pageData.putAll(selectedFilterData);
 		pageData.put("canCreateIssue", "Y".equals(projectInfo.getIssueCreatePermissionYn()));
 		pageData.put("canCreateMilestone", "Y".equals(projectInfo.getMilestoneCreatePermissionYn()));
 
@@ -186,14 +187,15 @@ public class IssuesServiceImpl implements IssuesService {
 	}
 
 	private Map<String, Object> buildSelectedIssueListFilterData(IssuesVO searchVO) {
-		List<IssuesVO> selectedOptionRows = hasSelectedIssueListFilter(searchVO)
-				? issuesMapper.selectIssueListSelectedOptionRows(searchVO)
+		boolean hasSelectedFilter = hasSelectedIssueListFilter(searchVO);
+		List<IssuesVO> selectedOptionRows = hasSelectedFilter ? issuesMapper.selectIssueListSelectedOptionRows(searchVO)
 				: Collections.emptyList();
 
 		Map<String, Object> filterData = new HashMap<>();
 		filterData.put("selectedIssueTypeList", filterOptionRows(selectedOptionRows, OPTION_ISSUE_TYPE));
 		filterData.put("selectedIssueStatusList", filterOptionRows(selectedOptionRows, OPTION_ISSUE_STATUS));
 		filterData.put("selectedVersionList", filterOptionRows(selectedOptionRows, OPTION_VERSION));
+		filterData.put("selectedMilestoneList", filterOptionRows(selectedOptionRows, OPTION_MILESTONE));
 		filterData.put("selectedPriorityList", filterOptionRows(selectedOptionRows, OPTION_PRIORITY));
 		filterData.put("selectedAssigneeList", filterOptionRows(selectedOptionRows, OPTION_ASSIGNEE));
 
@@ -201,9 +203,13 @@ public class IssuesServiceImpl implements IssuesService {
 	}
 
 	private boolean hasSelectedIssueListFilter(IssuesVO searchVO) {
+		if (searchVO == null) {
+			return false;
+		}
+
 		return hasValue(searchVO.getIssueTypeIdList()) || hasValue(searchVO.getIssueStatusIdList())
-				|| hasValue(searchVO.getVersionIdList()) || hasValue(searchVO.getSettingCodeIdList())
-				|| hasValue(searchVO.getAssigneeIdList());
+				|| hasValue(searchVO.getVersionIdList()) || hasValue(searchVO.getMilestoneIdList())
+				|| hasValue(searchVO.getSettingCodeIdList()) || hasValue(searchVO.getAssigneeIdList());
 	}
 
 	private boolean hasValue(List<String> valueList) {
@@ -240,6 +246,23 @@ public class IssuesServiceImpl implements IssuesService {
 	}
 
 	@Override
+	public Map<String, Object> getIssueReportPageData(String projectId, String userId) {
+		IssuesVO projectInfo = validateProjectAccess(projectId, userId);
+
+		List<IssuesVO> reportRows = issuesMapper.selectIssueReportRows(projectId);
+
+		Map<String, Object> pageData = new HashMap<>();
+		pageData.put("projectInfo", projectInfo);
+		pageData.put("issueTypeReportList", filterOptionRows(reportRows, OPTION_ISSUE_TYPE));
+		pageData.put("versionReportList", filterOptionRows(reportRows, OPTION_VERSION));
+		pageData.put("priorityReportList", filterOptionRows(reportRows, OPTION_PRIORITY));
+		pageData.put("assigneeReportList", filterOptionRows(reportRows, OPTION_ASSIGNEE));
+		pageData.put("milestoneReportList", filterOptionRows(reportRows, OPTION_MILESTONE));
+
+		return pageData;
+	}
+
+	@Override
 	public boolean canCreateIssue(String projectId, String userId) {
 		validateProjectAccess(projectId, userId);
 
@@ -270,7 +293,7 @@ public class IssuesServiceImpl implements IssuesService {
 		}
 
 		IssuesVO issue = issuesMapper.selectIssueDetail(projectId, issueId, userId, PERMISSION_ISSUE_UPDATE_CODE,
-				PERMISSION_ISSUE_DELETE_CODE);
+				PERMISSION_ISSUE_UPDATE_OWN_CODE, PERMISSION_ISSUE_DELETE_CODE);
 
 		if (issue == null) {
 			IssuesVO projectInfo = validateProjectAccess(projectId, userId);
@@ -323,7 +346,7 @@ public class IssuesServiceImpl implements IssuesService {
 	private void validateIssueFileManageAccess(String projectId, String issueId, String userId) {
 		validateIssueAccess(projectId, issueId, userId);
 
-		if (!hasProjectPermission(projectId, userId, PERMISSION_ISSUE_UPDATE_CODE, PERMISSION_ISSUE_UPDATE_NAME)) {
+		if (!hasIssueUpdatePermission(projectId, issueId, userId)) {
 			throw new IllegalArgumentException("일감 수정 권한이 없습니다.");
 		}
 	}
@@ -333,8 +356,7 @@ public class IssuesServiceImpl implements IssuesService {
 	public void updateIssue(IssuesVO issue, String userId) {
 		validateUserId(userId);
 		validateBasicIssueForUpdate(issue);
-		validateProjectPermissionAccess(issue.getProjectId(), userId, PERMISSION_ISSUE_UPDATE_CODE,
-				"일감 수정 권한이 없습니다.");
+		validateIssueUpdatePermission(issue.getProjectId(), issue.getIssueId(), userId);
 
 		IssuesVO currentIssue = issuesMapper.selectIssueForUpdate(issue.getProjectId(), issue.getIssueId());
 
@@ -396,6 +418,44 @@ public class IssuesServiceImpl implements IssuesService {
 		deletePhysicalFile(file.getFilePath());
 		insertIssueHistory(newHistoryGroupId(), issueId, userId, CHANGE_TYPE_FILE_DELETE_CODE, FIELD_ATTACH_FILE,
 				"파일 삭제", emptyToDash(file.getOriginalName()), "삭제됨");
+	}
+
+	@Override
+	@Transactional
+	public int deleteIssueFiles(String projectId, String issueId, List<String> fileIds, String userId) {
+		List<String> checkedFileIds = fileIds == null ? Collections.emptyList()
+				: fileIds.stream().map(this::trimToNull).filter(Objects::nonNull).distinct()
+						.collect(Collectors.toList());
+
+		if (checkedFileIds.isEmpty()) {
+			return 0;
+		}
+
+		validateIssueFileManageAccess(projectId, issueId, userId);
+
+		int deleteCount = 0;
+
+		for (String fileId : checkedFileIds) {
+			FileVO file = issuesMapper.selectIssueFile(issueId, fileId);
+
+			if (file == null) {
+				throw new IllegalArgumentException("삭제할 첨부파일이 없습니다.");
+			}
+
+			int currentDeleteCount = issuesMapper.deleteIssueFile(issueId, fileId);
+
+			if (currentDeleteCount == 0) {
+				throw new IllegalArgumentException("삭제할 첨부파일이 없습니다.");
+			}
+
+			deletePhysicalFile(file.getFilePath());
+
+			insertIssueHistory(newHistoryGroupId(), issueId, userId, CHANGE_TYPE_FILE_DELETE_CODE, FIELD_ATTACH_FILE,
+					"파일 삭제", emptyToDash(file.getOriginalName()), "삭제됨");
+			deleteCount += currentDeleteCount;
+		}
+
+		return deleteCount;
 	}
 
 	@Override
@@ -990,6 +1050,23 @@ public class IssuesServiceImpl implements IssuesService {
 		return issuesMapper.countProjectPermission(projectId, userId, checkedPermissionCode, checkedPermissionName) > 0;
 	}
 
+	private void validateIssueUpdatePermission(String projectId, String issueId, String userId) {
+		validateUserId(userId);
+
+		if (isBlank(projectId) || isBlank(issueId)) {
+			throw new IllegalArgumentException("수정할 일감 정보가 없습니다.");
+		}
+
+		if (!hasIssueUpdatePermission(projectId, issueId, userId)) {
+			throw new IllegalArgumentException("일감 수정 권한이 없습니다.");
+		}
+	}
+
+	private boolean hasIssueUpdatePermission(String projectId, String issueId, String userId) {
+		return issuesMapper.countIssueUpdatePermission(projectId, issueId, userId, PERMISSION_ISSUE_UPDATE_CODE,
+				PERMISSION_ISSUE_UPDATE_OWN_CODE) > 0;
+	}
+
 	private void validateBasicIssue(IssuesVO issue) {
 		if (issue == null) {
 			throw new IllegalArgumentException("등록할 일감 정보가 없습니다.");
@@ -1248,12 +1325,15 @@ public class IssuesServiceImpl implements IssuesService {
 		searchVO.setKeyword(trimToNull(searchVO.getKeyword()));
 		searchVO.setIssueTypeId(trimToNull(searchVO.getIssueTypeId()));
 		searchVO.setVersionId(trimToNull(searchVO.getVersionId()));
+		searchVO.setMilestoneId(trimToNull(searchVO.getMilestoneId()));
 		searchVO.setIssueStatusId(trimToNull(searchVO.getIssueStatusId()));
 		searchVO.setSettingCodeId(trimToNull(searchVO.getSettingCodeId()));
 		searchVO.setAssigneeId(trimToNull(searchVO.getAssigneeId()));
 		searchVO.setProgressRange(trimToNull(searchVO.getProgressRange()));
+		searchVO.setClosedYn(normalizeClosedYn(searchVO.getClosedYn()));
 		searchVO.setIssueTypeIdList(normalizeSearchList(searchVO.getIssueTypeIdList(), searchVO.getIssueTypeId()));
 		searchVO.setVersionIdList(normalizeSearchList(searchVO.getVersionIdList(), searchVO.getVersionId()));
+		searchVO.setMilestoneIdList(normalizeSearchList(searchVO.getMilestoneIdList(), searchVO.getMilestoneId()));
 		searchVO.setIssueStatusIdList(
 				normalizeSearchList(searchVO.getIssueStatusIdList(), searchVO.getIssueStatusId()));
 		searchVO.setSettingCodeIdList(
@@ -1263,6 +1343,20 @@ public class IssuesServiceImpl implements IssuesService {
 				normalizeProgressRangeList(searchVO.getProgressRangeList(), searchVO.getProgressRange()));
 		searchVO.setIssueNoSort(normalizeIssueNoSort(searchVO.getIssueNoSort()));
 		validateSearchDateRange(searchVO);
+	}
+
+	private String normalizeClosedYn(String closedYn) {
+		String checkedClosedYn = trimToNull(closedYn);
+
+		if (checkedClosedYn == null) {
+			return null;
+		}
+
+		if ("Y".equals(checkedClosedYn) || "N".equals(checkedClosedYn)) {
+			return checkedClosedYn;
+		}
+
+		throw new IllegalArgumentException("완료여부 검색 조건이 올바르지 않습니다.");
 	}
 
 	private void validateSearchDateRange(IssuesVO searchVO) {
