@@ -30,7 +30,7 @@ public class GlobalControllerAdvice {
     // project 사이드바 URL 목록
     private static final List<String> PROJECT_URIS = List.of(
         "/document", "/issues", "/kanban", "/members", 
-        "/milestones", "/roadmap", "/roles", "/repository", "/projectdetail", "/project","/tests", "/sourcerepository"
+        "/milestones", "/roadmap", "/repository", "/projectdetail", "/project","/tests", "/sourcerepository"
     );
     
  // project 사이드바 URL 목록
