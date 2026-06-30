@@ -71,11 +71,23 @@ public class TimelogServiceImpl implements TimelogService {
 	@Override
 	public Map<String, Object> getDetailPageData(String projectId, String issueId, String timeLogId, String userId) {
 		TimelogVO timelog = selectTimelogDetailOrThrow(projectId, issueId, timeLogId, userId);
+		boolean canUpdateTimelog = "Y".equals(timelog.getUpdatePermissionYn());
 
 		Map<String, Object> pageData = new HashMap<>();
 		pageData.put("projectInfo", timelog);
 		pageData.put("timelog", timelog);
-		pageData.put("canUpdateTimelog", "Y".equals(timelog.getUpdatePermissionYn()));
+		pageData.put("canUpdateTimelog", canUpdateTimelog);
+
+		if (canUpdateTimelog) {
+			List<TimelogVO> rows = timelogMapper.selectTimelogFormRows(projectId, userId, PERMISSION_ISSUE_UPDATE_CODE,
+					PERMISSION_ISSUE_UPDATE_OWN_CODE, null, timelog.getIssueId());
+
+			pageData.put("workTypeList", filterOptionRows(rows, OPTION_WORK_TYPE));
+			pageData.put("issueList", filterOptionRows(rows, OPTION_ISSUE));
+		} else {
+			pageData.put("workTypeList", Collections.emptyList());
+			pageData.put("issueList", Collections.emptyList());
+		}
 
 		return pageData;
 	}

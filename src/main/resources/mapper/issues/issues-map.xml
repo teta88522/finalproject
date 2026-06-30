@@ -486,6 +486,21 @@
 		i.parent_issue_id,
 		parent_issue.title as
 		parent_issue_title,
+		(
+		select count(distinct nvl(h.history_group_id, h.history_id))
+		from issue_history h
+		where h.issue_id = i.issue_id
+		) as total_count,
+		(
+		select count(*)
+		from time_log tl
+		where tl.issue_id = i.issue_id
+		) as time_log_total_count,
+		(
+		select nvl(sum(tl.hours), 0)
+		from time_log tl
+		where tl.issue_id = i.issue_id
+		) as time_log_total_hours,
 		case
 		when p.owner_id = #{userId} then 'Y'
 		when exists
@@ -1673,96 +1688,173 @@
 		order by option_sort
 	</select>
 
-	<select id="selectIssueReportRows" resultType="IssuesVO">
+	<select id="selectIssueReportSourceRows" resultType="IssuesVO">
+		with issue_source as (
 		select
-		agg.option_group,
-		case when agg.option_group = 'ISSUE_TYPE' then agg.group_id end as issue_type_id,
-		case when agg.option_group = 'ISSUE_TYPE' then nvl(it.issue_type_name, '미지정') end as issue_type_name,
-		case when agg.option_group = 'VERSION' then agg.group_id end as version_id,
-		case when agg.option_group = 'VERSION' then nvl(v.version_name, '미지정') end as version_name,
-		case when agg.option_group = 'PRIORITY' then agg.group_id end as setting_code_id,
-		case when agg.option_group = 'PRIORITY' then nvl(sc.setting_name, '미지정') end as setting_name,
-		case when agg.option_group = 'ASSIGNEE' then agg.group_id end as assignee_id,
-		case when agg.option_group = 'ASSIGNEE' then nvl(assignee.user_name, '미지정') end as assignee_name,
-		case when agg.option_group = 'MILESTONE' then agg.group_id end as milestone_id,
-		case when agg.option_group = 'MILESTONE' then nvl(m.title, '미지정') end as milestone_title,
-		agg.open_count,
-		agg.closed_count,
-		agg.total_count,
-		agg.option_sort
-		from (
-		select
-		case
-		when grouping(issue_type_id) = 0 then 'ISSUE_TYPE'
-		when grouping(version_id) = 0 then 'VERSION'
-		when grouping(setting_code_id) = 0 then 'PRIORITY'
-		when grouping(assignee_id) = 0 then 'ASSIGNEE'
-		when grouping(milestone_id) = 0 then 'MILESTONE'
-		end as option_group,
-		case
-		when grouping(issue_type_id) = 0 then issue_type_id
-		when grouping(version_id) = 0 then version_id
-		when grouping(setting_code_id) = 0 then setting_code_id
-		when grouping(assignee_id) = 0 then assignee_id
-		when grouping(milestone_id) = 0 then milestone_id
-		end as group_id,
-		sum(open_flag) as open_count,
-		sum(closed_flag) as closed_count,
-		count(*) as total_count,
-		case
-		when grouping(issue_type_id) = 0 then 1
-		when grouping(version_id) = 0 then 2
-		when grouping(setting_code_id) = 0 then 3
-		when grouping(assignee_id) = 0 then 4
-		when grouping(milestone_id) = 0 then 5
-		end as option_sort
-		from (
-		select /*+
-		leading(i)
-		use_nl(ist)
-		index(i UK_ISSUE_PROJECT_NO)
-		index(ist PK_ISSUE_STATUS)
-		*/
 		i.issue_type_id,
 		i.version_id,
 		i.setting_code_id,
-		nvl(i.assignee_id, '__NONE__') as assignee_id,
-		nvl(i.milestone_id, '__NONE__') as milestone_id,
-		case when nvl(ist.closed_yn, 'N') = 'Y' then 0 else 1 end as open_flag,
-		case when nvl(ist.closed_yn, 'N') = 'Y' then 1 else 0 end as closed_flag
+		i.assignee_id,
+		i.milestone_id,
+		i.issue_status_id
 		from issue i
-		left join issue_status ist
-		on i.issue_status_id = ist.issue_status_id
 		where i.project_id = #{projectId}
-		) base
-		group by grouping sets (
-		(issue_type_id),
-		(version_id),
-		(setting_code_id),
-		(assignee_id),
-		(milestone_id)
 		)
-		) agg
-		left join issue_type it
-		on agg.option_group = 'ISSUE_TYPE'
-		and agg.group_id = it.issue_type_id
-		left join project_version v
-		on agg.option_group = 'VERSION'
-		and v.project_id = #{projectId}
-		and agg.group_id = v.version_id
-		left join setting_code sc
-		on agg.option_group = 'PRIORITY'
-		and agg.group_id = sc.setting_code_id
-		left join users assignee
-		on agg.option_group = 'ASSIGNEE'
-		and agg.group_id != '__NONE__'
-		and agg.group_id = assignee.user_id
-		left join milestone m
-		on agg.option_group = 'MILESTONE'
-		and m.project_id = #{projectId}
-		and agg.group_id != '__NONE__'
-		and agg.group_id = m.milestone_id
-		order by agg.option_sort, issue_type_name, version_name, setting_name, assignee_name, milestone_title
+		select
+		'REPORT_SOURCE' as option_group,
+		i.issue_type_id,
+		null as issue_type_name,
+		i.version_id,
+		null as version_name,
+		i.setting_code_id,
+		null as setting_name,
+		nvl(i.assignee_id, '__NONE__') as assignee_id,
+		null as assignee_name,
+		nvl(i.milestone_id, '__NONE__') as milestone_id,
+		null as milestone_title,
+		i.issue_status_id,
+		null as closed_yn
+		from issue_source i
+
+		union all
+
+		select
+		'ISSUE_STATUS' as option_group,
+		null as issue_type_id,
+		null as issue_type_name,
+		null as version_id,
+		null as version_name,
+		null as setting_code_id,
+		null as setting_name,
+		null as assignee_id,
+		null as assignee_name,
+		null as milestone_id,
+		null as milestone_title,
+		ist.issue_status_id,
+		nvl(ist.closed_yn, 'N') as closed_yn
+		from issue_status ist
+		where exists (
+		select 1
+		from issue_source i
+		where i.issue_status_id = ist.issue_status_id
+		)
+
+		union all
+
+		select
+		'ISSUE_TYPE' as option_group,
+		it.issue_type_id,
+		it.issue_type_name,
+		null as version_id,
+		null as version_name,
+		null as setting_code_id,
+		null as setting_name,
+		null as assignee_id,
+		null as assignee_name,
+		null as milestone_id,
+		null as milestone_title,
+		null as issue_status_id,
+		null as closed_yn
+		from issue_type it
+		where exists (
+		select 1
+		from issue_source i
+		where i.issue_type_id = it.issue_type_id
+		)
+
+		union all
+
+		select
+		'VERSION' as option_group,
+		null as issue_type_id,
+		null as issue_type_name,
+		v.version_id,
+		v.version_name,
+		null as setting_code_id,
+		null as setting_name,
+		null as assignee_id,
+		null as assignee_name,
+		null as milestone_id,
+		null as milestone_title,
+		null as issue_status_id,
+		null as closed_yn
+		from project_version v
+		where v.project_id = #{projectId}
+		and exists (
+		select 1
+		from issue_source i
+		where i.version_id = v.version_id
+		)
+
+		union all
+
+		select
+		'PRIORITY' as option_group,
+		null as issue_type_id,
+		null as issue_type_name,
+		null as version_id,
+		null as version_name,
+		sc.setting_code_id,
+		sc.setting_name,
+		null as assignee_id,
+		null as assignee_name,
+		null as milestone_id,
+		null as milestone_title,
+		null as issue_status_id,
+		null as closed_yn
+		from setting_code sc
+		where exists (
+		select 1
+		from issue_source i
+		where i.setting_code_id = sc.setting_code_id
+		)
+
+		union all
+
+		select
+		'ASSIGNEE' as option_group,
+		null as issue_type_id,
+		null as issue_type_name,
+		null as version_id,
+		null as version_name,
+		null as setting_code_id,
+		null as setting_name,
+		u.user_id as assignee_id,
+		u.user_name as assignee_name,
+		null as milestone_id,
+		null as milestone_title,
+		null as issue_status_id,
+		null as closed_yn
+		from users u
+		where exists (
+		select 1
+		from issue_source i
+		where i.assignee_id = u.user_id
+		)
+
+		union all
+
+		select
+		'MILESTONE' as option_group,
+		null as issue_type_id,
+		null as issue_type_name,
+		null as version_id,
+		null as version_name,
+		null as setting_code_id,
+		null as setting_name,
+		null as assignee_id,
+		null as assignee_name,
+		m.milestone_id,
+		m.title as milestone_title,
+		null as issue_status_id,
+		null as closed_yn
+		from milestone m
+		where m.project_id = #{projectId}
+		and exists (
+		select 1
+		from issue_source i
+		where i.milestone_id = m.milestone_id
+		)
 	</select>
 
 	<select id="selectIssueCreateBaseOptionRows"
@@ -2014,6 +2106,11 @@
 		p.project_id,
 		p.project_name,
 		p.owner_id,
+		(
+		select nvl(max(i.issue_no), 0) + 1
+		from issue i
+		where i.project_id = p.project_id
+		) as issue_no,
 		case
 		when
 		p.owner_id = #{userId} then 'Y'
@@ -2222,79 +2319,140 @@
 		and tm.user_id = #{userId}
 		)
 		)
+		for update
 	</select>
 
-	<select id="countVersionForCreate" resultType="int">
-		select count(*)
-		from project_version
-		where project_id = #{projectId}
-		and version_id =
-		#{versionId}
-		and status_code != 'k003'
-	</select>
-
-	<select id="countPriorityForProject" resultType="int">
+	<select id="selectIssueUpdateSaveValidation" resultType="IssuesVO">
+		select
+		(
 		select count(*)
 		from setting_code sc
-		join project p
-		on sc.user_id = p.owner_id
-		where
-		p.project_id = #{projectId}
+		where sc.user_id = p.owner_id
 		and sc.setting_group_name = 'g002'
-		and
-		sc.setting_code_id = #{settingCodeId}
-	</select>
-
-	<select id="countMilestoneForCreate" resultType="int">
+		and sc.setting_code_id = #{issue.settingCodeId}
+		) as priority_count,
+		nvl((
+		select max(fs.use_yn)
+		from issue_type_field_setting fs
+		where fs.issue_type_id = i.issue_type_id
+		and fs.field_code in ('i001', 'ASSIGNEE')
+		), 'N') as assignee_use_yn,
+		nvl((
+		select max(fs.required_yn)
+		from issue_type_field_setting fs
+		where fs.issue_type_id = i.issue_type_id
+		and fs.field_code in ('i001', 'ASSIGNEE')
+		), 'N') as assignee_required_yn,
+		nvl((
+		select max(fs.use_yn)
+		from issue_type_field_setting fs
+		where fs.issue_type_id = i.issue_type_id
+		and fs.field_code in ('i002', 'MILESTONE')
+		), 'N') as milestone_use_yn,
+		nvl((
+		select max(fs.required_yn)
+		from issue_type_field_setting fs
+		where fs.issue_type_id = i.issue_type_id
+		and fs.field_code in ('i002', 'MILESTONE')
+		), 'N') as milestone_required_yn,
+		nvl((
+		select max(fs.use_yn)
+		from issue_type_field_setting fs
+		where fs.issue_type_id = i.issue_type_id
+		and fs.field_code in ('i003', 'PARENT_ISSUE')
+		), 'N') as parent_issue_use_yn,
+		nvl((
+		select max(fs.required_yn)
+		from issue_type_field_setting fs
+		where fs.issue_type_id = i.issue_type_id
+		and fs.field_code in ('i003', 'PARENT_ISSUE')
+		), 'N') as parent_issue_required_yn,
+		nvl((
+		select max(fs.use_yn)
+		from issue_type_field_setting fs
+		where fs.issue_type_id = i.issue_type_id
+		and fs.field_code in ('i004', 'START_DATE')
+		), 'N') as start_date_use_yn,
+		nvl((
+		select max(fs.required_yn)
+		from issue_type_field_setting fs
+		where fs.issue_type_id = i.issue_type_id
+		and fs.field_code in ('i004', 'START_DATE')
+		), 'N') as start_date_required_yn,
+		nvl((
+		select max(fs.use_yn)
+		from issue_type_field_setting fs
+		where fs.issue_type_id = i.issue_type_id
+		and fs.field_code in ('i005', 'DUE_DATE')
+		), 'N') as due_date_use_yn,
+		nvl((
+		select max(fs.required_yn)
+		from issue_type_field_setting fs
+		where fs.issue_type_id = i.issue_type_id
+		and fs.field_code in ('i005', 'DUE_DATE')
+		), 'N') as due_date_required_yn,
+		nvl((
+		select max(fs.use_yn)
+		from issue_type_field_setting fs
+		where fs.issue_type_id = i.issue_type_id
+		and fs.field_code in ('i006', 'ESTIMATED_HOURS')
+		), 'N') as estimated_hours_use_yn,
+		nvl((
+		select max(fs.required_yn)
+		from issue_type_field_setting fs
+		where fs.issue_type_id = i.issue_type_id
+		and fs.field_code in ('i006', 'ESTIMATED_HOURS')
+		), 'N') as estimated_hours_required_yn,
+		(
+		select count(*)
+		from project_member pm
+		join team_member tm
+		on pm.team_member_id = tm.team_member_id
+		where pm.project_id = p.project_id
+		and tm.user_id = #{issue.assigneeId}
+		) + case when p.owner_id = #{issue.assigneeId} then 1 else 0 end
+		as assignee_count,
+		(
 		select count(*)
 		from milestone m
-		join project_version v
-		on m.version_id = v.version_id
-		and m.project_id = v.project_id
-		where m.project_id = #{projectId}
-		and
-		m.version_id = #{versionId}
-		and m.milestone_id = #{milestoneId}
-		and
-		v.status_code != 'k003'
-	</select>
-
-	<select id="countMilestoneForUpdate" resultType="int">
+		where m.project_id = p.project_id
+		and m.version_id = i.version_id
+		and m.milestone_id = #{issue.milestoneId}
+		) as milestone_count,
+		(
 		select count(*)
-		from milestone
-		where project_id = #{projectId}
-		and version_id =
-		#{versionId}
-		and milestone_id = #{milestoneId}
-	</select>
-
-	<select id="countAssigneeForProject" resultType="int">
-		select count(*)
-		from project p
-		where p.project_id = #{projectId}
-		and (
-		p.owner_id =
-		#{assigneeId}
-		or exists (
+		from issue parent_issue
+		where parent_issue.project_id = p.project_id
+		and parent_issue.issue_id = #{issue.parentIssueId}
+		) as parent_issue_count,
+		case
+		when i.issue_status_id = #{issue.issueStatusId} then 'Y'
+		when p.owner_id = #{userId} then 'Y'
+		when exists (
 		select 1
-		from project_member pm
-		join team_member
-		tm
+		from workflow_transition wt
+		join project_member pm
+		on wt.role_id = pm.role_id
+		join team_member tm
 		on pm.team_member_id = tm.team_member_id
-		where pm.project_id =
-		p.project_id
-		and tm.user_id = #{assigneeId}
+		where pm.project_id = i.project_id
+		and tm.user_id = #{userId}
+		and wt.issue_type_id = i.issue_type_id
+		and wt.from_status_id = i.issue_status_id
+		and wt.to_status_id = #{issue.issueStatusId}
+		and (
+		wt.apply_target_code = 'j001'
+		or (wt.apply_target_code = 'j002' and i.author_id = #{userId})
+		or (wt.apply_target_code = 'j003' and i.assignee_id = #{userId})
 		)
-		)
-	</select>
-
-	<select id="countParentIssueForProject" resultType="int">
-		select
-		count(*)
-		from issue
-		where project_id = #{projectId}
-		and issue_id =
-		#{parentIssueId}
+		) then 'Y'
+		else 'N'
+		end as transition_allowed_yn
+		from issue i
+		join project p
+		on i.project_id = p.project_id
+		where i.project_id = #{issue.projectId}
+		and i.issue_id = #{issue.issueId}
 	</select>
 
 	<!-- ============================== 일감 CUD ============================== -->
@@ -2453,45 +2611,6 @@
 		)
 	</select>
 
-	<select id="countAllowedStatusTransition" resultType="int">
-		select
-		count(*)
-		from issue i
-		join project p
-		on i.project_id = p.project_id
-		where
-		i.project_id = #{projectId}
-		and i.issue_id = #{issueId}
-		and (
-		i.issue_status_id = #{toStatusId}
-		or p.owner_id = #{userId}
-		or exists (
-		select 1
-		from workflow_transition wt
-		join project_member pm
-		on wt.role_id
-		= pm.role_id
-		join team_member tm
-		on pm.team_member_id =
-		tm.team_member_id
-		where pm.project_id = i.project_id
-		and tm.user_id =
-		#{userId}
-		and wt.issue_type_id = i.issue_type_id
-		and wt.from_status_id =
-		i.issue_status_id
-		and wt.to_status_id = #{toStatusId}
-		and (
-		wt.apply_target_code = 'j001'
-		or (wt.apply_target_code = 'j002' and
-		i.author_id = #{userId})
-		or (wt.apply_target_code = 'j003' and
-		i.assignee_id = #{userId})
-		)
-		)
-		)
-	</select>
-
 	<update id="updateIssue" parameterType="IssuesVO">
 		update issue
 		set
@@ -2550,11 +2669,40 @@
 		and file_code = 'f008'
 	</select>
 
+	<select id="selectIssueFileList" resultType="FileVO">
+		select
+		file_id,
+		project_id,
+		version_id,
+		file_code,
+		original_name,
+		stored_name,
+		file_path,
+		file_size,
+		upload_user_id,
+		file_version,
+		connect_address
+		from attach_file
+		where connect_address = #{issueId}
+		and file_code = 'f008'
+	</select>
+
 	<delete id="deleteIssueFile">
 		delete from attach_file
 		where connect_address = #{issueId}
 		and file_id = #{fileId}
 		and file_code = 'f008'
+	</delete>
+
+	<delete id="deleteIssueFilesByIssue">
+		delete from attach_file
+		where connect_address = #{issueId}
+		and file_code = 'f008'
+	</delete>
+
+	<delete id="deleteIssueTimelogs">
+		delete from time_log
+		where issue_id = #{issueId}
 	</delete>
 
 	<select id="countChildIssue" resultType="int">

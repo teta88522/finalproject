@@ -90,28 +90,12 @@ public interface IssuesMapper {
 
 	List<IssuesVO> selectIssueListSelectedOptionRows(IssuesVO searchVO);
 
-	List<IssuesVO> selectIssueReportRows(@Param("projectId") String projectId);
+	List<IssuesVO> selectIssueReportSourceRows(@Param("projectId") String projectId);
 
 	IssuesVO selectIssueCreateSaveValidation(@Param("issue") IssuesVO issue, @Param("userId") String userId,
 			@Param("permissionCode") String permissionCode);
 
-	// ==============================
-	// 일감 생성 검증
-	// ==============================
-
-	int countVersionForCreate(@Param("projectId") String projectId, @Param("versionId") String versionId);
-
-	int countPriorityForProject(@Param("projectId") String projectId, @Param("settingCodeId") String settingCodeId);
-
-	int countMilestoneForCreate(@Param("projectId") String projectId, @Param("versionId") String versionId,
-			@Param("milestoneId") String milestoneId);
-
-	int countMilestoneForUpdate(@Param("projectId") String projectId, @Param("versionId") String versionId,
-			@Param("milestoneId") String milestoneId);
-
-	int countAssigneeForProject(@Param("projectId") String projectId, @Param("assigneeId") String assigneeId);
-
-	int countParentIssueForProject(@Param("projectId") String projectId, @Param("parentIssueId") String parentIssueId);
+	IssuesVO selectIssueUpdateSaveValidation(@Param("issue") IssuesVO issue, @Param("userId") String userId);
 
 	// ==============================
 	// 일감 CUD
@@ -125,16 +109,19 @@ public interface IssuesMapper {
 			@Param("userId") String userId, @Param("updatePermissionCode") String updatePermissionCode,
 			@Param("updateOwnPermissionCode") String updateOwnPermissionCode);
 
-	int countAllowedStatusTransition(@Param("projectId") String projectId, @Param("issueId") String issueId,
-			@Param("toStatusId") String toStatusId, @Param("userId") String userId);
-
 	int updateIssue(IssuesVO issue);
 
 	int insertIssueHistoryByProcedure(IssuesVO history);
 
 	FileVO selectIssueFile(@Param("issueId") String issueId, @Param("fileId") String fileId);
 
+	List<FileVO> selectIssueFileList(@Param("issueId") String issueId);
+
 	int deleteIssueFile(@Param("issueId") String issueId, @Param("fileId") String fileId);
+
+	int deleteIssueFilesByIssue(@Param("issueId") String issueId);
+
+	int deleteIssueTimelogs(@Param("issueId") String issueId);
 	
 	int countChildIssue(
 	        @Param("projectId") String projectId,

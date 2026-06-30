@@ -28,9 +28,8 @@
 					<div class="timelog-actions">
 						<a th:href="@{|/project/${selectedProjectId}/issues/${timelog.issueId}#timeLogSection|}"
 							class="btn btn-custon-rounded-four btn-default">목록</a>
-						<a th:if="${canUpdateTimelog}"
-							th:href="@{/project/{projectId}/issues/{issueId}/timelog/{timeLogId}/update(projectId=${selectedProjectId}, issueId=${timelog.issueId}, timeLogId=${timelog.timeLogId})}"
-							class="btn btn-custon-rounded-four btn-primary">수정</a>
+						<button th:if="${canUpdateTimelog}" type="submit" form="timelogDetailForm"
+							class="btn btn-custon-rounded-four btn-primary">저장</button>
 						<form th:if="${canUpdateTimelog}" class="timelog-delete-form"
 							th:action="@{/project/{projectId}/issues/{issueId}/timelog/{timeLogId}/delete(projectId=${selectedProjectId}, issueId=${timelog.issueId}, timeLogId=${timelog.timeLogId})}"
 							method="post" data-confirm-message="소요시간을 삭제하시겠습니까?">
@@ -44,7 +43,11 @@
 				<div th:if="${errorMessage}" class="page-message page-message-error"
 					th:text="${errorMessage}"></div>
 
-				<div class="timelog-card timelog-detail-card">
+				<form id="timelogDetailForm" class="timelog-card timelog-detail-card"
+					th:action="@{/project/{projectId}/issues/{issueId}/timelog/{timeLogId}/update(projectId=${selectedProjectId}, issueId=${timelog.issueId}, timeLogId=${timelog.timeLogId})}"
+					th:object="${timelog}" method="post">
+					<input type="hidden" th:field="*{projectId}">
+
 					<div class="timelog-detail-title">
 						<h4>
 							<a th:href="@{/project/{projectId}/issues/{issueId}(projectId=${selectedProjectId}, issueId=${timelog.issueId})}"
@@ -54,42 +57,71 @@
 						<p th:text="${timelog.issueStatusName != null ? timelog.issueStatusName : '-'}">상태</p>
 					</div>
 
-					<div class="timelog-detail-grid">
-						<div>
-							<span class="timelog-info-label">작업일</span>
-							<strong class="timelog-info-value"
-								th:text="${timelog.workDate != null ? timelog.workDate : '-'}">2026-06-30</strong>
+					<div class="timelog-form-grid timelog-detail-form-grid">
+						<div class="form-group">
+							<label for="issueId">일감</label>
+							<select th:if="${canUpdateTimelog}" id="issueId" th:field="*{issueId}"
+								class="form-control" required>
+								<option th:each="issue : ${issueList}" th:value="${issue.issueId}"
+									th:text="|${issue.displayIssueNo} ${issue.issueTitle}|">일감</option>
+							</select>
+							<input th:unless="${canUpdateTimelog}" type="text"
+								class="form-control timelog-readonly-control"
+								th:value="|${timelog.displayIssueNo} ${timelog.issueTitle}|" readonly>
 						</div>
-						<div>
-							<span class="timelog-info-label">작성자</span>
-							<strong class="timelog-info-value"
-								th:text="${timelog.userName != null ? timelog.userName : timelog.userId}">작성자</strong>
+
+						<div class="form-group">
+							<label for="workDate">작업일</label>
+							<input type="date" id="workDate" th:field="*{workDate}"
+								class="form-control" th:disabled="${!canUpdateTimelog}" required>
 						</div>
-						<div>
-							<span class="timelog-info-label">작업분류</span>
-							<strong class="timelog-info-value"
-								th:text="${timelog.workTypeName != null ? timelog.workTypeName : '-'}">작업분류</strong>
+
+						<div class="form-group">
+							<label for="settingCodeId">작업분류</label>
+							<select th:if="${canUpdateTimelog}" id="settingCodeId"
+								th:field="*{settingCodeId}" class="form-control" required>
+								<option th:each="workType : ${workTypeList}"
+									th:value="${workType.settingCodeId}"
+									th:text="${workType.workTypeName}">작업분류</option>
+							</select>
+							<input th:unless="${canUpdateTimelog}" type="text"
+								class="form-control timelog-readonly-control"
+								th:value="${timelog.workTypeName != null ? timelog.workTypeName : '-'}" readonly>
 						</div>
-						<div>
-							<span class="timelog-info-label">소요시간</span>
-							<strong class="timelog-info-value" th:text="|${timelog.hours} 시간|">1 시간</strong>
+
+						<div class="form-group">
+							<label for="hours">소요시간</label>
+							<input type="number" id="hours" th:field="*{hours}"
+								class="form-control" min="1" max="99999" step="1"
+								th:disabled="${!canUpdateTimelog}" required>
 						</div>
-						<div>
-							<span class="timelog-info-label">담당자</span>
-							<strong class="timelog-info-value"
-								th:text="${timelog.assigneeName != null ? timelog.assigneeName : '미지정'}">담당자</strong>
+
+						<div class="form-group">
+							<label>작성자</label>
+							<input type="text" class="form-control timelog-readonly-control"
+								th:value="${timelog.userName != null ? timelog.userName : timelog.userId}" readonly>
 						</div>
-						<div>
-							<span class="timelog-info-label">등록일시</span>
-							<strong class="timelog-info-value"
-								th:text="${timelog.createdAt != null ? #dates.format(timelog.createdAt, 'yyyy-MM-dd HH:mm') : '-'}">-</strong>
+
+						<div class="form-group">
+							<label>담당자</label>
+							<input type="text" class="form-control timelog-readonly-control"
+								th:value="${timelog.assigneeName != null ? timelog.assigneeName : '미지정'}" readonly>
+						</div>
+
+						<div class="form-group">
+							<label>등록일시</label>
+							<input type="text" class="form-control timelog-readonly-control"
+								th:value="${timelog.createdAt != null ? #dates.format(timelog.createdAt, 'yyyy-MM-dd HH:mm') : '-'}" readonly>
 						</div>
 					</div>
 
-					<div class="timelog-detail-description" th:text="${timelog.description}">
-						작업 내용
+					<div class="timelog-form-full">
+						<label for="description">작업 내용</label>
+						<textarea id="description" th:field="*{description}"
+							class="form-control timelog-description timelog-detail-description-input"
+							maxlength="1000" th:disabled="${!canUpdateTimelog}" required></textarea>
 					</div>
-				</div>
+				</form>
 			</div>
 		</div>
 
@@ -97,7 +129,7 @@
 			aria-live="polite" aria-busy="true">
 			<div class="timelog-loading-box">
 				<span class="timelog-loading-spinner"></span>
-				<strong>삭제중</strong>
+				<strong id="timelogLoadingMessage">처리중</strong>
 			</div>
 		</div>
 
@@ -105,7 +137,24 @@
 			(function() {
 				document.body.classList.add('timelog-body');
 				var deleteForm = document.querySelector('.timelog-delete-form');
+				var detailForm = document.getElementById('timelogDetailForm');
 				var overlay = document.getElementById('timelogLoadingOverlay');
+				var loadingMessage = document.getElementById('timelogLoadingMessage');
+
+				function showLoading(message) {
+					if (loadingMessage) {
+						loadingMessage.textContent = message;
+					}
+					if (overlay) {
+						overlay.hidden = false;
+					}
+				}
+
+				if (detailForm) {
+					detailForm.addEventListener('submit', function() {
+						showLoading('저장중');
+					});
+				}
 
 				if (deleteForm) {
 					deleteForm.addEventListener('submit', function(event) {
@@ -116,9 +165,7 @@
 							return;
 						}
 
-						if (overlay) {
-							overlay.hidden = false;
-						}
+						showLoading('삭제중');
 					});
 				}
 			})();

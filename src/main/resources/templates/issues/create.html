@@ -108,7 +108,8 @@
 											class="required dynamic-required">*</span>
 										</label> <select id="milestoneId" th:field="*{milestoneId}"
 											class="form-control">
-											<option value="">선택</option>
+											<option value=""
+												th:text="${#lists.isEmpty(milestoneList)} ? '불러오는 중' : '선택'">선택</option>
 											<option th:each="milestone : ${milestoneList}"
 												th:value="${milestone.milestoneId}"
 												th:attr="data-version-id=${milestone.versionId}"
@@ -274,6 +275,7 @@
 				var selectedAssigneeId = /*[[${issue.assigneeId}]]*/ '';
 				var selectedParentIssueId = /*[[${issue.parentIssueId}]]*/ '';
 				var settingMap = {};
+				var loadedMilestoneCount = 0;
 
 				function showLoading(message) {
 					var overlay = document.getElementById('issueLoadingOverlay');
@@ -378,6 +380,7 @@
 
 					var versionId = versionSelect.value;
 					var selectedOption = milestoneSelect.options[milestoneSelect.selectedIndex];
+					var visibleMilestoneCount = 0;
 
 					Array.prototype.forEach
 							.call(
@@ -388,9 +391,26 @@
 											return;
 										}
 
-										option.hidden = option
-												.getAttribute('data-version-id') !== versionId;
+										var isVisible = versionId
+												&& option.getAttribute('data-version-id') === versionId;
+										option.hidden = !isVisible;
+
+										if (isVisible) {
+											visibleMilestoneCount += 1;
+										}
 									});
+
+					if (milestoneSelect.options.length > 0) {
+						if (loadedMilestoneCount === 0) {
+							milestoneSelect.options[0].textContent = '사용 가능한 마일스톤 없음';
+						} else if (!versionId) {
+							milestoneSelect.options[0].textContent = '버전을 먼저 선택';
+						} else if (visibleMilestoneCount === 0) {
+							milestoneSelect.options[0].textContent = '선택한 버전에 마일스톤 없음';
+						} else {
+							milestoneSelect.options[0].textContent = '선택';
+						}
+					}
 
 					if (selectedOption && selectedOption.hidden) {
 						milestoneSelect.value = '';
@@ -425,6 +445,8 @@
 					resetSelect(milestoneSelect, '선택');
 					resetSelect(assigneeSelect, '선택');
 					resetSelect(parentIssueSelect, '선택');
+
+					loadedMilestoneCount = (data.milestoneList || []).length;
 
 					(data.milestoneList || []).forEach(function(milestone) {
 						var option = appendOption(milestoneSelect,

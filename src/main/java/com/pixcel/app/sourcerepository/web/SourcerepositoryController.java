@@ -20,7 +20,7 @@ import lombok.RequiredArgsConstructor;
 @Controller
 @RequestMapping("/sourcerepository")
 @RequiredArgsConstructor
-public class sourcerepositoryController {
+public class SourcerepositoryController {
 	private final sourcerepositoryService service;
 
 	// ==============================

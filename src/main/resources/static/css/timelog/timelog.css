@@ -182,6 +182,12 @@ body.timelog-body {
 	font-size: 13px;
 }
 
+.timelog-readonly-control {
+	background-color: #f7f8fb;
+	color: #555555;
+	cursor: default;
+}
+
 .timelog-description {
 	min-height: 220px;
 	resize: vertical;
@@ -197,12 +203,11 @@ body.timelog-body {
 }
 
 .timelog-detail-card {
-	max-width: 980px;
-	margin: 0 auto;
+	margin: 0;
 }
 
 .timelog-detail-title {
-	margin-bottom: 12px;
+	margin-bottom: 10px;
 }
 
 .timelog-detail-title h4 {
@@ -225,6 +230,16 @@ body.timelog-body {
 	border-bottom: 1px solid #eeeeee;
 }
 
+.timelog-detail-form-grid {
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	padding-bottom: 10px;
+	border-bottom: 1px solid #eeeeee;
+}
+
+.timelog-detail-form-grid .form-group {
+	margin-bottom: 0;
+}
+
 .timelog-info-label {
 	display: block;
 	margin-bottom: 4px;
@@ -245,6 +260,10 @@ body.timelog-body {
 	color: #333333;
 	font-size: 13px;
 	line-height: 1.65;
+}
+
+.timelog-detail-description-input {
+	min-height: 150px;
 }
 
 .timelog-loading-overlay {
@@ -294,7 +313,8 @@ body.timelog-body {
 		grid-template-columns: 1fr;
 	}
 
-	.timelog-detail-grid {
+	.timelog-detail-grid,
+	.timelog-detail-form-grid {
 		grid-template-columns: repeat(2, minmax(0, 1fr));
 	}
 }
@@ -307,7 +327,8 @@ body.timelog-body {
 	}
 
 	.timelog-form-grid,
-	.timelog-detail-grid {
+	.timelog-detail-grid,
+	.timelog-detail-form-grid {
 		grid-template-columns: 1fr;
 	}
 }
