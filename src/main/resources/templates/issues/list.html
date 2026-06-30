@@ -28,21 +28,21 @@
 					</div>
 
 					<div class="issues-list-actions">
+						<a
+							th:href="@{/project/{projectId}/issues/timelog/create(projectId=${selectedProjectId})}"
+							class="btn btn-custon-rounded-four btn-default"> 소요시간 등록 </a>
+
+						<a
+							th:href="@{/project/{projectId}/issues/report(projectId=${selectedProjectId})}"
+							class="btn btn-custon-rounded-four btn-default"> 보고서 </a>
+
 						<a th:if="${canCreateMilestone}"
 							th:href="@{/project/{projectId}/milestones/create(projectId=${selectedProjectId})}"
 							class="btn btn-custon-rounded-four btn-default"> 마일스톤 생성 </a>
 
-						<button th:unless="${canCreateMilestone}" type="button"
-							class="btn btn-custon-rounded-four btn-default" disabled
-							title="마일스톤 생성 권한이 없습니다.">마일스톤 생성</button>
-
 						<a th:if="${canCreateIssue}"
 							th:href="@{/project/{projectId}/issues/create(projectId=${selectedProjectId})}"
 							class="btn btn-custon-rounded-four btn-primary"> 일감 생성 </a>
-
-						<button th:unless="${canCreateIssue}" type="button"
-							class="btn btn-custon-rounded-four btn-primary" disabled
-							title="일감 생성 권한이 없습니다.">일감 생성</button>
 					</div>
 				</div>
 
@@ -57,13 +57,19 @@
 						<div class="search-title">검색조건</div>
 					</div>
 
-					<form
+					<form id="issueSearchForm"
 						th:action="@{/project/{projectId}/issues(projectId=${selectedProjectId})}"
 						method="get">
 
 						<input type="hidden" name="page" value="1"> <input
 							type="hidden" name="issueNoSort"
 							th:value="${searchVO.issueNoSort}">
+						<input type="hidden" name="closedYn" th:value="${searchVO.closedYn}">
+						<th:block
+							th:if="${searchVO.milestoneIdList != null and searchVO.milestoneIdList.size() > 0}"
+							th:each="milestoneId : ${searchVO.milestoneIdList}">
+							<input type="hidden" name="milestoneIdList" th:value="${milestoneId}">
+						</th:block>
 
 						<div class="search-form-row issues-search-row">
 
@@ -253,6 +259,7 @@
 											page=1,
 											issueTypeIdList=${searchVO.issueTypeIdList},
 											versionIdList=${searchVO.versionIdList},
+											milestoneIdList=${searchVO.milestoneIdList},
 											keyword=${searchVO.keyword},
 											issueStatusIdList=${searchVO.issueStatusIdList},
 											settingCodeIdList=${searchVO.settingCodeIdList},
@@ -260,6 +267,7 @@
 											progressRangeList=${searchVO.progressRangeList},
 											startDate=${searchVO.startDate},
 											dueDate=${searchVO.dueDate},
+											closedYn=${searchVO.closedYn},
 											issueNoSort=${searchVO.issueNoSort == 'asc' ? 'desc' : 'asc'}
 										)}">
 										식별번호 <span class="issue-sort-mark"
@@ -357,6 +365,7 @@
 								page=${searchVO.page - 1},
 								issueTypeIdList=${searchVO.issueTypeIdList},
 								versionIdList=${searchVO.versionIdList},
+								milestoneIdList=${searchVO.milestoneIdList},
 								keyword=${searchVO.keyword},
 								issueStatusIdList=${searchVO.issueStatusIdList},
 								settingCodeIdList=${searchVO.settingCodeIdList},
@@ -364,6 +373,7 @@
 								progressRangeList=${searchVO.progressRangeList},
 								startDate=${searchVO.startDate},
 								dueDate=${searchVO.dueDate},
+								closedYn=${searchVO.closedYn},
 								issueNoSort=${searchVO.issueNoSort}
 							)}">
 							이전 </a>
@@ -378,6 +388,7 @@
 									page=${pageNo},
 									issueTypeIdList=${searchVO.issueTypeIdList},
 									versionIdList=${searchVO.versionIdList},
+									milestoneIdList=${searchVO.milestoneIdList},
 									keyword=${searchVO.keyword},
 									issueStatusIdList=${searchVO.issueStatusIdList},
 									settingCodeIdList=${searchVO.settingCodeIdList},
@@ -385,6 +396,7 @@
 									progressRangeList=${searchVO.progressRangeList},
 									startDate=${searchVO.startDate},
 									dueDate=${searchVO.dueDate},
+									closedYn=${searchVO.closedYn},
 									issueNoSort=${searchVO.issueNoSort}
 								)}"
 								th:text="${pageNo}">1</a>
@@ -398,6 +410,7 @@
 								page=${searchVO.page + 1},
 								issueTypeIdList=${searchVO.issueTypeIdList},
 								versionIdList=${searchVO.versionIdList},
+								milestoneIdList=${searchVO.milestoneIdList},
 								keyword=${searchVO.keyword},
 								issueStatusIdList=${searchVO.issueStatusIdList},
 								settingCodeIdList=${searchVO.settingCodeIdList},
@@ -405,6 +418,7 @@
 								progressRangeList=${searchVO.progressRangeList},
 								startDate=${searchVO.startDate},
 								dueDate=${searchVO.dueDate},
+								closedYn=${searchVO.closedYn},
 								issueNoSort=${searchVO.issueNoSort}
 							)}">
 							다음 </a>
@@ -420,6 +434,9 @@
 				document.body.classList.add('issues-list-body');
 
 				var filterOptionUrl = /*[[@{/project/{projectId}/issues/filter-options(projectId=${selectedProjectId})}]]*/ '';
+				var searchForm = document.getElementById('issueSearchForm');
+				var startDateInput = document.getElementById('startDate');
+				var dueDateInput = document.getElementById('dueDate');
 				var optionConfig = {
 					issueType : {
 						listName : 'issueTypeList',
@@ -453,6 +470,44 @@
 					}
 				};
 				var queryParams = new URLSearchParams(window.location.search);
+				var filterOptionsLoaded = false;
+				var filterOptionsLoading = false;
+
+				function removeRemoteFilterHiddenInputs(inputName) {
+					if (!searchForm) {
+						return;
+					}
+
+					searchForm.querySelectorAll('input[type="hidden"][data-remote-filter-name="' + inputName + '"]')
+							.forEach(function(input) {
+								input.remove();
+							});
+				}
+
+				function preserveSelectedRemoteFilterValues() {
+					if (!searchForm) {
+						return;
+					}
+
+					Object.keys(optionConfig).forEach(function(groupName) {
+						var config = optionConfig[groupName];
+						var selectedValues = queryParams.getAll(config.inputName);
+
+						if (selectedValues.length === 0) {
+							return;
+						}
+
+						selectedValues.forEach(function(value) {
+							var input = document.createElement('input');
+
+							input.type = 'hidden';
+							input.name = config.inputName;
+							input.value = value;
+							input.setAttribute('data-remote-filter-name', config.inputName);
+							searchForm.appendChild(input);
+						});
+					});
+				}
 
 				function createOption(inputName, value, label, checked) {
 					var item = document.createElement('label');
@@ -487,6 +542,7 @@
 						return;
 					}
 
+					removeRemoteFilterHiddenInputs(config.inputName);
 					panel.innerHTML = '';
 
 					if (!rows || rows.length === 0) {
@@ -515,15 +571,22 @@
 						return;
 					}
 
+					if (filterOptionsLoaded || filterOptionsLoading) {
+						return;
+					}
+
 					var optionDropdowns = document.querySelectorAll('.filter-dropdown[data-filter-group]');
 					var needsRemoteOptions = Array.prototype.some.call(optionDropdowns, function(dropdown) {
 						var panel = dropdown.querySelector('.filter-dropdown-panel');
-						return panel && panel.children.length === 0;
+						return panel && !panel.querySelector('input[type="checkbox"], input[type="radio"]');
 					});
 
 					if (!needsRemoteOptions) {
+						filterOptionsLoaded = true;
 						return;
 					}
+
+					filterOptionsLoading = true;
 
 					optionDropdowns.forEach(function(dropdown) {
 						var panel = dropdown.querySelector('.filter-dropdown-panel');
@@ -554,6 +617,7 @@
 							renderOptionGroup(dropdown, optionConfig[groupName],
 									data[optionConfig[groupName].listName]);
 						});
+						filterOptionsLoaded = true;
 					}).catch(function() {
 						document.querySelectorAll('.filter-dropdown[data-filter-group]').forEach(function(dropdown) {
 							var panel = dropdown.querySelector('.filter-dropdown-panel');
@@ -565,6 +629,8 @@
 							panel.innerHTML = '';
 							renderEmpty(panel, '필터 항목을 불러오지 못했습니다.');
 						});
+					}).finally(function() {
+						filterOptionsLoading = false;
 					});
 				}
 				
@@ -624,9 +690,33 @@
 
 					dropdown.addEventListener('change', function() {
 						dropdown.dataset.userChanged = 'true';
+						var groupName = dropdown.getAttribute('data-filter-group');
+						var config = optionConfig[groupName];
+
+						if (config) {
+							removeRemoteFilterHiddenInputs(config.inputName);
+						}
+
+						if (groupName === 'status' && searchForm) {
+							var closedYnInput = searchForm.querySelector('input[name="closedYn"]');
+							if (closedYnInput) {
+								closedYnInput.value = '';
+							}
+						}
+
 						updateFilterSummary(dropdown);
 					});
 				});
+
+				document.querySelectorAll('.filter-dropdown[data-filter-group]').forEach(function(dropdown) {
+					dropdown.addEventListener('toggle', function() {
+						if (dropdown.open) {
+							loadFilterOptions();
+						}
+					});
+				});
+
+				preserveSelectedRemoteFilterValues();
 
 				document.addEventListener('click', function(event) {
 					document.querySelectorAll('.filter-dropdown[open]').forEach(function(dropdown) {
@@ -636,7 +726,17 @@
 					});
 				});
 
-				loadFilterOptions();
+				if (searchForm && startDateInput && dueDateInput) {
+					searchForm.addEventListener('submit', function(event) {
+						if (startDateInput.value && dueDateInput.value
+								&& dueDateInput.value < startDateInput.value) {
+							event.preventDefault();
+							alert('완료기한은 시작일보다 빠를 수 없습니다.');
+							dueDateInput.focus();
+						}
+					});
+				}
+
 			})();
 		</script>
 

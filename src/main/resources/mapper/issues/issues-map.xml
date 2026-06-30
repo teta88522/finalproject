@@ -96,42 +96,33 @@
 		p.project_name,
 		p.owner_id,
 		case
-		when
-		p.owner_id = #{userId} then 'Y'
-		when exists (
-		select 1
-		from
-		project_member pm
-		join team_member tm
-		on pm.team_member_id =
-		tm.team_member_id
-		join role_permission rp
-		on pm.role_id = rp.role_id
-		join permission perm
-		on rp.permission_id = perm.permission_id
-		where
-		pm.project_id = p.project_id
-		and tm.user_id = #{userId}
-		and
-		perm.permission_code = #{permissionCode}
-		) then 'Y'
+		when p.owner_id = #{userId} then 'Y'
+		when nvl(user_access.permission_count, 0) > 0 then 'Y'
 		else 'N'
-		end as
-		permission_yn
+		end as permission_yn
 		from project p
+		left join (
+		select
+		pm.project_id,
+		count(*) as member_count,
+		max(case when perm.permission_code = #{permissionCode} then 1 else 0 end)
+		as permission_count
+		from project_member pm
+		join team_member tm
+		on pm.team_member_id = tm.team_member_id
+		left join role_permission rp
+		on pm.role_id = rp.role_id
+		left join permission perm
+		on rp.permission_id = perm.permission_id
+		where pm.project_id = #{projectId}
+		and tm.user_id = #{userId}
+		group by pm.project_id
+		) user_access
+		on p.project_id = user_access.project_id
 		where p.project_id = #{projectId}
 		and (
 		p.owner_id = #{userId}
-		or exists (
-		select 1
-		from project_member pm
-		join
-		team_member tm
-		on pm.team_member_id = tm.team_member_id
-		where
-		pm.project_id = p.project_id
-		and tm.user_id = #{userId}
-		)
+		or nvl(user_access.member_count, 0) > 0
 		)
 	</select>
 
@@ -141,67 +132,40 @@
 		p.project_name,
 		p.owner_id,
 		case
-		when p.owner_id = #{userId}
-		then 'Y'
-		when exists (
-		select 1
-		from project_member pm
-		join team_member tm
-		on pm.team_member_id = tm.team_member_id
-		join role_permission rp
-		on
-		pm.role_id = rp.role_id
-		join permission perm
-		on rp.permission_id =
-		perm.permission_id
-		where pm.project_id = p.project_id
-		and tm.user_id =
-		#{userId}
-		and perm.permission_code = #{issueCreatePermissionCode}
-		) then
-		'Y'
+		when p.owner_id = #{userId} then 'Y'
+		when nvl(user_access.issue_create_count, 0) > 0 then 'Y'
 		else 'N'
 		end as issue_create_permission_yn,
 		case
-		when p.owner_id =
-		#{userId} then 'Y'
-		when exists (
-		select 1
-		from project_member pm
-		join
-		team_member tm
-		on pm.team_member_id = tm.team_member_id
-		join
-		role_permission rp
-		on pm.role_id = rp.role_id
-		join permission perm
-		on
-		rp.permission_id = perm.permission_id
-		where pm.project_id =
-		p.project_id
-		and tm.user_id = #{userId}
-		and perm.permission_code =
-		#{milestoneCreatePermissionCode}
-		) then 'Y'
+		when p.owner_id = #{userId} then 'Y'
+		when nvl(user_access.milestone_create_count, 0) > 0 then 'Y'
 		else 'N'
-		end as
-		milestone_create_permission_yn
+		end as milestone_create_permission_yn
 		from project p
-		where p.project_id =
-		#{projectId}
+		left join (
+		select
+		pm.project_id,
+		count(*) as member_count,
+		max(case when perm.permission_code = #{issueCreatePermissionCode} then 1 else 0 end)
+		as issue_create_count,
+		max(case when perm.permission_code = #{milestoneCreatePermissionCode} then 1 else 0 end)
+		as milestone_create_count
+		from project_member pm
+		join team_member tm
+		on pm.team_member_id = tm.team_member_id
+		left join role_permission rp
+		on pm.role_id = rp.role_id
+		left join permission perm
+		on rp.permission_id = perm.permission_id
+		where pm.project_id = #{projectId}
+		and tm.user_id = #{userId}
+		group by pm.project_id
+		) user_access
+		on p.project_id = user_access.project_id
+		where p.project_id = #{projectId}
 		and (
 		p.owner_id = #{userId}
-		or exists (
-		select 1
-		from
-		project_member pm
-		join team_member tm
-		on pm.team_member_id =
-		tm.team_member_id
-		where pm.project_id = p.project_id
-		and tm.user_id =
-		#{userId}
-		)
+		or nvl(user_access.member_count, 0) > 0
 		)
 	</select>
 
@@ -253,6 +217,28 @@
 			</foreach>
 		</if>
 
+		<if test="milestoneIdList != null and milestoneIdList.size() > 0">
+			<choose>
+				<when test='milestoneIdList.contains("__NONE__")'>
+					and (
+					i.milestone_id is null
+					<foreach collection="milestoneIdList" item="milestoneId">
+						<if test='milestoneId != "__NONE__"'>
+							or i.milestone_id = #{milestoneId}
+						</if>
+					</foreach>
+					)
+				</when>
+				<otherwise>
+					and i.milestone_id in
+					<foreach collection="milestoneIdList" item="milestoneId"
+						open="(" separator="," close=")">
+						#{milestoneId}
+					</foreach>
+				</otherwise>
+			</choose>
+		</if>
+
 		<if test="keyword != null and keyword != ''">
 			and lower(i.title) like '%' || lower(#{keyword}) || '%'
 		</if>
@@ -266,6 +252,15 @@
 			</foreach>
 		</if>
 
+		<if test="closedYn != null and closedYn != ''">
+			and exists (
+			select 1
+			from issue_status filter_status
+			where filter_status.issue_status_id = i.issue_status_id
+			and nvl(filter_status.closed_yn, 'N') = #{closedYn}
+			)
+		</if>
+
 		<if
 			test="settingCodeIdList != null and settingCodeIdList.size() > 0">
 			and i.setting_code_id in
@@ -276,11 +271,25 @@
 		</if>
 
 		<if test="assigneeIdList != null and assigneeIdList.size() > 0">
-			and i.assignee_id in
-			<foreach collection="assigneeIdList" item="assigneeId"
-				open="(" separator="," close=")">
-				#{assigneeId}
-			</foreach>
+			<choose>
+				<when test='assigneeIdList.contains("__NONE__")'>
+					and (
+					i.assignee_id is null
+					<foreach collection="assigneeIdList" item="assigneeId">
+						<if test='assigneeId != "__NONE__"'>
+							or i.assignee_id = #{assigneeId}
+						</if>
+					</foreach>
+					)
+				</when>
+				<otherwise>
+					and i.assignee_id in
+					<foreach collection="assigneeIdList" item="assigneeId"
+						open="(" separator="," close=")">
+						#{assigneeId}
+					</foreach>
+				</otherwise>
+			</choose>
 		</if>
 
 		<if
@@ -330,53 +339,23 @@
 
 	<!-- ============================== 일감 전체조회 ============================== -->
 
-	<select id="selectIssueListPageBlockRows"
-		parameterType="IssuesVO" resultType="IssuesVO">
-		select
-		page_rows.row_no,
-		page_rows.issue_id
-		from (
-		select
-		rownum as row_no,
-		issue_page.issue_id
-		from (
-		select
-		<choose>
-			<when test='issueNoSort != null and issueNoSort.equals("asc")'>
-				/*+ index_asc(i UK_ISSUE_PROJECT_NO) */
-			</when>
-			<otherwise>
-				/*+ index_desc(i UK_ISSUE_PROJECT_NO) */
-			</otherwise>
-		</choose>
-		i.issue_id,
-		i.issue_no
-		from issue i
-
-		<include refid="issueListWhere" />
-
-		<choose>
-			<when test='issueNoSort != null and issueNoSort.equals("asc")'>
-				order by i.issue_no asc, i.issue_id asc
-			</when>
-			<otherwise>
-				order by i.issue_no desc, i.issue_id desc
-			</otherwise>
-		</choose>
-		) issue_page
-		where rownum <![CDATA[<=]]>
-		#{pageBlockProbeEndRow}
-		) page_rows
-		where page_rows.row_no <![CDATA[>=]]>
-		#{pageBlockStartRow}
-		order by page_rows.row_no asc
-	</select>
-
 	<select id="selectIssueList" parameterType="IssuesVO"
 		resultType="IssuesVO">
-		select
+		select /*+
+		no_merge(paged)
+		leading(paged)
+		use_nl(it)
+		use_nl(ist)
+		use_nl(v)
+		use_nl(sc)
+		use_nl(assignee)
+		index(it PK_ISSUE_TYPE)
+		index(ist PK_ISSUE_STATUS)
+		index(v IDX_PV_PROJECT_ID)
+		index(sc PK_SETTING_CODE)
+		index(assignee PK_USERS)
+		*/
 		paged.row_no,
-		null as total_count,
 		paged.issue_id,
 		paged.issue_no,
 		'#' || lpad(to_char(paged.issue_no), 4, '0') as display_issue_no,
@@ -386,8 +365,7 @@
 		v.version_name,
 		paged.title,
 		paged.issue_status_id,
-		ist.status_name as
-		issue_status_name,
+		ist.status_name as issue_status_name,
 		ist.closed_yn,
 		paged.setting_code_id,
 		sc.setting_name,
@@ -442,91 +420,19 @@
 		#{endRow}
 		) paged
 		left join issue_type it
-		on paged.issue_type_id =
-		it.issue_type_id
+		on paged.issue_type_id = it.issue_type_id
 		left join issue_status ist
-		on paged.issue_status_id =
-		ist.issue_status_id
+		on paged.issue_status_id = ist.issue_status_id
 		left join setting_code sc
-		on paged.setting_code_id =
-		sc.setting_code_id
+		on paged.setting_code_id = sc.setting_code_id
 		left join users assignee
-		on paged.assignee_id =
-		assignee.user_id
+		on paged.assignee_id = assignee.user_id
 		left join project_version v
-		on paged.version_id =
-		v.version_id
+		on paged.version_id = v.version_id
 		and paged.project_id = v.project_id
 		where paged.row_no <![CDATA[>=]]>
 		#{startRow}
 		order by paged.row_no asc
-	</select>
-
-	<select id="selectIssueListByPageIds" parameterType="IssuesVO"
-		resultType="IssuesVO">
-		select
-		null as total_count,
-		i.issue_id,
-		i.issue_no,
-		'#' ||
-		lpad(to_char(i.issue_no), 4, '0') as display_issue_no,
-		i.issue_type_id,
-		it.issue_type_name,
-		i.version_id,
-		v.version_name,
-		i.title,
-		i.issue_status_id,
-		ist.status_name as issue_status_name,
-		ist.closed_yn,
-		i.setting_code_id,
-		sc.setting_name,
-		i.assignee_id,
-		assignee.user_name as assignee_name,
-		i.progress_rate,
-		i.start_date,
-		i.due_date,
-		i.estimated_hours,
-		i.project_id
-		from issue i
-		left join
-		issue_type it
-		on i.issue_type_id = it.issue_type_id
-		left join
-		issue_status ist
-		on i.issue_status_id = ist.issue_status_id
-		left join
-		setting_code sc
-		on i.setting_code_id = sc.setting_code_id
-		left join
-		users assignee
-		on i.assignee_id = assignee.user_id
-		left join
-		project_version v
-		on i.version_id = v.version_id
-		and i.project_id =
-		v.project_id
-		where i.project_id = #{projectId}
-		<choose>
-			<when
-				test="pageIssueIdList != null and pageIssueIdList.size() > 0">
-				and i.issue_id in
-				<foreach collection="pageIssueIdList" item="issueId"
-					open="(" separator="," close=")">
-					#{issueId}
-				</foreach>
-			</when>
-			<otherwise>
-				and 1 = 0
-			</otherwise>
-		</choose>
-		<if test="pageIssueIdList != null and pageIssueIdList.size() > 0">
-			order by case
-			<foreach collection="pageIssueIdList" item="issueId"
-				index="idx">
-				when i.issue_id = #{issueId} then ${idx}
-			</foreach>
-			end
-		</if>
 	</select>
 
 	<select id="selectIssueStatusList" resultType="IssuesVO">
@@ -598,6 +504,24 @@
 		and tm.user_id = #{userId}
 		and
 		perm.permission_code = #{updatePermissionCode}
+		) then 'Y'
+		when i.assignee_id = #{userId}
+		and exists
+		(
+		select 1
+		from project_member pm
+		join team_member tm
+		on pm.team_member_id
+		= tm.team_member_id
+		join role_permission rp
+		on pm.role_id = rp.role_id
+		join permission perm
+		on rp.permission_id = perm.permission_id
+		where
+		pm.project_id = p.project_id
+		and tm.user_id = #{userId}
+		and
+		perm.permission_code = #{updateOwnPermissionCode}
 		) then 'Y'
 		else 'N'
 		end as
@@ -697,7 +621,7 @@
 		)
 	</select>
 
-	<!-- 상세 화면 부가 데이터: 유형별 항목, 상태 후보, 선택 목록, 작업내역을 한 번에 조회한다. -->
+	<!-- 상세 화면 부가 데이터: 유형별 항목, 상태 후보, 선택 목록을 한 번에 조회한다. -->
 	<select id="selectIssueDetailRows" resultType="IssuesVO">
 		select *
 		from (
@@ -741,8 +665,6 @@
 		changed_by,
 		null as changed_by_name,
 		null as change_type_code,
-		null as
-		change_type_name,
 		null as reason,
 		null as before_value,
 		null as
@@ -804,7 +726,6 @@
 		null as
 		changed_by_name,
 		null as change_type_code,
-		null as change_type_name,
 		null as reason,
 		null as before_value,
 		null as after_value,
@@ -882,7 +803,6 @@
 		null as changed_by_name,
 		null as
 		change_type_code,
-		null as change_type_name,
 		null as reason,
 		null as
 		before_value,
@@ -930,8 +850,6 @@
 		changed_by,
 		null as changed_by_name,
 		null as change_type_code,
-		null as
-		change_type_name,
 		null as reason,
 		null as before_value,
 		null as
@@ -1002,7 +920,6 @@
 		null as changed_by_name,
 		null as
 		change_type_code,
-		null as change_type_name,
 		null as reason,
 		null as
 		before_value,
@@ -1060,7 +977,6 @@
 		null as changed_by_name,
 		null as
 		change_type_code,
-		null as change_type_name,
 		null as reason,
 		null as
 		before_value,
@@ -1073,55 +989,39 @@
 		where parent.project_id = #{projectId}
 		and parent.issue_id
 		!= #{issueId}
-
-		union all
-
-		select
-		'HISTORY' as option_group,
-		null as
-		issue_type_id,
-		null as field_setting_id,
-		null as field_code,
-		null as
-		use_yn,
-		null as required_yn,
-		null as issue_status_id,
-		null as
-		issue_status_name,
-		null as closed_yn,
-		null as milestone_id,
-		null as
-		milestone_title,
-		null as version_id,
-		null as setting_code_id,
-		null as
-		setting_name,
-		null as assignee_id,
-		null as assignee_name,
-		null as
-		parent_issue_id,
-		null as parent_issue_title,
-		ih.history_id,
-		ih.issue_id,
-		ih.changed_by,
-		u.user_name as changed_by_name,
-		ih.change_type_code,
-		ih.change_type_name,
-		ih.reason,
-		ih.before_value,
-		ih.after_value,
-		ih.changed_at,
-		7 as option_sort,
-		row_number() over (order by
-		ih.changed_at desc, ih.history_id desc) as row_sort
-		from issue_history
-		ih
-		left join users u
-		on ih.changed_by = u.user_id
-		where ih.issue_id =
-		#{issueId}
 		)
 		order by option_sort, row_sort
+	</select>
+
+	<select id="selectIssueHistoryRows" resultType="IssuesVO">
+		select
+		h.history_id,
+		h.history_group_id,
+		h.issue_id,
+		h.changed_by,
+		u.user_name as changed_by_name,
+		h.change_type_code,
+		h.field_code,
+		h.field_name,
+		h.reason,
+		h.before_value,
+		h.after_value,
+		h.changed_at
+		from issue_history h
+		left join users u
+		on h.changed_by = u.user_id
+		where h.issue_id = #{issueId}
+		order by
+		max(h.changed_at) over (partition by h.history_group_id) desc,
+		h.history_group_id desc,
+		h.changed_at asc,
+		h.history_id asc
+	</select>
+
+	<select id="countIssueHistory" resultType="int">
+		select count(*)
+		from issue_history
+		where issue_id = #{issueId}
 	</select>
 
 	<select id="selectAvailableStatusList" resultType="IssuesVO">
@@ -1773,6 +1673,98 @@
 		order by option_sort
 	</select>
 
+	<select id="selectIssueReportRows" resultType="IssuesVO">
+		select
+		agg.option_group,
+		case when agg.option_group = 'ISSUE_TYPE' then agg.group_id end as issue_type_id,
+		case when agg.option_group = 'ISSUE_TYPE' then nvl(it.issue_type_name, '미지정') end as issue_type_name,
+		case when agg.option_group = 'VERSION' then agg.group_id end as version_id,
+		case when agg.option_group = 'VERSION' then nvl(v.version_name, '미지정') end as version_name,
+		case when agg.option_group = 'PRIORITY' then agg.group_id end as setting_code_id,
+		case when agg.option_group = 'PRIORITY' then nvl(sc.setting_name, '미지정') end as setting_name,
+		case when agg.option_group = 'ASSIGNEE' then agg.group_id end as assignee_id,
+		case when agg.option_group = 'ASSIGNEE' then nvl(assignee.user_name, '미지정') end as assignee_name,
+		case when agg.option_group = 'MILESTONE' then agg.group_id end as milestone_id,
+		case when agg.option_group = 'MILESTONE' then nvl(m.title, '미지정') end as milestone_title,
+		agg.open_count,
+		agg.closed_count,
+		agg.total_count,
+		agg.option_sort
+		from (
+		select
+		case
+		when grouping(issue_type_id) = 0 then 'ISSUE_TYPE'
+		when grouping(version_id) = 0 then 'VERSION'
+		when grouping(setting_code_id) = 0 then 'PRIORITY'
+		when grouping(assignee_id) = 0 then 'ASSIGNEE'
+		when grouping(milestone_id) = 0 then 'MILESTONE'
+		end as option_group,
+		case
+		when grouping(issue_type_id) = 0 then issue_type_id
+		when grouping(version_id) = 0 then version_id
+		when grouping(setting_code_id) = 0 then setting_code_id
+		when grouping(assignee_id) = 0 then assignee_id
+		when grouping(milestone_id) = 0 then milestone_id
+		end as group_id,
+		sum(open_flag) as open_count,
+		sum(closed_flag) as closed_count,
+		count(*) as total_count,
+		case
+		when grouping(issue_type_id) = 0 then 1
+		when grouping(version_id) = 0 then 2
+		when grouping(setting_code_id) = 0 then 3
+		when grouping(assignee_id) = 0 then 4
+		when grouping(milestone_id) = 0 then 5
+		end as option_sort
+		from (
+		select /*+
+		leading(i)
+		use_nl(ist)
+		index(i UK_ISSUE_PROJECT_NO)
+		index(ist PK_ISSUE_STATUS)
+		*/
+		i.issue_type_id,
+		i.version_id,
+		i.setting_code_id,
+		nvl(i.assignee_id, '__NONE__') as assignee_id,
+		nvl(i.milestone_id, '__NONE__') as milestone_id,
+		case when nvl(ist.closed_yn, 'N') = 'Y' then 0 else 1 end as open_flag,
+		case when nvl(ist.closed_yn, 'N') = 'Y' then 1 else 0 end as closed_flag
+		from issue i
+		left join issue_status ist
+		on i.issue_status_id = ist.issue_status_id
+		where i.project_id = #{projectId}
+		) base
+		group by grouping sets (
+		(issue_type_id),
+		(version_id),
+		(setting_code_id),
+		(assignee_id),
+		(milestone_id)
+		)
+		) agg
+		left join issue_type it
+		on agg.option_group = 'ISSUE_TYPE'
+		and agg.group_id = it.issue_type_id
+		left join project_version v
+		on agg.option_group = 'VERSION'
+		and v.project_id = #{projectId}
+		and agg.group_id = v.version_id
+		left join setting_code sc
+		on agg.option_group = 'PRIORITY'
+		and agg.group_id = sc.setting_code_id
+		left join users assignee
+		on agg.option_group = 'ASSIGNEE'
+		and agg.group_id != '__NONE__'
+		and agg.group_id = assignee.user_id
+		left join milestone m
+		on agg.option_group = 'MILESTONE'
+		and m.project_id = #{projectId}
+		and agg.group_id != '__NONE__'
+		and agg.group_id = m.milestone_id
+		order by agg.option_sort, issue_type_name, version_name, setting_name, assignee_name, milestone_title
+	</select>
+
 	<select id="selectIssueCreateBaseOptionRows"
 		resultType="IssuesVO">
 		select *
@@ -2370,7 +2362,9 @@
 		display_issue_no,
 		i.project_id,
 		i.milestone_id,
+		m.title as milestone_title,
 		i.version_id,
+		v.version_name,
 		i.issue_type_id,
 		i.issue_status_id,
 		ist.status_name as
@@ -2378,6 +2372,7 @@
 		i.setting_code_id,
 		sc.setting_name,
 		i.assignee_id,
+		assignee.user_name as assignee_name,
 		i.author_id,
 		i.title,
 		i.description,
@@ -2387,7 +2382,12 @@
 		i.progress_rate,
 		i.created_at,
 		i.updated_at,
-		i.parent_issue_id
+		i.parent_issue_id,
+		case
+		when parent_issue.issue_id is null then null
+		else '#' || lpad(to_char(parent_issue.issue_no), 4, '0') || ' ' ||
+		parent_issue.title
+		end as parent_issue_title
 		from issue i
 		left join issue_status ist
 		on
@@ -2395,10 +2395,62 @@
 		left join setting_code sc
 		on
 		i.setting_code_id = sc.setting_code_id
+		left join users assignee
+		on i.assignee_id = assignee.user_id
+		left join project_version v
+		on i.version_id = v.version_id
+		and i.project_id = v.project_id
+		left join milestone m
+		on i.milestone_id = m.milestone_id
+		and i.project_id = m.project_id
+		left join issue parent_issue
+		on i.parent_issue_id = parent_issue.issue_id
+		and i.project_id = parent_issue.project_id
 		where i.project_id =
 		#{projectId}
 		and i.issue_id = #{issueId}
-		for update
+		for update of i.issue_id
+	</select>
+
+	<select id="countIssueUpdatePermission" resultType="int">
+		select count(*)
+		from issue i
+		join project p
+		on i.project_id = p.project_id
+		where i.project_id = #{projectId}
+		and i.issue_id = #{issueId}
+		and (
+		p.owner_id = #{userId}
+		or exists (
+		select 1
+		from project_member pm
+		join team_member tm
+		on pm.team_member_id = tm.team_member_id
+		join role_permission rp
+		on pm.role_id = rp.role_id
+		join permission perm
+		on rp.permission_id = perm.permission_id
+		where pm.project_id = p.project_id
+		and tm.user_id = #{userId}
+		and perm.permission_code = #{updatePermissionCode}
+		)
+		or (
+		i.assignee_id = #{userId}
+		and exists (
+		select 1
+		from project_member pm
+		join team_member tm
+		on pm.team_member_id = tm.team_member_id
+		join role_permission rp
+		on pm.role_id = rp.role_id
+		join permission perm
+		on rp.permission_id = perm.permission_id
+		where pm.project_id = p.project_id
+		and tm.user_id = #{userId}
+		and perm.permission_code = #{updateOwnPermissionCode}
+		)
+		)
+		)
 	</select>
 
 	<select id="countAllowedStatusTransition" resultType="int">
@@ -2469,12 +2521,41 @@
 		#{issueId, mode=IN, jdbcType=VARCHAR},
 		#{changedBy, mode=IN, jdbcType=VARCHAR},
 		#{changeTypeCode, mode=IN, jdbcType=VARCHAR},
-		#{changeTypeName, mode=IN, jdbcType=VARCHAR},
+		NULL,
 		#{reason, mode=IN, jdbcType=VARCHAR},
 		#{beforeValue, mode=IN, jdbcType=VARCHAR},
-		#{afterValue, mode=IN, jdbcType=VARCHAR}
+		#{afterValue, mode=IN, jdbcType=VARCHAR},
+		#{fieldCode, mode=IN, jdbcType=VARCHAR},
+		#{fieldName, mode=IN, jdbcType=VARCHAR},
+		#{historyGroupId, mode=IN, jdbcType=VARCHAR}
 		) }
 	</insert>
+
+	<select id="selectIssueFile" resultType="FileVO">
+		select
+		file_id,
+		project_id,
+		version_id,
+		file_code,
+		original_name,
+		stored_name,
+		file_path,
+		file_size,
+		upload_user_id,
+		file_version,
+		connect_address
+		from attach_file
+		where connect_address = #{issueId}
+		and file_id = #{fileId}
+		and file_code = 'f008'
+	</select>
+
+	<delete id="deleteIssueFile">
+		delete from attach_file
+		where connect_address = #{issueId}
+		and file_id = #{fileId}
+		and file_code = 'f008'
+	</delete>
 
 	<select id="countChildIssue" resultType="int">
 		select count(*)
@@ -2483,11 +2564,6 @@
 		where project_id = #{projectId}
 		and parent_issue_id = #{issueId}
 	</select>
-
-	<delete id="deleteIssueHistory">
-		delete from issue_history
-		where issue_id = #{issueId}
-	</delete>
 
 	<delete id="deleteIssue">
 		delete from issue

@@ -1,0 +1,152 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{common/layouts/default_layout}">
+
+<head>
+<meta charset="UTF-8">
+<title>소요시간 등록</title>
+
+<link rel="stylesheet" th:href="@{/css/common-ui.css}">
+<link rel="stylesheet" th:href="@{/css/timelog/timelog.css}">
+</head>
+
+<body>
+	<div layout:fragment="Content">
+		<div class="timelog-page">
+			<div class="container-fluid">
+				<div class="timelog-header">
+					<div>
+						<h3>소요시간 등록</h3>
+						<p>
+							<span th:text="${projectInfo.projectName}">프로젝트명</span> 프로젝트의
+							일감에 작업 시간을 기록합니다.
+						</p>
+					</div>
+
+					<div class="timelog-actions">
+						<a th:href="@{/project/{projectId}/issues(projectId=${selectedProjectId})}"
+							class="btn btn-custon-rounded-four btn-default">전체조회</a>
+					</div>
+				</div>
+
+				<div th:if="${message}" class="page-message page-message-success"
+					th:text="${message}"></div>
+				<div th:if="${errorMessage}" class="page-message page-message-error"
+					th:text="${errorMessage}"></div>
+				<div th:if="${#lists.isEmpty(workTypeList)}" class="page-message page-message-info">
+					작업분류 코드값이 없습니다. 코드값 설정에서 작업분류를 먼저 등록해주세요.
+				</div>
+				<div th:if="${#lists.isEmpty(issueList)}" class="page-message page-message-info">
+					선택 가능한 일감이 없습니다. 검색어를 바꾸거나 일감 편집 권한을 확인해주세요.
+				</div>
+
+				<div class="timelog-form-layout">
+					<div class="timelog-card">
+						<div class="timelog-card-title">
+							<h4>일감 선택</h4>
+							<span>최근 일감 최대 50건</span>
+						</div>
+
+						<form class="timelog-issue-search"
+							th:action="@{/project/{projectId}/issues/timelog/create(projectId=${selectedProjectId})}"
+							method="get">
+							<input type="text" name="issueSearchKeyword" class="form-control"
+								th:value="${issueSearchKeyword}" placeholder="식별번호 또는 제목 검색">
+							<button type="submit" class="btn btn-custon-rounded-four btn-default">검색</button>
+						</form>
+
+						<div class="timelog-issue-list">
+							<label class="timelog-issue-option" th:each="issue : ${issueList}">
+								<input type="radio" form="timelogCreateForm" name="issueId"
+									th:value="${issue.issueId}"
+									th:checked="${timelog.issueId == issue.issueId}" required>
+								<span>
+									<span class="timelog-issue-title">
+										<strong th:text="${issue.displayIssueNo}">#0001</strong>
+										<span th:text="${issue.issueTitle}">일감 제목</span>
+									</span>
+									<span class="timelog-issue-meta">
+										<span th:text="${issue.issueStatusName != null ? issue.issueStatusName : '-'}">상태</span>
+										<span th:text="${issue.assigneeName != null ? issue.assigneeName : '미지정'}">담당자</span>
+									</span>
+								</span>
+							</label>
+						</div>
+					</div>
+
+					<form id="timelogCreateForm" class="timelog-card"
+						th:action="@{/project/{projectId}/issues/timelog/create(projectId=${selectedProjectId})}"
+						th:object="${timelog}" method="post">
+						<input type="hidden" th:field="*{projectId}">
+
+						<div class="timelog-card-title">
+							<h4>작업 정보</h4>
+						</div>
+
+						<div class="timelog-form-grid">
+							<div class="form-group">
+								<label for="workDate">작업일 <span class="required">*</span></label>
+								<input type="date" id="workDate" th:field="*{workDate}"
+									class="form-control" required>
+							</div>
+
+							<div class="form-group">
+								<label for="settingCodeId">작업분류 <span class="required">*</span></label>
+								<select id="settingCodeId" th:field="*{settingCodeId}"
+									class="form-control" required>
+									<option value="">선택</option>
+									<option th:each="workType : ${workTypeList}"
+										th:value="${workType.settingCodeId}"
+										th:text="${workType.workTypeName}">작업분류</option>
+								</select>
+							</div>
+
+							<div class="form-group">
+								<label for="hours">소요시간 <span class="required">*</span></label>
+								<input type="number" id="hours" th:field="*{hours}"
+									class="form-control" min="1" max="99999" step="1" required>
+							</div>
+						</div>
+
+						<div class="timelog-form-full">
+							<label for="description">작업 내용 <span class="required">*</span></label>
+							<textarea id="description" th:field="*{description}"
+								class="form-control timelog-description" maxlength="1000" required></textarea>
+						</div>
+
+						<div class="timelog-form-actions">
+							<a th:href="@{/project/{projectId}/issues(projectId=${selectedProjectId})}"
+								class="btn btn-custon-rounded-four btn-default">취소</a>
+							<button type="submit" class="btn btn-custon-rounded-four btn-primary"
+								th:disabled="${#lists.isEmpty(workTypeList) or #lists.isEmpty(issueList)}">등록</button>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+
+		<div id="timelogLoadingOverlay" class="timelog-loading-overlay" hidden
+			aria-live="polite" aria-busy="true">
+			<div class="timelog-loading-box">
+				<span class="timelog-loading-spinner"></span>
+				<strong>등록중</strong>
+			</div>
+		</div>
+
+		<script>
+			(function() {
+				document.body.classList.add('timelog-body');
+				var form = document.getElementById('timelogCreateForm');
+				var overlay = document.getElementById('timelogLoadingOverlay');
+
+				if (form && overlay) {
+					form.addEventListener('submit', function() {
+						overlay.hidden = false;
+					});
+				}
+			})();
+		</script>
+	</div>
+</body>
+</html>

@@ -1,0 +1,377 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.pixcel.app.timelog.mapper.TimelogMapper">
+
+	<sql id="projectAccessCte">
+		project_access as (
+		select
+		p.project_id,
+		p.project_name,
+		p.owner_id
+		from project p
+		left join (
+		select
+		pm.project_id,
+		count(*) as member_count
+		from project_member pm
+		join team_member tm
+		on pm.team_member_id = tm.team_member_id
+		where pm.project_id = #{projectId}
+		and tm.user_id = #{userId}
+		group by pm.project_id
+		) user_access
+		on p.project_id = user_access.project_id
+		where p.project_id = #{projectId}
+		and (
+		p.owner_id = #{userId}
+		or nvl(user_access.member_count, 0) > 0
+		)
+		)
+	</sql>
+
+	<sql id="userPermissionCte">
+		user_permission as (
+		select
+		nvl(max(case when perm.permission_code = #{updatePermissionCode} then 1 else 0 end), 0)
+		as all_update_count,
+		nvl(max(case when perm.permission_code = #{updateOwnPermissionCode} then 1 else 0 end), 0)
+		as own_update_count
+		from project_member pm
+		join team_member tm
+		on pm.team_member_id = tm.team_member_id
+		left join role_permission rp
+		on pm.role_id = rp.role_id
+		left join permission perm
+		on rp.permission_id = perm.permission_id
+		where pm.project_id = #{projectId}
+		and tm.user_id = #{userId}
+		)
+	</sql>
+
+	<select id="selectTimelogFormRows" resultType="TimelogVO">
+		with
+		<include refid="projectAccessCte" />,
+		<include refid="userPermissionCte" />,
+		issue_page as (
+		select *
+		from (
+		select issue_rows.*, rownum as row_sort
+		from (
+		select
+		/*+ index(i UK_ISSUE_PROJECT_NO) */
+		i.issue_id,
+		i.issue_no,
+		'#' || lpad(i.issue_no, 4, '0') as display_issue_no,
+		i.title as issue_title,
+		i.issue_status_id,
+		ist.status_name as issue_status_name,
+		ist.closed_yn,
+		i.assignee_id,
+		assignee.user_name as assignee_name
+		from issue i
+		join project_access p
+		on i.project_id = p.project_id
+		cross join user_permission up
+		left join issue_status ist
+		on i.issue_status_id = ist.issue_status_id
+		left join users assignee
+		on i.assignee_id = assignee.user_id
+		where (
+		p.owner_id = #{userId}
+		or up.all_update_count > 0
+		or (
+		i.assignee_id = #{userId}
+		and up.own_update_count > 0
+		)
+		)
+		<if test="issueSearchKeyword != null and issueSearchKeyword != ''">
+			and (
+			lower(i.title) like '%' || lower(#{issueSearchKeyword}) || '%'
+			or to_char(i.issue_no) like '%' || #{issueSearchKeyword} || '%'
+			)
+		</if>
+		order by i.issue_no desc
+		) issue_rows
+		where rownum <![CDATA[<=]]> 50
+		)
+		),
+		<if test="selectedIssueId != null and selectedIssueId != ''">
+			selected_issue as (
+			select
+			/*+ index(i PK_ISSUE) */
+			i.issue_id,
+			i.issue_no,
+			'#' || lpad(i.issue_no, 4, '0') as display_issue_no,
+			i.title as issue_title,
+			i.issue_status_id,
+			ist.status_name as issue_status_name,
+			ist.closed_yn,
+			i.assignee_id,
+			assignee.user_name as assignee_name,
+			0 as row_sort
+			from issue i
+			join project_access p
+			on i.project_id = p.project_id
+			cross join user_permission up
+			left join issue_status ist
+			on i.issue_status_id = ist.issue_status_id
+			left join users assignee
+			on i.assignee_id = assignee.user_id
+			where i.issue_id = #{selectedIssueId}
+			and (
+			p.owner_id = #{userId}
+			or up.all_update_count > 0
+			or (
+			i.assignee_id = #{userId}
+			and up.own_update_count > 0
+			)
+			)
+			and not exists (
+			select 1
+			from issue_page
+			where issue_page.issue_id = i.issue_id
+			)
+			),
+		</if>
+		issue_limited as (
+		select * from issue_page
+		<if test="selectedIssueId != null and selectedIssueId != ''">
+			union all
+			select * from selected_issue
+		</if>
+		)
+		select
+		'PROJECT' as option_group,
+		0 as option_sort,
+		1 as row_sort,
+		p.project_id,
+		p.project_name,
+		p.owner_id,
+		null as setting_code_id,
+		null as work_type_name,
+		null as issue_id,
+		null as issue_no,
+		null as display_issue_no,
+		null as issue_title,
+		null as issue_status_name,
+		null as closed_yn,
+		null as assignee_id,
+		null as assignee_name
+		from project_access p
+
+		union all
+
+		select
+		'WORK_TYPE' as option_group,
+		1 as option_sort,
+		row_number() over (order by sc.default_yn desc, sc.setting_code_id asc) as row_sort,
+		p.project_id,
+		p.project_name,
+		p.owner_id,
+		sc.setting_code_id,
+		sc.setting_name as work_type_name,
+		null as issue_id,
+		null as issue_no,
+		null as display_issue_no,
+		null as issue_title,
+		null as issue_status_name,
+		null as closed_yn,
+		null as assignee_id,
+		null as assignee_name
+		from project_access p
+		join setting_code sc
+		on sc.user_id = p.owner_id
+		where sc.setting_group_name = 'g001'
+
+		union all
+
+		select
+		'ISSUE' as option_group,
+		2 as option_sort,
+		issue_limited.row_sort,
+		p.project_id,
+		p.project_name,
+		p.owner_id,
+		null as setting_code_id,
+		null as work_type_name,
+		issue_limited.issue_id,
+		issue_limited.issue_no,
+		issue_limited.display_issue_no,
+		issue_limited.issue_title,
+		issue_limited.issue_status_name,
+		issue_limited.closed_yn,
+		issue_limited.assignee_id,
+		issue_limited.assignee_name
+		from issue_limited
+		cross join project_access p
+		order by option_sort, row_sort
+	</select>
+
+	<select id="selectTimelogSaveValidation" resultType="TimelogVO">
+		with
+		<include refid="projectAccessCte" />,
+		<include refid="userPermissionCte" />
+		select
+		p.project_id,
+		p.project_name,
+		p.owner_id,
+		(
+		select count(*)
+		from issue i
+		cross join user_permission up
+		where i.project_id = p.project_id
+		and i.issue_id = #{issueId}
+		and (
+		p.owner_id = #{userId}
+		or up.all_update_count > 0
+		or (
+		i.assignee_id = #{userId}
+		and up.own_update_count > 0
+		)
+		)
+		) as issue_access_count,
+		(
+		select count(*)
+		from setting_code sc
+		where sc.user_id = p.owner_id
+		and sc.setting_group_name = 'g001'
+		and sc.setting_code_id = #{settingCodeId}
+		) as work_type_count
+		from project_access p
+	</select>
+
+	<insert id="insertTimelog" parameterType="TimelogVO">
+		insert into time_log (
+		time_log_id,
+		issue_id,
+		user_id,
+		setting_code_id,
+		work_date,
+		hours,
+		description,
+		created_at
+		) values (
+		#{timeLogId},
+		#{issueId},
+		#{userId},
+		#{settingCodeId},
+		#{workDate},
+		#{hours},
+		#{description},
+		sysdate
+		)
+	</insert>
+
+	<select id="selectTimelogDetail" resultType="TimelogVO">
+		with
+		<include refid="projectAccessCte" />,
+		<include refid="userPermissionCte" />
+		select
+		tl.time_log_id,
+		tl.issue_id,
+		tl.user_id,
+		tl.setting_code_id,
+		tl.work_date,
+		tl.hours,
+		tl.description,
+		case
+		when length(tl.description) > 80 then substr(tl.description, 1, 80) || '...'
+		else tl.description
+		end as description_preview,
+		tl.created_at,
+		p.project_id,
+		p.project_name,
+		p.owner_id,
+		i.issue_no,
+		'#' || lpad(i.issue_no, 4, '0') as display_issue_no,
+		i.title as issue_title,
+		ist.status_name as issue_status_name,
+		ist.closed_yn,
+		i.assignee_id,
+		assignee.user_name as assignee_name,
+		writer.user_name,
+		sc.setting_name as work_type_name,
+		case
+		when p.owner_id = #{userId} then 'Y'
+		when up.all_update_count > 0 then 'Y'
+		when i.assignee_id = #{userId} and up.own_update_count > 0 then 'Y'
+		else 'N'
+		end as update_permission_yn
+		from time_log tl
+		join issue i
+		on tl.issue_id = i.issue_id
+		join project_access p
+		on i.project_id = p.project_id
+		cross join user_permission up
+		left join issue_status ist
+		on i.issue_status_id = ist.issue_status_id
+		left join users assignee
+		on i.assignee_id = assignee.user_id
+		left join users writer
+		on tl.user_id = writer.user_id
+		left join setting_code sc
+		on tl.setting_code_id = sc.setting_code_id
+		where tl.time_log_id = #{timeLogId}
+		and tl.issue_id = #{issueId}
+	</select>
+
+	<update id="updateTimelog" parameterType="TimelogVO">
+		update time_log
+		set
+		issue_id = #{issueId},
+		setting_code_id = #{settingCodeId},
+		work_date = #{workDate},
+		hours = #{hours},
+		description = #{description}
+		where time_log_id = #{timeLogId}
+	</update>
+
+	<delete id="deleteTimelog">
+		delete from time_log
+		where time_log_id = #{timeLogId}
+	</delete>
+
+	<select id="selectIssueTimelogSummaryRows" resultType="TimelogVO">
+		select *
+		from (
+		select
+		summary_rows.*,
+		row_number() over (order by summary_rows.work_date desc, summary_rows.created_at desc,
+		summary_rows.time_log_id desc) as row_no
+		from (
+		select
+		tl.time_log_id,
+		tl.issue_id,
+		tl.user_id,
+		writer.user_name,
+		tl.setting_code_id,
+		sc.setting_name as work_type_name,
+		tl.work_date,
+		tl.hours,
+		tl.description,
+		case
+		when length(tl.description) > 70 then substr(tl.description, 1, 70) || '...'
+		else tl.description
+		end as description_preview,
+		tl.created_at,
+		sum(tl.hours) over () as total_hours,
+		count(*) over () as total_count
+		from time_log tl
+		left join users writer
+		on tl.user_id = writer.user_id
+		left join setting_code sc
+		on tl.setting_code_id = sc.setting_code_id
+		where tl.issue_id = #{issueId}
+		and exists (
+		select 1
+		from issue i
+		where i.issue_id = tl.issue_id
+		and i.project_id = #{projectId}
+		)
+		) summary_rows
+		)
+		where row_no <![CDATA[<=]]> 5
+		order by row_no
+	</select>
+</mapper>

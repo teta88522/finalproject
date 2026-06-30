@@ -29,6 +29,8 @@ public interface IssuesService {
 
 	Map<String, Object> getIssueListFilterData(String projectId, String userId);
 
+	Map<String, Object> getIssueReportPageData(String projectId, String userId);
+
 	// 일감 상태 필터 목록을 조회한다.
 	List<IssuesVO> getIssueStatusList(String projectId, String userId);
 
@@ -46,6 +48,12 @@ public interface IssuesService {
 	void validateIssueAccess(String projectId, String issueId, String userId);
 
 	void updateIssue(IssuesVO issue, String userId);
+
+	void recordIssueFileAddHistory(String issueId, String userId, int uploadCount);
+
+	void deleteIssueFile(String projectId, String issueId, String fileId, String userId);
+
+	int deleteIssueFiles(String projectId, String issueId, List<String> fileIds, String userId);
 
 	// 일감 전체조회에서 선택한 일감을 삭제한다.
 	void deleteIssue(String projectId, String issueId, String userId);

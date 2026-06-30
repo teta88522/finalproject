@@ -251,10 +251,19 @@
 			</div>
 		</div>
 
+		<div id="issueLoadingOverlay" class="issues-loading-overlay" hidden
+			aria-live="polite" aria-busy="true">
+			<div class="issues-loading-box">
+				<span class="issues-loading-spinner"></span>
+				<strong id="issueLoadingMessage">생성중</strong>
+			</div>
+		</div>
+
 		<script th:inline="javascript">
 			(function() {
 				document.body.classList.add('issues-create-body');
 
+				var createForm = document.getElementById('documentForm');
 				var issueTypeSelect = document.getElementById('issueTypeId');
 				var versionSelect = document.getElementById('versionId');
 				var milestoneSelect = document.getElementById('milestoneId');
@@ -265,6 +274,24 @@
 				var selectedAssigneeId = /*[[${issue.assigneeId}]]*/ '';
 				var selectedParentIssueId = /*[[${issue.parentIssueId}]]*/ '';
 				var settingMap = {};
+
+				function showLoading(message) {
+					var overlay = document.getElementById('issueLoadingOverlay');
+					var messageBox = document.getElementById('issueLoadingMessage');
+
+					if (messageBox) {
+						messageBox.textContent = message;
+					}
+					if (overlay) {
+						overlay.hidden = false;
+					}
+				}
+
+				if (createForm) {
+					createForm.addEventListener('submit', function() {
+						showLoading('생성중');
+					});
+				}
 
 				selectedMilestoneId = selectedMilestoneId || '';
 				selectedAssigneeId = selectedAssigneeId || '';

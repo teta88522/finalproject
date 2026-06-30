@@ -1,0 +1,128 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{common/layouts/default_layout}">
+
+<head>
+<meta charset="UTF-8">
+<title>소요시간 상세조회</title>
+
+<link rel="stylesheet" th:href="@{/css/common-ui.css}">
+<link rel="stylesheet" th:href="@{/css/timelog/timelog.css}">
+</head>
+
+<body>
+	<div layout:fragment="Content">
+		<div class="timelog-page">
+			<div class="container-fluid">
+				<div class="timelog-header">
+					<div>
+						<h3>소요시간 상세조회</h3>
+						<p>
+							<span th:text="${projectInfo.projectName}">프로젝트명</span>
+							<span> / </span>
+							<span th:text="${timelog.displayIssueNo}">#0001</span>
+						</p>
+					</div>
+
+					<div class="timelog-actions">
+						<a th:href="@{|/project/${selectedProjectId}/issues/${timelog.issueId}#timeLogSection|}"
+							class="btn btn-custon-rounded-four btn-default">목록</a>
+						<a th:if="${canUpdateTimelog}"
+							th:href="@{/project/{projectId}/issues/{issueId}/timelog/{timeLogId}/update(projectId=${selectedProjectId}, issueId=${timelog.issueId}, timeLogId=${timelog.timeLogId})}"
+							class="btn btn-custon-rounded-four btn-primary">수정</a>
+						<form th:if="${canUpdateTimelog}" class="timelog-delete-form"
+							th:action="@{/project/{projectId}/issues/{issueId}/timelog/{timeLogId}/delete(projectId=${selectedProjectId}, issueId=${timelog.issueId}, timeLogId=${timelog.timeLogId})}"
+							method="post" data-confirm-message="소요시간을 삭제하시겠습니까?">
+							<button type="submit" class="btn btn-custon-rounded-four btn-danger">삭제</button>
+						</form>
+					</div>
+				</div>
+
+				<div th:if="${message}" class="page-message page-message-success"
+					th:text="${message}"></div>
+				<div th:if="${errorMessage}" class="page-message page-message-error"
+					th:text="${errorMessage}"></div>
+
+				<div class="timelog-card timelog-detail-card">
+					<div class="timelog-detail-title">
+						<h4>
+							<a th:href="@{/project/{projectId}/issues/{issueId}(projectId=${selectedProjectId}, issueId=${timelog.issueId})}"
+								th:text="${timelog.displayIssueNo}">#0001</a>
+							<span th:text="${timelog.issueTitle}">일감 제목</span>
+						</h4>
+						<p th:text="${timelog.issueStatusName != null ? timelog.issueStatusName : '-'}">상태</p>
+					</div>
+
+					<div class="timelog-detail-grid">
+						<div>
+							<span class="timelog-info-label">작업일</span>
+							<strong class="timelog-info-value"
+								th:text="${timelog.workDate != null ? timelog.workDate : '-'}">2026-06-30</strong>
+						</div>
+						<div>
+							<span class="timelog-info-label">작성자</span>
+							<strong class="timelog-info-value"
+								th:text="${timelog.userName != null ? timelog.userName : timelog.userId}">작성자</strong>
+						</div>
+						<div>
+							<span class="timelog-info-label">작업분류</span>
+							<strong class="timelog-info-value"
+								th:text="${timelog.workTypeName != null ? timelog.workTypeName : '-'}">작업분류</strong>
+						</div>
+						<div>
+							<span class="timelog-info-label">소요시간</span>
+							<strong class="timelog-info-value" th:text="|${timelog.hours} 시간|">1 시간</strong>
+						</div>
+						<div>
+							<span class="timelog-info-label">담당자</span>
+							<strong class="timelog-info-value"
+								th:text="${timelog.assigneeName != null ? timelog.assigneeName : '미지정'}">담당자</strong>
+						</div>
+						<div>
+							<span class="timelog-info-label">등록일시</span>
+							<strong class="timelog-info-value"
+								th:text="${timelog.createdAt != null ? #dates.format(timelog.createdAt, 'yyyy-MM-dd HH:mm') : '-'}">-</strong>
+						</div>
+					</div>
+
+					<div class="timelog-detail-description" th:text="${timelog.description}">
+						작업 내용
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div id="timelogLoadingOverlay" class="timelog-loading-overlay" hidden
+			aria-live="polite" aria-busy="true">
+			<div class="timelog-loading-box">
+				<span class="timelog-loading-spinner"></span>
+				<strong>삭제중</strong>
+			</div>
+		</div>
+
+		<script>
+			(function() {
+				document.body.classList.add('timelog-body');
+				var deleteForm = document.querySelector('.timelog-delete-form');
+				var overlay = document.getElementById('timelogLoadingOverlay');
+
+				if (deleteForm) {
+					deleteForm.addEventListener('submit', function(event) {
+						var message = deleteForm.getAttribute('data-confirm-message');
+
+						if (message && !confirm(message)) {
+							event.preventDefault();
+							return;
+						}
+
+						if (overlay) {
+							overlay.hidden = false;
+						}
+					});
+				}
+			})();
+		</script>
+	</div>
+</body>
+</html>
