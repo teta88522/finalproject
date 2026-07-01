@@ -101,6 +101,27 @@ public class RepositoryController {
 		model.addAttribute("repository", detail);
 		model.addAttribute("userId", userId);
 		model.addAttribute("projectId", projectId);
+
+		// ✅ 파일 다운로드 이력 (최근순)
+		model.addAttribute("downloadHistoryList", repositoryService.getDownloadHistory(fileId));
+
+		// ✅ txt 파일은 미리보기용으로 본문 내용을 함께 전달 (500KB 이하만)
+		if (detail != null && detail.getOriginalName() != null
+				&& detail.getOriginalName().toLowerCase().endsWith(".txt")) {
+			try {
+				File txtFile = new File(detail.getFilePath());
+				if (txtFile.exists() && txtFile.length() <= 500 * 1024) {
+					String content = new String(java.nio.file.Files.readAllBytes(txtFile.toPath()),
+							java.nio.charset.StandardCharsets.UTF_8);
+					model.addAttribute("fileContentText", content);
+				} else {
+					model.addAttribute("fileContentText", "(파일이 너무 커서 미리보기를 표시할 수 없습니다.)");
+				}
+			} catch (Exception e) {
+				model.addAttribute("fileContentText", "(텍스트 내용을 불러올 수 없습니다.)");
+			}
+		}
+
 		return "repository/repositoryDetail";
 	}
 
@@ -190,8 +211,8 @@ public class RepositoryController {
 	}
 
 	@GetMapping("/download")
-	public ResponseEntity<org.springframework.core.io.Resource> downloadFile(@RequestParam String fileId)
-			throws Exception {
+	public ResponseEntity<org.springframework.core.io.Resource> downloadFile(@RequestParam String fileId,
+			@CookieValue(value = "userId", required = false) String userId) throws Exception {
 		RepositoryVO fileInfo = repositoryService.getRepositoryDetail(fileId);
 		if (fileInfo == null)
 			return ResponseEntity.notFound().build();
@@ -200,6 +221,9 @@ public class RepositoryController {
 		if (!file.exists()) {
 			return ResponseEntity.notFound().build();
 		}
+
+		// ✅ 다운로드 이력 등록 (로그인한 사용자인 경우)
+		repositoryService.logFileDownload(fileId, userId);
 
 		org.springframework.core.io.Resource resource = new org.springframework.core.io.FileSystemResource(file);
 		String encodedName = java.net.URLEncoder.encode(fileInfo.getOriginalName(), "UTF-8").replace("+", "%20");
@@ -225,6 +249,14 @@ public class RepositoryController {
 
 		// 이미지를 브라우저가 직접 읽을 수 있게 리소스로 반환
 		return new org.springframework.core.io.FileSystemResource(file);
+	}
+
+	// ✅ 다운로드 이력만 새로 조회 (다운로드 직후 화면 즉시 갱신용 AJAX)
+	@GetMapping("/history")
+	@ResponseBody
+	public List<com.pixcel.app.file.service.FileDownloadHistoryVO> getDownloadHistoryJson(
+			@RequestParam String fileId) {
+		return repositoryService.getDownloadHistory(fileId);
 	}
 
 }

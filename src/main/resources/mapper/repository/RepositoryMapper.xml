@@ -221,4 +221,47 @@
 		WHERE file_id = #{fileId}
 	</delete>
 
+	<!-- 8. 자료실 파일 다운로드 이력 등록 -->
+	<insert id="insertDownloadHistory" parameterType="com.pixcel.app.file.service.FileDownloadHistoryVO">
+		<selectKey keyProperty="downloadHistoryId" resultType="string" order="BEFORE">
+			SELECT
+			'FILE_DOWNLOAD_HISTORY_'
+			|| TO_CHAR(SYSDATE, 'YYMM')
+			|| '_'
+			|| LPAD(
+				NVL(MAX(TO_NUMBER(SUBSTR(download_history_id, -4))), 0) + 1,
+				4,
+				'0'
+			)
+			FROM file_download_history
+			WHERE download_history_id LIKE 'FILE_DOWNLOAD_HISTORY_' || TO_CHAR(SYSDATE, 'YYMM') || '_%'
+		</selectKey>
+
+		INSERT INTO file_download_history (
+			download_history_id,
+			file_id,
+			download_user_id,
+			download_date
+		) VALUES (
+			#{downloadHistoryId},
+			#{fileId},
+			#{downloadUserId},
+			SYSDATE
+		)
+	</insert>
+
+	<!-- 9. 자료실 파일별 다운로드 이력 조회 -->
+	<select id="selectDownloadHistoryByFileId" resultType="com.pixcel.app.file.service.FileDownloadHistoryVO">
+		SELECT
+			h.download_history_id AS downloadHistoryId,
+			h.file_id AS fileId,
+			h.download_user_id AS downloadUserId,
+			u.user_name AS userName,
+			TO_CHAR(h.download_date, 'YYYY-MM-DD HH24:MI') AS downloadDate
+		FROM file_download_history h
+		LEFT JOIN users u ON h.download_user_id = u.user_id
+		WHERE h.file_id = #{fileId}
+		ORDER BY h.download_date DESC
+	</select>
+
 </mapper>

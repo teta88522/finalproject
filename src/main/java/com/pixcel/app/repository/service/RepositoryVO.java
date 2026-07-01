@@ -19,8 +19,7 @@ public class RepositoryVO {
 	private String fileId;
 	private String projectId;
 	private String versionId;
-	@Builder.Default
-	private String fileCode = "f009";
+	private String fileCode;
 	private String originalName;
 	private String storedName;
 	private String filePath;

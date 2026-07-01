@@ -6,6 +6,7 @@ import java.util.Map;
 import org.apache.ibatis.annotations.Param;
 
 import com.pixcel.app.repository.service.RepositoryVO;
+import com.pixcel.app.file.service.FileDownloadHistoryVO;
 
 public interface RepositoryMapper {
 	// 1. 자료실 전체 조회
@@ -37,4 +38,10 @@ public interface RepositoryMapper {
 	public String selectRecentVersionIdByProjectId(@Param("projectId") String projectId);
 	
 	public List<Map<String, Object>> selectSourceCodeList();
+
+	// 8. 파일 다운로드 이력 등록
+	public int insertDownloadHistory(FileDownloadHistoryVO historyVO);
+
+	// 9. 파일별 다운로드 이력 조회 (자료실 상세 화면용)
+	public List<FileDownloadHistoryVO> selectDownloadHistoryByFileId(@Param("fileId") String fileId);
 }
