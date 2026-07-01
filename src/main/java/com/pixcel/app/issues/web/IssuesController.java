@@ -89,6 +89,31 @@ public class IssuesController {
 		return issuesService.getIssueCreateExtraOptionData(projectId, loginUserId);
 	}
 
+	@GetMapping("/project/{projectId}/issues/type-assign")
+	public String issueTypeAssignForm(@CookieValue(value = "userId", required = false) String userId,
+			@PathVariable("projectId") String projectId, Model model) {
+		String loginUserId = getLoginUserId(userId);
+		addTypeAssignModel(model, loginUserId, projectId);
+		return "issues/type-assign";
+	}
+
+	@PostMapping("/project/{projectId}/issues/type-assign")
+	public String issueTypeAssign(@CookieValue(value = "userId", required = false) String userId,
+			@PathVariable("projectId") String projectId,
+			@RequestParam(value = "issueTypeIdList", required = false) List<String> issueTypeIdList,
+			RedirectAttributes redirectAttributes) {
+		String loginUserId = getLoginUserId(userId);
+
+		try {
+			issuesService.assignIssueTypesToProject(projectId, issueTypeIdList, loginUserId);
+			redirectAttributes.addFlashAttribute("message", "프로젝트 일감유형 배정을 저장했습니다.");
+			return "redirect:/project/" + projectId + "/issues/create";
+		} catch (IllegalArgumentException e) {
+			redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+			return "redirect:/project/" + projectId + "/issues/type-assign";
+		}
+	}
+
 	@PostMapping("/project/{projectId}/issues/create")
 	public String issueCreate(@CookieValue(value = "userId", required = false) String userId,
 			@PathVariable("projectId") String projectId, IssuesVO issue,
@@ -392,6 +417,7 @@ public class IssuesController {
 		model.addAttribute("assigneeList", pageData.get("assigneeList"));
 		model.addAttribute("milestoneList", pageData.get("milestoneList"));
 		model.addAttribute("parentIssueList", pageData.get("parentIssueList"));
+		model.addAttribute("childIssueList", pageData.get("childIssueList"));
 		model.addAttribute("historyList", pageData.get("historyList"));
 		model.addAttribute("historyGroupList", pageData.get("historyGroupList"));
 		model.addAttribute("historyCount", pageData.get("historyCount"));
@@ -423,6 +449,7 @@ public class IssuesController {
 		model.addAttribute("priorityList", priorityList);
 		model.addAttribute("assigneeList", pageData.get("assigneeList"));
 		model.addAttribute("parentIssueList", pageData.get("parentIssueList"));
+		model.addAttribute("canAssignIssueType", pageData.get("canAssignIssueType"));
 		if (!model.containsAttribute("issue")) {
 			IssuesVO issue = new IssuesVO();
 			issue.setProjectId(projectId);
@@ -447,6 +474,15 @@ public class IssuesController {
 			IssuesVO issue = (IssuesVO) issueObject;
 			issue.setProjectId(projectId);
 		}
+	}
+
+	private void addTypeAssignModel(Model model, String userId, String projectId) {
+		Map<String, Object> pageData = issuesService.getIssueTypeAssignPageData(projectId, userId);
+
+		model.addAttribute("projectInfo", pageData.get("projectInfo"));
+		model.addAttribute("projectId", projectId);
+		model.addAttribute("selectedProjectId", projectId);
+		model.addAttribute("assignableIssueTypeList", pageData.get("assignableIssueTypeList"));
 	}
 
 	private String getSelectedOptionText(List<String> selectedValueList, List<IssuesVO> optionList,

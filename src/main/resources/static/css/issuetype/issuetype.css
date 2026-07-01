@@ -134,6 +134,30 @@
 	vertical-align: middle;
 }
 
+.issuetype-action-cell {
+	padding-right: 18px !important;
+}
+
+.issuetype-action-cell .table-actions {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	gap: 6px;
+	flex-wrap: nowrap;
+}
+
+.issuetype-action-cell .inline-form {
+	display: inline-flex;
+	margin: 0;
+}
+
+.issuetype-action-cell .btn {
+	min-width: 44px;
+	padding: 4px 9px;
+	font-size: 12px;
+	white-space: nowrap;
+}
+
 .status-badge {
 	display: inline-block;
 	padding: 4px 10px;
@@ -169,6 +193,26 @@
 .project-card {
 	position: sticky;
 	top: 12px;
+}
+
+.issuetype-locked-card {
+	background: #f8f9fb;
+}
+
+.issuetype-locked-card input,
+.issuetype-locked-card select,
+.issuetype-locked-card textarea {
+	cursor: not-allowed;
+}
+
+.issuetype-locked-card input[type="checkbox"] {
+	pointer-events: none;
+	opacity: 0.45;
+}
+
+.issuetype-locked-card .field-setting-table tbody tr,
+.issuetype-locked-card .project-select-table tbody tr {
+	color: #777777;
 }
 
 /* ==============================

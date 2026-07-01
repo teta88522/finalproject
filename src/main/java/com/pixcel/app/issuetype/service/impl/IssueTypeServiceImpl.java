@@ -187,6 +187,34 @@ public class IssueTypeServiceImpl implements IssueTypeService {
 	// 기존 일감유형을 복사하여 신규 일감유형으로 등록한다.
 	@Override
 	@Transactional
+	public void updateIssueType(IssueTypeVO issueType, String userId) {
+		validateUserId(userId);
+
+		if (issueType == null || trimToNull(issueType.getIssueTypeId()) == null) {
+			throw new IllegalArgumentException("수정할 일감유형 정보가 없습니다.");
+		}
+
+		issueType.setUserId(userId);
+		issueType.setRoadmapYn(null);
+		issueType.setIssueTypeId(trimToNull(issueType.getIssueTypeId()));
+
+		validateIssueType(issueType);
+		validateFieldSetting(issueType);
+		validateIssueTypeUpdateCondition(issueType);
+
+		int updateCount = issueTypeMapper.updateIssueType(issueType);
+		if (updateCount == 0) {
+			throw new IllegalArgumentException("수정할 일감유형이 없습니다.");
+		}
+
+		issueTypeMapper.deleteIssueTypeProjectByIssueTypeId(issueType.getIssueTypeId(), userId);
+		issueTypeMapper.deleteIssueTypeFieldSettingByIssueTypeId(issueType.getIssueTypeId(), userId);
+		insertIssueTypeProjectListBulk(issueType);
+		insertIssueTypeFieldSettingListBulk(issueType);
+	}
+
+	@Override
+	@Transactional
 	public void copyIssueType(IssueTypeVO issueType, String userId) {
 		validateUserId(userId);
 
@@ -251,6 +279,35 @@ public class IssueTypeServiceImpl implements IssueTypeService {
 	}
 
 	// 일감유형 적용 프로젝트를 등록한다.
+	private void validateIssueTypeUpdateCondition(IssueTypeVO issueType) {
+		IssueTypeVO validation = issueTypeMapper.selectIssueTypeUpdateValidation(issueType);
+
+		if (validation == null || validation.getInitialStatusCount() == null
+				|| validation.getInitialStatusCount() == 0) {
+			throw new IllegalArgumentException("선택한 초기 상태를 사용할 수 없습니다.");
+		}
+
+		if (validation.getUsedCount() != null && validation.getUsedCount() > 0) {
+			throw new IllegalArgumentException("이미 일감 또는 업무흐름에서 사용 중인 일감유형은 수정할 수 없습니다.");
+		}
+
+		if (validation.getDuplicateCount() != null && validation.getDuplicateCount() > 0) {
+			throw new IllegalArgumentException("이미 사용 중인 일감유형명입니다.");
+		}
+
+		List<String> projectIdList = issueType.getProjectIdList();
+
+		if (projectIdList != null && !projectIdList.isEmpty()) {
+			Set<String> uniqueProjectIdSet = new HashSet<>(projectIdList);
+			int selectedProjectCount = validation.getSelectedProjectCount() == null ? 0
+					: validation.getSelectedProjectCount();
+
+			if (selectedProjectCount != uniqueProjectIdSet.size()) {
+				throw new IllegalArgumentException("선택한 프로젝트 중 사용할 수 없는 프로젝트가 있습니다.");
+			}
+		}
+	}
+
 	private void insertIssueTypeProjectList(IssueTypeVO issueType) {
 
 		if (issueType.getProjectIdList() == null || issueType.getProjectIdList().isEmpty()) {

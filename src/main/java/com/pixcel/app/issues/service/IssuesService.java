@@ -79,6 +79,10 @@ public interface IssuesService {
 
 	Map<String, Object> getIssueCreateExtraOptionData(String projectId, String userId);
 
+	Map<String, Object> getIssueTypeAssignPageData(String projectId, String userId);
+
+	void assignIssueTypesToProject(String projectId, List<String> issueTypeIdList, String userId);
+
 	// 일감 생성 화면의 일감유형 목록을 조회한다.
 	List<IssuesVO> getIssueTypeList(String projectId, String userId);
 

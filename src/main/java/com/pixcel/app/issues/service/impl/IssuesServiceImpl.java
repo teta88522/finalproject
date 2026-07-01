@@ -7,10 +7,12 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -324,6 +326,7 @@ public class IssuesServiceImpl implements IssuesService {
 
 		// 상세 화면의 선택 목록과 유형별 항목 설정을 한 번에 조회해 DB 왕복을 줄인다.
 		List<IssuesVO> optionRows = issuesMapper.selectIssueDetailRows(projectId, issueId, userId);
+		List<IssuesVO> childIssueList = issuesMapper.selectChildIssueList(projectId, issueId);
 
 		Map<String, Object> pageData = new HashMap<>();
 		pageData.put("issue", issue);
@@ -332,6 +335,7 @@ public class IssuesServiceImpl implements IssuesService {
 		pageData.put("assigneeList", filterOptionRows(optionRows, OPTION_ASSIGNEE));
 		pageData.put("milestoneList", filterOptionRows(optionRows, OPTION_MILESTONE));
 		pageData.put("parentIssueList", filterOptionRows(optionRows, OPTION_PARENT_ISSUE));
+		pageData.put("childIssueList", childIssueList == null ? Collections.emptyList() : childIssueList);
 		pageData.put("availableStatusList",
 				distinctByIssueStatusId(filterOptionRows(optionRows, OPTION_AVAILABLE_STATUS)));
 		pageData.put("historyList", Collections.emptyList());
@@ -417,6 +421,7 @@ public class IssuesServiceImpl implements IssuesService {
 
 		IssuesVO validation = issuesMapper.selectIssueUpdateSaveValidation(issue, userId);
 		validateIssueUpdateSaveCondition(validation);
+		validateChildProgressBeforeComplete(issue, validation);
 		validateDynamicFieldsForUpdate(issue, validation);
 		validateStatusTransition(validation);
 
@@ -595,6 +600,7 @@ public class IssuesServiceImpl implements IssuesService {
 		pageData.put("milestoneList", Collections.emptyList());
 		pageData.put("assigneeList", Collections.emptyList());
 		pageData.put("parentIssueList", Collections.emptyList());
+		pageData.put("canAssignIssueType", Objects.equals(projectInfo.getOwnerId(), userId));
 
 		return pageData;
 	}
@@ -614,6 +620,70 @@ public class IssuesServiceImpl implements IssuesService {
 		optionData.put("parentIssueList", filterOptionRows(optionRows, OPTION_PARENT_ISSUE));
 
 		return optionData;
+	}
+
+	@Override
+	public Map<String, Object> getIssueTypeAssignPageData(String projectId, String userId) {
+		IssuesVO projectInfo = validateProjectOwnerAccess(projectId, userId);
+		List<IssuesVO> assignableIssueTypeList = issuesMapper.selectProjectIssueTypeAssignmentRows(projectId, userId);
+
+		Map<String, Object> pageData = new HashMap<>();
+		pageData.put("projectInfo", projectInfo);
+		pageData.put("assignableIssueTypeList",
+				assignableIssueTypeList == null ? Collections.emptyList() : assignableIssueTypeList);
+		return pageData;
+	}
+
+	@Override
+	@Transactional
+	public void assignIssueTypesToProject(String projectId, List<String> issueTypeIdList, String userId) {
+		validateProjectOwnerAccess(projectId, userId);
+
+		List<IssuesVO> assignableIssueTypeList = issuesMapper.selectProjectIssueTypeAssignmentRows(projectId, userId);
+		if (assignableIssueTypeList == null) {
+			assignableIssueTypeList = Collections.emptyList();
+		}
+
+		Set<String> ownerIssueTypeIdSet = assignableIssueTypeList.stream()
+				.map(IssuesVO::getIssueTypeId)
+				.filter(id -> id != null)
+				.collect(Collectors.toCollection(LinkedHashSet::new));
+		List<String> selectedIssueTypeIdList = normalizeIssueTypeAssignmentList(issueTypeIdList);
+
+		for (String issueTypeId : selectedIssueTypeIdList) {
+			if (!ownerIssueTypeIdSet.contains(issueTypeId)) {
+				throw new IllegalArgumentException("배정할 수 없는 일감유형이 포함되어 있습니다.");
+			}
+		}
+
+		Set<String> selectedIssueTypeIdSet = new LinkedHashSet<>(selectedIssueTypeIdList);
+		Set<String> appliedIssueTypeIdSet = assignableIssueTypeList.stream()
+				.filter(row -> "Y".equals(row.getProjectAppliedYn()))
+				.map(IssuesVO::getIssueTypeId)
+				.filter(id -> id != null)
+				.collect(Collectors.toCollection(LinkedHashSet::new));
+
+		for (IssuesVO issueType : assignableIssueTypeList) {
+			if (!"Y".equals(issueType.getProjectAppliedYn())) {
+				continue;
+			}
+
+			int usedCount = issueType.getUsedCount() == null ? 0 : issueType.getUsedCount();
+			if (usedCount > 0 && !selectedIssueTypeIdSet.contains(issueType.getIssueTypeId())) {
+				throw new IllegalArgumentException("이미 일감에 사용된 일감유형은 이 프로젝트에서 해제할 수 없습니다.");
+			}
+		}
+
+		List<String> insertIssueTypeIdList = selectedIssueTypeIdList.stream()
+				.filter(issueTypeId -> !appliedIssueTypeIdSet.contains(issueTypeId))
+				.collect(Collectors.toList());
+
+		issuesMapper.deleteUnusedIssueTypeProjectAssignments(projectId, userId, selectedIssueTypeIdList);
+		if (!insertIssueTypeIdList.isEmpty()) {
+			issuesMapper.insertIssueTypeProjectAssignments(projectId, insertIssueTypeIdList);
+		}
+
+		issueListFilterCache.remove(projectId);
 	}
 
 	private void validateIssueCreatePermission(IssuesVO projectInfo) {
@@ -975,6 +1045,18 @@ public class IssuesServiceImpl implements IssuesService {
 
 		if (validation.getPriorityCount() == null || validation.getPriorityCount() == 0) {
 			throw new IllegalArgumentException("선택한 우선순위를 사용할 수 없습니다.");
+		}
+	}
+
+	private void validateChildProgressBeforeComplete(IssuesVO issue, IssuesVO validation) {
+		if (issue == null || validation == null || issue.getProgressRate() == null || issue.getProgressRate() < 100) {
+			return;
+		}
+
+		int childIncompleteCount = validation.getChildIncompleteCount() == null ? 0
+				: validation.getChildIncompleteCount();
+		if (childIncompleteCount > 0) {
+			throw new IllegalArgumentException("완료되지 않은 하위 일감이 있으면 진척도를 100%로 변경할 수 없습니다.");
 		}
 	}
 
@@ -1383,6 +1465,16 @@ public class IssuesServiceImpl implements IssuesService {
 		return project;
 	}
 
+	private IssuesVO validateProjectOwnerAccess(String projectId, String userId) {
+		IssuesVO project = validateProjectAccess(projectId, userId);
+
+		if (!Objects.equals(project.getOwnerId(), userId)) {
+			throw new IllegalArgumentException("프로젝트 소유자만 일감유형을 배정할 수 있습니다.");
+		}
+
+		return project;
+	}
+
 	private IssuesVO validateProjectPermissionAccess(String projectId, String userId, String permissionCode,
 			String permissionErrorMessage) {
 		validateUserId(userId);
@@ -1604,6 +1696,19 @@ public class IssuesServiceImpl implements IssuesService {
 				&& searchVO.getDueDate().isBefore(searchVO.getStartDate())) {
 			throw new IllegalArgumentException("완료기한은 시작일보다 빠를 수 없습니다.");
 		}
+	}
+
+	private List<String> normalizeIssueTypeAssignmentList(List<String> issueTypeIdList) {
+		if (issueTypeIdList == null || issueTypeIdList.isEmpty()) {
+			return Collections.emptyList();
+		}
+
+		Set<String> normalizedIssueTypeIdSet = issueTypeIdList.stream()
+				.map(this::trimToNull)
+				.filter(id -> id != null)
+				.collect(Collectors.toCollection(LinkedHashSet::new));
+
+		return new ArrayList<>(normalizedIssueTypeIdSet);
 	}
 
 	private List<String> normalizeSearchList(List<String> valueList, String legacyValue) {

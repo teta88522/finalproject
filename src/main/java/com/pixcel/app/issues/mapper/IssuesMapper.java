@@ -52,6 +52,9 @@ public interface IssuesMapper {
 	List<IssuesVO> selectIssueDetailRows(@Param("projectId") String projectId,
 			@Param("issueId") String issueId, @Param("userId") String userId);
 
+	List<IssuesVO> selectChildIssueList(@Param("projectId") String projectId,
+			@Param("issueId") String issueId);
+
 	List<IssuesVO> selectIssueHistoryRows(@Param("issueId") String issueId);
 
 	List<IssuesVO> selectIssueHistoryRowsForDetail(@Param("projectId") String projectId,
@@ -89,6 +92,16 @@ public interface IssuesMapper {
 	List<IssuesVO> selectIssueCreateBaseOptionRows(@Param("projectId") String projectId);
 
 	List<IssuesVO> selectIssueCreateExtraOptionRows(@Param("projectId") String projectId);
+
+	List<IssuesVO> selectProjectIssueTypeAssignmentRows(@Param("projectId") String projectId,
+			@Param("userId") String userId);
+
+	int deleteUnusedIssueTypeProjectAssignments(@Param("projectId") String projectId,
+			@Param("userId") String userId,
+			@Param("issueTypeIdList") List<String> issueTypeIdList);
+
+	int insertIssueTypeProjectAssignments(@Param("projectId") String projectId,
+			@Param("issueTypeIdList") List<String> issueTypeIdList);
 
 	List<IssuesVO> selectIssueListOptionRows(@Param("projectId") String projectId);
 

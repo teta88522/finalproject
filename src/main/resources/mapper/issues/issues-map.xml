@@ -1004,8 +1004,27 @@
 		where parent.project_id = #{projectId}
 		and parent.issue_id
 		!= #{issueId}
+		and nvl(parent.progress_rate, 0) &lt; 100
 		)
 		order by option_sort, row_sort
+	</select>
+
+	<select id="selectChildIssueList" resultType="IssuesVO">
+		select
+		child.issue_id,
+		child.issue_no,
+		'#' || lpad(to_char(child.issue_no), 4, '0') as display_issue_no,
+		child.title,
+		child.progress_rate,
+		child.issue_status_id,
+		ist.status_name as issue_status_name,
+		ist.closed_yn
+		from issue child
+		left join issue_status ist
+		on child.issue_status_id = ist.issue_status_id
+		where child.project_id = #{projectId}
+		and child.parent_issue_id = #{issueId}
+		order by child.issue_no asc
 	</select>
 
 	<select id="selectIssueHistoryRows" resultType="IssuesVO">
@@ -1347,6 +1366,7 @@
 		from issue
 		where project_id
 		= #{projectId}
+		and nvl(progress_rate, 0) &lt; 100
 		order by issue_no desc
 	</select>
 
@@ -2157,10 +2177,86 @@
 		row_sort
 		from issue
 		where project_id = #{projectId}
+		and nvl(progress_rate, 0) &lt; 100
 		)
 		order by
 		option_sort, row_sort
 	</select>
+
+	<select id="selectProjectIssueTypeAssignmentRows" resultType="IssuesVO">
+		select
+		it.issue_type_id,
+		it.issue_type_name,
+		it.initial_status_id,
+		ist.status_name as initial_status_name,
+		case when itp.issue_type_project_id is null then 'N' else 'Y' end as project_applied_yn,
+		nvl(issue_usage.used_count, 0) as used_count
+		from project p
+		join issue_type it
+		on it.user_id = p.owner_id
+		join issue_status ist
+		on it.initial_status_id = ist.issue_status_id
+		left join issue_type_project itp
+		on itp.project_id = p.project_id
+		and itp.issue_type_id = it.issue_type_id
+		left join (
+		select issue_type_id, count(*) as used_count
+		from issue
+		where project_id = #{projectId}
+		group by issue_type_id
+		) issue_usage
+		on issue_usage.issue_type_id = it.issue_type_id
+		where p.project_id = #{projectId}
+		and p.owner_id = #{userId}
+		order by it.created_at asc, it.issue_type_id asc
+	</select>
+
+	<delete id="deleteUnusedIssueTypeProjectAssignments">
+		delete from issue_type_project itp
+		where itp.project_id = #{projectId}
+		and exists (
+		select 1
+		from issue_type it
+		where it.issue_type_id = itp.issue_type_id
+		and it.user_id = #{userId}
+		)
+		and not exists (
+		select 1
+		from issue i
+		where i.project_id = itp.project_id
+		and i.issue_type_id = itp.issue_type_id
+		)
+		<if test="issueTypeIdList != null and issueTypeIdList.size() > 0">
+			and itp.issue_type_id not in
+			<foreach collection="issueTypeIdList" item="issueTypeId" open="(" separator="," close=")">
+				#{issueTypeId}
+			</foreach>
+		</if>
+	</delete>
+
+	<insert id="insertIssueTypeProjectAssignments">
+		insert all
+		<foreach collection="issueTypeIdList" item="issueTypeId" index="index">
+			into issue_type_project (
+			issue_type_project_id,
+			issue_type_id,
+			project_id,
+			created_at
+			) values (
+			'ISSUE_TYPE_PROJECT_'
+			|| to_char(sysdate, 'YYMM')
+			|| '_'
+			|| lpad(base_no + #{index} + 1, 4, '0'),
+			#{issueTypeId},
+			#{projectId},
+			sysdate
+			)
+		</foreach>
+		select nvl(max(to_number(substr(issue_type_project_id, -4))), 0) as base_no
+		from issue_type_project
+		where substr(issue_type_project_id, 1, 24) =
+		'ISSUE_TYPE_PROJECT_' || to_char(sysdate, 'YYMM') || '_'
+	</insert>
 
 	<select id="selectIssueCreateSaveValidation"
 		resultType="IssuesVO">
@@ -2365,6 +2461,7 @@
 		where parent_issue.project_id = p.project_id
 		and
 		parent_issue.issue_id = #{issue.parentIssueId}
+		and nvl(parent_issue.progress_rate, 0) &lt; 100
 		) as parent_issue_count
 		from project p
 		where p.project_id = #{issue.projectId}
@@ -2486,7 +2583,15 @@
 		from issue parent_issue
 		where parent_issue.project_id = p.project_id
 		and parent_issue.issue_id = #{issue.parentIssueId}
+		and nvl(parent_issue.progress_rate, 0) &lt; 100
 		) as parent_issue_count,
+		(
+		select count(*)
+		from issue child_issue
+		where child_issue.project_id = p.project_id
+		and child_issue.parent_issue_id = i.issue_id
+		and nvl(child_issue.progress_rate, 0) &lt; 100
+		) as child_incomplete_count,
 		case
 		when i.issue_status_id = #{issue.issueStatusId} then 'Y'
 		when p.owner_id = #{userId} then 'Y'

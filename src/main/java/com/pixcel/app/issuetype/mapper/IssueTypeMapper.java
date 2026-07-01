@@ -52,6 +52,8 @@ public interface IssueTypeMapper {
 
     IssueTypeVO selectIssueTypeSaveValidation(IssueTypeVO issueType);
 
+    IssueTypeVO selectIssueTypeUpdateValidation(IssueTypeVO issueType);
+
     IssueTypeVO selectIssueTypeDeleteCheck(
             @Param("issueTypeId") String issueTypeId,
             @Param("userId") String userId
@@ -59,6 +61,8 @@ public interface IssueTypeMapper {
 
     // 신규 일감유형을 등록한다.
     int insertIssueType(IssueTypeVO issueType);
+
+    int updateIssueType(IssueTypeVO issueType);
 
     // 일감유형 적용 프로젝트를 등록한다.
     int insertIssueTypeProject(IssueTypeVO issueType);

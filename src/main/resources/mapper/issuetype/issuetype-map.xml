@@ -136,7 +136,21 @@
 		it.description,
 		it.created_at,
 		it.updated_at,
-		it.user_id
+		it.user_id,
+		case
+		when exists (
+		select 1
+		from issue i
+		where i.issue_type_id = it.issue_type_id
+		)
+		or exists (
+		select 1
+		from workflow_transition wt
+		where wt.issue_type_id = it.issue_type_id
+		)
+		then 1
+		else 0
+		end as used_count
 		from issue_type it
 		join
 		issue_status ist
@@ -264,6 +278,20 @@
 		it.description,
 		it.created_at,
 		it.updated_at,
+		case
+		when exists (
+		select 1
+		from issue i
+		where i.issue_type_id = it.issue_type_id
+		)
+		or exists (
+		select 1
+		from workflow_transition wt
+		where wt.issue_type_id = it.issue_type_id
+		)
+		then 1
+		else 0
+		end as used_count,
 		it.user_id
 		from issue_type it
 		join
@@ -470,7 +498,18 @@
 		)
 	</insert>
 
-	<!-- 일감유형 적용 프로젝트 등록 -->
+	<!-- 일감유형 기본 정보 수정 -->
+	<update id="updateIssueType" parameterType="IssueTypeVO">
+		update issue_type
+		set
+		issue_type_name = #{issueTypeName},
+		initial_status_id = #{initialStatusId},
+		description = #{description, jdbcType=VARCHAR},
+		updated_at = sysdate
+		where issue_type_id = #{issueTypeId}
+		and user_id = #{userId}
+	</update>
+
 	<insert id="insertIssueTypeProject" parameterType="IssueTypeVO">
 
 		<selectKey keyProperty="issueTypeProjectId"
@@ -656,6 +695,56 @@
 				0 as selected_project_count
 			</otherwise>
 		</choose>
+		from dual
+	</select>
+
+	<select id="selectIssueTypeUpdateValidation" parameterType="IssueTypeVO"
+		resultType="IssueTypeVO">
+		select
+		(
+		select count(*)
+		from issue_type
+		where user_id = #{userId}
+		and issue_type_name = #{issueTypeName}
+		and issue_type_id != #{issueTypeId}
+		) as duplicate_count,
+		(
+		select count(*)
+		from issue_status
+		where issue_status_id = #{initialStatusId}
+		and user_id = #{userId}
+		) as initial_status_count,
+		<choose>
+			<when test="projectIdList != null and projectIdList.size() > 0">
+				(
+				select count(distinct project_id)
+				from project
+				where owner_id = #{userId}
+				and project_id in
+				<foreach collection="projectIdList" item="projectId"
+					open="(" separator="," close=")">
+					#{projectId}
+				</foreach>
+				) as selected_project_count
+			</when>
+			<otherwise>
+				0 as selected_project_count
+			</otherwise>
+		</choose>,
+		case
+		when exists (
+		select 1
+		from issue i
+		where i.issue_type_id = #{issueTypeId}
+		)
+		or exists (
+		select 1
+		from workflow_transition wt
+		where wt.issue_type_id = #{issueTypeId}
+		)
+		then 1
+		else 0
+		end as used_count
 		from dual
 	</select>
 
