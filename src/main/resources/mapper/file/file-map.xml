@@ -39,6 +39,7 @@
         <if test="documentVersionId != null and documentVersionId != '' and documentVersionId != 0">
         AND document_version_id = #{documentVersionId}
         </if>
+        ORDER BY upload_date DESC
     </select>
     
     <!-- 문서에 zip 다운로드 -->
@@ -220,4 +221,21 @@
             #{connectAddress}
         )
     </insert>
+    <select id="selectDownloadHistory" resultType="FileDownloadHistoryVO">
+        SELECT
+    		h.download_history_id,
+    		h.file_id,
+    		f.original_name,
+    		h.download_user_id,
+    		u.user_name,
+    		h.download_date,
+    		f.connect_address,
+    		f.document_version_id
+		FROM file_download_history h
+		LEFT JOIN users u ON h.download_user_id = u.user_id
+		LEFT JOIN attach_file f ON h.file_id = f.file_id
+		LEFT JOIN users u ON h.download_user_id = u.user_id
+		WHERE f.connect_address = #{connectAddress} AND f.document_version_id = #{documentVersionId}
+
+    </select>
 </mapper>

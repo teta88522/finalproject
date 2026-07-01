@@ -31,9 +31,10 @@ public class BugVO {
 		
 		@DateTimeFormat(pattern = "yyyy-MM-dd")
 		private Date occuredAt;
+		private String occurredAtText;
 		
-		private Date createAt;
-		private Date updateAt;
+		private Date createdAt;
+		private Date updatedAt;
 		
 		private String projectId;
 		private String projectName;

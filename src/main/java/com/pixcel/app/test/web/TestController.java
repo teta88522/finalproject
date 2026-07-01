@@ -516,6 +516,8 @@ public class TestController {
 
 	    TestExecutionVO result = new TestExecutionVO();
 	    result.setMappingId(testExecutionVO.getMappingId());
+	    
+	    result.setExecutionId(testExecutionVO.getExecutionId());
 	    result.setResultStatusCode(testExecutionVO.getResultStatusCode());
 
 	    if ("o001".equals(testExecutionVO.getResultStatusCode())) {
