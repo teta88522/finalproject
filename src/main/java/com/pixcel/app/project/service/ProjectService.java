@@ -42,4 +42,13 @@ public interface ProjectService {
 	// ✅ 추가: 프로젝트 모듈 추가/삭제
 	public Map<String, Object> insertProjectModule(String projectId, String moduleCode);
 	public Map<String, Object> deleteProjectModule(String projectId, String moduleCode);
+	
+	// ✅ 추가: 구성원 여부 확인 (권한 체크용)
+	public boolean isProjectMember(String projectId, String userId);
+	
+	// ✅ 추가: 관리자용 전체 프로젝트 조회
+	public List<ProjectVO> selectAllProjectsWithSearch(ProjectVO searchVO);
+	
+	// ✅ 추가: 프로젝트 잠금
+	public Map<String, Object> lockProject(String projectId);
 }

@@ -1,0 +1,167 @@
+@charset "UTF-8";
+
+.file-list-container {
+	padding: 30px;
+}
+
+.file-breadcrumb {
+	color: #666;
+	font-size: 13px;
+	margin-bottom: 20px;
+}
+
+.file-breadcrumb a {
+	color: #007bff;
+	text-decoration: none;
+}
+
+.file-breadcrumb a:hover {
+	text-decoration: underline;
+}
+
+.file-header {
+	background: white;
+	padding: 20px;
+	border-radius: 8px;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+	margin-bottom: 20px;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+
+.file-header h2 {
+	color: #333;
+	font-size: 22px;
+	margin: 0 0 10px 0;
+}
+
+.file-header-meta {
+	color: #666;
+	font-size: 13px;
+}
+
+.file-history-btn {
+	padding: 10px 20px;
+	border: 1px solid #007bff;
+	border-radius: 6px;
+	background: white;
+	color: #007bff;
+	font-size: 13px;
+	font-weight: 600;
+	cursor: pointer;
+	transition: all 0.3s;
+}
+
+.file-history-btn:hover {
+	background: #007bff;
+	color: white;
+}
+
+.file-list-wrapper {
+	background: white;
+	border-radius: 8px;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+	overflow: hidden;
+	margin-bottom: 20px;
+}
+
+.file-list {
+	display: flex;
+	flex-direction: column;
+}
+
+.file-item {
+	padding: 16px 20px;
+	border-bottom: 1px solid #eee;
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	transition: background-color 0.2s;
+	cursor: pointer;
+}
+
+.file-item:hover {
+	background-color: #f9f9f9;
+}
+
+.file-item:last-child {
+	border-bottom: none;
+}
+
+.file-icon {
+	flex-shrink: 0;
+	width: 24px;
+	text-align: center;
+}
+
+.file-info {
+	flex: 1;
+	min-width: 0;
+}
+
+.file-name {
+	color: #333;
+	font-size: 14px;
+	font-weight: 600;
+	text-decoration: none;
+	word-break: break-word;
+}
+
+.file-name:hover {
+	color: #007bff;
+	text-decoration: underline;
+}
+
+.file-meta {
+	color: #999;
+	font-size: 12px;
+	margin-top: 4px;
+}
+
+.file-date {
+	color: #999;
+	font-size: 12px;
+	flex-shrink: 0;
+	white-space: nowrap;
+}
+
+.file-empty-state {
+	padding: 60px 20px;
+	text-align: center;
+	color: #999;
+	background: white;
+	border-radius: 8px;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.file-empty-state p {
+	font-size: 16px;
+	margin: 0;
+}
+
+.file-actions {
+	display: flex;
+	gap: 10px;
+}
+
+.file-btn {
+	padding: 10px 20px;
+	border: none;
+	border-radius: 6px;
+	font-size: 13px;
+	font-weight: 600;
+	cursor: pointer;
+	text-decoration: none;
+	display: inline-block;
+	transition: all 0.3s;
+}
+
+.file-btn-secondary {
+	background-color: #6c757d;
+	color: white;
+}
+
+.file-btn-secondary:hover {
+	background-color: #545b62;
+}

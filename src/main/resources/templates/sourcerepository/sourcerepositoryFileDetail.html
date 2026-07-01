@@ -1,0 +1,116 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{common/layouts/default_layout}">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet"
+	th:href="@{/css/sourcerepository/sourcerepositoryFileDetail.css}">
+</head>
+<body>
+	<div layout:fragment="Content">
+		<div class="file-detail-container">
+			<!-- Breadcrumb -->
+			<div class="detail-breadcrumb">
+				<a th:href="@{/project/{projectId}/sourcerepository(projectId=${projectId})}">저장소 관리</a>
+				/ <a th:href="@{/project/{projectId}/sourcerepository/files(projectId=${projectId}, branch=${branch})}">파일 목록</a>
+				/ <span th:text="${fileName}">README.md</span>
+			</div>
+ 
+			<!-- Header -->
+			<div class="detail-header">
+				<div class="detail-header-top">
+					<h1 th:text="${fileName}">README.md</h1>
+					<a
+						th:href="@{/project/{projectId}/sourcerepository/commits(projectId=${projectId}, branch=${branch})}"
+						class="detail-history-btn"
+						style="text-decoration: none;">
+						📜 History
+					</a>
+				</div>
+				<div class="detail-meta">
+					<span class="detail-meta-item">
+						<strong>Size:</strong> <span th:text="${fileSize}">1.2 KB</span>
+					</span>
+					<span class="detail-meta-item">
+						<strong>Last Modified:</strong> <span th:text="${#temporals.format(lastModified, 'yyyy-MM-dd HH:mm:ss')}">2024-06-30 14:30:00</span>
+					</span>
+				</div>
+			</div>
+ 
+			<!-- File Content Header (코드 복사, 다운로드, 파일명 복사) -->
+			<div class="detail-content-header">
+				<div class="detail-content-title">
+					<span class="detail-file-icon">📄</span>
+					<span class="detail-file-name" th:text="${fileName}">README.md</span>
+					<button
+						type="button"
+						class="detail-copy-btn"
+						onclick="copyFileName()"
+						title="파일명 복사">
+						📋 복사
+					</button>
+				</div>
+				<div class="detail-content-actions">
+					<button
+						type="button"
+						class="detail-action-btn detail-action-copy"
+						onclick="copyCode()"
+						title="코드 전체 복사">
+						📋 코드 복사
+					</button>
+					<a
+						th:href="@{${fileContent}}"
+						class="detail-action-btn detail-action-download"
+						title="파일 다운로드"
+						download>
+						⬇️ 다운로드
+					</a>
+				</div>
+			</div>
+ 
+			<!-- File Content -->
+			<div class="detail-content">
+				<pre class="file-content" id="fileContent" th:text="${fileContent}">// File content here</pre>
+			</div>
+ 
+			<!-- Actions -->
+			<div class="detail-actions">
+				<a
+					th:href="@{/project/{projectId}/sourcerepository/files(projectId=${projectId}, branch=${branch})}"
+					class="detail-btn detail-btn-secondary">
+					← 파일 목록으로 돌아가기
+				</a>
+				<a
+					th:href="@{/project/{projectId}/sourcerepository(projectId=${projectId})}"
+					class="detail-btn detail-btn-secondary">
+					🏠 저장소 메인
+				</a>
+			</div>
+		</div>
+	</div>
+ 
+	<script>
+		// 파일명 복사
+		function copyFileName() {
+			const fileName = document.querySelector('.detail-file-name').textContent;
+			navigator.clipboard.writeText(fileName).then(() => {
+				alert('파일명이 복사되었습니다: ' + fileName);
+			}).catch(() => {
+				alert('복사에 실패했습니다');
+			});
+		}
+ 
+		// 코드 전체 복사
+		function copyCode() {
+			const fileContent = document.getElementById('fileContent').textContent;
+			navigator.clipboard.writeText(fileContent).then(() => {
+				alert('코드가 복사되었습니다');
+			}).catch(() => {
+				alert('복사에 실패했습니다');
+			});
+		}
+	</script>
+</body>
+
+</html>

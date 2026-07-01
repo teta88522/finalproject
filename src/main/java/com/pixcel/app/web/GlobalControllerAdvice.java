@@ -23,9 +23,9 @@ public class GlobalControllerAdvice {
 	private ProjectService projectService;
 	
     // admin 사이드바 URL 목록
-    private static final List<String> ADMIN_URIS = List.of(
-        "/admin", "/codevalue", "/issuetype", "/issuestatus","/workflow", "/roles"
-    );
+	private static final List<String> ADMIN_URIS = List.of(
+	        "/admin", "/codevalue", "/issuetype", "/issuestatus","/workflow", "/roles", "/pm"
+	    );
 
     // project 사이드바 URL 목록
     private static final List<String> PROJECT_URIS = List.of(

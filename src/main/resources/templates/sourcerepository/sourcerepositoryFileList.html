@@ -1,0 +1,95 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{common/layouts/default_layout}">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet"
+	th:href="@{/css/sourcerepository/sourcerepositoryFileList.css}">
+</head>
+<body>
+	<div layout:fragment="Content">
+		<div class="file-list-container">
+			<!-- Breadcrumb -->
+			<div class="file-breadcrumb">
+				<a th:href="@{/project/{projectId}/sourcerepository(projectId=${projectId})}">저장소 관리</a>
+				/ <span>파일 목록</span>
+			</div>
+ 
+			<!-- Header with Branch Selector -->
+			<div class="file-header">
+				<div>
+					<h2>📁 파일 목록</h2>
+					<div class="file-header-meta">
+						<form method="get" style="display: flex; gap: 10px; align-items: center;">
+							<label for="branchSelect" style="font-size: 13px; color: #666;">Branch:</label>
+							<select 
+								id="branchSelect" 
+								name="branch"
+								onchange="this.form.submit()"
+								style="padding: 6px 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px;">
+								<option value="master" th:selected="${branch == 'master'}">master</option>
+								<option value="main" th:selected="${branch == 'main'}">main</option>
+								<option value="develop" th:selected="${branch == 'develop'}">develop</option>
+								<option value="dev" th:selected="${branch == 'dev'}">dev</option>
+							</select>
+						</form>
+					</div>
+				</div>
+				<a
+					th:href="@{/project/{projectId}/sourcerepository/commits(projectId=${projectId}, branch=${branch})}"
+					class="file-history-btn"
+					style="text-decoration: none; display: inline-block;">
+					📜 History
+				</a>
+			</div>
+ 
+			<!-- File List -->
+			<div class="file-list-wrapper">
+				<div class="file-list" th:if="${!files.isEmpty()}">
+					<div class="file-item" th:each="file : ${files}">
+						<div class="file-icon">
+							<i th:if="${file.get('type') == 'dir'}" class="fa fa-folder" style="font-size:18px; color:#f9a825;"></i>
+							<i th:if="${file.get('type') == 'file'}" class="fa fa-file" style="font-size:18px; color:#007bff;"></i>
+						</div>
+						<div class="file-info">
+							<a
+								th:if="${file.get('type') == 'file'}"
+								th:href="@{/project/{projectId}/sourcerepository/file/{path}(projectId=${projectId}, path=${file.get('path')}, branch=${branch})}"
+								class="file-name" 
+								th:text="${file.get('name')}">
+								README.md
+							</a>
+							<a
+								th:if="${file.get('type') == 'dir'}"
+								th:href="@{/project/{projectId}/sourcerepository/files/{path}(projectId=${projectId}, path=${file.get('path')}, branch=${branch})}"
+								class="file-name" 
+								th:text="${file.get('name')}">
+								src
+							</a>
+							<div class="file-meta">
+								<span th:if="${file.get('type') == 'file'}" th:text="${file.get('size')} + ' bytes'">1.2 KB</span>
+							</div>
+						</div>
+					</div>
+				</div>
+ 
+				<!-- Empty State -->
+				<div class="file-empty-state" th:if="${files.isEmpty()}">
+					<p>📂 파일이 없습니다</p>
+				</div>
+			</div>
+ 
+			<!-- Actions -->
+			<div class="file-actions">
+				<a
+					th:href="@{/project/{projectId}/sourcerepository(projectId=${projectId})}"
+					class="file-btn file-btn-secondary">
+					🏠 저장소 메인
+				</a>
+			</div>
+		</div>
+	</div>
+</body>
+
+</html>

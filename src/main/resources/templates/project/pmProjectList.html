@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{common/layouts/default_layout}">
+<head>
+<meta charset="UTF-8">
+<title>관리 프로젝트</title>
+
+<link rel="stylesheet" th:href="@{/css/project/pmProjectList.css}">
+</head>
+<body>
+	<div layout:fragment="Content">
+
+		<div class="pm-project-page">
+
+			<!-- 검색 영역 -->
+			<div class="search-section">
+				<div class="search-header">
+					<h2>프로젝트</h2>
+					<button class="btn-create"
+						onclick="window.location.href='/myproject/register'">프로젝트
+						생성</button>
+				</div>
+
+				<form id="searchForm" method="get" th:action="@{/pm/list}">
+					<div class="search-row">
+						<!-- 프로젝트명 -->
+						<div class="search-field">
+							<label>프로젝트 명</label> <input type="text" name="searchProjectName"
+								th:value="${searchProjectName}" placeholder="프로젝트 명 입력">
+						</div>
+
+						<!-- 상태 -->
+						<div class="search-field">
+							<label>상태</label> <select name="searchStatusCode"
+								th:value="${searchStatusCode}">
+								<option value="">전체</option>
+								<option value="a001">예정</option>
+								<option value="a002">진행중</option>
+								<option value="a003">종료</option>
+							</select>
+						</div>
+
+						<div style="flex: 1;"></div>
+					</div>
+
+					<div class="search-button-area">
+						<button type="button" class="btn-reset"
+							onclick="window.resetSearch()">초기화</button>
+						<button type="submit" class="btn-search">검색</button>
+					</div>
+				</form>
+			</div>
+
+			<!-- 프로젝트 목록 -->
+			<div class="project-list-section">
+				<div class="list-header">
+					<h3>
+						프로젝트 목록 <span class="count">총 <span
+							th:text="${searchVO.totalCount}">0</span>개
+						</span>
+					</h3>
+				</div>
+
+				<div class="table-wrap">
+					<table class="project-table">
+						<thead>
+							<tr>
+								<th style="width: 50px;"><input type="checkbox"
+									id="selectAll" onchange="window.toggleSelectAll()"></th>
+								<th>프로젝트 명</th>
+								<th>식별자</th>
+								<th>설명</th>
+								<th>상태</th>
+								<th>생성일</th>
+								<th style="width: 80px;">관리</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr th:each="project : ${projectList}">
+								<td><input type="checkbox" class="row-checkbox"
+									th:value="${project.projectId}"></td>
+								<td class="project-name" th:text="${project.projectName}"></td>
+								<td class="identifier" th:text="${project.identifier}"></td>
+								<td class="description" th:text="${project.description}"></td>
+								<td><span class="status-badge"
+									th:classappend="${project.statusCode == 'a001' ? 'pending' : project.statusCode == 'a002' ? 'ongoing' : 'completed'}"
+									th:text="${project.statusName}"></span></td>
+								<td class="created-date"
+									th:text="${#dates.format(project.createdAt, 'yyyy-MM-dd')}"></td>
+								<td>
+									<div class="action-dropdown">
+										<button type="button" class="btn-action"
+											onclick="window.toggleDropdown(event)">⋮</button>
+										<div class="dropdown-menu">
+											<a href="#" class="dropdown-item"
+												onclick="window.lockProject(event); return false;">잠금</a> <a
+												href="#" class="dropdown-item"
+												th:data-project-name="${project.projectName}"
+												th:data-project-id="${project.projectId}"
+												onclick="window.copyProject(event); return false;">복사</a> <a
+												href="#" class="dropdown-item delete"
+												th:data-project-name="${project.projectName}"
+												th:data-project-id="${project.projectId}"
+												onclick="window.deleteProject(event); return false;">삭제</a>
+										</div>
+									</div>
+								</td>
+							</tr>
+
+							<!-- 데이터 없을 때 -->
+							<tr th:if="${#lists.isEmpty(projectList)}">
+								<td colspan="7" class="empty-row">조회된 프로젝트가 없습니다.</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+
+				<!-- 페이징 -->
+				<div class="pagination">
+					<!-- 이전 버튼 -->
+					<button type="button" class="page-btn"
+						th:disabled="${!searchVO.hasPrevious}"
+						th:classappend="${!searchVO.hasPrevious ? 'disabled' : ''}"
+						th:if="${searchVO.hasPrevious}"
+						th:onclick="|window.goPage(${searchVO.page - 1})|">&lt;</button>
+
+					<button type="button" class="page-btn disabled" disabled="disabled"
+						th:if="${!searchVO.hasPrevious}">&lt;</button>
+
+					<!-- 페이지 번호 -->
+					<th:block
+						th:each="pageNum : ${#numbers.sequence(1, searchVO.totalPage)}">
+						<button type="button" class="page-btn"
+							th:classappend="${pageNum == searchVO.page ? 'active' : ''}"
+							th:onclick="|window.goPage(${pageNum})|">
+							<span th:text="${pageNum}"></span>
+						</button>
+					</th:block>
+
+					<!-- 다음 버튼 -->
+					<button type="button" class="page-btn"
+						th:disabled="${!searchVO.hasNext}"
+						th:classappend="${!searchVO.hasNext ? 'disabled' : ''}"
+						th:if="${searchVO.hasNext}"
+						th:onclick="|window.goPage(${searchVO.page + 1})|">&gt;</button>
+
+					<button type="button" class="page-btn disabled" disabled="disabled"
+						th:if="${!searchVO.hasNext}">&gt;</button>
+				</div>
+			</div>
+		</div>
+
+		<!-- ✅ Script를 Fragment 안에 배치 -->
+		<script>
+			// 드롭다운 토글
+			window.toggleDropdown = function(e) {
+				e.preventDefault();
+				const menu = e.target.nextElementSibling;
+				if (!menu) return;
+				
+				document.querySelectorAll('.dropdown-menu').forEach(m => {
+					if (m !== menu) m.classList.remove('show');
+				});
+				menu.classList.toggle('show');
+			};
+
+			// 외부 클릭 시 드롭다운 닫기
+			document.addEventListener('click', function(e) {
+				if (!e.target.closest('.action-dropdown')) {
+					document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('show'));
+				}
+			});
+
+			// 전체 선택
+			window.toggleSelectAll = function() {
+				const isChecked = document.getElementById('selectAll').checked;
+				document.querySelectorAll('.row-checkbox').forEach(cb => cb.checked = isChecked);
+			};
+
+			// 잠금
+			window.lockProject = function(e) {
+			    e.preventDefault();
+			    const button = e.target.closest('.dropdown-item');
+			    const projectId = button.closest('tr').querySelector('.row-checkbox').value;
+			    const projectName = button.closest('tr').querySelector('.project-name').textContent;
+			    
+			    if (!confirm(projectName + ' 프로젝트를 잠금하시겠습니까?')) {
+			        return;
+			    }
+			    
+			    // 잠금 처리
+			    fetch('/pm/' + projectId + '/lock', {
+			        method: 'POST',
+			        headers: {
+			            'Content-Type': 'application/json'
+			        }
+			    })
+			    .then(response => response.json())
+			    .then(data => {
+			        if (data.success) {
+			            alert(data.message);
+			            location.reload(); // 페이지 새로고침
+			        } else {
+			            alert('오류: ' + data.message);
+			        }
+			    })
+			    .catch(error => {
+			        console.error('Error:', error);
+			        alert('요청 중 오류가 발생했습니다.');
+			    });
+			};
+
+			// 복사 (1행 기준)
+			window.copyProject = function(e) {
+				e.preventDefault();
+				const projectName = e.target.dataset.projectName;
+				const projectId = e.target.dataset.projectId;
+				
+				const textToCopy = projectName + ' (' + projectId + ')';
+				navigator.clipboard.writeText(textToCopy).then(() => {
+					alert('복사 완료: ' + textToCopy);
+				}).catch(() => {
+					alert('복사 실패');
+				});
+			};
+
+			// 삭제
+			window.deleteProject = function(e) {
+			    e.preventDefault();
+			    const button = e.target.closest('.dropdown-item');
+			    const projectId = button.closest('tr').querySelector('.row-checkbox').value;
+			    const projectName = button.closest('tr').querySelector('.project-name').textContent;
+			    
+			    if (!confirm(projectName + ' 프로젝트를 삭제하시겠습니까?\n삭제되면 복구할 수 없습니다.')) {
+			        return;
+			    }
+			    
+			    // 삭제 처리
+			    fetch('/pm/' + projectId + '/delete', {
+			        method: 'POST',
+			        headers: {
+			            'Content-Type': 'application/json'
+			        }
+			    })
+			    .then(response => response.json())
+			    .then(data => {
+			        if (data.success) {
+			            alert(data.message || '프로젝트가 삭제되었습니다.');
+			            location.reload(); // 페이지 새로고침
+			        } else {
+			            alert('오류: ' + data.message);
+			        }
+			    })
+			    .catch(error => {
+			        console.error('Error:', error);
+			        alert('요청 중 오류가 발생했습니다.');
+			    });
+			};
+
+			// 페이지 이동
+			window.goPage = function(page) {
+				let form = document.getElementById('searchForm');
+				if (!form) return;
+				
+				let pageInput = form.querySelector('input[name="page"]');
+				if (!pageInput) {
+					pageInput = document.createElement('input');
+					pageInput.type = 'hidden';
+					pageInput.name = 'page';
+					form.appendChild(pageInput);
+				}
+				pageInput.value = page;
+				form.submit();
+			};
+
+			// 검색 초기화
+			window.resetSearch = function() {
+				const form = document.getElementById('searchForm');
+				if (form) {
+					form.reset();
+				}
+				location.href = '/pm/list';
+			};
+		</script>
+
+	</div>
+
+</body>
+</html>

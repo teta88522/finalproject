@@ -1,0 +1,396 @@
+@charset "UTF-8";
+
+/* ============================================================
+   관리 프로젝트 목록
+   ============================================================ */
+.pm-project-page {
+	padding: 30px;
+	background-color: #f5f7fb;
+}
+
+/* 검색 영역 */
+.search-section {
+	background: #fff;
+	border: 1px solid #e1e6ef;
+	border-radius: 12px;
+	padding: 24px;
+	margin-bottom: 24px;
+	box-shadow: 0 2px 8px rgba(20, 35, 60, 0.04);
+}
+
+.search-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 20px;
+}
+
+.search-header h2 {
+	font-size: 24px;
+	font-weight: 700;
+	color: #222;
+	margin: 0;
+}
+
+.btn-create {
+	padding: 10px 20px;
+	background-color: #2f6fed;
+	color: #fff;
+	border: none;
+	border-radius: 6px;
+	font-weight: 600;
+	cursor: pointer;
+	transition: 0.15s;
+}
+
+.btn-create:hover {
+	background-color: #245fd0;
+}
+
+/* 검색 행 */
+.search-row {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap: 16px;
+	margin-bottom: 16px;
+}
+
+.search-field {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.search-field label {
+	font-size: 13px;
+	font-weight: 600;
+	color: #555;
+}
+
+.search-field input, .search-field select {
+	height: 38px;
+	border: 1px solid #d7dde8;
+	border-radius: 6px;
+	padding: 0 10px;
+	font-size: 14px;
+	color: #333;
+	outline: none;
+	background-color: #fff;
+	box-sizing: border-box;
+}
+
+.search-field input:focus, .search-field select:focus {
+	border-color: #2f6fed;
+	box-shadow: 0 0 0 3px rgba(47, 111, 237, 0.12);
+}
+
+.search-button-area {
+	display: flex;
+	justify-content: flex-end;
+	gap: 8px;
+	margin-top: 20px;
+}
+
+.btn-reset, .btn-search {
+	padding: 10px 24px;
+	border: 1px solid #d6dce8;
+	border-radius: 6px;
+	font-size: 14px;
+	font-weight: 600;
+	cursor: pointer;
+	transition: 0.15s;
+}
+
+.btn-reset {
+	background-color: #fff;
+	color: #333;
+}
+
+.btn-reset:hover {
+	background-color: #f5f5f5;
+}
+
+.btn-search {
+	background-color: #2f6fed;
+	color: #fff;
+	border-color: #2f6fed;
+}
+
+.btn-search:hover {
+	background-color: #245fd0;
+}
+
+/* 프로젝트 목록 섹션 */
+.project-list-section {
+	background: #fff;
+	border: 1px solid #e1e6ef;
+	border-radius: 12px;
+	padding: 24px;
+	box-shadow: 0 2px 8px rgba(20, 35, 60, 0.04);
+}
+
+.list-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 20px;
+	padding-bottom: 16px;
+	border-bottom: 1px solid #f0f0f0;
+}
+
+.list-header h3 {
+	font-size: 18px;
+	font-weight: 700;
+	color: #222;
+	margin: 0;
+	display: flex;
+	align-items: center;
+	gap: 12px;
+}
+
+.count {
+	font-size: 14px;
+	font-weight: 400;
+	color: #2f6fed;
+}
+
+/* 테이블 */
+.table-wrap {
+	overflow-x: auto;
+	margin-bottom: 20px;
+}
+
+.project-table {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: 14px;
+}
+
+.project-table thead {
+	background-color: #f1f4f9;
+}
+
+.project-table th {
+	padding: 12px;
+	text-align: left;
+	font-weight: 700;
+	color: #444;
+	border-bottom: 1px solid #dfe5ef;
+	white-space: nowrap;
+}
+
+.project-table td {
+	padding: 14px 12px;
+	border-bottom: 1px solid #edf0f5;
+	color: #333;
+}
+
+.project-table tbody tr {
+	transition: 0.1s;
+}
+
+.project-table tbody tr:hover {
+	background-color: #f7faff;
+}
+
+.project-table tbody tr:last-child td {
+	border-bottom: none;
+}
+
+/* 테이블 셀 */
+.project-name {
+	font-weight: 600;
+	color: #1f4fa3;
+}
+
+.identifier {
+	color: #666;
+	font-family: 'Courier New', monospace;
+	font-size: 12px;
+}
+
+.description {
+	color: #666;
+	max-width: 200px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.created-date {
+	color: #999;
+	font-size: 13px;
+}
+
+/* 상태 배지 */
+.status-badge {
+	display: inline-block;
+	padding: 4px 12px;
+	border-radius: 12px;
+	font-size: 12px;
+	font-weight: 600;
+}
+
+.status-badge.pending {
+	background-color: #fef3cd;
+	color: #856404;
+}
+
+.status-badge.ongoing {
+	background-color: #d1ecf1;
+	color: #0c5460;
+}
+
+.status-badge.completed {
+	background-color: #d4edda;
+	color: #155724;
+}
+
+/* 드롭다운 */
+.action-dropdown {
+	position: relative;
+	display: inline-block;
+}
+
+.btn-action {
+	padding: 6px 12px;
+	background: none;
+	border: 1px solid #d7dde8;
+	border-radius: 4px;
+	font-size: 16px;
+	cursor: pointer;
+	transition: 0.1s;
+}
+
+.btn-action:hover {
+	background-color: #f5f5f5;
+	border-color: #2f6fed;
+}
+
+.dropdown-menu {
+	display: none;
+	position: absolute;
+	top: 100%;
+	right: 0;
+	background: #fff;
+	border: 1px solid #d7dde8;
+	border-radius: 6px;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+	min-width: 120px;
+	z-index: 100;
+	margin-top: 4px;
+}
+
+.dropdown-menu.show {
+	display: block;
+}
+
+.dropdown-item {
+	display: block;
+	width: 100%;
+	padding: 10px 16px;
+	text-align: left;
+	font-size: 13px;
+	color: #333;
+	text-decoration: none;
+	transition: 0.1s;
+	border: none;
+	background: none;
+	cursor: pointer;
+}
+
+.dropdown-item:first-child {
+	border-radius: 6px 6px 0 0;
+}
+
+.dropdown-item:last-child {
+	border-radius: 0 0 6px 6px;
+}
+
+.dropdown-item:hover {
+	background-color: #f0f4f9;
+	color: #2f6fed;
+}
+
+.dropdown-item.delete:hover {
+	background-color: #fff1f1;
+	color: #d93025;
+}
+
+/* 체크박스 */
+input[type="checkbox"] {
+	width: 16px;
+	height: 16px;
+	cursor: pointer;
+	accent-color: #2f6fed;
+}
+
+/* 페이징 */
+.pagination {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	gap: 6px;
+}
+
+.page-btn {
+	min-width: 34px;
+	height: 34px;
+	padding: 0;
+	border: 1px solid #d6dce8;
+	background-color: #fff;
+	color: #333;
+	border-radius: 4px;
+	font-size: 14px;
+	cursor: pointer;
+	transition: 0.1s;
+}
+
+.page-btn:hover:not(.active):not(:disabled) {
+	background-color: #f0f4f9;
+	border-color: #2f6fed;
+	color: #2f6fed;
+}
+
+.page-btn.active {
+	background-color: #2f6fed;
+	border-color: #2f6fed;
+	color: #fff;
+	font-weight: 700;
+}
+
+.empty-row {
+	text-align: center;
+	color: #999;
+	padding: 40px 12px !important;
+}
+
+/* 반응형 */
+@media ( max-width : 1200px) {
+	.search-row {
+		grid-template-columns: repeat(2, 1fr);
+	}
+}
+
+@media ( max-width : 768px) {
+	.pm-project-page {
+		padding: 16px;
+	}
+	.search-header {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 12px;
+	}
+	.btn-create {
+		width: 100%;
+	}
+	.search-row {
+		grid-template-columns: 1fr;
+	}
+	.project-table {
+		min-width: 900px;
+	}
+	.description {
+		max-width: 100px;
+	}
+}

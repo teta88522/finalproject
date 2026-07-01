@@ -51,7 +51,6 @@
 	display: flex;
 	gap: 10px;
 	flex-wrap: wrap;
-	margin-bottom: 30px;
 }
 
 .index-btn {
@@ -82,38 +81,4 @@
 
 .index-btn-secondary:hover {
 	background-color: #545b62;
-}
-
-.index-features {
-	background: white;
-	padding: 30px;
-	border-radius: 8px;
-	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.index-features h3 {
-	color: #333;
-	margin-bottom: 20px;
-	font-size: 18px;
-}
-
-.index-feature-list {
-	list-style: none;
-}
-
-.index-feature-list li {
-	padding: 12px 0;
-	color: #666;
-	border-bottom: 1px solid #eee;
-}
-
-.index-feature-list li:last-child {
-	border-bottom: none;
-}
-
-.index-feature-list li:before {
-	content: "✓ ";
-	color: #28a745;
-	font-weight: bold;
-	margin-right: 10px;
 }

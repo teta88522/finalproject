@@ -1,5 +1,8 @@
 package com.pixcel.app.project.web;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -11,6 +14,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.pixcel.app.project.service.IssueStatVO;
@@ -35,22 +39,37 @@ public class ProjectController {
 
 	/* 프로젝트 등록 처리 */
 	@PostMapping("/myproject/register")
-	public String registerProject(ProjectVO projectVO, @CookieValue(value = "userId", required = false) String userId,
-			RedirectAttributes redirectAttributes) {
+	public String registerProject(ProjectVO projectVO, @RequestParam(required = false) String startDate,
+			@RequestParam(required = false) String endDate,
+			@CookieValue(value = "userId", required = false) String userId, RedirectAttributes redirectAttributes) {
 		if (projectVO.getOwnerId() == null || projectVO.getOwnerId().isEmpty()) {
 			projectVO.setOwnerId(userId);
 		}
 
-		// ✅ 날짜 검증: startDate <= endDate 확인
-		if (projectVO.getStartDate() != null && projectVO.getEndDate() != null) {
-			if (projectVO.getStartDate().after(projectVO.getEndDate())) {
-				redirectAttributes.addFlashAttribute("errorMessage", "시작일이 완료일보다 늦을 수 없습니다.");
+		// ✅ 추가: 날짜 검증 (startDate > endDate 불가) - Repository 방식 동일
+		if (startDate != null && !startDate.isEmpty() && endDate != null && !endDate.isEmpty()) {
+			try {
+				SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+				Date startDateObj = dateFormat.parse(startDate);
+				Date endDateObj = dateFormat.parse(endDate);
+
+				if (startDateObj.after(endDateObj)) {
+					redirectAttributes.addFlashAttribute("errorMessage", "시작일이 완료일보다 늦을 수 없습니다.");
+					return "redirect:/myproject/register";
+				}
+
+				// ✅ projectVO에 Date 객체 설정 (DB 저장용)
+				projectVO.setStartDate(startDateObj);
+				projectVO.setEndDate(endDateObj);
+
+			} catch (Exception e) {
+				redirectAttributes.addFlashAttribute("errorMessage", "날짜 형식이 올바르지 않습니다.");
 				return "redirect:/myproject/register";
 			}
 		}
 
 		projectService.registerProject(projectVO);
-		return "redirect:/myproject/list"; // ✅ 수정: /project/list → /myproject/list
+		return "redirect:/myproject/list";
 	}
 
 	/* 프로젝트 목록 (검색 + 페이징) */
@@ -89,20 +108,64 @@ public class ProjectController {
 		return "project/projectList";
 	}
 
+	/* ✅ 추가: 관리자용 전체 프로젝트 조회 (/manage/projects) */
+	@GetMapping("/pm/list")
+	public String manageProjects(Model model,
+			@RequestParam(value = "searchProjectName", required = false) String searchProjectName,
+			@RequestParam(value = "searchStatusCode", required = false) String searchStatusCode,
+			@RequestParam(value = "page", defaultValue = "1") int page,
+			@RequestParam(value = "pageSize", defaultValue = "10") int pageSize) {
+
+		ProjectVO searchVO = new ProjectVO();
+		searchVO.setSearchProjectName(searchProjectName);
+		searchVO.setSearchStatusCode(searchStatusCode);
+		searchVO.setPage(page);
+		searchVO.setPageSize(pageSize);
+
+		List<ProjectVO> projectList = projectService.selectAllProjectsWithSearch(searchVO);
+
+		model.addAttribute("projectList", projectList);
+		model.addAttribute("searchVO", searchVO);
+		model.addAttribute("searchProjectName", searchProjectName);
+		model.addAttribute("searchStatusCode", searchStatusCode);
+
+		return "project/pmProjectList";
+	}
+
 	/* 프로젝트 상세 */
 	@GetMapping("/projectdetail/{projectId}")
 	public String projectDetail(@PathVariable String projectId,
+			@CookieValue(value = "userId", required = false) String userId,
 			@CookieValue(value = "subscribeYn", required = false) String subscribeYn, Model model) {
 
+		// ✅ 1. 로그인 확인
+		if (userId == null || userId.isEmpty()) {
+			return "redirect:/login";
+		}
+
+		// ✅ 2. 프로젝트 존재 확인
 		ProjectVO project = projectService.selectProjectDetail(projectId);
+		if (project == null) {
+			return "redirect:/myproject/list";
+		}
+
+		// ✅ 3. 접근 권한 확인 (소유자 또는 구성원)
+		boolean isOwner = project.getOwnerId().equals(userId);
+		boolean isMember = projectService.isProjectMember(projectId, userId);
+
+		if (!isOwner && !isMember) {
+			return "redirect:/myproject/list";
+		}
+
+		// ✅ 4. 정상 접근 - 데이터 조회
 		List<ProjectMemberVO> projectMemberList = projectService.selectProjectMemberList(projectId);
-		List<IssueStatVO> issueStatList = projectService.selectIssueStatByProjectId(projectId); // ✅ 추가
+		List<IssueStatVO> issueStatList = projectService.selectIssueStatByProjectId(projectId);
 
 		model.addAttribute("project", project);
 		model.addAttribute("projectId", projectId);
 		model.addAttribute("subscribeYn", subscribeYn);
 		model.addAttribute("projectMemberList", projectMemberList);
-		model.addAttribute("issueStatList", issueStatList); // ✅ 추가
+		model.addAttribute("issueStatList", issueStatList);
 
 		return "project/projectDetail";
 	}
@@ -110,11 +173,22 @@ public class ProjectController {
 	/* 구성원 목록 설정 */
 	@GetMapping("/project/{projectId}/settings/members")
 	public String projectMemberSetting(@PathVariable String projectId,
+			@CookieValue(value = "userId", required = false) String userId,
 			@CookieValue(value = "subscribeYn", required = false) String subscribeYn, Model model) {
+
+		// ✅ 권한 확인: 로그인 + 소유자 확인
+		if (userId == null || userId.isEmpty()) {
+			return "redirect:/login";
+		}
+
+		ProjectVO project = projectService.selectProjectDetail(projectId);
+		if (project == null || !project.getOwnerId().equals(userId)) {
+			return "redirect:/myproject/list";
+		}
+
 		if (!"Y".equals(subscribeYn))
 			return "redirect:/projectdetail/" + projectId;
 
-		ProjectVO project = projectService.selectProjectDetail(projectId);
 		List<ProjectMemberVO> projectMemberList = projectService.selectProjectMemberList(projectId);
 
 		model.addAttribute("project", project);
@@ -128,11 +202,22 @@ public class ProjectController {
 	/* 구성원 추가 폼 */
 	@GetMapping("/project/{projectId}/settings/members/new")
 	public String projectMemberAddForm(@PathVariable String projectId,
+			@CookieValue(value = "userId", required = false) String userId,
 			@CookieValue(value = "subscribeYn", required = false) String subscribeYn, Model model) {
+
+		// ✅ 권한 확인: 로그인 + 소유자 확인
+		if (userId == null || userId.isEmpty()) {
+			return "redirect:/login";
+		}
+
+		ProjectVO project = projectService.selectProjectDetail(projectId);
+		if (project == null || !project.getOwnerId().equals(userId)) {
+			return "redirect:/myproject/list";
+		}
+
 		if (!"Y".equals(subscribeYn))
 			return "redirect:/projectdetail/" + projectId;
 
-		ProjectVO project = projectService.selectProjectDetail(projectId);
 		List<ProjectMemberVO> candidateList = projectService.selectProjectMemberCandidateList(projectId);
 		List<ProjectRoleVO> projectRoleList = projectService.selectProjectRoleList(projectId);
 
@@ -149,8 +234,20 @@ public class ProjectController {
 	/* 구성원 추가 처리 */
 	@PostMapping("/project/{projectId}/settings/members/add")
 	public String insertProjectMember(@PathVariable String projectId, ProjectMemberVO projectMemberVO,
+			@CookieValue(value = "userId", required = false) String userId,
 			@CookieValue(value = "subscribeYn", required = false) String subscribeYn,
 			RedirectAttributes redirectAttributes) {
+
+		// ✅ 권한 확인: 로그인 + 소유자 확인
+		if (userId == null || userId.isEmpty()) {
+			return "redirect:/login";
+		}
+
+		ProjectVO project = projectService.selectProjectDetail(projectId);
+		if (project == null || !project.getOwnerId().equals(userId)) {
+			return "redirect:/myproject/list";
+		}
+
 		if (!"Y".equals(subscribeYn))
 			return "redirect:/projectdetail/" + projectId;
 
@@ -164,11 +261,22 @@ public class ProjectController {
 	/* 구성원 역할 수정 폼 */
 	@GetMapping("/project/{projectId}/settings/members/{projectMemberId}/update")
 	public String projectMemberUpdateForm(@PathVariable String projectId, @PathVariable String projectMemberId,
+			@CookieValue(value = "userId", required = false) String userId,
 			@CookieValue(value = "subscribeYn", required = false) String subscribeYn, Model model) {
+
+		// ✅ 권한 확인: 로그인 + 소유자 확인
+		if (userId == null || userId.isEmpty()) {
+			return "redirect:/login";
+		}
+
+		ProjectVO project = projectService.selectProjectDetail(projectId);
+		if (project == null || !project.getOwnerId().equals(userId)) {
+			return "redirect:/myproject/list";
+		}
+
 		if (!"Y".equals(subscribeYn))
 			return "redirect:/projectdetail/" + projectId;
 
-		ProjectVO project = projectService.selectProjectDetail(projectId);
 		ProjectMemberVO projectMember = projectService.selectProjectMemberDetail(projectMemberId);
 		List<ProjectRoleVO> projectRoleList = projectService.selectProjectRoleList(projectId);
 
@@ -184,8 +292,20 @@ public class ProjectController {
 	/* 구성원 역할 수정 처리 */
 	@PostMapping("/project/{projectId}/settings/members/update")
 	public String updateProjectMemberRole(@PathVariable String projectId, ProjectMemberVO projectMemberVO,
+			@CookieValue(value = "userId", required = false) String userId,
 			@CookieValue(value = "subscribeYn", required = false) String subscribeYn,
 			RedirectAttributes redirectAttributes) {
+
+		// ✅ 권한 확인: 로그인 + 소유자 확인
+		if (userId == null || userId.isEmpty()) {
+			return "redirect:/login";
+		}
+
+		ProjectVO project = projectService.selectProjectDetail(projectId);
+		if (project == null || !project.getOwnerId().equals(userId)) {
+			return "redirect:/myproject/list";
+		}
+
 		if (!"Y".equals(subscribeYn))
 			return "redirect:/projectdetail/" + projectId;
 
@@ -199,8 +319,20 @@ public class ProjectController {
 	/* 구성원 삭제 */
 	@PostMapping("/project/{projectId}/settings/members/delete")
 	public String deleteProjectMember(@PathVariable String projectId, @RequestParam String projectMemberId,
+			@CookieValue(value = "userId", required = false) String userId,
 			@CookieValue(value = "subscribeYn", required = false) String subscribeYn,
 			RedirectAttributes redirectAttributes) {
+
+		// ✅ 권한 확인: 로그인 + 소유자 확인
+		if (userId == null || userId.isEmpty()) {
+			return "redirect:/login";
+		}
+
+		ProjectVO project = projectService.selectProjectDetail(projectId);
+		if (project == null || !project.getOwnerId().equals(userId)) {
+			return "redirect:/myproject/list";
+		}
+
 		if (!"Y".equals(subscribeYn))
 			return "redirect:/projectdetail/" + projectId;
 
@@ -213,11 +345,22 @@ public class ProjectController {
 	/* 프로젝트 모듈 설정 */
 	@GetMapping("/project/{projectId}/settings/modules")
 	public String projectModuleSetting(@PathVariable String projectId,
+			@CookieValue(value = "userId", required = false) String userId,
 			@CookieValue(value = "subscribeYn", required = false) String subscribeYn, Model model) {
+
+		// ✅ 권한 확인: 로그인 + 소유자 확인
+		if (userId == null || userId.isEmpty()) {
+			return "redirect:/login";
+		}
+
+		ProjectVO project = projectService.selectProjectDetail(projectId);
+		if (project == null || !project.getOwnerId().equals(userId)) {
+			return "redirect:/myproject/list";
+		}
+
 		if (!"Y".equals(subscribeYn))
 			return "redirect:/projectdetail/" + projectId;
 
-		ProjectVO project = projectService.selectProjectDetail(projectId);
 		List<ProjectModulesVO> projectModuleList = projectService.selectAllModuleProjects(projectId);
 
 		model.addAttribute("project", project);
@@ -231,8 +374,20 @@ public class ProjectController {
 	/* 프로젝트 모듈 추가 */
 	@PostMapping("/project/{projectId}/settings/modules/add")
 	public String insertProjectModule(@PathVariable String projectId, @RequestParam String moduleCode,
+			@CookieValue(value = "userId", required = false) String userId,
 			@CookieValue(value = "subscribeYn", required = false) String subscribeYn,
 			RedirectAttributes redirectAttributes) {
+
+		// ✅ 권한 확인: 로그인 + 소유자 확인
+		if (userId == null || userId.isEmpty()) {
+			return "redirect:/login";
+		}
+
+		ProjectVO project = projectService.selectProjectDetail(projectId);
+		if (project == null || !project.getOwnerId().equals(userId)) {
+			return "redirect:/myproject/list";
+		}
+
 		if (!"Y".equals(subscribeYn))
 			return "redirect:/projectdetail/" + projectId;
 
@@ -245,8 +400,20 @@ public class ProjectController {
 	/* 프로젝트 모듈 삭제 */
 	@PostMapping("/project/{projectId}/settings/modules/delete")
 	public String deleteProjectModule(@PathVariable String projectId, @RequestParam String moduleCode,
+			@CookieValue(value = "userId", required = false) String userId,
 			@CookieValue(value = "subscribeYn", required = false) String subscribeYn,
 			RedirectAttributes redirectAttributes) {
+
+		// ✅ 권한 확인: 로그인 + 소유자 확인
+		if (userId == null || userId.isEmpty()) {
+			return "redirect:/login";
+		}
+
+		ProjectVO project = projectService.selectProjectDetail(projectId);
+		if (project == null || !project.getOwnerId().equals(userId)) {
+			return "redirect:/myproject/list";
+		}
+
 		if (!"Y".equals(subscribeYn))
 			return "redirect:/projectdetail/" + projectId;
 
@@ -259,8 +426,20 @@ public class ProjectController {
 	/* 프로젝트 삭제 */
 	@PostMapping("/myproject/delete")
 	public String deleteProject(@RequestParam String projectId,
+			@CookieValue(value = "userId", required = false) String userId,
 			@CookieValue(value = "subscribeYn", required = false) String subscribeYn,
 			RedirectAttributes redirectAttributes) {
+
+		// ✅ 권한 확인: 로그인 + 소유자 확인
+		if (userId == null || userId.isEmpty()) {
+			return "redirect:/login";
+		}
+
+		ProjectVO project = projectService.selectProjectDetail(projectId);
+		if (project == null || !project.getOwnerId().equals(userId)) {
+			return "redirect:/myproject/list";
+		}
+
 		if (!"Y".equals(subscribeYn))
 			return "redirect:/myproject/list";
 
@@ -269,4 +448,76 @@ public class ProjectController {
 
 		return "redirect:/myproject/list";
 	}
+
+	/* 관리자용 프로젝트 삭제 (JSON 응답) */
+	@PostMapping("/pm/{projectId}/delete")
+	@ResponseBody
+	public Map<String, Object> deleteProjectFromAdmin(@PathVariable String projectId,
+			@CookieValue(value = "userId", required = false) String userId) {
+
+		Map<String, Object> result = new HashMap<>();
+
+		// 로그인 확인
+		if (userId == null || userId.isEmpty()) {
+			result.put("success", false);
+			result.put("message", "로그인이 필요합니다.");
+			return result;
+		}
+
+		// 프로젝트 조회
+		ProjectVO project = projectService.selectProjectDetail(projectId);
+		if (project == null) {
+			result.put("success", false);
+			result.put("message", "프로젝트가 없습니다.");
+			return result;
+		}
+
+		// 소유자 확인
+		if (!project.getOwnerId().equals(userId)) {
+			result.put("success", false);
+			result.put("message", "삭제 권한이 없습니다.");
+			return result;
+		}
+
+		// 삭제 실행
+		Map<String, Object> deleteResult = projectService.deleteProject(projectId);
+		return deleteResult;
+	}
+
+	/* 관리자용 프로젝트 잠금 (JSON 응답) */
+	@PostMapping("/pm/{projectId}/lock")
+	@ResponseBody
+	public Map<String, Object> lockProjectFromAdmin(@PathVariable String projectId,
+			@CookieValue(value = "userId", required = false) String userId) {
+
+		Map<String, Object> result = new HashMap<>();
+
+		// 로그인 확인
+		if (userId == null || userId.isEmpty()) {
+			result.put("success", false);
+			result.put("message", "로그인이 필요합니다.");
+			return result;
+		}
+
+		// 프로젝트 조회
+		ProjectVO project = projectService.selectProjectDetail(projectId);
+		if (project == null) {
+			result.put("success", false);
+			result.put("message", "프로젝트가 없습니다.");
+			return result;
+		}
+
+		// 소유자 확인
+		if (!project.getOwnerId().equals(userId)) {
+			result.put("success", false);
+			result.put("message", "권한이 없습니다.");
+			return result;
+		}
+
+		// 잠금 상태 변경 (상태코드를 'a003' 종료로 변경 - 옵션)
+		// 또는 별도의 lock 컬럼이 있으면 그것을 사용
+		Map<String, Object> lockResult = projectService.lockProject(projectId);
+		return lockResult;
+	}
+
 }

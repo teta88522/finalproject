@@ -10,7 +10,7 @@
 <body>
 	<div layout:fragment="Content">
 		<div class="index-container">
-		
+
 			<!-- Alert Messages -->
 			<div th:if="${errorMessage}"
 				style="color: red; padding: 10px; background: #ffebee; margin-bottom: 20px;">
@@ -21,11 +21,11 @@
 				style="color: green; padding: 10px; background: #e8f5e9; margin-bottom: 20px;">
 				<span th:text="${successMessage}"></span>
 			</div>
-			
+
 			<!-- Header -->
 			<div class="index-header">
 				<h1>📦 저장소 관리</h1>
-				<p>GitHub 저장소의 커밋 이력을 조회하고 관리합니다</p>
+				<p>GitHub 저장소의 파일과 커밋 이력을 조회합니다</p>
 			</div>
 
 			<!-- Info Grid -->
@@ -36,40 +36,116 @@
 				</div>
 				<div class="index-info-card">
 					<div class="label">Repository</div>
-					<div class="value">pixcel-project</div>
+					<div class="value">-</div>
 				</div>
 				<div class="index-info-card">
 					<div class="label">Branch</div>
-					<div class="value">master, develop</div>
+					<div class="value">-</div>
 				</div>
 			</div>
 
 			<!-- Actions -->
 			<div class="index-actions">
 				<a
-					th:href="@{/project/{projectId}/sourcerepository/commits(projectId=${projectId}, branch='master')}"
-					class="index-btn index-btn-primary"> 📋 Commit 목록 보기 </a>
-				<form
-					th:action="@{/project/{projectId}/sourcerepository/sync(projectId=${projectId})}"
-					method="post" style="display: inline;">
-					<button type="submit" class="index-btn index-btn-secondary">
-						🔄 GitHub 동기화</button>
-				</form>
-			</div>
-
-			<!-- Features -->
-			<div class="index-features">
-				<h3>✨ 기능</h3>
-				<ul class="index-feature-list">
-					<li>GitHub 저장소의 커밋 이력 자동 동기화</li>
-					<li>커밋 메시지에서 이슈 ID 자동 파싱 (#123 형식)</li>
-					<li>브랜치별 커밋 조회 (마스터, 디벨롭 등)</li>
-					<li>커밋 상세 정보 조회 (메시지, 작가, 날짜 등)</li>
-					<li>이슈와 커밋 연동</li>
-					<li>페이지네이션 지원</li>
-				</ul>
+					th:href="@{/project/{projectId}/sourcerepository/files(projectId=${projectId})}"
+					class="index-btn index-btn-primary"> 📁 파일 목록 보기 </a>
+				<button type="button" data-toggle="modal" data-target="#syncModal"
+					class="index-btn index-btn-secondary">🔄 GitHub 동기화</button>
 			</div>
 		</div>
+
+		<!-- GitHub 동기화 모달 -->
+		<div class="modal fade" id="syncModal" tabindex="-1" role="dialog">
+			<div class="modal-dialog" role="document"
+				style="border-radius: 20px;">
+				<div class="modal-content"
+					style="border-radius: 20px; overflow: hidden; border: none;">
+					<form
+						th:action="@{/project/{projectId}/sourcerepository/sync-modal(projectId=${projectId})}"
+						method="post">
+						<!-- 헤더 -->
+						<div
+							style="background: #1a6fe8; padding: 18px 24px; display: flex; align-items: center; justify-content: space-between;">
+							<h4
+								style="color: #fff; margin: 0; font-size: 15px; font-weight: 500;">
+								GitHub 저장소 연동</h4>
+							<span data-dismiss="modal"
+								style="color: #fff; font-size: 18px; cursor: pointer;">✕</span>
+						</div>
+						<!-- 바디 -->
+						<div class="modal-body" style="padding: 24px;">
+							<div class="form-group">
+								<label style="font-size: 13px; color: #555;"> GitHub URL
+									<span style="color: #e24b4a">*</span>
+								</label> <input type="text" name="gitHubUrl" class="form-control"
+									placeholder="https://github.com/owner/repository" required
+									style="border-radius: 10px; border: 1px solid #ddd; font-size: 13px; height: 36px;">
+								<small style="color: #999; margin-top: 4px; display: block;">
+									예: https://github.com/pixcel-team/pixcel-project </small>
+							</div>
+							<div class="form-group" style="margin-top: 16px;">
+								<label style="font-size: 13px; color: #555;"> Branch <span
+									style="color: #e24b4a">*</span>
+								</label> <select name="branch" class="form-control" required
+									style="border-radius: 10px; border: 1px solid #ddd; font-size: 13px; height: 36px;">
+									<option value="">Branch를 선택하세요</option>
+									<option value="master">master</option>
+									<option value="main">main</option>
+									<option value="develop">develop</option>
+									<option value="dev">dev</option>
+								</select> <small style="color: #999; margin-top: 4px; display: block;">
+									기본 Branch를 선택하세요 </small>
+							</div>
+						</div>
+						<!-- 푸터 -->
+						<div class="modal-footer"
+							style="border-top: 1px solid #f0f0f0; padding: 14px 24px 20px;">
+							<button type="button"
+								class="btn btn-default btn-custon-three btn-custon-rounded-three"
+								data-dismiss="modal">취소</button>
+							<button type="submit"
+								class="btn btn-primary btn-custon-three btn-custon-rounded-three">
+								저장</button>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+		
+		<script>
+    const gitHubUrlInput = document.querySelector('input[name="gitHubUrl"]');
+    const branchSelect = document.querySelector('select[name="branch"]');
+
+    gitHubUrlInput.addEventListener('blur', function() {
+        const url = this.value.trim();
+        if (!url) return;
+
+        fetch(`/project/${getProjectIdFromURL()}/sourcerepository/validate-url?gitHubUrl=${encodeURIComponent(url)}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.branches) {
+                branchSelect.innerHTML = '';
+                data.branches.forEach(branch => {
+                    const option = document.createElement('option');
+                    option.value = branch.name;
+                    option.textContent = branch.isDefault === 'true' ? `${branch.name} (기본)` : branch.name;
+                    if (branch.isDefault === 'true') option.selected = true;
+                    branchSelect.appendChild(option);
+                });
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    });
+
+    function getProjectIdFromURL() {
+        const match = window.location.pathname.match(/\/project\/([^/]+)\//);
+        return match ? match[1] : '';
+    }
+</script>
+		
 	</div>
 </body>
 

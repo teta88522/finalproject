@@ -57,4 +57,16 @@ public interface ProjectMapper {
 	
 	public int insertProjectModule(@Param("projectId") String projectId, @Param("moduleCode") String moduleCode);
 	public int deleteProjectModuleByCode(@Param("projectId") String projectId, @Param("moduleCode") String moduleCode);
+	
+	// ✅ 추가: 구성원 여부 확인 (권한 체크용)
+	public int countProjectMember(@Param("projectId") String projectId, @Param("userId") String userId);
+	
+	// ✅ 추가: 관리자용 전체 프로젝트 조회 (검색+페이징)
+	public List<ProjectVO> selectAllProjectsWithSearch(ProjectVO searchVO);
+	public int selectAllProjectsCount(ProjectVO searchVO);
+	
+	// ✅ 추가: 프로젝트 상태 업데이트
+	public int updateProjectStatus(@Param("projectId") String projectId, @Param("statusCode") String statusCode);
+	
+	void updateProjectGitUrl(@Param("projectId") String projectId, @Param("gitUrl") String gitUrl);
 }
