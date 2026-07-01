@@ -4,6 +4,7 @@ import java.io.File;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -11,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import org.springframework.dao.DataIntegrityViolationException;
@@ -30,6 +32,7 @@ import lombok.RequiredArgsConstructor;
 public class IssuesServiceImpl implements IssuesService {
 
 	private final IssuesMapper issuesMapper;
+	private final Map<String, CachedIssueListFilterData> issueListFilterCache = new ConcurrentHashMap<>();
 
 	private static final String FIELD_ISSUE = "ISSUE";
 	private static final String FIELD_TITLE = "TITLE";
@@ -54,17 +57,22 @@ public class IssuesServiceImpl implements IssuesService {
 	private static final String OPTION_PRIORITY = "PRIORITY";
 	private static final String OPTION_ASSIGNEE = "ASSIGNEE";
 	private static final String OPTION_PARENT_ISSUE = "PARENT_ISSUE";
+	private static final String OPTION_REPORT_SOURCE = "REPORT_SOURCE";
+	private static final String REPORT_NONE_KEY = "__NONE__";
+	private static final String REPORT_NONE_NAME = "\uBBF8\uC9C0\uC815";
+	private static final long ISSUE_LIST_FILTER_CACHE_TTL_MILLIS = 120_000L;
+	private static final int ISSUE_HISTORY_GROUP_PAGE_SIZE = 10;
 
-	private static final String PERMISSION_ISSUE_CREATE_CODE = "p008";
+	private static final String PERMISSION_ISSUE_CREATE_CODE = "p005";
 	private static final String PERMISSION_ISSUE_CREATE_NAME = "일감 추가";
 
-	private static final String PERMISSION_ISSUE_UPDATE_CODE = "p009";
-	private static final String PERMISSION_ISSUE_UPDATE_OWN_CODE = "p011";
+	private static final String PERMISSION_ISSUE_UPDATE_CODE = "p007";
+	private static final String PERMISSION_ISSUE_UPDATE_OWN_CODE = "p008";
 
-	private static final String PERMISSION_ISSUE_DELETE_CODE = "p010";
+	private static final String PERMISSION_ISSUE_DELETE_CODE = "p006";
 	private static final String PERMISSION_ISSUE_DELETE_NAME = "일감 삭제";
 
-	private static final String PERMISSION_MILESTONE_CREATE_CODE = "p005";
+	private static final String PERMISSION_MILESTONE_CREATE_CODE = "p002";
 	private static final String PERMISSION_MILESTONE_CREATE_NAME = "마일스톤 생성";
 
 	private static final String CHANGE_TYPE_CREATE_CODE = "M001";
@@ -170,7 +178,15 @@ public class IssuesServiceImpl implements IssuesService {
 	public Map<String, Object> getIssueListFilterData(String projectId, String userId) {
 		validateProjectAccess(projectId, userId);
 
-		return buildIssueListFilterData(projectId);
+		long now = System.currentTimeMillis();
+		CachedIssueListFilterData cachedData = issueListFilterCache.get(projectId);
+		if (cachedData != null && !cachedData.isExpired(now)) {
+			return cachedData.copyData();
+		}
+
+		Map<String, Object> filterData = buildIssueListFilterData(projectId);
+		issueListFilterCache.put(projectId, new CachedIssueListFilterData(filterData, now));
+		return new HashMap<>(filterData);
 	}
 
 	private Map<String, Object> buildIssueListFilterData(String projectId) {
@@ -249,7 +265,7 @@ public class IssuesServiceImpl implements IssuesService {
 	public Map<String, Object> getIssueReportPageData(String projectId, String userId) {
 		IssuesVO projectInfo = validateProjectAccess(projectId, userId);
 
-		List<IssuesVO> reportRows = issuesMapper.selectIssueReportRows(projectId);
+		List<IssuesVO> reportRows = buildIssueReportRows(issuesMapper.selectIssueReportSourceRows(projectId));
 
 		Map<String, Object> pageData = new HashMap<>();
 		pageData.put("projectInfo", projectInfo);
@@ -306,7 +322,6 @@ public class IssuesServiceImpl implements IssuesService {
 			return buildDeletedIssueDetailPageData(projectInfo, issueId, historyRows);
 		}
 
-		List<IssuesVO> historyRows = issuesMapper.selectIssueHistoryRows(issueId);
 		// 상세 화면의 선택 목록과 유형별 항목 설정을 한 번에 조회해 DB 왕복을 줄인다.
 		List<IssuesVO> optionRows = issuesMapper.selectIssueDetailRows(projectId, issueId, userId);
 
@@ -319,12 +334,43 @@ public class IssuesServiceImpl implements IssuesService {
 		pageData.put("parentIssueList", filterOptionRows(optionRows, OPTION_PARENT_ISSUE));
 		pageData.put("availableStatusList",
 				distinctByIssueStatusId(filterOptionRows(optionRows, OPTION_AVAILABLE_STATUS)));
-		pageData.put("historyList", historyRows);
-		pageData.put("historyGroupList", buildHistoryGroupList(historyRows));
+		pageData.put("historyList", Collections.emptyList());
+		pageData.put("historyGroupList", Collections.emptyList());
+		pageData.put("historyCount", issue.getTotalCount() == null ? 0 : issue.getTotalCount());
+		pageData.put("timeLogTotalCount", issue.getTimeLogTotalCount() == null ? 0 : issue.getTimeLogTotalCount());
+		pageData.put("timeLogTotalHours", issue.getTimeLogTotalHours() == null ? 0 : issue.getTimeLogTotalHours());
 		pageData.put("deletedIssue", false);
 		pageData.put("canUpdateIssue", "Y".equals(issue.getIssueUpdatePermissionYn()));
 		pageData.put("canDeleteIssue", "Y".equals(issue.getIssueDeletePermissionYn()));
 
+		return pageData;
+	}
+
+	@Override
+	public List<IssueHistoryGroupVO> getIssueHistoryGroupList(String projectId, String issueId, String userId) {
+		validateIssueAccess(projectId, issueId, userId);
+		return buildHistoryGroupList(issuesMapper.selectIssueHistoryRows(issueId));
+	}
+
+	@Override
+	public Map<String, Object> getIssueHistoryGroupPage(String projectId, String issueId, String userId, int offset) {
+		validateUserId(userId);
+
+		int checkedOffset = Math.max(offset, 0);
+		int startGroupRow = checkedOffset + 1;
+		int endGroupRow = checkedOffset + ISSUE_HISTORY_GROUP_PAGE_SIZE + 1;
+
+		List<IssueHistoryGroupVO> groupList = buildHistoryGroupList(
+				issuesMapper.selectIssueHistoryRowsForDetail(projectId, issueId, userId, startGroupRow, endGroupRow));
+		boolean hasMore = groupList.size() > ISSUE_HISTORY_GROUP_PAGE_SIZE;
+		List<IssueHistoryGroupVO> displayGroupList = hasMore
+				? new ArrayList<>(groupList.subList(0, ISSUE_HISTORY_GROUP_PAGE_SIZE))
+				: groupList;
+
+		Map<String, Object> pageData = new HashMap<>();
+		pageData.put("historyGroupList", displayGroupList);
+		pageData.put("hasMore", hasMore);
+		pageData.put("nextOffset", checkedOffset + displayGroupList.size());
 		return pageData;
 	}
 
@@ -364,12 +410,15 @@ public class IssuesServiceImpl implements IssuesService {
 			throw new IllegalArgumentException("수정할 일감이 없습니다.");
 		}
 
+		issue.setHistoryGroupId(resolveHistoryGroupId(issue.getHistoryGroupId()));
 		normalizeIssueForUpdate(issue, currentIssue);
 		validateLength(issue);
 		validateProgressRate(issue);
-		validatePriority(issue.getProjectId(), issue.getSettingCodeId());
-		validateDynamicFieldsForUpdate(issue);
-		validateStatusTransition(currentIssue, issue, userId);
+
+		IssuesVO validation = issuesMapper.selectIssueUpdateSaveValidation(issue, userId);
+		validateIssueUpdateSaveCondition(validation);
+		validateDynamicFieldsForUpdate(issue, validation);
+		validateStatusTransition(validation);
 
 		int updateCount = issuesMapper.updateIssue(issue);
 
@@ -378,19 +427,30 @@ public class IssuesServiceImpl implements IssuesService {
 		}
 
 		IssuesVO updatedIssue = issuesMapper.selectIssueForUpdate(issue.getProjectId(), issue.getIssueId());
-		recordUpdateHistory(currentIssue, updatedIssue, userId, issue.getHistoryReason());
+		recordUpdateHistory(currentIssue, updatedIssue, userId, issue.getHistoryReason(), issue.getHistoryGroupId());
 	}
 
 	@Override
 	@Transactional
 	public void recordIssueFileAddHistory(String issueId, String userId, int uploadCount) {
+		recordIssueFileAddHistory(issueId, userId, uploadCount, newHistoryGroupId());
+	}
+
+	@Override
+	public String createIssueHistoryGroupId() {
+		return newHistoryGroupId();
+	}
+
+	@Override
+	@Transactional
+	public void recordIssueFileAddHistory(String issueId, String userId, int uploadCount, String historyGroupId) {
 		validateUserId(userId);
 
 		if (uploadCount <= 0) {
 			return;
 		}
 
-		insertIssueHistory(newHistoryGroupId(), issueId, userId, CHANGE_TYPE_FILE_ADD_CODE, FIELD_ATTACH_FILE, "파일 추가",
+		insertIssueHistory(resolveHistoryGroupId(historyGroupId), issueId, userId, CHANGE_TYPE_FILE_ADD_CODE, FIELD_ATTACH_FILE, "파일 추가",
 				"-", "첨부파일 " + uploadCount + "개 추가");
 	}
 
@@ -423,6 +483,13 @@ public class IssuesServiceImpl implements IssuesService {
 	@Override
 	@Transactional
 	public int deleteIssueFiles(String projectId, String issueId, List<String> fileIds, String userId) {
+		return deleteIssueFiles(projectId, issueId, fileIds, userId, newHistoryGroupId());
+	}
+
+	@Override
+	@Transactional
+	public int deleteIssueFiles(String projectId, String issueId, List<String> fileIds, String userId,
+			String historyGroupId) {
 		List<String> checkedFileIds = fileIds == null ? Collections.emptyList()
 				: fileIds.stream().map(this::trimToNull).filter(Objects::nonNull).distinct()
 						.collect(Collectors.toList());
@@ -434,6 +501,7 @@ public class IssuesServiceImpl implements IssuesService {
 		validateIssueFileManageAccess(projectId, issueId, userId);
 
 		int deleteCount = 0;
+		String checkedHistoryGroupId = resolveHistoryGroupId(historyGroupId);
 
 		for (String fileId : checkedFileIds) {
 			FileVO file = issuesMapper.selectIssueFile(issueId, fileId);
@@ -450,7 +518,7 @@ public class IssuesServiceImpl implements IssuesService {
 
 			deletePhysicalFile(file.getFilePath());
 
-			insertIssueHistory(newHistoryGroupId(), issueId, userId, CHANGE_TYPE_FILE_DELETE_CODE, FIELD_ATTACH_FILE,
+			insertIssueHistory(checkedHistoryGroupId, issueId, userId, CHANGE_TYPE_FILE_DELETE_CODE, FIELD_ATTACH_FILE,
 					"파일 삭제", emptyToDash(file.getOriginalName()), "삭제됨");
 			deleteCount += currentDeleteCount;
 		}
@@ -479,13 +547,24 @@ public class IssuesServiceImpl implements IssuesService {
 		}
 
 		try {
+			List<FileVO> deleteFileList = issuesMapper.selectIssueFileList(issueId);
+
 			insertIssueHistory(newHistoryGroupId(), issueId, userId, CHANGE_TYPE_DELETE_CODE, FIELD_ISSUE,
 					CHANGE_TYPE_DELETE_NAME, displayIssueLabel(deleteTarget), "삭제됨");
+
+			issuesMapper.deleteIssueTimelogs(issueId);
+			issuesMapper.deleteIssueFilesByIssue(issueId);
 
 			int deleteCount = issuesMapper.deleteIssue(projectId, issueId);
 
 			if (deleteCount == 0) {
 				throw new IllegalArgumentException("삭제할 일감이 없습니다.");
+			}
+
+			if (deleteFileList != null) {
+				for (FileVO file : deleteFileList) {
+					deletePhysicalFile(file.getFilePath());
+				}
 			}
 		} catch (DataIntegrityViolationException e) {
 			throw new IllegalArgumentException("연결된 데이터가 있는 일감은 삭제할 수 없습니다.");
@@ -559,6 +638,206 @@ public class IssuesServiceImpl implements IssuesService {
 		}
 
 		return optionRows.stream().filter(row -> optionGroup.equals(row.getOptionGroup())).collect(Collectors.toList());
+	}
+
+	private List<IssuesVO> buildIssueReportRows(List<IssuesVO> sourceRows) {
+		if (sourceRows == null || sourceRows.isEmpty()) {
+			return Collections.emptyList();
+		}
+
+		List<IssuesVO> issueRows = new ArrayList<>();
+		Map<String, String> issueTypeNameMap = new HashMap<>();
+		Map<String, String> versionNameMap = new HashMap<>();
+		Map<String, String> priorityNameMap = new HashMap<>();
+		Map<String, String> assigneeNameMap = new HashMap<>();
+		Map<String, String> milestoneNameMap = new HashMap<>();
+		Map<String, String> statusClosedYnMap = new HashMap<>();
+
+		for (IssuesVO row : sourceRows) {
+			collectIssueReportSourceRow(row, issueRows, issueTypeNameMap, versionNameMap, priorityNameMap,
+					assigneeNameMap, milestoneNameMap, statusClosedYnMap);
+		}
+
+		Map<String, IssuesVO> issueTypeReportMap = new LinkedHashMap<>();
+		Map<String, IssuesVO> versionReportMap = new LinkedHashMap<>();
+		Map<String, IssuesVO> priorityReportMap = new LinkedHashMap<>();
+		Map<String, IssuesVO> assigneeReportMap = new LinkedHashMap<>();
+		Map<String, IssuesVO> milestoneReportMap = new LinkedHashMap<>();
+
+		for (IssuesVO source : issueRows) {
+			boolean closed = "Y".equalsIgnoreCase(statusClosedYnMap.getOrDefault(source.getIssueStatusId(), "N"));
+			source.setIssueTypeName(issueTypeNameMap.get(source.getIssueTypeId()));
+			source.setVersionName(versionNameMap.get(source.getVersionId()));
+			source.setSettingName(priorityNameMap.get(source.getSettingCodeId()));
+			source.setAssigneeName(assigneeNameMap.get(source.getAssigneeId()));
+			source.setMilestoneTitle(milestoneNameMap.get(source.getMilestoneId()));
+			addIssueTypeReportRow(issueTypeReportMap, source, closed);
+			addVersionReportRow(versionReportMap, source, closed);
+			addPriorityReportRow(priorityReportMap, source, closed);
+			addAssigneeReportRow(assigneeReportMap, source, closed);
+			addMilestoneReportRow(milestoneReportMap, source, closed);
+		}
+
+		List<IssuesVO> reportRows = new ArrayList<>();
+		addSortedReportRows(reportRows, issueTypeReportMap);
+		addSortedReportRows(reportRows, versionReportMap);
+		addSortedReportRows(reportRows, priorityReportMap);
+		addSortedReportRows(reportRows, assigneeReportMap);
+		addSortedReportRows(reportRows, milestoneReportMap);
+		return reportRows;
+	}
+
+	private void collectIssueReportSourceRow(IssuesVO row, List<IssuesVO> issueRows,
+			Map<String, String> issueTypeNameMap, Map<String, String> versionNameMap,
+			Map<String, String> priorityNameMap, Map<String, String> assigneeNameMap,
+			Map<String, String> milestoneNameMap, Map<String, String> statusClosedYnMap) {
+		if (OPTION_REPORT_SOURCE.equals(row.getOptionGroup())) {
+			issueRows.add(row);
+			return;
+		}
+
+		if (OPTION_ISSUE_STATUS.equals(row.getOptionGroup())) {
+			putReportName(statusClosedYnMap, row.getIssueStatusId(), row.getClosedYn());
+			return;
+		}
+
+		if (OPTION_ISSUE_TYPE.equals(row.getOptionGroup())) {
+			putReportName(issueTypeNameMap, row.getIssueTypeId(), row.getIssueTypeName());
+			return;
+		}
+
+		if (OPTION_VERSION.equals(row.getOptionGroup())) {
+			putReportName(versionNameMap, row.getVersionId(), row.getVersionName());
+			return;
+		}
+
+		if (OPTION_PRIORITY.equals(row.getOptionGroup())) {
+			putReportName(priorityNameMap, row.getSettingCodeId(), row.getSettingName());
+			return;
+		}
+
+		if (OPTION_ASSIGNEE.equals(row.getOptionGroup())) {
+			putReportName(assigneeNameMap, row.getAssigneeId(), row.getAssigneeName());
+			return;
+		}
+
+		if (OPTION_MILESTONE.equals(row.getOptionGroup())) {
+			putReportName(milestoneNameMap, row.getMilestoneId(), row.getMilestoneTitle());
+		}
+	}
+
+	private void putReportName(Map<String, String> nameMap, String id, String name) {
+		if (!isBlank(id) && !isBlank(name)) {
+			nameMap.put(id, name);
+		}
+	}
+
+	private void addIssueTypeReportRow(Map<String, IssuesVO> reportMap, IssuesVO source, boolean closed) {
+		IssuesVO row = reportMap.computeIfAbsent(reportKey(source.getIssueTypeId()), key -> {
+			IssuesVO report = createReportRow(OPTION_ISSUE_TYPE, 1);
+			report.setIssueTypeId(source.getIssueTypeId());
+			report.setIssueTypeName(defaultReportName(source.getIssueTypeName()));
+			return report;
+		});
+		increaseReportCount(row, closed);
+	}
+
+	private void addVersionReportRow(Map<String, IssuesVO> reportMap, IssuesVO source, boolean closed) {
+		IssuesVO row = reportMap.computeIfAbsent(reportKey(source.getVersionId()), key -> {
+			IssuesVO report = createReportRow(OPTION_VERSION, 2);
+			report.setVersionId(source.getVersionId());
+			report.setVersionName(defaultReportName(source.getVersionName()));
+			return report;
+		});
+		increaseReportCount(row, closed);
+	}
+
+	private void addPriorityReportRow(Map<String, IssuesVO> reportMap, IssuesVO source, boolean closed) {
+		IssuesVO row = reportMap.computeIfAbsent(reportKey(source.getSettingCodeId()), key -> {
+			IssuesVO report = createReportRow(OPTION_PRIORITY, 3);
+			report.setSettingCodeId(source.getSettingCodeId());
+			report.setSettingName(defaultReportName(source.getSettingName()));
+			return report;
+		});
+		increaseReportCount(row, closed);
+	}
+
+	private void addAssigneeReportRow(Map<String, IssuesVO> reportMap, IssuesVO source, boolean closed) {
+		IssuesVO row = reportMap.computeIfAbsent(reportKey(source.getAssigneeId()), key -> {
+			IssuesVO report = createReportRow(OPTION_ASSIGNEE, 4);
+			report.setAssigneeId(defaultReportId(source.getAssigneeId()));
+			report.setAssigneeName(defaultReportName(source.getAssigneeName()));
+			return report;
+		});
+		increaseReportCount(row, closed);
+	}
+
+	private void addMilestoneReportRow(Map<String, IssuesVO> reportMap, IssuesVO source, boolean closed) {
+		IssuesVO row = reportMap.computeIfAbsent(reportKey(source.getMilestoneId()), key -> {
+			IssuesVO report = createReportRow(OPTION_MILESTONE, 5);
+			report.setMilestoneId(defaultReportId(source.getMilestoneId()));
+			report.setMilestoneTitle(defaultReportName(source.getMilestoneTitle()));
+			return report;
+		});
+		increaseReportCount(row, closed);
+	}
+
+	private IssuesVO createReportRow(String optionGroup, int optionSort) {
+		IssuesVO report = new IssuesVO();
+		report.setOptionGroup(optionGroup);
+		report.setOptionSort(optionSort);
+		report.setOpenCount(0);
+		report.setClosedCount(0);
+		report.setTotalCount(0);
+		return report;
+	}
+
+	private void increaseReportCount(IssuesVO row, boolean closed) {
+		row.setTotalCount(row.getTotalCount() + 1);
+
+		if (closed) {
+			row.setClosedCount(row.getClosedCount() + 1);
+			return;
+		}
+
+		row.setOpenCount(row.getOpenCount() + 1);
+	}
+
+	private void addSortedReportRows(List<IssuesVO> reportRows, Map<String, IssuesVO> reportMap) {
+		List<IssuesVO> rows = new ArrayList<>(reportMap.values());
+		rows.sort(Comparator.comparing(this::getReportSortName, String.CASE_INSENSITIVE_ORDER));
+		reportRows.addAll(rows);
+	}
+
+	private String getReportSortName(IssuesVO row) {
+		if (OPTION_ISSUE_TYPE.equals(row.getOptionGroup())) {
+			return defaultReportName(row.getIssueTypeName());
+		}
+		if (OPTION_VERSION.equals(row.getOptionGroup())) {
+			return defaultReportName(row.getVersionName());
+		}
+		if (OPTION_PRIORITY.equals(row.getOptionGroup())) {
+			return defaultReportName(row.getSettingName());
+		}
+		if (OPTION_ASSIGNEE.equals(row.getOptionGroup())) {
+			return defaultReportName(row.getAssigneeName());
+		}
+		if (OPTION_MILESTONE.equals(row.getOptionGroup())) {
+			return defaultReportName(row.getMilestoneTitle());
+		}
+		return REPORT_NONE_NAME;
+	}
+
+	private String reportKey(String value) {
+		return isBlank(value) ? REPORT_NONE_KEY : value;
+	}
+
+	private String defaultReportId(String value) {
+		return isBlank(value) ? REPORT_NONE_KEY : value;
+	}
+
+	private String defaultReportName(String value) {
+		return isBlank(value) ? REPORT_NONE_NAME : value;
 	}
 
 	private List<IssuesVO> distinctByIssueStatusId(List<IssuesVO> statusList) {
@@ -637,7 +916,10 @@ public class IssuesServiceImpl implements IssuesService {
 		validateProgressRate(issue);
 		validateDynamicFieldsForCreate(issue, validation);
 
-		issue.setIssueNo(issuesMapper.selectNextIssueNoForUpdate(issue.getProjectId()));
+		if (validation.getIssueNo() == null) {
+			throw new IllegalArgumentException("일감 번호를 생성할 수 없습니다.");
+		}
+		issue.setIssueNo(validation.getIssueNo());
 
 		issuesMapper.insertIssue(issue);
 		issue.setDisplayIssueNo(formatDisplayIssueNo(issue.getIssueNo()));
@@ -686,84 +968,137 @@ public class IssuesServiceImpl implements IssuesService {
 		}
 	}
 
-	private void validateDynamicFieldsForUpdate(IssuesVO issue) {
-		Map<String, IssuesVO> fieldSettingMap = getFieldSettingMap(issue.getIssueTypeId());
+	private void validateIssueUpdateSaveCondition(IssuesVO validation) {
+		if (validation == null) {
+			throw new IllegalArgumentException("수정할 일감이 없습니다.");
+		}
 
-		validateAssignee(issue, fieldSettingMap);
-		validateMilestoneForUpdate(issue, fieldSettingMap);
-		validateParentIssue(issue, fieldSettingMap);
-		validateSchedule(issue, fieldSettingMap);
-		validateEstimatedHours(issue, fieldSettingMap);
+		if (validation.getPriorityCount() == null || validation.getPriorityCount() == 0) {
+			throw new IllegalArgumentException("선택한 우선순위를 사용할 수 없습니다.");
+		}
 	}
 
-	private void validateMilestoneForUpdate(IssuesVO issue, Map<String, IssuesVO> fieldSettingMap) {
-		if (!isFieldUsed(fieldSettingMap, FIELD_MILESTONE)) {
+	private void validateDynamicFieldsForUpdate(IssuesVO issue, IssuesVO validation) {
+		if (!"Y".equals(validation.getAssigneeUseYn())) {
+			issue.setAssigneeId(null);
+		} else {
+			if ("Y".equals(validation.getAssigneeRequiredYn()) && isBlank(issue.getAssigneeId())) {
+				throw new IllegalArgumentException("담당자를 선택해주세요.");
+			}
+
+			if (!isBlank(issue.getAssigneeId())
+					&& (validation.getAssigneeCount() == null || validation.getAssigneeCount() == 0)) {
+				throw new IllegalArgumentException("선택한 담당자는 프로젝트 구성원이 아닙니다.");
+			}
+		}
+
+		if (!"Y".equals(validation.getMilestoneUseYn())) {
 			issue.setMilestoneId(null);
+		} else {
+			if ("Y".equals(validation.getMilestoneRequiredYn()) && isBlank(issue.getMilestoneId())) {
+				throw new IllegalArgumentException("마일스톤을 선택해주세요.");
+			}
+
+			if (!isBlank(issue.getMilestoneId())
+					&& (validation.getMilestoneCount() == null || validation.getMilestoneCount() == 0)) {
+				throw new IllegalArgumentException("선택한 마일스톤은 해당 버전의 마일스톤이 아닙니다.");
+			}
+		}
+
+		if (!"Y".equals(validation.getParentIssueUseYn())) {
+			issue.setParentIssueId(null);
+		} else {
+			if ("Y".equals(validation.getParentIssueRequiredYn()) && isBlank(issue.getParentIssueId())) {
+				throw new IllegalArgumentException("상위 일감을 선택해주세요.");
+			}
+
+			if (!isBlank(issue.getParentIssueId())
+					&& (validation.getParentIssueCount() == null || validation.getParentIssueCount() == 0)) {
+				throw new IllegalArgumentException("선택한 상위 일감을 사용할 수 없습니다.");
+			}
+		}
+
+		if (!"Y".equals(validation.getStartDateUseYn())) {
+			issue.setStartDate(null);
+		} else if ("Y".equals(validation.getStartDateRequiredYn()) && issue.getStartDate() == null) {
+			throw new IllegalArgumentException("시작일을 입력해주세요.");
+		}
+
+		if (!"Y".equals(validation.getDueDateUseYn())) {
+			issue.setDueDate(null);
+		} else if ("Y".equals(validation.getDueDateRequiredYn()) && issue.getDueDate() == null) {
+			throw new IllegalArgumentException("완료일을 입력해주세요.");
+		}
+
+		if (issue.getStartDate() != null && issue.getDueDate() != null
+				&& issue.getDueDate().isBefore(issue.getStartDate())) {
+			throw new IllegalArgumentException("완료일은 시작일보다 빠를 수 없습니다.");
+		}
+
+		if (!"Y".equals(validation.getEstimatedHoursUseYn())) {
+			issue.setEstimatedHours(null);
 			return;
 		}
 
-		if (isFieldRequired(fieldSettingMap, FIELD_MILESTONE) && isBlank(issue.getMilestoneId())) {
-			throw new IllegalArgumentException("마일스톤을 선택해주세요.");
+		if ("Y".equals(validation.getEstimatedHoursRequiredYn()) && issue.getEstimatedHours() == null) {
+			throw new IllegalArgumentException("추정시간을 입력해주세요.");
 		}
 
-		if (!isBlank(issue.getMilestoneId()) && issuesMapper.countMilestoneForUpdate(issue.getProjectId(),
-				issue.getVersionId(), issue.getMilestoneId()) == 0) {
-			throw new IllegalArgumentException("선택한 마일스톤은 해당 버전의 마일스톤이 아닙니다.");
+		if (issue.getEstimatedHours() == null) {
+			issue.setEstimatedHours(0);
+		}
+
+		if (issue.getEstimatedHours() < 0 || issue.getEstimatedHours() > 99999) {
+			throw new IllegalArgumentException("추정시간은 0부터 99999 사이로 입력해주세요.");
 		}
 	}
 
-	private void validateStatusTransition(IssuesVO currentIssue, IssuesVO issue, String userId) {
-		if (Objects.equals(currentIssue.getIssueStatusId(), issue.getIssueStatusId())) {
-			return;
-		}
-
-		int allowedCount = issuesMapper.countAllowedStatusTransition(issue.getProjectId(), issue.getIssueId(),
-				issue.getIssueStatusId(), userId);
-
-		if (allowedCount == 0) {
+	private void validateStatusTransition(IssuesVO validation) {
+		if (!"Y".equals(validation.getTransitionAllowedYn())) {
 			throw new IllegalArgumentException("업무흐름에서 허용되지 않은 상태 변경입니다.");
 		}
 	}
 
-	private void recordUpdateHistory(IssuesVO before, IssuesVO after, String userId, String historyReason) {
+	private void recordUpdateHistory(IssuesVO before, IssuesVO after, String userId, String historyReason,
+			String historyGroupId) {
 		if (after == null) {
 			return;
 		}
 
-		String historyGroupId = newHistoryGroupId();
+		String checkedHistoryGroupId = resolveHistoryGroupId(historyGroupId);
 		String reason = defaultHistoryReason(historyReason, CHANGE_TYPE_UPDATE_NAME);
 		List<IssuesVO> historyList = new ArrayList<>();
 
-		addUpdateHistory(historyList, historyGroupId, after.getIssueId(), userId, FIELD_STATUS,
+		addUpdateHistory(historyList, checkedHistoryGroupId, after.getIssueId(), userId, FIELD_STATUS,
 				before.getIssueStatusId(), after.getIssueStatusId(), before.getIssueStatusName(),
 				after.getIssueStatusName(), reason);
-		addUpdateHistory(historyList, historyGroupId, after.getIssueId(), userId, FIELD_PRIORITY,
+		addUpdateHistory(historyList, checkedHistoryGroupId, after.getIssueId(), userId, FIELD_PRIORITY,
 				before.getSettingCodeId(), after.getSettingCodeId(), before.getSettingName(), after.getSettingName(),
 				reason);
-		addUpdateHistory(historyList, historyGroupId, after.getIssueId(), userId, FIELD_ASSIGNEE,
+		addUpdateHistory(historyList, checkedHistoryGroupId, after.getIssueId(), userId, FIELD_ASSIGNEE,
 				before.getAssigneeId(), after.getAssigneeId(), before.getAssigneeName(), after.getAssigneeName(),
 				reason);
-		addUpdateHistory(historyList, historyGroupId, after.getIssueId(), userId, FIELD_PROGRESS_RATE,
+		addUpdateHistory(historyList, checkedHistoryGroupId, after.getIssueId(), userId, FIELD_PROGRESS_RATE,
 				before.getProgressRate(), after.getProgressRate(), formatPercent(before.getProgressRate()),
 				formatPercent(after.getProgressRate()), reason);
-		addUpdateHistory(historyList, historyGroupId, after.getIssueId(), userId, FIELD_ESTIMATED_HOURS,
+		addUpdateHistory(historyList, checkedHistoryGroupId, after.getIssueId(), userId, FIELD_ESTIMATED_HOURS,
 				before.getEstimatedHours(), after.getEstimatedHours(), formatNumber(before.getEstimatedHours()),
 				formatNumber(after.getEstimatedHours()), reason);
-		addUpdateHistory(historyList, historyGroupId, after.getIssueId(), userId, FIELD_START_DATE,
+		addUpdateHistory(historyList, checkedHistoryGroupId, after.getIssueId(), userId, FIELD_START_DATE,
 				before.getStartDate(), after.getStartDate(), formatDate(before.getStartDate()),
 				formatDate(after.getStartDate()), reason);
-		addUpdateHistory(historyList, historyGroupId, after.getIssueId(), userId, FIELD_DUE_DATE,
+		addUpdateHistory(historyList, checkedHistoryGroupId, after.getIssueId(), userId, FIELD_DUE_DATE,
 				before.getDueDate(), after.getDueDate(), formatDate(before.getDueDate()), formatDate(after.getDueDate()),
 				reason);
-		addUpdateHistory(historyList, historyGroupId, after.getIssueId(), userId, FIELD_MILESTONE,
+		addUpdateHistory(historyList, checkedHistoryGroupId, after.getIssueId(), userId, FIELD_MILESTONE,
 				before.getMilestoneId(), after.getMilestoneId(), before.getMilestoneTitle(), after.getMilestoneTitle(),
 				reason);
-		addUpdateHistory(historyList, historyGroupId, after.getIssueId(), userId, FIELD_PARENT_ISSUE,
+		addUpdateHistory(historyList, checkedHistoryGroupId, after.getIssueId(), userId, FIELD_PARENT_ISSUE,
 				before.getParentIssueId(), after.getParentIssueId(), before.getParentIssueTitle(),
 				after.getParentIssueTitle(), reason);
-		addUpdateHistory(historyList, historyGroupId, after.getIssueId(), userId, FIELD_TITLE, before.getTitle(),
+		addUpdateHistory(historyList, checkedHistoryGroupId, after.getIssueId(), userId, FIELD_TITLE, before.getTitle(),
 				after.getTitle(), before.getTitle(), after.getTitle(), reason);
-		addUpdateHistory(historyList, historyGroupId, after.getIssueId(), userId, FIELD_DESCRIPTION,
+		addUpdateHistory(historyList, checkedHistoryGroupId, after.getIssueId(), userId, FIELD_DESCRIPTION,
 				before.getDescription(), after.getDescription(), before.getDescription(), after.getDescription(),
 				reason);
 
@@ -851,8 +1186,12 @@ public class IssuesServiceImpl implements IssuesService {
 		pageData.put("milestoneList", Collections.emptyList());
 		pageData.put("parentIssueList", Collections.emptyList());
 		pageData.put("availableStatusList", Collections.emptyList());
+		List<IssueHistoryGroupVO> historyGroupList = buildHistoryGroupList(historyRows);
 		pageData.put("historyList", historyRows);
-		pageData.put("historyGroupList", buildHistoryGroupList(historyRows));
+		pageData.put("historyGroupList", historyGroupList);
+		pageData.put("historyCount", historyGroupList.size());
+		pageData.put("timeLogTotalCount", 0);
+		pageData.put("timeLogTotalHours", 0);
 		pageData.put("deletedIssue", true);
 		pageData.put("deletedIssueMessage", "삭제된 일감입니다. 상세 데이터는 삭제되었지만 작업내역은 보존되어 있습니다.");
 		pageData.put("canUpdateIssue", false);
@@ -898,7 +1237,36 @@ public class IssuesServiceImpl implements IssuesService {
 			group.getHistoryList().add(history);
 		}
 
-		return new ArrayList<>(groupMap.values());
+		List<IssueHistoryGroupVO> groupList = new ArrayList<>(groupMap.values());
+		for (IssueHistoryGroupVO group : groupList) {
+			normalizeHistoryGroupDisplayName(group);
+		}
+		return groupList;
+	}
+
+	private void normalizeHistoryGroupDisplayName(IssueHistoryGroupVO group) {
+		if (group == null || group.getHistoryList().isEmpty()) {
+			return;
+		}
+
+		boolean hasIssueUpdate = false;
+		boolean hasFileAdd = false;
+		boolean hasFileDelete = false;
+
+		for (IssuesVO history : group.getHistoryList()) {
+			hasIssueUpdate = hasIssueUpdate || CHANGE_TYPE_UPDATE_CODE.equals(history.getChangeTypeCode());
+			hasFileAdd = hasFileAdd || CHANGE_TYPE_FILE_ADD_CODE.equals(history.getChangeTypeCode());
+			hasFileDelete = hasFileDelete || CHANGE_TYPE_FILE_DELETE_CODE.equals(history.getChangeTypeCode());
+		}
+
+		if (hasIssueUpdate) {
+			group.setChangeTypeDisplayName(resolveChangeTypeDisplayName(CHANGE_TYPE_UPDATE_CODE));
+			return;
+		}
+
+		if (hasFileAdd && hasFileDelete) {
+			group.setChangeTypeDisplayName("첨부파일 변경");
+		}
 	}
 
 	private String resolveChangeTypeDisplayName(String changeTypeCode) {
@@ -911,6 +1279,11 @@ public class IssuesServiceImpl implements IssuesService {
 
 	private String newHistoryGroupId() {
 		return UUID.randomUUID().toString();
+	}
+
+	private String resolveHistoryGroupId(String historyGroupId) {
+		String checkedHistoryGroupId = trimToNull(historyGroupId);
+		return checkedHistoryGroupId == null ? newHistoryGroupId() : checkedHistoryGroupId;
 	}
 
 	private String displayIssueLabel(IssuesVO issue) {
@@ -1093,22 +1466,6 @@ public class IssuesServiceImpl implements IssuesService {
 		}
 	}
 
-	private void validateVersion(String projectId, String versionId) {
-		int versionCount = issuesMapper.countVersionForCreate(projectId, versionId);
-
-		if (versionCount == 0) {
-			throw new IllegalArgumentException("선택한 버전은 현재 일감 생성에 사용할 수 없습니다.");
-		}
-	}
-
-	private void validatePriority(String projectId, String settingCodeId) {
-		int priorityCount = issuesMapper.countPriorityForProject(projectId, settingCodeId);
-
-		if (priorityCount == 0) {
-			throw new IllegalArgumentException("선택한 우선순위를 사용할 수 없습니다.");
-		}
-	}
-
 	private void validateLength(IssuesVO issue) {
 		if (issue.getTitle().length() > 255) {
 			throw new IllegalArgumentException("제목은 255자 이하로 입력해주세요.");
@@ -1127,16 +1484,6 @@ public class IssuesServiceImpl implements IssuesService {
 		if (issue.getProgressRate() < 0 || issue.getProgressRate() > 100) {
 			throw new IllegalArgumentException("진척도는 0부터 100 사이로 입력해주세요.");
 		}
-	}
-
-	private void validateDynamicFields(IssuesVO issue) {
-		Map<String, IssuesVO> fieldSettingMap = getFieldSettingMap(issue.getIssueTypeId());
-
-		validateAssignee(issue, fieldSettingMap);
-		validateMilestone(issue, fieldSettingMap);
-		validateParentIssue(issue, fieldSettingMap);
-		validateSchedule(issue, fieldSettingMap);
-		validateEstimatedHours(issue, fieldSettingMap);
 	}
 
 	private void validateDynamicFieldsForCreate(IssuesVO issue, IssuesVO validation) {
@@ -1212,113 +1559,6 @@ public class IssuesServiceImpl implements IssuesService {
 		if (issue.getEstimatedHours() < 0 || issue.getEstimatedHours() > 99999) {
 			throw new IllegalArgumentException("추정시간은 0부터 99999 사이로 입력해주세요.");
 		}
-	}
-
-	private Map<String, IssuesVO> getFieldSettingMap(String issueTypeId) {
-		List<IssuesVO> fieldSettingList = issuesMapper.selectFieldSettingListByIssueType(issueTypeId);
-		Map<String, IssuesVO> fieldSettingMap = new HashMap<>();
-
-		for (IssuesVO fieldSetting : fieldSettingList) {
-			fieldSettingMap.put(fieldSetting.getFieldCode(), fieldSetting);
-		}
-
-		return fieldSettingMap;
-	}
-
-	private void validateAssignee(IssuesVO issue, Map<String, IssuesVO> fieldSettingMap) {
-		if (!isFieldUsed(fieldSettingMap, FIELD_ASSIGNEE)) {
-			issue.setAssigneeId(null);
-			return;
-		}
-
-		if (isFieldRequired(fieldSettingMap, FIELD_ASSIGNEE) && isBlank(issue.getAssigneeId())) {
-			throw new IllegalArgumentException("담당자를 선택해주세요.");
-		}
-
-		if (!isBlank(issue.getAssigneeId())
-				&& issuesMapper.countAssigneeForProject(issue.getProjectId(), issue.getAssigneeId()) == 0) {
-			throw new IllegalArgumentException("선택한 담당자는 프로젝트 구성원이 아닙니다.");
-		}
-	}
-
-	private void validateMilestone(IssuesVO issue, Map<String, IssuesVO> fieldSettingMap) {
-		if (!isFieldUsed(fieldSettingMap, FIELD_MILESTONE)) {
-			issue.setMilestoneId(null);
-			return;
-		}
-
-		if (isFieldRequired(fieldSettingMap, FIELD_MILESTONE) && isBlank(issue.getMilestoneId())) {
-			throw new IllegalArgumentException("마일스톤을 선택해주세요.");
-		}
-
-		if (!isBlank(issue.getMilestoneId()) && issuesMapper.countMilestoneForCreate(issue.getProjectId(),
-				issue.getVersionId(), issue.getMilestoneId()) == 0) {
-			throw new IllegalArgumentException("선택한 마일스톤은 선택한 버전에 속하지 않습니다.");
-		}
-	}
-
-	private void validateParentIssue(IssuesVO issue, Map<String, IssuesVO> fieldSettingMap) {
-		if (!isFieldUsed(fieldSettingMap, FIELD_PARENT_ISSUE)) {
-			issue.setParentIssueId(null);
-			return;
-		}
-
-		if (isFieldRequired(fieldSettingMap, FIELD_PARENT_ISSUE) && isBlank(issue.getParentIssueId())) {
-			throw new IllegalArgumentException("상위 일감을 선택해주세요.");
-		}
-
-		if (!isBlank(issue.getParentIssueId())
-				&& issuesMapper.countParentIssueForProject(issue.getProjectId(), issue.getParentIssueId()) == 0) {
-			throw new IllegalArgumentException("선택한 상위 일감을 사용할 수 없습니다.");
-		}
-	}
-
-	private void validateSchedule(IssuesVO issue, Map<String, IssuesVO> fieldSettingMap) {
-		if (!isFieldUsed(fieldSettingMap, FIELD_START_DATE)) {
-			issue.setStartDate(null);
-		} else if (isFieldRequired(fieldSettingMap, FIELD_START_DATE) && issue.getStartDate() == null) {
-			throw new IllegalArgumentException("시작일을 입력해주세요.");
-		}
-
-		if (!isFieldUsed(fieldSettingMap, FIELD_DUE_DATE)) {
-			issue.setDueDate(null);
-		} else if (isFieldRequired(fieldSettingMap, FIELD_DUE_DATE) && issue.getDueDate() == null) {
-			throw new IllegalArgumentException("완료일을 입력해주세요.");
-		}
-
-		if (issue.getStartDate() != null && issue.getDueDate() != null
-				&& issue.getDueDate().isBefore(issue.getStartDate())) {
-			throw new IllegalArgumentException("완료일은 시작일보다 빠를 수 없습니다.");
-		}
-	}
-
-	private void validateEstimatedHours(IssuesVO issue, Map<String, IssuesVO> fieldSettingMap) {
-		if (!isFieldUsed(fieldSettingMap, FIELD_ESTIMATED_HOURS)) {
-			issue.setEstimatedHours(null);
-			return;
-		}
-
-		if (isFieldRequired(fieldSettingMap, FIELD_ESTIMATED_HOURS) && issue.getEstimatedHours() == null) {
-			throw new IllegalArgumentException("추정시간을 입력해주세요.");
-		}
-
-		if (issue.getEstimatedHours() == null) {
-			issue.setEstimatedHours(0);
-		}
-
-		if (issue.getEstimatedHours() < 0 || issue.getEstimatedHours() > 99999) {
-			throw new IllegalArgumentException("추정시간은 0부터 99999 사이로 입력해주세요.");
-		}
-	}
-
-	private boolean isFieldUsed(Map<String, IssuesVO> fieldSettingMap, String fieldCode) {
-		IssuesVO fieldSetting = fieldSettingMap.get(fieldCode);
-		return fieldSetting != null && "Y".equals(fieldSetting.getUseYn());
-	}
-
-	private boolean isFieldRequired(Map<String, IssuesVO> fieldSettingMap, String fieldCode) {
-		IssuesVO fieldSetting = fieldSettingMap.get(fieldCode);
-		return fieldSetting != null && "Y".equals(fieldSetting.getRequiredYn());
 	}
 
 	private void trimSearchCondition(IssuesVO searchVO) {
@@ -1515,5 +1755,23 @@ public class IssuesServiceImpl implements IssuesService {
 
 	private boolean isBlank(String value) {
 		return value == null || value.trim().isEmpty();
+	}
+
+	private static class CachedIssueListFilterData {
+		private final Map<String, Object> data;
+		private final long cachedAt;
+
+		private CachedIssueListFilterData(Map<String, Object> data, long cachedAt) {
+			this.data = new HashMap<>(data);
+			this.cachedAt = cachedAt;
+		}
+
+		private boolean isExpired(long now) {
+			return now - cachedAt > ISSUE_LIST_FILTER_CACHE_TTL_MILLIS;
+		}
+
+		private Map<String, Object> copyData() {
+			return new HashMap<>(data);
+		}
 	}
 }

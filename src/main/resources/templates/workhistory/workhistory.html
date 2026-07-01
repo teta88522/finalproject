@@ -1,15 +1,644 @@
 <!doctype html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{common/layouts/default_layout}">
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{common/layouts/default_layout}">
+
 <head>
 <meta charset="UTF-8">
+<title>작업내역</title>
+
+<link rel="stylesheet" th:href="@{/css/common-ui.css}">
+<link rel="stylesheet" th:href="@{/css/common-filter.css}">
+<link rel="stylesheet" th:href="@{/css/workhistory/workhistory.css}">
 </head>
+
 <body>
-<div layout:fragment="Content">
-<h1>hello</h1>
+	<div layout:fragment="Content">
+		<div class="workhistory-page">
+			<div class="container-fluid">
+				<div class="workhistory-header">
+					<div>
+						<h3>작업내역</h3>
+						<p>
+							<span th:text="${projectInfo != null ? projectInfo.projectName : '프로젝트'}">프로젝트</span>
+							프로젝트의 일감 변경 이력을 조회합니다.
+						</p>
+					</div>
 
-</div>
+					<div class="workhistory-actions">
+						<a th:href="@{/project/{projectId}/issues(projectId=${selectedProjectId})}"
+							class="btn btn-custon-rounded-four btn-default">일감 전체조회</a>
+					</div>
+				</div>
+
+				<div th:if="${message}" class="page-message page-message-success"
+					th:text="${message}"></div>
+				<div th:if="${errorMessage}" class="page-message page-message-error"
+					th:text="${errorMessage}"></div>
+
+				<section class="search-section workhistory-search-section">
+					<div class="search-header">
+						<div class="search-title">검색조건</div>
+					</div>
+
+					<form id="workHistorySearchForm"
+						th:action="@{/project/{projectId}/workhistory(projectId=${selectedProjectId})}"
+						method="get">
+						<input type="hidden" name="page" value="1">
+
+						<div class="search-form-row workhistory-search-row">
+							<div class="search-field workhistory-date-field">
+								<label>기간</label>
+								<div class="workhistory-date-range">
+									<input type="date" id="startDate" name="startDate"
+										th:value="${searchVO != null ? searchVO.startDate : null}">
+									<span class="workhistory-date-separator">~</span>
+									<input type="date" id="endDate" name="endDate"
+										th:value="${searchVO != null ? searchVO.endDate : null}">
+								</div>
+							</div>
+
+							<div class="search-field">
+								<label for="keyword">일감</label>
+								<input type="text" id="keyword" name="keyword"
+									th:value="${searchVO != null ? searchVO.keyword : null}"
+									placeholder="식별번호 또는 제목">
+							</div>
+
+							<div class="search-field">
+								<label>변경유형</label>
+								<details class="filter-dropdown" data-placeholder="전체"
+									data-filter-group="changeType">
+									<summary>
+										<span class="filter-selected-text"
+											th:text="${selectedChangeTypeText != null ? selectedChangeTypeText : '전체'}">전체</span>
+									</summary>
+									<div class="filter-check-list filter-dropdown-panel">
+										<label class="filter-check-item" th:each="changeType : ${changeTypeList}">
+											<input type="checkbox" name="changeTypeCodeList"
+												th:value="${changeType.changeTypeCode}"
+												th:checked="${searchVO != null and searchVO.changeTypeCodeList != null and #lists.contains(searchVO.changeTypeCodeList, changeType.changeTypeCode)}">
+											<span th:text="${changeType.changeTypeName}">변경유형</span>
+										</label>
+									</div>
+								</details>
+							</div>
+
+							<div class="search-field">
+								<label>변경항목</label>
+								<details class="filter-dropdown" data-placeholder="전체"
+									data-filter-group="field">
+									<summary>
+										<span class="filter-selected-text"
+											th:text="${selectedFieldText != null ? selectedFieldText : '전체'}">전체</span>
+									</summary>
+									<div class="filter-check-list filter-dropdown-panel">
+										<label class="filter-check-item" th:each="field : ${fieldList}">
+											<input type="checkbox" name="fieldCodeList"
+												th:value="${field.fieldCode}"
+												th:checked="${searchVO != null and searchVO.fieldCodeList != null and #lists.contains(searchVO.fieldCodeList, field.fieldCode)}">
+											<span th:text="${field.fieldName}">변경항목</span>
+										</label>
+									</div>
+								</details>
+							</div>
+
+							<div class="search-field">
+								<label>작업자</label>
+								<details class="filter-dropdown" data-placeholder="전체"
+									data-filter-group="changedBy">
+									<summary>
+										<span class="filter-selected-text"
+											th:text="${selectedChangedByText != null ? selectedChangedByText : '전체'}">전체</span>
+									</summary>
+									<div class="filter-check-list filter-dropdown-panel">
+										<label class="filter-check-item" th:each="member : ${changedByList}">
+											<input type="checkbox" name="changedByList"
+												th:value="${member.userId}"
+												th:checked="${searchVO != null and searchVO.changedByList != null and #lists.contains(searchVO.changedByList, member.userId)}">
+											<span th:text="${member.userName}">작업자</span>
+										</label>
+									</div>
+								</details>
+							</div>
+
+							<div class="search-field">
+								<label>유형</label>
+								<details class="filter-dropdown" data-placeholder="전체"
+									data-filter-group="issueType">
+									<summary>
+										<span class="filter-selected-text"
+											th:text="${selectedIssueTypeText != null ? selectedIssueTypeText : '전체'}">전체</span>
+									</summary>
+									<div class="filter-check-list filter-dropdown-panel">
+										<label class="filter-check-item" th:each="issueType : ${issueTypeList}">
+											<input type="checkbox" name="issueTypeIdList"
+												th:value="${issueType.issueTypeId}"
+												th:checked="${searchVO != null and searchVO.issueTypeIdList != null and #lists.contains(searchVO.issueTypeIdList, issueType.issueTypeId)}">
+											<span th:text="${issueType.issueTypeName}">유형</span>
+										</label>
+									</div>
+								</details>
+							</div>
+
+							<div class="search-field">
+								<label>상태</label>
+								<details class="filter-dropdown" data-placeholder="전체"
+									data-filter-group="status">
+									<summary>
+										<span class="filter-selected-text"
+											th:text="${selectedIssueStatusText != null ? selectedIssueStatusText : '전체'}">전체</span>
+									</summary>
+									<div class="filter-check-list filter-dropdown-panel">
+										<label class="filter-check-item" th:each="status : ${issueStatusList}">
+											<input type="checkbox" name="issueStatusIdList"
+												th:value="${status.issueStatusId}"
+												th:checked="${searchVO != null and searchVO.issueStatusIdList != null and #lists.contains(searchVO.issueStatusIdList, status.issueStatusId)}">
+											<span th:text="${status.issueStatusName}">상태</span>
+										</label>
+									</div>
+								</details>
+							</div>
+
+							<div class="search-field">
+								<label>우선순위</label>
+								<details class="filter-dropdown" data-placeholder="전체"
+									data-filter-group="priority">
+									<summary>
+										<span class="filter-selected-text"
+											th:text="${selectedPriorityText != null ? selectedPriorityText : '전체'}">전체</span>
+									</summary>
+									<div class="filter-check-list filter-dropdown-panel">
+										<label class="filter-check-item" th:each="priority : ${priorityList}">
+											<input type="checkbox" name="settingCodeIdList"
+												th:value="${priority.settingCodeId}"
+												th:checked="${searchVO != null and searchVO.settingCodeIdList != null and #lists.contains(searchVO.settingCodeIdList, priority.settingCodeId)}">
+											<span th:text="${priority.settingName}">우선순위</span>
+										</label>
+									</div>
+								</details>
+							</div>
+
+						</div>
+
+						<div class="search-btn-area">
+							<a th:href="@{/project/{projectId}/workhistory(projectId=${selectedProjectId})}"
+								class="btn btn-custon-rounded-four btn-default filter-btn">초기화</a>
+							<button type="submit"
+								class="btn btn-custon-rounded-four btn-primary filter-btn">검색</button>
+						</div>
+					</form>
+				</section>
+
+				<section class="workhistory-list-section">
+					<div class="workhistory-list-header">
+						<h4>작업내역</h4>
+						<span th:if="${searchVO != null and searchVO.hasNextPage}"
+							class="workhistory-page-note">다음 페이지가 있습니다.</span>
+					</div>
+
+					<div class="workhistory-table-card">
+						<table class="table table-hover workhistory-table">
+							<colgroup>
+								<col class="col-changed-at">
+								<col class="col-worker">
+								<col class="col-issue">
+								<col class="col-issue-type">
+								<col class="col-type">
+								<col class="col-field">
+								<col class="col-change">
+								<col class="col-reason">
+							</colgroup>
+							<thead>
+								<tr>
+									<th>작업일시</th>
+									<th>작업자</th>
+									<th>일감</th>
+									<th>유형</th>
+									<th>변경유형</th>
+									<th>변경항목</th>
+									<th>변경사항</th>
+									<th>수정사유</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr th:if="${#lists.isEmpty(workHistoryList)}">
+									<td colspan="8" class="empty-row">조회된 작업내역이 없습니다.</td>
+								</tr>
+
+								<tr th:each="history : ${workHistoryList}">
+									<td>
+										<span class="cell-text"
+											th:text="${history.changedAt != null ? #dates.format(history.changedAt, 'yyyy-MM-dd HH:mm') : '-'}">2026-06-30 10:20</span>
+									</td>
+									<td>
+										<span class="cell-text"
+											th:text="${history.changedByName != null ? history.changedByName : history.changedBy}">작업자</span>
+									</td>
+									<td class="workhistory-issue-cell">
+										<a th:href="@{/project/{projectId}/issues/{issueId}(projectId=${selectedProjectId}, issueId=${history.issueId})}">
+											<strong th:text="${history.displayIssueNo != null ? history.displayIssueNo : history.issueNo}">#0001</strong>
+											<span th:text="${history.issueTitle != null ? history.issueTitle : '-'}">일감 제목</span>
+										</a>
+									</td>
+									<td>
+										<span class="cell-text"
+											th:text="${history.issueTypeName != null ? history.issueTypeName : '-'}">유형</span>
+									</td>
+									<td>
+										<span class="workhistory-badge"
+											th:classappend="${history.changeTypeCode != null ? ' type-' + history.changeTypeCode : ''}"
+											th:text="${history.changeTypeDisplayName != null ? history.changeTypeDisplayName : history.changeTypeName}">수정</span>
+									</td>
+									<td>
+										<span class="cell-text"
+											th:text="${history.fieldName != null ? history.fieldName : '-'}">상태</span>
+									</td>
+									<td class="workhistory-change-cell">
+										<span class="workhistory-before"
+											th:text="${history.beforeValue != null ? history.beforeValue : '-'}">신규</span>
+										<span class="workhistory-arrow">→</span>
+										<span class="workhistory-after"
+											th:text="${history.afterValue != null ? history.afterValue : '-'}">진행 중</span>
+									</td>
+									<td class="workhistory-reason-cell">
+										<span th:text="${history.reason != null ? history.reason : '-'}">수정사유</span>
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+
+					<nav class="workhistory-pagination" aria-label="작업내역 페이지">
+						<div class="workhistory-page-links">
+							<span th:if="${searchVO == null or searchVO.hasPreviousPage == null or !searchVO.hasPreviousPage}"
+								class="workhistory-page-btn is-disabled">이전</span>
+							<a th:if="${searchVO != null and searchVO.hasPreviousPage}"
+								class="workhistory-page-btn"
+								th:href="@{/project/{projectId}/workhistory(
+									projectId=${selectedProjectId},
+									page=${searchVO.page - 1},
+									startDate=${searchVO.startDate},
+									endDate=${searchVO.endDate},
+									keyword=${searchVO.keyword},
+									changeTypeCodeList=${searchVO.changeTypeCodeList},
+									fieldCodeList=${searchVO.fieldCodeList},
+									changedByList=${searchVO.changedByList},
+									issueTypeIdList=${searchVO.issueTypeIdList},
+									issueStatusIdList=${searchVO.issueStatusIdList},
+									settingCodeIdList=${searchVO.settingCodeIdList}
+								)}">이전</a>
+
+							<th:block th:if="${searchVO != null and searchVO.pageList != null}"
+								th:each="pageNo : ${searchVO.pageList}">
+								<span th:if="${pageNo == searchVO.page}"
+									class="workhistory-page-btn is-active" th:text="${pageNo}">1</span>
+								<a th:if="${pageNo != searchVO.page}" class="workhistory-page-btn"
+									th:href="@{/project/{projectId}/workhistory(
+										projectId=${selectedProjectId},
+										page=${pageNo},
+										startDate=${searchVO.startDate},
+										endDate=${searchVO.endDate},
+										keyword=${searchVO.keyword},
+										changeTypeCodeList=${searchVO.changeTypeCodeList},
+										fieldCodeList=${searchVO.fieldCodeList},
+										changedByList=${searchVO.changedByList},
+										issueTypeIdList=${searchVO.issueTypeIdList},
+										issueStatusIdList=${searchVO.issueStatusIdList},
+										settingCodeIdList=${searchVO.settingCodeIdList}
+									)}"
+									th:text="${pageNo}">1</a>
+							</th:block>
+
+							<span th:if="${searchVO == null or searchVO.hasNextPage == null or !searchVO.hasNextPage}"
+								class="workhistory-page-btn is-disabled">다음</span>
+							<a th:if="${searchVO != null and searchVO.hasNextPage}"
+								class="workhistory-page-btn"
+								th:href="@{/project/{projectId}/workhistory(
+									projectId=${selectedProjectId},
+									page=${searchVO.page + 1},
+									startDate=${searchVO.startDate},
+									endDate=${searchVO.endDate},
+									keyword=${searchVO.keyword},
+									changeTypeCodeList=${searchVO.changeTypeCodeList},
+									fieldCodeList=${searchVO.fieldCodeList},
+									changedByList=${searchVO.changedByList},
+									issueTypeIdList=${searchVO.issueTypeIdList},
+									issueStatusIdList=${searchVO.issueStatusIdList},
+									settingCodeIdList=${searchVO.settingCodeIdList}
+								)}">다음</a>
+						</div>
+					</nav>
+				</section>
+			</div>
+		</div>
+
+		<script th:inline="javascript">
+			(function() {
+				document.body.classList.add('workhistory-body');
+
+				var filterOptionUrl = /*[[@{/project/{projectId}/workhistory/filter-options(projectId=${selectedProjectId})}]]*/ '';
+				var searchForm = document.getElementById('workHistorySearchForm');
+				var queryParams = new URLSearchParams(window.location.search);
+				var filterOptionsLoaded = false;
+				var filterOptionsLoading = false;
+				var optionConfig = {
+					changeType: {
+						listName: 'changeTypeList',
+						inputName: 'changeTypeCodeList',
+						valueKey: 'optionValue',
+						labelKey: 'optionLabel'
+					},
+					field: {
+						listName: 'fieldList',
+						inputName: 'fieldCodeList',
+						valueKey: 'optionValue',
+						labelKey: 'optionLabel'
+					},
+					changedBy: {
+						listName: 'changedByList',
+						inputName: 'changedByList',
+						valueKey: 'optionValue',
+						labelKey: 'optionLabel'
+					},
+					issueType: {
+						listName: 'issueTypeList',
+						inputName: 'issueTypeIdList',
+						valueKey: 'optionValue',
+						labelKey: 'optionLabel'
+					},
+					status: {
+						listName: 'issueStatusList',
+						inputName: 'issueStatusIdList',
+						valueKey: 'optionValue',
+						labelKey: 'optionLabel'
+					},
+					priority: {
+						listName: 'priorityList',
+						inputName: 'settingCodeIdList',
+						valueKey: 'optionValue',
+						labelKey: 'optionLabel'
+					}
+				};
+
+				preserveSelectedRemoteFilterValues();
+
+				document.querySelectorAll('.workhistory-page .filter-dropdown').forEach(function(dropdown) {
+					updateFilterSummary(dropdown);
+
+					dropdown.addEventListener('change', function() {
+						dropdown.dataset.userChanged = 'true';
+						var config = optionConfig[dropdown.getAttribute('data-filter-group')];
+
+						if (config) {
+							removeRemoteFilterHiddenInputs(config.inputName);
+						}
+
+						updateFilterSummary(dropdown);
+					});
+
+					dropdown.addEventListener('toggle', function() {
+						if (dropdown.open) {
+							loadFilterOptions();
+						}
+					});
+				});
+
+				document.addEventListener('click', function(event) {
+					document.querySelectorAll('.workhistory-page .filter-dropdown[open]').forEach(function(dropdown) {
+						if (!dropdown.contains(event.target)) {
+							dropdown.removeAttribute('open');
+						}
+					});
+				});
+
+				var startDateInput = document.getElementById('startDate');
+				var endDateInput = document.getElementById('endDate');
+
+				if (searchForm && startDateInput && endDateInput) {
+					searchForm.addEventListener('submit', function(event) {
+						if (startDateInput.value && endDateInput.value
+								&& endDateInput.value < startDateInput.value) {
+							event.preventDefault();
+							alert('종료일은 시작일보다 빠를 수 없습니다.');
+							endDateInput.focus();
+						}
+					});
+				}
+
+				function loadFilterOptions() {
+					if (!filterOptionUrl || filterOptionsLoaded || filterOptionsLoading) {
+						return;
+					}
+
+					var optionDropdowns = document.querySelectorAll('.workhistory-page .filter-dropdown[data-filter-group]');
+					var needsRemoteOptions = Array.prototype.some.call(optionDropdowns, function(dropdown) {
+						var panel = dropdown.querySelector('.filter-dropdown-panel');
+						return panel && !panel.querySelector('input[type="checkbox"]');
+					});
+
+					if (!needsRemoteOptions) {
+						filterOptionsLoaded = true;
+						return;
+					}
+
+					filterOptionsLoading = true;
+					optionDropdowns.forEach(function(dropdown) {
+						var panel = dropdown.querySelector('.filter-dropdown-panel');
+
+						if (panel && panel.children.length === 0) {
+							renderEmpty(panel, '항목을 불러오는 중입니다.');
+						}
+					});
+
+					fetch(filterOptionUrl, {
+						headers: {
+							'Accept': 'application/json'
+						}
+					}).then(function(response) {
+						if (!response.ok) {
+							throw new Error('filter option request failed');
+						}
+						return response.json();
+					}).then(function(data) {
+						Object.keys(optionConfig).forEach(function(groupName) {
+							var dropdown = document.querySelector(
+									'.workhistory-page .filter-dropdown[data-filter-group="' + groupName + '"]');
+							var config = optionConfig[groupName];
+
+							if (!dropdown || !config) {
+								return;
+							}
+
+							renderOptionGroup(dropdown, config, data[config.listName]);
+						});
+						filterOptionsLoaded = true;
+					}).catch(function() {
+						optionDropdowns.forEach(function(dropdown) {
+							var panel = dropdown.querySelector('.filter-dropdown-panel');
+
+							if (!panel) {
+								return;
+							}
+
+							panel.innerHTML = '';
+							renderEmpty(panel, '필터 항목을 불러오지 못했습니다.');
+						});
+					}).finally(function() {
+						filterOptionsLoading = false;
+					});
+				}
+
+				function renderOptionGroup(dropdown, config, rows) {
+					var panel = dropdown.querySelector('.filter-dropdown-panel');
+					var selectedValues = queryParams.getAll(config.inputName);
+
+					if (!panel) {
+						return;
+					}
+
+					removeRemoteFilterHiddenInputs(config.inputName);
+					panel.innerHTML = '';
+
+					if (!rows || rows.length === 0) {
+						renderEmpty(panel, '선택 가능한 항목이 없습니다.');
+						updateFilterSummary(dropdown);
+						return;
+					}
+
+					rows.forEach(function(row) {
+						var value = row[config.valueKey];
+						var label = row[config.labelKey];
+
+						if (value == null || label == null) {
+							return;
+						}
+
+						panel.appendChild(createOption(config.inputName, value, label,
+								selectedValues.indexOf(String(value)) !== -1));
+					});
+
+					updateFilterSummary(dropdown);
+				}
+
+				function createOption(inputName, value, label, checked) {
+					var item = document.createElement('label');
+					var input = document.createElement('input');
+					var text = document.createElement('span');
+
+					item.className = 'filter-check-item';
+					input.type = 'checkbox';
+					input.name = inputName;
+					input.value = value;
+					input.checked = checked;
+					text.textContent = label;
+
+					item.appendChild(input);
+					item.appendChild(text);
+					return item;
+				}
+
+				function renderEmpty(panel, message) {
+					var empty = document.createElement('span');
+
+					empty.className = 'filter-empty-message';
+					empty.textContent = message;
+					panel.appendChild(empty);
+				}
+
+				function preserveSelectedRemoteFilterValues() {
+					if (!searchForm) {
+						return;
+					}
+
+					Object.keys(optionConfig).forEach(function(groupName) {
+						var config = optionConfig[groupName];
+						var selectedValues = queryParams.getAll(config.inputName);
+
+						selectedValues.forEach(function(value) {
+							if (hasFormInputValue(config.inputName, value)) {
+								return;
+							}
+
+							var input = document.createElement('input');
+
+							input.type = 'hidden';
+							input.name = config.inputName;
+							input.value = value;
+							input.setAttribute('data-remote-filter-name', config.inputName);
+							searchForm.appendChild(input);
+						});
+					});
+				}
+
+				function hasFormInputValue(inputName, value) {
+					if (!searchForm) {
+						return false;
+					}
+
+					return Array.prototype.some.call(searchForm.querySelectorAll('input[name="' + inputName + '"]'),
+							function(input) {
+								return String(input.value) === String(value)
+									&& input.getAttribute('data-remote-filter-name') !== inputName;
+							});
+				}
+
+				function removeRemoteFilterHiddenInputs(inputName) {
+					if (!searchForm) {
+						return;
+					}
+
+					searchForm.querySelectorAll('input[type="hidden"][data-remote-filter-name="' + inputName + '"]')
+							.forEach(function(input) {
+								input.remove();
+							});
+				}
+
+				function updateFilterSummary(dropdown) {
+					var checkedLabels = Array.prototype.slice.call(
+							dropdown.querySelectorAll('input[type="checkbox"]:checked'))
+							.map(function(input) {
+								var label = input.closest('.filter-check-item');
+								return label ? label.innerText.trim() : '';
+							})
+							.filter(function(text) {
+								return text.length > 0;
+							});
+					var summaryText = dropdown.querySelector('.filter-selected-text');
+					var placeholder = dropdown.getAttribute('data-placeholder') || '전체';
+
+					if (!summaryText) {
+						return;
+					}
+
+					if (checkedLabels.length === 0) {
+						if (!dropdown.dataset.userChanged
+								&& hasQuerySelected(dropdown)
+								&& summaryText.textContent.trim()
+								&& summaryText.textContent.trim() !== placeholder) {
+							dropdown.classList.add('has-selected');
+							return;
+						}
+
+						if (summaryText.textContent.trim() === '') {
+							summaryText.textContent = placeholder;
+						}
+						dropdown.classList.toggle('has-selected',
+								summaryText.textContent.trim() !== placeholder);
+						return;
+					}
+
+					summaryText.textContent = checkedLabels.join(', ');
+					dropdown.classList.add('has-selected');
+				}
+
+				function hasQuerySelected(dropdown) {
+					var config = optionConfig[dropdown.getAttribute('data-filter-group')];
+
+					return config && queryParams.getAll(config.inputName).length > 0;
+				}
+			})();
+		</script>
+	</div>
 </body>
-
 </html>

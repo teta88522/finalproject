@@ -18,13 +18,18 @@ public interface BugMapper {
 	// 버그 등록
 	public int insertBug(BugVO bugVO);
 	
-	// 버그 수정
+	// 버그 수정 관리자용
 	public int updateBug(BugVO bugVO);
+	
+	// 일반 사용자용 본인 버그만 수정
+    public 	int updateBugByReporter(BugVO bugVO);
 	
 	// 버그 삭제
 	public int deleteBug(String bugId);
 	
 	// 등록자 삭제
 	public int deleteBugByReporter(BugVO bugVO);
+	
+	public BugVO selectBugAddInfoByExecutionId(String executionId);
 	
 }

@@ -1,0 +1,177 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{common/layouts/default_layout}">
+<head>
+<meta charset="UTF-8">
+<style>
+  .wiki-view-wrap {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    padding: 32px;
+  }
+  .wiki-view-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid #3d6ef5;
+  }
+  .wiki-view-title {
+    font-size: 32px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin: 0;
+  }
+  .wiki-view-meta {
+    font-size: 13px;
+    color: #aaa;
+    margin-top: 6px;
+  }
+  .btn-edit {
+    padding: 8px 20px;
+    background: #3d6ef5;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .btn-edit:hover { background: #2d5ee0; color: #fff; }
+  .btn-back {
+    padding: 8px 16px;
+    background: #fff;
+    color: #888;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    text-decoration: none;
+    margin-right: 8px;
+  }
+  .btn-back:hover { background: #f5f5f5; }
+
+  /* 마크다운 렌더링 스타일 */
+  .wiki-content { font-size: 15px; line-height: 1.8; color: #1a1a1a; }
+  .wiki-content h1 { font-size: 26px; font-weight: 700; border-bottom: 2px solid #3d6ef5; padding-bottom: 6px; margin: 24px 0 12px; }
+  .wiki-content h2 { font-size: 21px; font-weight: 700; border-bottom: 1px solid #ddd; padding-bottom: 4px; margin: 20px 0 10px; }
+  .wiki-content h3 { font-size: 17px; font-weight: 700; margin: 16px 0 8px; }
+  .wiki-content h4 { font-size: 15px; font-weight: 700; margin: 12px 0 6px; }
+  .wiki-content blockquote { border-left: 4px solid #3d6ef5; background: #f0f4ff; padding: 10px 16px; margin: 12px 0; border-radius: 0 6px 6px 0; color: #444; }
+  .wiki-content pre { background: #1e1e1e; color: #d4d4d4; padding: 16px; border-radius: 8px; font-size: 13px; overflow-x: auto; margin: 12px 0; }
+  .wiki-content code { background: #f0f0f0; padding: 2px 6px; border-radius: 4px; font-size: 13px; color: #e53e3e; }
+  .wiki-content pre code { background: none; color: inherit; padding: 0; }
+  .wiki-content table { border-collapse: collapse; width: 100%; margin: 12px 0; }
+  .wiki-content th { background: #f0f4ff; border: 1px solid #ddd; padding: 8px 12px; font-weight: 600; }
+  .wiki-content td { border: 1px solid #ddd; padding: 8px 12px; }
+  .wiki-content tr:nth-child(even) td { background: #fafafa; }
+  .wiki-content ul { padding-left: 24px; margin: 8px 0; list-style-type: disc; }
+  .wiki-content ol { padding-left: 24px; margin: 8px 0; list-style-type: decimal; }
+  .wiki-content li { margin: 4px 0; display: list-item; }
+  .wiki-content hr { border: none; border-top: 2px solid #eee; margin: 20px 0; }
+  .wiki-content a { color: #3d6ef5; text-decoration: underline; }
+  .wiki-content p { margin: 8px 0; }
+
+  /* 목차 */
+  .wiki-toc {
+    background: #f8f9fa;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 24px;
+    display: inline-block;
+    min-width: 200px;
+  }
+  .wiki-toc-title { font-weight: 700; margin-bottom: 8px; font-size: 14px; }
+  .wiki-toc ol { padding-left: 20px; margin: 0; list-style-type: decimal; }
+  .wiki-toc li { margin: 4px 0; font-size: 13px; display: list-item; }
+  .wiki-toc a { color: #3d6ef5; text-decoration: none; }
+  .wiki-toc a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+<div layout:fragment="Content">
+<div class="product-status mg-b-15">
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-lg-12">
+        <div class="wiki-view-wrap">
+
+          <!-- 헤더 -->
+          <div class="wiki-view-header">
+            <div>
+              <h1 class="wiki-view-title" th:text="${page != null ? page.title : '제목없음'}">제목</h1>
+              <div class="wiki-view-meta">
+                <span th:text="${page != null ? page.createdBy : ''}">작성자</span>
+                &nbsp;·&nbsp;
+                <span th:text="${page != null ? #dates.format(page.createdAt, 'yyyy-MM-dd') : ''}">날짜</span>
+                <span th:if="${page != null and page.updatedAt != null}">
+                  &nbsp;·&nbsp; 수정됨
+                </span>
+              </div>
+            </div>
+            <div>
+              <a th:href="@{/project/{pid}/wiki/(pid=${projectId})}" class="btn-back">← 목록</a>
+              <a th:href="@{/project/{pid}/wiki/{wid}/edit(pid=${projectId}, wid=${wikiId})}" class="btn-edit">✏️ 편집</a>
+            </div>
+          </div>
+
+          <!-- 본문 -->
+          <div id="wikiContent" class="wiki-content"></div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script th:inline="javascript">
+  const content = [[${version != null ? version.content : '{}'}]]
+  const projectId = [[${projectId}]]
+  const wikiId = [[${wikiId}]]
+
+  try {
+    const parsed = JSON.parse(content)
+    const markdown = typeof parsed === 'string' ? parsed : (parsed.markdown || '')
+
+    marked.setOptions({ breaks: true, gfm: true })
+    const html = marked.parse(markdown)
+
+    // 목차 생성
+    const parser = new DOMParser()
+    const doc = parser.parseFromString(html, 'text/html')
+    const headings = doc.querySelectorAll('h2, h3, h4')
+
+    let tocHtml = ''
+    if (headings.length > 0) {
+      tocHtml = '<div class="wiki-toc"><div class="wiki-toc-title">목차</div><ol>'
+      headings.forEach((h, i) => {
+        const level = parseInt(h.tagName[1])
+        const text = h.textContent
+        const indent = (level - 2) * 16
+        tocHtml += `<li style="margin-left:${indent}px"><a href="#heading-${i}">${text}</a></li>`
+      })
+      tocHtml += '</ol></div>'
+    }
+
+    // 헤딩에 id 추가
+    const finalHtml = html.replace(/<h([234])[^>]*>/g, (match, level, offset) => {
+      const idx = Array.from(html.matchAll(/<h[234]/g)).findIndex(m => m.index === offset)
+      return `<h${level} id="heading-${idx}">`
+    })
+
+    document.getElementById('wikiContent').innerHTML = tocHtml + finalHtml
+
+  } catch(e) {
+    document.getElementById('wikiContent').innerHTML = '<p style="color:#aaa;">내용이 없습니다.</p>'
+  }
+
+</script>
+</div>
+</body>
+</html>

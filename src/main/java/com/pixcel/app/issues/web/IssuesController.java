@@ -23,6 +23,7 @@ import com.pixcel.app.file.service.FileVO;
 import com.pixcel.app.issues.service.IssuesService;
 import com.pixcel.app.issues.service.IssuesVO;
 import com.pixcel.app.timelog.service.TimelogService;
+import com.pixcel.app.timelog.service.TimelogVO;
 import com.pixcel.app.web.LoginRequiredException;
 
 import lombok.RequiredArgsConstructor;
@@ -150,13 +151,16 @@ public class IssuesController {
 		issue.setIssueId(issueId);
 
 		try {
+			String updateHistoryGroupId = issuesService.createIssueHistoryGroupId();
+			issue.setHistoryGroupId(updateHistoryGroupId);
 			issuesService.updateIssue(issue, loginUserId);
 			int selectedFileCount = countSelectedFiles(files);
 			int uploadFileCount = uploadIssueFiles(issue, loginUserId, files);
-			int deleteFileCount = deleteIssueFiles(projectId, issueId, loginUserId, deleteFileIds);
+			int deleteFileCount = issuesService.deleteIssueFiles(projectId, issueId, deleteFileIds, loginUserId,
+					updateHistoryGroupId);
 
 			if (uploadFileCount > 0) {
-				issuesService.recordIssueFileAddHistory(issueId, loginUserId, uploadFileCount);
+				issuesService.recordIssueFileAddHistory(issueId, loginUserId, uploadFileCount, updateHistoryGroupId);
 			}
 			redirectAttributes.addFlashAttribute("message", buildUpdateMessage(uploadFileCount, deleteFileCount));
 
@@ -216,6 +220,33 @@ public class IssuesController {
 			return;
 		}
 		fileService.downloadOne(fileId, response, loginUserId);
+	}
+
+	@GetMapping("/project/{projectId}/issues/{issueId}/timelog/summary")
+	@ResponseBody
+	public Map<String, Object> issueTimelogSummary(@CookieValue(value = "userId", required = false) String userId,
+			@PathVariable("projectId") String projectId,
+			@PathVariable("issueId") String issueId) {
+
+		String loginUserId = getLoginUserId(userId);
+
+		Map<String, Object> summary = timelogService.getIssueTimelogSummary(projectId, issueId, loginUserId);
+		List<TimelogVO> timeLogList = (List<TimelogVO>) summary.get("timeLogSummaryList");
+
+		Map<String, Object> response = new HashMap<>();
+		response.put("timeLogSummaryList", toTimelogSummaryMapList(timeLogList));
+		return response;
+	}
+
+	@GetMapping("/project/{projectId}/issues/{issueId}/history")
+	@ResponseBody
+	public Map<String, Object> issueHistoryList(@CookieValue(value = "userId", required = false) String userId,
+			@PathVariable("projectId") String projectId,
+			@PathVariable("issueId") String issueId,
+			@RequestParam(value = "offset", defaultValue = "0") int offset) {
+
+		String loginUserId = getLoginUserId(userId);
+		return issuesService.getIssueHistoryGroupPage(projectId, issueId, loginUserId, offset);
 	}
 	
 	@PostMapping("/project/{projectId}/issues/{issueId}/delete")
@@ -363,17 +394,14 @@ public class IssuesController {
 		model.addAttribute("parentIssueList", pageData.get("parentIssueList"));
 		model.addAttribute("historyList", pageData.get("historyList"));
 		model.addAttribute("historyGroupList", pageData.get("historyGroupList"));
+		model.addAttribute("historyCount", pageData.get("historyCount"));
+		model.addAttribute("timeLogTotalCount", pageData.get("timeLogTotalCount"));
+		model.addAttribute("timeLogTotalHours", pageData.get("timeLogTotalHours"));
 		model.addAttribute("deletedIssue", deletedIssue);
 		model.addAttribute("deletedIssueMessage", pageData.get("deletedIssueMessage"));
 		model.addAttribute("canUpdateIssue", pageData.get("canUpdateIssue"));
 		model.addAttribute("canDeleteIssue", pageData.get("canDeleteIssue"));
 
-		if (!deletedIssue) {
-			Map<String, Object> timeLogSummary = timelogService.getIssueTimelogSummary(projectId, issueId);
-			model.addAttribute("timeLogSummaryList", timeLogSummary.get("timeLogSummaryList"));
-			model.addAttribute("timeLogTotalHours", timeLogSummary.get("timeLogTotalHours"));
-			model.addAttribute("timeLogTotalCount", timeLogSummary.get("timeLogTotalCount"));
-		}
 	}
 	// ==============================
 	// 일감 생성 화면 데이터
@@ -505,14 +533,6 @@ public class IssuesController {
 		return (int) files.stream().filter(file -> file != null && !file.isEmpty()).count();
 	}
 
-	private int deleteIssueFiles(String projectId, String issueId, String userId, List<String> deleteFileIds) {
-		if (deleteFileIds == null || deleteFileIds.isEmpty()) {
-			return 0;
-		}
-
-		return issuesService.deleteIssueFiles(projectId, issueId, deleteFileIds, userId);
-	}
-
 	private String buildUpdateMessage(int uploadFileCount, int deleteFileCount) {
 		List<String> messageList = new ArrayList<>();
 		messageList.add("일감을 수정했습니다.");
@@ -547,6 +567,27 @@ public class IssuesController {
 		fileMap.put("fileSize", file.getFileSize());
 
 		return fileMap;
+	}
+
+	private List<Map<String, Object>> toTimelogSummaryMapList(List<TimelogVO> timeLogList) {
+		if (timeLogList == null || timeLogList.isEmpty()) {
+			return List.of();
+		}
+
+		return timeLogList.stream().map(this::toTimelogSummaryMap).toList();
+	}
+
+	private Map<String, Object> toTimelogSummaryMap(TimelogVO timeLog) {
+		Map<String, Object> timeLogMap = new HashMap<>();
+
+		timeLogMap.put("timeLogId", timeLog.getTimeLogId());
+		timeLogMap.put("workTypeName", timeLog.getWorkTypeName());
+		timeLogMap.put("workDate", timeLog.getWorkDate() == null ? null : timeLog.getWorkDate().toString());
+		timeLogMap.put("hours", timeLog.getHours());
+		timeLogMap.put("description", timeLog.getDescription());
+		timeLogMap.put("descriptionPreview", timeLog.getDescriptionPreview());
+
+		return timeLogMap;
 	}
 
 	private String getLoginUserId(String userId) {

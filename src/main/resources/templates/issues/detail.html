@@ -172,7 +172,8 @@
 											class="required dynamic-required">*</span></span>
 										<select class="form-control" th:field="*{milestoneId}"
 											th:disabled="${!canUpdateIssue}">
-											<option value="">미지정</option>
+											<option value=""
+												th:text="${#lists.isEmpty(milestoneList)} ? '현재 버전에 마일스톤 없음' : '미지정'">미지정</option>
 											<option th:each="milestone : ${milestoneList}"
 												th:value="${milestone.milestoneId}"
 												th:text="${milestone.milestoneTitle}">마일스톤</option>
@@ -233,73 +234,88 @@
 									th:href="@{/project/{projectId}/issues/{issueId}/files/download(projectId=${selectedProjectId}, issueId=${issue.issueId})}">전체 다운로드</a>
 							</div>
 
-							<div class="issues-detail-bottom-grid">
-								<details class="issues-card issues-detail-history-card">
-									<summary class="issues-history-summary">
-										<span>변경 이력</span>
-										<strong id="issueHistoryCount"
-											th:text="|${#lists.size(historyGroupList)}건|">0건</strong>
-									</summary>
+							<section id="timeLogSection" class="issues-card issues-detail-activity-card">
+								<div class="issues-activity-tabs" role="tablist">
+									<button type="button" class="issues-activity-tab is-active"
+										data-activity-tab="history" role="tab" aria-selected="true">
+										변경 이력
+										<strong th:text="${historyCount}">0</strong>
+									</button>
+									<button type="button" class="issues-activity-tab"
+										data-activity-tab="timelog" role="tab" aria-selected="false">
+										소요시간
+										<strong id="issueTimelogTabCount" th:text="${timeLogTotalCount}">0</strong>
+									</button>
+								</div>
 
-									<div id="issueHistoryList" class="issues-history-list"
-										th:style="${#lists.isEmpty(historyGroupList)} ? 'display: none;' : ''">
-										<div class="issues-history-item" th:each="group : ${historyGroupList}">
-											<div class="issues-history-meta">
-												<strong th:text="${group.changeTypeDisplayName}">일감 수정</strong>
-												<span th:text="${group.changedByName != null ? group.changedByName : group.changedBy}">사용자</span>
-												<span th:text="${group.changedAt != null ? #dates.format(group.changedAt, 'yyyy-MM-dd HH:mm') : '-'}">2026-06-28 12:00</span>
+								<div class="issues-activity-panel is-active"
+									data-activity-panel="history" role="tabpanel">
+									<details id="issueHistoryDetails" class="issues-detail-history-card issues-activity-history-card">
+										<summary class="issues-history-summary">
+											<span>변경 이력</span>
+											<strong th:text="|${historyCount}건|">0건</strong>
+										</summary>
+
+										<div id="issueHistoryList" class="issues-history-list"
+											th:style="${#lists.isEmpty(historyGroupList)} ? 'display: none;' : ''">
+											<div class="issues-history-item" th:each="group : ${historyGroupList}">
+												<div class="issues-history-meta">
+													<strong th:text="${group.changeTypeDisplayName}">일감 수정</strong>
+													<span th:text="${group.changedByName != null ? group.changedByName : group.changedBy}">사용자</span>
+													<span th:text="${group.changedAt != null ? #dates.format(group.changedAt, 'yyyy-MM-dd HH:mm') : '-'}">2026-06-28 12:00</span>
+												</div>
+												<div class="issues-history-change"
+													th:each="history : ${group.historyList}">
+													<span class="issues-history-field"
+														th:text="${history.fieldName != null ? history.fieldName : '변경'}">제목</span>
+													<span th:text="${history.beforeValue}">before</span>
+													<span class="issues-history-arrow">→</span>
+													<span th:text="${history.afterValue}">after</span>
+												</div>
+												<p th:if="${group.reason}" th:text="${group.reason}">변경 사유</p>
 											</div>
-											<div class="issues-history-change"
-												th:each="history : ${group.historyList}">
-												<span class="issues-history-field"
-													th:text="${history.fieldName != null ? history.fieldName : '변경'}">제목</span>
-												<span th:text="${history.beforeValue}">before</span>
-												<span class="issues-history-arrow">→</span>
-												<span th:text="${history.afterValue}">after</span>
+										</div>
+
+										<div id="issueHistoryEmpty" class="issues-empty-box"
+											th:style="${#lists.isEmpty(historyGroupList)} ? '' : 'display: none;'">
+											변경 이력을 펼치면 불러옵니다.
+										</div>
+										<div class="issues-history-more">
+											<button id="issueHistoryMore" type="button"
+												class="btn btn-default btn-custon-rounded-four btn-xs"
+												style="display: none;">더보기</button>
+										</div>
+									</details>
+								</div>
+
+								<div class="issues-activity-panel"
+									data-activity-panel="timelog" role="tabpanel">
+									<details id="issueTimelogDetails" class="issues-detail-history-card issues-activity-history-card">
+										<summary class="issues-history-summary">
+											<span>소요시간</span>
+											<strong id="issueTimelogSummaryCount" th:text="|${timeLogTotalCount}건|">0건</strong>
+										</summary>
+
+										<div class="issues-timelog-summary">
+											<div>
+												<h4>소요시간</h4>
+												<p>
+													<span id="issueTimelogTotalHours" th:text="|총 ${timeLogTotalHours} 시간|">총 0 시간</span>
+													<span id="issueTimelogTotalCount" th:text="| / ${timeLogTotalCount}건|"> / 0건</span>
+												</p>
 											</div>
-											<p th:if="${group.reason}" th:text="${group.reason}">변경 사유</p>
+											<a class="btn btn-custon-rounded-four btn-primary btn-xs"
+												th:href="@{/project/{projectId}/issues/timelog/create(projectId=${selectedProjectId}, issueId=${issue.issueId})}">등록</a>
 										</div>
-									</div>
 
-									<div id="issueHistoryEmpty" class="issues-empty-box"
-										th:style="${#lists.isEmpty(historyGroupList)} ? '' : 'display: none;'">
-										변경 이력이 없습니다.
-									</div>
-								</details>
+										<div id="issueTimelogList" class="issues-timelog-list"></div>
 
-								<section id="timeLogSection" class="issues-card issues-detail-timelog-card">
-									<div class="issues-timelog-summary">
-										<div>
-											<h4>소요시간</h4>
-											<p>
-												<span th:text="|총 ${timeLogTotalHours != null ? timeLogTotalHours : 0} 시간|">총 0 시간</span>
-												<span th:text="| / ${timeLogTotalCount != null ? timeLogTotalCount : 0}건|"> / 0건</span>
-											</p>
+										<div id="issueTimelogEmpty" class="issues-empty-box">
+											소요시간을 펼치면 불러옵니다.
 										</div>
-										<a class="btn btn-custon-rounded-four btn-primary btn-xs"
-											th:href="@{/project/{projectId}/issues/timelog/create(projectId=${selectedProjectId}, issueId=${issue.issueId})}">등록</a>
-									</div>
-
-									<div class="issues-timelog-list"
-										th:if="${timeLogSummaryList != null and !#lists.isEmpty(timeLogSummaryList)}">
-										<a class="issues-timelog-item" th:each="timeLog : ${timeLogSummaryList}"
-											th:href="@{/project/{projectId}/issues/{issueId}/timelog/{timeLogId}(projectId=${selectedProjectId}, issueId=${issue.issueId}, timeLogId=${timeLog.timeLogId})}">
-											<span class="issues-timelog-meta">
-												<strong th:text="${timeLog.workTypeName != null ? timeLog.workTypeName : '작업'}">작업</strong>
-												<span th:text="${timeLog.workDate != null ? timeLog.workDate : '-'}">2026-06-30</span>
-												<span th:text="|${timeLog.hours}시간|">1시간</span>
-											</span>
-											<span class="issues-timelog-desc"
-												th:text="${timeLog.descriptionPreview != null ? timeLog.descriptionPreview : timeLog.description}">작업 내용</span>
-										</a>
-									</div>
-
-									<div class="issues-empty-box"
-										th:if="${timeLogSummaryList == null or #lists.isEmpty(timeLogSummaryList)}">
-										등록된 소요시간이 없습니다.
-									</div>
-								</section>
-							</div>
+									</details>
+								</div>
+							</section>
 						</div>
 
 						<div class="issues-detail-side">
@@ -383,10 +399,19 @@
 				var deletedIssue = /*[[${deletedIssue}]]*/ false;
 				var fileListUrl = /*[[@{/project/{projectId}/issues/{issueId}/files(projectId=${selectedProjectId}, issueId=${issue.issueId})}]]*/ '';
 				var fileDownloadPrefix = /*[[@{|/project/${selectedProjectId}/issues/${issue.issueId}/files/|}]]*/ '';
+				var historyListUrl = /*[[@{/project/{projectId}/issues/{issueId}/history(projectId=${selectedProjectId}, issueId=${issue.issueId})}]]*/ '';
+				var timelogSummaryUrl = /*[[@{/project/{projectId}/issues/{issueId}/timelog/summary(projectId=${selectedProjectId}, issueId=${issue.issueId})}]]*/ '';
+				var timelogDetailPrefix = /*[[@{|/project/${selectedProjectId}/issues/${issue.issueId}/timelog/|}]]*/ '';
 				var settingMap = {};
 				var fileList = document.getElementById('issueFileList');
 				var fileEmpty = document.getElementById('issueFileEmpty');
 				var fileDownloadAll = document.getElementById('issueFileDownloadAll');
+				var historyLoaded = false;
+				var historyLoading = false;
+				var historyHasMore = true;
+				var historyNextOffset = 0;
+				var timelogLoaded = false;
+				var historyMoreButton = document.getElementById('issueHistoryMore');
 				var detailFileInput = document.getElementById('issueDetailFileInput');
 				var detailFileCount = document.getElementById('issueDetailFileCount');
 				var detailFileClear = document.getElementById('issueDetailFileClear');
@@ -602,6 +627,326 @@
 
 				if (!deletedIssue) {
 					loadIssueFiles();
+				}
+
+				function setHistoryMessage(message) {
+					var historyList = document.getElementById('issueHistoryList');
+					var historyEmpty = document.getElementById('issueHistoryEmpty');
+
+					if (historyList) {
+						historyList.innerHTML = '';
+						historyList.style.display = 'none';
+					}
+					if (historyEmpty) {
+						historyEmpty.textContent = message;
+						historyEmpty.style.display = 'block';
+					}
+					if (historyMoreButton) {
+						historyMoreButton.style.display = 'none';
+					}
+				}
+
+				function formatHistoryDate(value) {
+					if (!value) {
+						return '-';
+					}
+
+					var date = new Date(value);
+					if (Number.isNaN(date.getTime())) {
+						return value;
+					}
+
+					var year = date.getFullYear();
+					var month = String(date.getMonth() + 1).padStart(2, '0');
+					var day = String(date.getDate()).padStart(2, '0');
+					var hour = String(date.getHours()).padStart(2, '0');
+					var minute = String(date.getMinutes()).padStart(2, '0');
+					return year + '-' + month + '-' + day + ' ' + hour + ':' + minute;
+				}
+
+				function renderIssueHistoryGroups(pageData, append) {
+					var historyList = document.getElementById('issueHistoryList');
+					var historyEmpty = document.getElementById('issueHistoryEmpty');
+					var groups = pageData && pageData.historyGroupList ? pageData.historyGroupList : [];
+
+					if (!historyList) {
+						return;
+					}
+
+					if (!append) {
+						historyList.innerHTML = '';
+					}
+
+					if ((!groups || groups.length === 0) && !append) {
+						setHistoryMessage('변경 이력이 없습니다.');
+						return;
+					}
+
+					if (historyEmpty) {
+						historyEmpty.style.display = 'none';
+					}
+					historyList.style.display = 'grid';
+
+					groups.forEach(function(group) {
+						var item = document.createElement('div');
+						item.className = 'issues-history-item';
+
+						var meta = document.createElement('div');
+						meta.className = 'issues-history-meta';
+
+						var type = document.createElement('strong');
+						type.textContent = group.changeTypeDisplayName || '변경';
+						meta.appendChild(type);
+
+						var user = document.createElement('span');
+						user.textContent = group.changedByName || group.changedBy || '-';
+						meta.appendChild(user);
+
+						var changedAt = document.createElement('span');
+						changedAt.textContent = formatHistoryDate(group.changedAt);
+						meta.appendChild(changedAt);
+
+						item.appendChild(meta);
+
+						(group.historyList || []).forEach(function(history) {
+							var change = document.createElement('div');
+							change.className = 'issues-history-change';
+
+							var field = document.createElement('span');
+							field.className = 'issues-history-field';
+							field.textContent = history.fieldName || '변경';
+							change.appendChild(field);
+
+							var before = document.createElement('span');
+							before.textContent = history.beforeValue || '-';
+							change.appendChild(before);
+
+							var arrow = document.createElement('span');
+							arrow.className = 'issues-history-arrow';
+							arrow.textContent = '→';
+							change.appendChild(arrow);
+
+							var after = document.createElement('span');
+							after.textContent = history.afterValue || '-';
+							change.appendChild(after);
+
+							item.appendChild(change);
+						});
+
+						if (group.reason) {
+							var reason = document.createElement('p');
+							reason.textContent = group.reason;
+							item.appendChild(reason);
+						}
+
+						historyList.appendChild(item);
+					});
+
+					historyHasMore = !!(pageData && pageData.hasMore);
+					historyNextOffset = pageData && pageData.nextOffset != null ? pageData.nextOffset : historyNextOffset;
+					if (historyMoreButton) {
+						historyMoreButton.style.display = historyHasMore ? 'inline-block' : 'none';
+					}
+				}
+
+				function loadIssueHistory(append) {
+					if (historyLoading || (!append && historyLoaded) || !historyListUrl || deletedIssue || (append && !historyHasMore)) {
+						return;
+					}
+
+					historyLoading = true;
+					if (!append) {
+						historyLoaded = true;
+						historyNextOffset = 0;
+						setHistoryMessage('변경 이력을 불러오는 중입니다.');
+					} else if (historyMoreButton) {
+						historyMoreButton.textContent = '불러오는 중';
+						historyMoreButton.disabled = true;
+					}
+
+					var separator = historyListUrl.indexOf('?') === -1 ? '?' : '&';
+					fetch(historyListUrl + separator + 'offset=' + encodeURIComponent(historyNextOffset), {
+						headers: {
+							'Accept': 'application/json'
+						}
+					}).then(function(response) {
+						if (!response.ok) {
+							throw new Error('history request failed');
+						}
+						return response.json();
+					}).then(function(data) {
+						renderIssueHistoryGroups(data, append);
+						historyLoading = false;
+						if (historyMoreButton) {
+							historyMoreButton.textContent = '더보기';
+							historyMoreButton.disabled = false;
+						}
+					}).catch(function() {
+						historyLoaded = false;
+						historyLoading = false;
+						if (historyMoreButton) {
+							historyMoreButton.textContent = '더보기';
+							historyMoreButton.disabled = false;
+						}
+						setHistoryMessage('변경 이력을 불러오지 못했습니다.');
+					});
+				}
+
+				if (historyMoreButton) {
+					historyMoreButton.addEventListener('click', function() {
+						loadIssueHistory(true);
+					});
+				}
+
+				var issueHistoryDetails = document.getElementById('issueHistoryDetails');
+				if (issueHistoryDetails) {
+					issueHistoryDetails.addEventListener('toggle', function() {
+						if (issueHistoryDetails.open) {
+							loadIssueHistory();
+						}
+					});
+				}
+
+				function setTimelogMessage(message) {
+					var emptyBox = document.getElementById('issueTimelogEmpty');
+					var list = document.getElementById('issueTimelogList');
+
+					if (list) {
+						list.innerHTML = '';
+					}
+					if (emptyBox) {
+						emptyBox.textContent = message;
+						emptyBox.style.display = 'block';
+					}
+				}
+
+				function renderTimelogSummary(summary) {
+					var list = document.getElementById('issueTimelogList');
+					var emptyBox = document.getElementById('issueTimelogEmpty');
+					var totalHours = document.getElementById('issueTimelogTotalHours');
+					var totalCount = document.getElementById('issueTimelogTotalCount');
+					var tabCount = document.getElementById('issueTimelogTabCount');
+					var summaryCount = document.getElementById('issueTimelogSummaryCount');
+					var rows = summary && summary.timeLogSummaryList ? summary.timeLogSummaryList : [];
+					var hasTotalCount = summary && summary.timeLogTotalCount != null;
+					var hasTotalHours = summary && summary.timeLogTotalHours != null;
+					var count = hasTotalCount ? summary.timeLogTotalCount : null;
+					var hours = hasTotalHours ? summary.timeLogTotalHours : null;
+
+					if (totalHours && hasTotalHours) {
+						totalHours.textContent = '총 ' + hours + ' 시간';
+					}
+					if (totalCount && hasTotalCount) {
+						totalCount.textContent = ' / ' + count + '건';
+					}
+					if (tabCount && hasTotalCount) {
+						tabCount.textContent = count;
+					}
+					if (summaryCount && hasTotalCount) {
+						summaryCount.textContent = count + '건';
+					}
+					if (!list) {
+						return;
+					}
+
+					list.innerHTML = '';
+
+					if (!rows || rows.length === 0) {
+						setTimelogMessage('등록된 소요시간이 없습니다.');
+						return;
+					}
+
+					if (emptyBox) {
+						emptyBox.style.display = 'none';
+					}
+
+					rows.forEach(function(timeLog) {
+						var link = document.createElement('a');
+						link.className = 'issues-timelog-item';
+						link.href = timelogDetailPrefix + encodeURIComponent(timeLog.timeLogId || '');
+
+						var meta = document.createElement('span');
+						meta.className = 'issues-timelog-meta';
+
+						var type = document.createElement('strong');
+						type.textContent = timeLog.workTypeName || '작업';
+						meta.appendChild(type);
+
+						var workDate = document.createElement('span');
+						workDate.textContent = timeLog.workDate || '-';
+						meta.appendChild(workDate);
+
+						var hoursText = document.createElement('span');
+						hoursText.textContent = (timeLog.hours != null ? timeLog.hours : 0) + '시간';
+						meta.appendChild(hoursText);
+
+						var desc = document.createElement('span');
+						desc.className = 'issues-timelog-desc';
+						desc.textContent = timeLog.descriptionPreview || timeLog.description || '';
+
+						link.appendChild(meta);
+						link.appendChild(desc);
+						list.appendChild(link);
+					});
+				}
+
+				function loadTimelogSummary() {
+					if (timelogLoaded || !timelogSummaryUrl || deletedIssue) {
+						return;
+					}
+
+					timelogLoaded = true;
+					setTimelogMessage('소요시간을 불러오는 중입니다.');
+
+					fetch(timelogSummaryUrl, {
+						headers: {
+							'Accept': 'application/json'
+						}
+					}).then(function(response) {
+						if (!response.ok) {
+							throw new Error('timelog request failed');
+						}
+						return response.json();
+					}).then(renderTimelogSummary).catch(function() {
+						timelogLoaded = false;
+						setTimelogMessage('소요시간을 불러오지 못했습니다.');
+					});
+				}
+
+				function activateActivityTab(target) {
+					if (!target) {
+						return;
+					}
+
+					document.querySelectorAll('.issues-activity-tab').forEach(function(item) {
+						var active = item.getAttribute('data-activity-tab') === target;
+						item.classList.toggle('is-active', active);
+						item.setAttribute('aria-selected', active ? 'true' : 'false');
+					});
+
+					document.querySelectorAll('.issues-activity-panel').forEach(function(panel) {
+						panel.classList.toggle('is-active',
+								panel.getAttribute('data-activity-panel') === target);
+					});
+				}
+
+				document.querySelectorAll('.issues-activity-tab').forEach(function(tab) {
+					tab.addEventListener('click', function() {
+						activateActivityTab(tab.getAttribute('data-activity-tab'));
+					});
+				});
+
+				if (window.location.hash === '#timeLogSection') {
+					activateActivityTab('timelog');
+				}
+
+				var issueTimelogDetails = document.getElementById('issueTimelogDetails');
+				if (issueTimelogDetails) {
+					issueTimelogDetails.addEventListener('toggle', function() {
+						if (issueTimelogDetails.open) {
+							loadTimelogSummary();
+						}
+					});
 				}
 
 				if (detailFileInput && detailFileCount) {

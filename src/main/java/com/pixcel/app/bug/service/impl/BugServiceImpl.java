@@ -47,4 +47,14 @@ public class BugServiceImpl implements BugService {
 		return bugMapper.deleteBugByReporter(bugVO);
 	}
 
+	@Override
+	public int updateBugByReporter(BugVO bugVO) {
+		 return bugMapper.updateBugByReporter(bugVO);
+	}
+
+	@Override
+	public BugVO selectBugAddInfoByExecutionId(String executionId) {
+		return bugMapper.selectBugAddInfoByExecutionId(executionId);
+	}
+
 }

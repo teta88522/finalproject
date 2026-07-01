@@ -40,5 +40,6 @@ public interface TimelogMapper {
 
 	List<TimelogVO> selectIssueTimelogSummaryRows(
 			@Param("projectId") String projectId,
-			@Param("issueId") String issueId);
+			@Param("issueId") String issueId,
+			@Param("userId") String userId);
 }

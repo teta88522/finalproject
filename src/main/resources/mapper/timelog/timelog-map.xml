@@ -336,11 +336,6 @@
 		select *
 		from (
 		select
-		summary_rows.*,
-		row_number() over (order by summary_rows.work_date desc, summary_rows.created_at desc,
-		summary_rows.time_log_id desc) as row_no
-		from (
-		select
 		tl.time_log_id,
 		tl.issue_id,
 		tl.user_id,
@@ -354,24 +349,31 @@
 		when length(tl.description) > 70 then substr(tl.description, 1, 70) || '...'
 		else tl.description
 		end as description_preview,
-		tl.created_at,
-		sum(tl.hours) over () as total_hours,
-		count(*) over () as total_count
+		tl.created_at
 		from time_log tl
+		join issue i
+		on tl.issue_id = i.issue_id
+		join project p
+		on i.project_id = p.project_id
 		left join users writer
 		on tl.user_id = writer.user_id
 		left join setting_code sc
 		on tl.setting_code_id = sc.setting_code_id
 		where tl.issue_id = #{issueId}
-		and exists (
-		select 1
-		from issue i
-		where i.issue_id = tl.issue_id
 		and i.project_id = #{projectId}
+		and (
+		p.owner_id = #{userId}
+		or exists (
+		select 1
+		from project_member pm
+		join team_member tm
+		on pm.team_member_id = tm.team_member_id
+		where pm.project_id = p.project_id
+		and tm.user_id = #{userId}
 		)
-		) summary_rows
 		)
-		where row_no <![CDATA[<=]]> 5
-		order by row_no
+		order by tl.work_date desc, tl.created_at desc, tl.time_log_id desc
+		)
+		where rownum <![CDATA[<=]]> 5
 	</select>
 </mapper>

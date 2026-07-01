@@ -3,10 +3,13 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.pixcel.app.mapper.BugMapper">
+<mapper namespace="com.pixcel.app.bug.mapper.BugMapper">
 
     <!-- 버그 목록 -->
-    <select id="selectBugList" parameterType="BugSearchVO" resultType="BugVO">
+    <select id="selectBugList"
+            parameterType="com.pixcel.app.bug.service.BugSearchVO"
+            resultType="com.pixcel.app.bug.service.BugVO">
+
         SELECT
             b.bug_id AS bugId,
             b.execution_id AS executionId,
@@ -36,11 +39,6 @@
             p.project_id AS projectId,
             p.project_name AS projectName,
 
-            bugType.note AS bugTypeName,
-            severity.note AS severityName,
-            priority.note AS priorityName,
-            bugStatus.note AS bugStatusName,
-
             assignee.user_name AS assigneeName,
             reporter.user_name AS reporterName
 
@@ -61,39 +59,47 @@
         LEFT JOIN users reporter
             ON b.reporter_id = reporter.user_id
 
-        LEFT JOIN common_code bugType
-            ON b.bug_type_code = bugType.code_id
-        LEFT JOIN common_code severity
-            ON b.severity_code = severity.code_id
-        LEFT JOIN common_code priority
-            ON b.priority_code = priority.code_id
-        LEFT JOIN common_code bugStatus
-            ON b.bug_status_code = bugStatus.code_id
-
         WHERE 1 = 1
 
         <if test="projectId != null and projectId != ''">
             AND p.project_id = #{projectId}
         </if>
 
-        <if test="projectName != null and projectName != ''">
-            AND p.project_name LIKE '%' || #{projectName} || '%'
+        <if test="bugStatusCodeList != null and bugStatusCodeList.size() > 0">
+            AND b.bug_status_code IN
+            <foreach collection="bugStatusCodeList"
+                     item="code"
+                     open="("
+                     separator=","
+                     close=")">
+                #{code}
+            </foreach>
         </if>
 
-        <if test="bugStatusCode != null and bugStatusCode != ''">
-            AND b.bug_status_code = #{bugStatusCode}
+        <if test="severityCodeList != null and severityCodeList.size() > 0">
+            AND b.severity_code IN
+            <foreach collection="severityCodeList"
+                     item="code"
+                     open="("
+                     separator=","
+                     close=")">
+                #{code}
+            </foreach>
+        </if>
+
+        <if test="priorityCodeList != null and priorityCodeList.size() > 0">
+            AND b.priority_code IN
+            <foreach collection="priorityCodeList"
+                     item="code"
+                     open="("
+                     separator=","
+                     close=")">
+                #{code}
+            </foreach>
         </if>
 
         <if test="assigneeId != null and assigneeId != ''">
             AND b.assignee_id = #{assigneeId}
-        </if>
-
-        <if test="severityCode != null and severityCode != ''">
-            AND b.severity_code = #{severityCode}
-        </if>
-
-        <if test="priorityCode != null and priorityCode != ''">
-            AND b.priority_code = #{priorityCode}
         </if>
 
         <if test="reporterId != null and reporterId != ''">
@@ -109,11 +115,15 @@
         </if>
 
         ORDER BY b.created_at DESC
+
     </select>
 
 
     <!-- 버그 상세 -->
-    <select id="selectBugDetail" parameterType="String" resultType="BugVO">
+    <select id="selectBugDetail"
+            parameterType="String"
+            resultType="com.pixcel.app.bug.service.BugVO">
+
         SELECT
             b.bug_id AS bugId,
             b.execution_id AS executionId,
@@ -143,11 +153,6 @@
             p.project_id AS projectId,
             p.project_name AS projectName,
 
-            bugType.note AS bugTypeName,
-            severity.note AS severityName,
-            priority.note AS priorityName,
-            bugStatus.note AS bugStatusName,
-
             assignee.user_name AS assigneeName,
             reporter.user_name AS reporterName
 
@@ -168,36 +173,27 @@
         LEFT JOIN users reporter
             ON b.reporter_id = reporter.user_id
 
-        LEFT JOIN common_code bugType
-            ON b.bug_type_code = bugType.code_id
-        LEFT JOIN common_code severity
-            ON b.severity_code = severity.code_id
-        LEFT JOIN common_code priority
-            ON b.priority_code = priority.code_id
-        LEFT JOIN common_code bugStatus
-            ON b.bug_status_code = bugStatus.code_id
-
         WHERE b.bug_id = #{bugId}
+
     </select>
 
 
     <!-- 버그 등록 -->
-    <insert id="insertBug" parameterType="BugVO">
-        <selectKey keyProperty="bugId" resultType="String" order="BEFORE">
-            SELECT 'BUG_' || TO_CHAR(SYSDATE, 'YYYYMM') || '_' ||
-                   LPAD(
-                       NVL(
-                           MAX(
-                               TO_NUMBER(SUBSTR(bug_id, 12))
-                           ),
-                           0
-                       ) + 1,
-                       4,
-                       '0'
-                   )
-            FROM bug
-            WHERE bug_id LIKE 'BUG_' || TO_CHAR(SYSDATE, 'YYYYMM') || '_%'
-        </selectKey>
+    <insert id="insertBug" parameterType="com.pixcel.app.bug.service.BugVO">
+            <selectKey keyProperty="bugId" resultType="string" order="BEFORE">
+    			SELECT
+        			'BUG_' || TO_CHAR(SYSDATE, 'YYYYMM') || '_' ||
+        			LPAD(
+            			NVL((
+                				SELECT MAX(TO_NUMBER(SUBSTR(bug_id, -4))) + 1
+                				FROM bug
+                				WHERE bug_id LIKE 'BUG_' || TO_CHAR(SYSDATE, 'YYYYMM') || '_%'
+            				), 1),
+            			4,
+            			'0'
+        				)
+    			FROM dual
+			</selectKey>
 
         INSERT INTO bug
         (
@@ -236,14 +232,17 @@
             #{expectedResult},
             #{assigneeId},
             #{reporterId},
-            #{occurredAt},
+            TO_DATE(#{occurredAtText}, 'YYYY-MM-DD'),
             SYSDATE
         )
+
     </insert>
 
 
-    <!-- 버그 수정 -->
-    <update id="updateBug" parameterType="BugVO">
+    <!-- 관리자용 전체 수정 -->
+    <update id="updateBug"
+            parameterType="com.pixcel.app.bug.service.BugVO">
+
         UPDATE bug
         SET
             title = #{title},
@@ -258,24 +257,88 @@
             reproduce_step = #{reproduceStep},
             expected_result = #{expectedResult},
             assignee_id = #{assigneeId},
-            occurred_at = #{occurredAt},
+            occurred_at = TO_DATE(#{occurredAtText}, 'YYYY-MM-DD'),
             updated_at = SYSDATE
         WHERE bug_id = #{bugId}
+
     </update>
 
 
-    <!-- admin용 전체 삭제 -->
+    <!-- 일반 사용자용 본인 작성 버그만 수정 -->
+    <update id="updateBugByReporter"
+            parameterType="com.pixcel.app.bug.service.BugVO">
+
+        UPDATE bug
+        SET
+            title = #{title},
+            bug_type_code = #{bugTypeCode},
+            severity_code = #{severityCode},
+            priority_code = #{priorityCode},
+            bug_status_code = #{bugStatusCode},
+            found_version = #{foundVersion},
+            test_env = #{testEnv},
+            description = #{description},
+            actual_result = #{actualResult},
+            reproduce_step = #{reproduceStep},
+            expected_result = #{expectedResult},
+            assignee_id = #{assigneeId},
+            occurred_at = TO_DATE(#{occurredAtText}, 'YYYY-MM-DD'),
+            updated_at = SYSDATE
+        WHERE bug_id = #{bugId}
+          AND reporter_id = #{loginUserId}
+
+    </update>
+
+
+    <!-- 관리자용 전체 삭제 -->
     <delete id="deleteBug" parameterType="String">
         DELETE FROM bug
         WHERE bug_id = #{bugId}
     </delete>
 
 
-    <!-- 일반 사용자용 본인 등록 버그 삭제 -->
-    <delete id="deleteBugByReporter" parameterType="BugVO">
+    <!-- 일반 사용자용 본인 작성 버그만 삭제 -->
+    <delete id="deleteBugByReporter"
+            parameterType="com.pixcel.app.bug.service.BugVO">
+
         DELETE FROM bug
         WHERE bug_id = #{bugId}
           AND reporter_id = #{loginUserId}
+
     </delete>
+    
+    <!-- 버그 등록 화면 기본정보 조회 -->
+	<select id="selectBugAddInfoByExecutionId" parameterType="String" resultType="com.pixcel.app.bug.service.BugVO">
+
+    	SELECT
+        	te.execution_id AS executionId,
+
+        	t.test_id AS testId,
+        	t.title AS testName,
+        	t.assignee_id AS assigneeId,
+
+        	assignee.user_name AS assigneeName,
+
+        	pv.version_id AS versionId,
+        	pv.version_name AS versionName,
+
+        	p.project_id AS projectId,
+        	p.project_name AS projectName
+
+    	FROM test_execution te
+    	JOIN test_case_mapping tcm
+        	ON te.mapping_id = tcm.mapping_id
+    	JOIN test t
+        	ON tcm.test_id = t.test_id
+    	JOIN project_version pv
+        	ON t.version_id = pv.version_id
+    	JOIN project p
+        	ON pv.project_id = p.project_id
+    	LEFT JOIN users assignee
+        	ON t.assignee_id = assignee.user_id
+
+    	WHERE te.execution_id = #{executionId}
+
+	</select>
 
 </mapper>

@@ -18,5 +18,5 @@ public interface TimelogService {
 
 	void deleteTimelog(String projectId, String issueId, String timeLogId, String userId);
 
-	Map<String, Object> getIssueTimelogSummary(String projectId, String issueId);
+	Map<String, Object> getIssueTimelogSummary(String projectId, String issueId, String userId);
 }

@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.pixcel.app.workhistory.mapper.WorkhistoryMapper">
+
+	<!--
+		작업내역 XML 작성 가이드
+
+		주의:
+		- 현재 파일은 SQL을 직접 작성하지 않은 뼈대입니다.
+		- SQL을 넣기 전까지 WorkhistoryServiceImpl에서는 mapper 호출을 주석 처리해두었습니다.
+		- SQL 작성 후 ServiceImpl의 TODO 위치에서 mapper 호출 코드를 연결하면 됩니다.
+	-->
+
+	<!--
+		selectProjectAccess
+
+		목적:
+		- 프로젝트 접근 가능 여부 확인
+		- 화면 상단 projectInfo 구성
+
+		필요 컬럼:
+		- project_id
+		- project_name
+		- owner_id
+
+		조건:
+		- p.project_id = #{projectId}
+		- p.owner_id = #{userId}
+		  또는 project_member + team_member 기준으로 프로젝트 멤버인 경우
+
+		결과:
+		- 접근 가능하면 1 row
+		- 접근 불가능하면 0 row
+	-->
+
+	<!--
+		selectWorkhistoryPageIds
+
+		목적:
+		- 작업내역 목록 페이징용 history_id만 먼저 조회
+
+		필요 컬럼:
+		- history_id
+		- row_no
+
+		검색 조건:
+		- project_id
+		- startDate ~ endDate: h.changed_at 기준
+		- keyword: issue_no 또는 issue.title
+		- changeTypeCodeList: h.change_type_code
+		- fieldCodeList: h.field_code
+		- changedByList: h.changed_by
+		- issueTypeIdList: i.issue_type_id
+		- issueStatusIdList: i.issue_status_id
+		- settingCodeIdList: i.setting_code_id
+
+		성능 기준:
+		- 전체 COUNT(*) 하지 않기
+		- 상세 join 전에 history_id만 조회
+		- #{startRow} ~ #{endRow} 범위까지만 조회
+		- 정렬은 h.changed_at desc, h.history_id desc
+	-->
+
+	<!--
+		selectWorkhistoryRowsByIds
+
+		목적:
+		- 현재 페이지에 표시할 상세 row 조회
+
+		필요 컬럼:
+		- h.history_id
+		- h.history_group_id
+		- h.changed_at
+		- h.changed_by
+		- changed_by_name
+		- h.change_type_code
+		- change_type_display_name
+		- h.field_code
+		- h.field_name
+		- h.before_value
+		- h.after_value
+		- h.reason
+		- i.issue_id
+		- i.issue_no
+		- display_issue_no
+		- i.title as issue_title
+		- i.issue_type_id
+		- issue_type_name
+		- i.issue_status_id
+		- issue_status_name
+		- i.setting_code_id
+		- setting_name
+
+		조건:
+		- i.project_id = #{projectId}
+		- h.history_id in historyIdList
+
+		성능 기준:
+		- historyIdList에 해당하는 10건 내외만 상세 join
+		- 화면에 없는 컬럼은 select하지 않기
+	-->
+
+	<!--
+		selectSelectedFilterRows
+
+		목적:
+		- 검색 후 필터 summary에 표시할 선택값 이름 조회
+
+		반환 형태:
+		- option_group
+		- option_value
+		- option_label
+
+		option_group 예:
+		- CHANGE_TYPE
+		- FIELD
+		- CHANGED_BY
+		- ISSUE_TYPE
+		- STATUS
+		- PRIORITY
+
+		주의:
+		- 선택된 필터가 있을 때만 실행
+		- 전체 옵션 조회와 분리
+	-->
+
+	<!--
+		selectFilterOptionRows
+
+		목적:
+		- /project/{projectId}/workhistory/filter-options Ajax용 전체 필터 옵션 조회
+
+		반환 형태:
+		- option_group
+		- option_value
+		- option_label
+		- option_sort
+		- row_sort
+
+		option_group별 내용:
+		- CHANGE_TYPE: 작업내역 변경유형
+		- FIELD: 변경항목
+		- CHANGED_BY: 프로젝트 내 작업자
+		- ISSUE_TYPE: 프로젝트에 연결된 일감 유형
+		- STATUS: 일감 상태
+		- PRIORITY: 우선순위 setting_code
+
+		주의:
+		- 최초 HTML 렌더링 때 호출하지 않기
+		- 드롭다운 열 때 Ajax로만 호출
+		- 느리면 프로젝트 단위 캐싱 후보
+	-->
+
+</mapper>

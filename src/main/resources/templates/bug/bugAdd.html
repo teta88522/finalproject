@@ -1,0 +1,180 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{common/layouts/default_layout}">
+<head>
+<meta charset="UTF-8">
+<title>버그 등록</title>
+<link rel="stylesheet" th:href="@{/css/bug/bugAdd.css}">
+</head>
+<body>
+	<div layout:fragment="Content">
+
+		<div class="bug-add-page">
+
+			<div class="page-header">
+				<div>
+					<h2>버그 등록</h2>
+					<p>실패한 테스트 수행 결과를 기준으로 버그를 등록합니다.</p>
+				</div>
+
+				<a class="btn"
+					th:href="@{/project/{projectId}/bugs(projectId=${projectId})}">
+					목록 </a>
+			</div>
+
+			<div th:if="${message != null}" class="alert-box"
+				th:text="${message}">메시지</div>
+
+			<form class="bug-form"
+				th:action="@{/project/{projectId}/bugs/add(projectId=${projectId})}"
+				method="post" enctype="multipart/form-data" th:object="${bugVO}">
+
+				<input type="hidden" th:field="*{executionId}"> <input
+					type="hidden" th:field="*{assigneeId}"> <input
+					type="hidden" th:field="*{reporterId}"> <input
+					type="hidden" th:field="*{versionId}">
+
+				<section class="form-card">
+					<div class="card-title">
+						<h3>기본정보</h3>
+					</div>
+
+					<div class="form-grid">
+						<div class="form-group">
+							<label>버그 제목 <span>*</span></label> <input type="text"
+								th:field="*{title}" maxlength="255" placeholder="버그 제목을 입력하세요"
+								required>
+						</div>
+
+						<div class="form-group">
+							<label>발견 버전 <span>*</span></label> <input type="text"
+								th:field="*{foundVersion}" readonly required>
+						</div>
+
+						<div class="form-group">
+							<label>버그 유형 <span>*</span></label> <select
+								th:field="*{bugTypeCode}" required>
+								<option value="">선택</option>
+								<option value="d001">기능</option>
+								<option value="d002">UI/UX</option>
+								<option value="d003">성능</option>
+								<option value="d004">보안</option>
+								<option value="d005">데이터</option>
+								<option value="d006">기타</option>
+							</select>
+						</div>
+
+						<div class="form-group">
+							<label>심각도 <span>*</span></label> <select
+								th:field="*{severityCode}" required>
+								<option value="">선택</option>
+								<option value="q001">심각</option>
+								<option value="q002">높음</option>
+								<option value="q003">보통</option>
+								<option value="q004">낮음</option>
+							</select>
+						</div>
+
+						<div class="form-group">
+							<label>우선순위 <span>*</span></label> <select
+								th:field="*{priorityCode}" required>
+								<option value="">선택</option>
+								<option value="c001">상</option>
+								<option value="c002">중</option>
+								<option value="c003">하</option>
+							</select>
+						</div>
+
+						<div class="form-group">
+							<label>버그 상태 <span>*</span></label> <select
+								th:field="*{bugStatusCode}" required>
+								<option value="">선택</option>
+								<option value="p001">진행중</option>
+								<option value="p002">해결</option>
+								<option value="p003">보류</option>
+							</select>
+						</div>
+
+						<div class="form-group">
+							<label>담당자<span>*</span></label> <input type="text"
+								th:value="${bugVO.assigneeName}" readonly>
+						</div>
+
+						<div class="form-group">
+							<label>발견자</label> <input type="text"
+								th:value="${bugVO.reporterName}" readonly>
+						</div>
+
+						<div class="form-group">
+							<label>발생일자 <span>*</span></label> <input type="date"
+								th:field="*{occurredAtText}" required>
+						</div>
+
+						<div class="form-group full">
+							<label>발견 환경</label> <input type="text" th:field="*{testEnv}"
+								maxlength="255" placeholder="예: Chrome, Windows, 테스트 서버">
+						</div>
+
+					</div>
+				</section>
+				<section class="form-card detail-card">
+					<div class="card-title">
+						<h3>상세정보</h3>
+					</div>
+
+					<div class="detail-grid">
+
+						<div class="detail-row">
+							<label>버그 설명</label>
+							<textarea th:field="*{description}" maxlength="255"
+								placeholder="발생한 버그에 대한 상세한 설명을 입력하세요."></textarea>
+						</div>
+
+						<div class="detail-row">
+							<label>실제 결과</label>
+							<textarea th:field="*{actualResult}" maxlength="255"
+								placeholder="실제 발생한 결과를 입력하세요."></textarea>
+						</div>
+
+						<div class="detail-row">
+							<label>재현 절차</label>
+							<textarea th:field="*{reproduceStep}" maxlength="255"
+								placeholder="재현했던 절차를 입력하세요.">
+							</textarea>
+						</div>
+
+						<div class="detail-row file-row">
+							<label for="attachFiles">첨부파일</label>
+
+							<div class="file-box">
+								<input type="file" id="attachFiles" name="files" multiple>
+
+								<div class="file-guide">파일 최대 5MB 이하, 여러파일 선택가능</div>
+							</div>
+						</div>
+
+						<div class="detail-row full">
+							<label>예상 결과</label>
+							<textarea th:field="*{expectedResult}" maxlength="255"
+								placeholder="정상적으로 동작했을 때의 기대 결과를 입력하세요."></textarea>
+						</div>
+
+					</div>
+				</section>
+
+				<div class="form-actions">
+					<a class="btn"
+						th:href="@{/project/{projectId}/bugs(projectId=${projectId})}">
+						취소 </a>
+
+					<button type="submit" class="btn primary">저장</button>
+				</div>
+
+			</form>
+
+		</div>
+
+	</div>
+</body>
+</html>

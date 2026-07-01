@@ -78,6 +78,8 @@ public class TimelogController {
 		model.addAttribute("selectedProjectId", projectId);
 		model.addAttribute("timelog", pageData.get("timelog"));
 		model.addAttribute("canUpdateTimelog", pageData.get("canUpdateTimelog"));
+		model.addAttribute("workTypeList", pageData.get("workTypeList"));
+		model.addAttribute("issueList", pageData.get("issueList"));
 
 		return "timelog/detail";
 	}

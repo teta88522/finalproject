@@ -74,7 +74,7 @@
 
 					<!-- 달력 -->
 					<li th:if="${moduleCodes.contains('h012')}">
-					<a th:href="@{/calendar}"> <span
+					<a th:href="@{@{/project/{projectId}/calendar/view(projectId=${projectId})}}"> <span
 							class="educate-icon educate-event icon-wrap"></span> <span
 							class="mini-click-non">달력</span>
 					</a>
@@ -107,7 +107,7 @@
 
 
 					<!-- 테스트 -->
-					<li><a class="has-arrow"> <span
+					<li><a class="has-arrow" > <span
 							class="educate-icon educate-professor icon-wrap"></span> <span
 							class="mini-click-non">테스트</span>
 					</a>

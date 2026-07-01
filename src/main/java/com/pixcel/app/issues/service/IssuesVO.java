@@ -138,6 +138,8 @@ public class IssuesVO {
 	private Integer totalCount;
 	private Integer optionSort;
 	private Integer rowSort;
+	private Integer timeLogTotalCount;
+	private Integer timeLogTotalHours;
 
 	/*
 	 * ISSUE_HISTORY fields

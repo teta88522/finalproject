@@ -4,12 +4,459 @@
       layout:decorate="~{common/layouts/default_layout}">
 <head>
 <meta charset="UTF-8">
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.18/index.global.min.css" rel="stylesheet">
+
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.18/index.global.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.18/locales-all.global.min.js"></script>
+
+<style>
+/* ===================================================
+   NAVER WORKS STYLE FULLCALENDAR
+   =================================================== */
+
+body{
+    background:#f5f6f8;
+}
+
+/* ===================== Calendar ===================== */
+
+#calendar{
+    width:calc(100% - 40px);
+    margin:20px auto;
+    background:#fff;
+    border:1px solid #e6e9ee;
+    border-radius:10px;
+    padding:20px;
+    box-shadow:0 2px 8px rgba(0,0,0,.05);
+}
+
+/* ===================== Toolbar ===================== */
+
+.fc .fc-toolbar{
+    margin-bottom:18px;
+    align-items:center;
+}
+
+.fc .fc-toolbar-title{
+    font-size:28px;
+    font-weight:700;
+    color:#222;
+}
+
+/* ===================== Button ===================== */
+
+.fc .fc-button{
+
+    background:#fff !important;
+
+    color:#555 !important;
+
+    border:1px solid #dcdfe6 !important;
+
+    border-radius:6px !important;
+
+    height:36px;
+
+    padding:0 14px !important;
+
+    box-shadow:none !important;
+
+    transition:.2s;
+
+}
+
+.fc .fc-button:hover{
+
+    background:#f5f7fa !important;
+
+}
+
+.fc .fc-button-active{
+
+    background:#edf4ff !important;
+
+    color:#2563eb !important;
+
+    border-color:#2563eb !important;
+
+}
+
+.fc .fc-button:focus{
+
+    box-shadow:none !important;
+
+}
+
+/* Prev Next */
+
+.fc-prev-button,
+.fc-next-button{
+
+    width:36px;
+
+    padding:0 !important;
+
+}
+
+/* Today */
+
+.fc-today-button{
+
+    font-weight:600;
+
+}
+
+/* ===================== Table ===================== */
+
+.fc-theme-standard td,
+.fc-theme-standard th{
+
+    border-color:#edf0f4 !important;
+
+}
+
+.fc-scrollgrid{
+
+    border:1px solid #edf0f4;
+
+    border-radius:8px;
+
+    overflow:hidden;
+
+}
+
+/* ===================== Week ===================== */
+
+.fc-col-header-cell{
+
+    background:#fafbfc;
+
+}
+
+.fc-col-header-cell-cushion{
+
+    color:#666;
+
+    font-weight:600;
+
+    text-decoration:none;
+
+}
+
+/* ===================== Day ===================== */
+
+.fc-daygrid-day{
+
+    transition:.2s;
+
+}
+
+.fc-daygrid-day:hover{
+
+    background:#f8fbff;
+
+}
+
+.fc-daygrid-day-number{
+
+    color:#444;
+
+    font-size:14px;
+
+    padding:8px;
+
+    text-decoration:none;
+
+}
+
+.fc-day-sun .fc-daygrid-day-number{
+
+    color:#ef5350;
+
+}
+
+.fc-day-sat .fc-daygrid-day-number{
+
+    color:#4285f4;
+
+}
+
+/* Today */
+
+.fc-day-today{
+
+    background:#eef6ff !important;
+
+}
+
+/* 다른 달 */
+
+.fc-day-other{
+
+    background:#fafafa;
+
+}
+
+.fc-day-other .fc-daygrid-day-number{
+
+    color:#c7c7c7;
+
+}
+
+/* ===================== Cell ===================== */
+
+.fc-daygrid-day-frame{
+
+    min-height:72px;
+
+    padding:2px;
+
+}
+
+/* ===================== Event ===================== */
+
+.fc-event{
+
+    border:none !important;
+
+    border-radius:30px !important;
+
+    padding:2px 10px !important;
+
+    margin:2px 4px;
+
+    font-size:12px;
+
+    font-weight:600;
+
+    line-height:18px;
+
+    color:#fff !important;
+
+    cursor:pointer;
+
+    transition:.2s;
+
+}
+
+.fc-event:hover{
+
+    transform:translateY(-1px);
+
+    filter:brightness(.92);
+
+}
+
+.fc-event-title{
+
+    color:#fff;
+
+}
+
+.fc-event-time{
+
+    display:none;
+
+}
+
+/* more */
+
+.fc-daygrid-more-link{
+
+    color:#2563eb;
+
+    font-size:12px;
+
+    font-weight:600;
+
+}
+
+/* Link */
+
+.fc a{
+
+    text-decoration:none !important;
+
+}
+
+/* Popover */
+
+.fc-popover{
+
+    border:none;
+
+    border-radius:10px;
+
+    overflow:hidden;
+
+    box-shadow:0 10px 25px rgba(0,0,0,.15);
+
+}
+
+.fc-popover-header{
+
+    background:#2563eb;
+
+    color:#fff;
+
+    padding:10px;
+
+}
+
+/* Selection */
+
+.fc-highlight{
+
+    background:rgba(37,99,235,.12);
+
+}
+
+/* Scroll */
+
+.fc-scroller{
+
+    overflow:hidden !important;
+
+}
+
+/* 빈 공간 제거 */
+
+.fc-view-harness{
+
+    height:auto !important;
+
+}
+
+.fc{
+
+    margin-bottom:10px;
+
+}
+
+/* ===================== Mobile ===================== */
+
+@media(max-width:768px){
+
+    #calendar{
+
+        width:calc(100% - 20px);
+
+        margin:10px auto;
+
+        padding:12px;
+
+    }
+
+    .fc-toolbar{
+
+        display:flex !important;
+
+        flex-direction:column;
+
+        gap:10px;
+
+    }
+
+    .fc-toolbar-title{
+
+        font-size:22px;
+
+    }
+
+    .fc-daygrid-day-frame{
+
+        min-height:60px;
+
+    }
+
+}
+</style>
+
+</head>
 </head>
 <body>
 <div layout:fragment="Content">
-<h1>hello</h1>
 
+<div id="calendar"></div>
+
+<script>
+
+const projectId = `[[${projectId}]]`;
+const calendar = new FullCalendar.Calendar(document.getElementById('calendar'),{
+
+    locale:'ko',
+
+    initialView:'dayGridMonth',
+
+
+    dayMaxEvents:3,
+
+
+    headerToolbar: {
+        left: 'prev,next',
+        center: 'title',
+        right: 'today'
+    },
+
+    buttonText: {
+        today: '오늘'
+    },
+
+    height: 'auto',
+    contentHeight: 'auto',
+    expandRows: false,
+    fixedWeekCount: false,
+    dayMaxEvents: true,
+    displayEventTime: false,
+
+    events:function(info,success,fail){
+
+        fetch('/project/'+projectId+'/calendar/events')
+        .then(res=>res.json())
+        .then(data=>{
+
+            const colors=[
+                "#4285F4",
+                "#34A853",
+                "#FBBC05",
+                "#EA4335",
+                "#8E24AA",
+                "#00ACC1",
+                "#43A047",
+                "#F4511E"
+            ];
+
+            success(data.map((item,index)=>{
+
+                const color=colors[index%colors.length];
+
+                return{
+
+                    title:item.title,
+
+                    start:item.startDate,
+
+                    end:item.dueDate,
+
+                    backgroundColor:color,
+
+                    borderColor:color,
+
+                    textColor:"#fff"
+
+                }
+
+            }));
+
+        });
+
+    }
+
+});
+
+calendar.render();
+
+</script>
 </div>
 </body>
-
 </html>

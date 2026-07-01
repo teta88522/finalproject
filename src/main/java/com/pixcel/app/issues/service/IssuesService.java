@@ -45,15 +45,25 @@ public interface IssuesService {
 
 	Map<String, Object> getIssueDetailPageData(String projectId, String issueId, String userId);
 
+	List<IssueHistoryGroupVO> getIssueHistoryGroupList(String projectId, String issueId, String userId);
+
+	Map<String, Object> getIssueHistoryGroupPage(String projectId, String issueId, String userId, int offset);
+
 	void validateIssueAccess(String projectId, String issueId, String userId);
 
 	void updateIssue(IssuesVO issue, String userId);
 
+	String createIssueHistoryGroupId();
+
 	void recordIssueFileAddHistory(String issueId, String userId, int uploadCount);
+
+	void recordIssueFileAddHistory(String issueId, String userId, int uploadCount, String historyGroupId);
 
 	void deleteIssueFile(String projectId, String issueId, String fileId, String userId);
 
 	int deleteIssueFiles(String projectId, String issueId, List<String> fileIds, String userId);
+
+	int deleteIssueFiles(String projectId, String issueId, List<String> fileIds, String userId, String historyGroupId);
 
 	// 일감 전체조회에서 선택한 일감을 삭제한다.
 	void deleteIssue(String projectId, String issueId, String userId);

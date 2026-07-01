@@ -1,0 +1,540 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{common/layouts/default_layout}">
+<head>
+<meta charset="UTF-8">
+<title>버그 목록</title>
+<link rel="stylesheet" th:href="@{/css/bug/bugList.css}">
+</head>
+<body>
+<div layout:fragment="Content">
+
+    <div class="bug-page">
+
+        <div class="page-header">
+            <div>
+                <h2>버그 관리</h2>
+                <p>프로젝트에서 등록된 버그를 조회하고 관리합니다.</p>
+            </div>
+
+            <a class="btn primary"
+               th:href="@{/project/{projectId}/bugs/new(projectId=${projectId})}">
+                버그 등록
+            </a>
+        </div>
+
+        <form class="search-box"
+              th:action="@{/project/{projectId}/bugs(projectId=${projectId})}"
+              method="get"
+              th:object="${searchVO}">
+
+            <div class="search-grid">
+
+                <div class="form-group filter-group">
+                    <label>상태</label>
+
+                    <div class="filter-dropdown">
+                        <button type="button" class="filter-dropdown-btn">
+                            상태 선택
+                        </button>
+
+                        <div class="filter-check-list filter-dropdown-panel">
+                            <label class="filter-check-item">
+                                <input type="checkbox"
+                                       name="bugStatusCodeList"
+                                       value="p001"
+                                       th:checked="${searchVO.bugStatusCodeList != null and #lists.contains(searchVO.bugStatusCodeList, 'p001')}">
+                                <span>진행중</span>
+                            </label>
+
+                            <label class="filter-check-item">
+                                <input type="checkbox"
+                                       name="bugStatusCodeList"
+                                       value="p002"
+                                       th:checked="${searchVO.bugStatusCodeList != null and #lists.contains(searchVO.bugStatusCodeList, 'p002')}">
+                                <span>해결</span>
+                            </label>
+
+                            <label class="filter-check-item">
+                                <input type="checkbox"
+                                       name="bugStatusCodeList"
+                                       value="p003"
+                                       th:checked="${searchVO.bugStatusCodeList != null and #lists.contains(searchVO.bugStatusCodeList, 'p003')}">
+                                <span>보류</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group filter-group">
+                    <label>심각도</label>
+
+                    <div class="filter-dropdown">
+                        <button type="button" class="filter-dropdown-btn">
+                            심각도 선택
+                        </button>
+
+                        <div class="filter-check-list filter-dropdown-panel">
+                            <label class="filter-check-item">
+                                <input type="checkbox"
+                                       name="severityCodeList"
+                                       value="q001"
+                                       th:checked="${searchVO.severityCodeList != null and #lists.contains(searchVO.severityCodeList, 'q001')}">
+                                <span>심각</span>
+                            </label>
+
+                            <label class="filter-check-item">
+                                <input type="checkbox"
+                                       name="severityCodeList"
+                                       value="q002"
+                                       th:checked="${searchVO.severityCodeList != null and #lists.contains(searchVO.severityCodeList, 'q002')}">
+                                <span>높음</span>
+                            </label>
+
+                            <label class="filter-check-item">
+                                <input type="checkbox"
+                                       name="severityCodeList"
+                                       value="q003"
+                                       th:checked="${searchVO.severityCodeList != null and #lists.contains(searchVO.severityCodeList, 'q003')}">
+                                <span>보통</span>
+                            </label>
+
+                            <label class="filter-check-item">
+                                <input type="checkbox"
+                                       name="severityCodeList"
+                                       value="q004"
+                                       th:checked="${searchVO.severityCodeList != null and #lists.contains(searchVO.severityCodeList, 'q004')}">
+                                <span>낮음</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group filter-group">
+                    <label>우선순위</label>
+
+                    <div class="filter-dropdown">
+                        <button type="button" class="filter-dropdown-btn">
+                            우선순위 선택
+                        </button>
+
+                        <div class="filter-check-list filter-dropdown-panel">
+                            <label class="filter-check-item">
+                                <input type="checkbox"
+                                       name="priorityCodeList"
+                                       value="c001"
+                                       th:checked="${searchVO.priorityCodeList != null and #lists.contains(searchVO.priorityCodeList, 'c001')}">
+                                <span>상</span>
+                            </label>
+
+                            <label class="filter-check-item">
+                                <input type="checkbox"
+                                       name="priorityCodeList"
+                                       value="c002"
+                                       th:checked="${searchVO.priorityCodeList != null and #lists.contains(searchVO.priorityCodeList, 'c002')}">
+                                <span>중</span>
+                            </label>
+
+                            <label class="filter-check-item">
+                                <input type="checkbox"
+                                       name="priorityCodeList"
+                                       value="c003"
+                                       th:checked="${searchVO.priorityCodeList != null and #lists.contains(searchVO.priorityCodeList, 'c003')}">
+                                <span>하</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>담당자</label>
+                    <input type="text"
+                           th:field="*{assigneeId}"
+                           placeholder="담당자 ID">
+                </div>
+
+                <div class="form-group">
+                    <label>발견자</label>
+                    <input type="text"
+                           th:field="*{reporterId}"
+                           placeholder="발견자 ID">
+                </div>
+
+                <div class="form-group">
+                    <label>버전</label>
+                    <input type="text"
+                           th:field="*{foundVersion}"
+                           placeholder="발견 버전">
+                </div>
+
+                <div class="form-group wide">
+                    <label>제목</label>
+                    <input type="text"
+                           th:field="*{title}"
+                           placeholder="버그 제목">
+                </div>
+
+            </div>
+
+            <div class="search-actions">
+                <button type="submit" class="btn primary">검색</button>
+
+                <a class="btn"
+                   th:href="@{/project/{projectId}/bugs(projectId=${projectId})}">
+                    초기화
+                </a>
+            </div>
+        </form>
+
+        <div class="content-grid" id="contentGrid">
+
+            <div class="list-card">
+
+                <div class="card-title">
+                    <h3>버그 목록</h3>
+                    <span th:text="${#lists.size(bugList)} + '건'">0건</span>
+                </div>
+
+                <table class="bug-table">
+                    <thead>
+                    <tr>
+                        <th>선택</th>
+                        <th>제목</th>
+                        <th>상태</th>
+                        <th>심각도</th>
+                        <th>우선순위</th>
+                        <th>담당자</th>
+                        <th>발견자</th>
+                        <th>등록일</th>
+                        <th>관리</th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+                    <tr th:if="${#lists.isEmpty(bugList)}">
+                        <td colspan="9" class="empty">
+                            조회된 버그가 없습니다.
+                        </td>
+                    </tr>
+
+                    <tr th:each="bug : ${bugList}"
+                        th:data-bug-id="${bug.bugId}"
+                        th:data-title="${bug.title}"
+                        th:data-project-name="${bug.projectName}"
+                        th:data-test-name="${bug.testName}"
+                        th:data-status-name="${bug.bugStatusCode == 'p001' ? '진행중' : bug.bugStatusCode == 'p002' ? '해결' : bug.bugStatusCode == 'p003' ? '보류' : bug.bugStatusCode}"
+                        th:data-severity-name="${bug.severityCode == 'q001' ? '심각' : bug.severityCode == 'q002' ? '높음' : bug.severityCode == 'q003' ? '보통' : bug.severityCode == 'q004' ? '낮음' : bug.severityCode}"
+                        th:data-priority-name="${bug.priorityCode == 'c001' ? '상' : bug.priorityCode == 'c002' ? '중' : bug.priorityCode == 'c003' ? '하' : bug.priorityCode}"
+                        th:data-assignee-name="${bug.assigneeName}"
+                        th:data-reporter-name="${bug.reporterName}"
+                        th:data-description="${bug.description}"
+                        th:data-actual-result="${bug.actualResult}"
+                        th:data-reproduce-step="${bug.reproduceStep}"
+                        th:data-expected-result="${bug.expectedResult}">
+
+                        <td class="check-cell">
+    						<input type="checkbox" class="bug-check" th:value="${bug.bugId}">
+						</td>
+
+                        <td class="title-cell"
+                            th:text="${bug.title}">
+                            로그인 오류
+                        </td>
+
+                        <td>
+                            <span class="badge status"
+                                  th:text="${bug.bugStatusCode == 'p001' ? '진행중' : bug.bugStatusCode == 'p002' ? '해결' : bug.bugStatusCode == 'p003' ? '보류' : bug.bugStatusCode}">
+                                진행중
+                            </span>
+                        </td>
+
+                        <td>
+                            <span class="badge severity"
+                                  th:text="${bug.severityCode == 'q001' ? '심각' : bug.severityCode == 'q002' ? '높음' : bug.severityCode == 'q003' ? '보통' : bug.severityCode == 'q004' ? '낮음' : bug.severityCode}">
+                                높음
+                            </span>
+                        </td>
+
+                        <td>
+                            <span class="badge priority"
+                                  th:text="${bug.priorityCode == 'c001' ? '상' : bug.priorityCode == 'c002' ? '중' : bug.priorityCode == 'c003' ? '하' : bug.priorityCode}">
+                                상
+                            </span>
+                        </td>
+
+                        <td th:text="${bug.assigneeName} ?: ${bug.assigneeId}">
+                            담당자
+                        </td>
+
+                        <td th:text="${bug.reporterName} ?: ${bug.reporterId}">
+                            발견자
+                        </td>
+
+                        <td th:text="${#dates.format(bug.createdAt, 'yyyy-MM-dd')}">
+                            2026-07-01
+                        </td>
+
+                        <td>
+                            <div class="row-actions">
+
+                                <a class="btn small"
+                                   th:if="${isAdmin or bug.reporterId == loginUserId}"
+                                   th:href="@{/project/{projectId}/bugs/{bugId}(projectId=${projectId}, bugId=${bug.bugId})}">
+                                    수정
+                                </a>
+
+                                <form th:if="${isAdmin or bug.reporterId == loginUserId}"
+                                      th:action="@{/project/{projectId}/bugs/delete(projectId=${projectId})}"
+                                      method="post"
+                                      onsubmit="return confirm('삭제하시겠습니까?');">
+
+                                    <input type="hidden"
+                                           name="bugId"
+                                           th:value="${bug.bugId}">
+
+                                    <button type="submit"
+                                            class="btn small danger">
+                                        삭제
+                                    </button>
+                                </form>
+
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+
+            </div>
+
+            <div class="detail-card" id="bugDetailCard">
+
+                <div class="card-title">
+                    <h3>버그 상세정보</h3>
+                </div>
+
+                <div class="detail-section">
+                    <label>제목</label>
+                    <div id="detailTitle" class="detail-value">
+                        버그를 선택하세요.
+                    </div>
+                </div>
+
+                <div class="detail-row">
+                    <div class="detail-section">
+                        <label>프로젝트명</label>
+                        <div id="detailProjectName" class="detail-value">-</div>
+                    </div>
+
+                    <div class="detail-section">
+                        <label>테스트명</label>
+                        <div id="detailTestName" class="detail-value">-</div>
+                    </div>
+                </div>
+
+                <div class="detail-row three">
+                    <div class="detail-section">
+                        <label>상태</label>
+                        <div id="detailStatusName" class="detail-value">-</div>
+                    </div>
+
+                    <div class="detail-section">
+                        <label>심각도</label>
+                        <div id="detailSeverityName" class="detail-value">-</div>
+                    </div>
+
+                    <div class="detail-section">
+                        <label>우선순위</label>
+                        <div id="detailPriorityName" class="detail-value">-</div>
+                    </div>
+                </div>
+
+                <div class="detail-row">
+                    <div class="detail-section">
+                        <label>담당자</label>
+                        <div id="detailAssigneeName" class="detail-value">-</div>
+                    </div>
+
+                    <div class="detail-section">
+                        <label>발견자</label>
+                        <div id="detailReporterName" class="detail-value">-</div>
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <label>버그 설명</label>
+                    <div id="detailDescription" class="detail-box">-</div>
+                </div>
+
+                <div class="detail-section">
+                    <label>재현 절차</label>
+                    <div id="detailReproduceStep" class="detail-box">-</div>
+                </div>
+
+                <div class="detail-section">
+                    <label>예상 결과</label>
+                    <div id="detailExpectedResult" class="detail-box">-</div>
+                </div>
+
+                <div class="detail-section">
+                    <label>실제 결과</label>
+                    <div id="detailActualResult" class="detail-box">-</div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <script>
+    const rows = document.querySelectorAll(".bug-table tbody tr[data-bug-id]");
+    const contentGrid = document.getElementById("contentGrid");
+
+    function setDetail(row) {
+        if (!row) {
+            return;
+        }
+
+        contentGrid.classList.add("detail-open");
+
+        rows.forEach(function (r) {
+            r.classList.remove("selected");
+
+            const check = r.querySelector(".bug-check");
+            if (check != null) {
+                check.checked = false;
+            }
+        });
+
+        row.classList.add("selected");
+
+        const selectedCheck = row.querySelector(".bug-check");
+        if (selectedCheck != null) {
+            selectedCheck.checked = true;
+        }
+
+        document.getElementById("detailTitle").innerText =
+            row.dataset.title || "-";
+
+        document.getElementById("detailProjectName").innerText =
+            row.dataset.projectName || "-";
+
+        document.getElementById("detailTestName").innerText =
+            row.dataset.testName || "-";
+
+        document.getElementById("detailStatusName").innerText =
+            row.dataset.statusName || "-";
+
+        document.getElementById("detailSeverityName").innerText =
+            row.dataset.severityName || "-";
+
+        document.getElementById("detailPriorityName").innerText =
+            row.dataset.priorityName || "-";
+
+        document.getElementById("detailAssigneeName").innerText =
+            row.dataset.assigneeName || "-";
+
+        document.getElementById("detailReporterName").innerText =
+            row.dataset.reporterName || "-";
+
+        document.getElementById("detailDescription").innerText =
+            row.dataset.description || "-";
+
+        document.getElementById("detailReproduceStep").innerText =
+            row.dataset.reproduceStep || "-";
+
+        document.getElementById("detailExpectedResult").innerText =
+            row.dataset.expectedResult || "-";
+
+        document.getElementById("detailActualResult").innerText =
+            row.dataset.actualResult || "-";
+    }
+    
+    function clearDetail() {
+        contentGrid.classList.remove("detail-open");
+
+        rows.forEach(function (r) {
+            r.classList.remove("selected");
+
+            const check = r.querySelector(".bug-check");
+            if (check != null) {
+                check.checked = false;
+            }
+        });
+
+        document.getElementById("detailTitle").innerText = "버그를 선택하세요.";
+        document.getElementById("detailProjectName").innerText = "-";
+        document.getElementById("detailTestName").innerText = "-";
+        document.getElementById("detailStatusName").innerText = "-";
+        document.getElementById("detailSeverityName").innerText = "-";
+        document.getElementById("detailPriorityName").innerText = "-";
+        document.getElementById("detailAssigneeName").innerText = "-";
+        document.getElementById("detailReporterName").innerText = "-";
+        document.getElementById("detailDescription").innerText = "-";
+        document.getElementById("detailReproduceStep").innerText = "-";
+        document.getElementById("detailExpectedResult").innerText = "-";
+        document.getElementById("detailActualResult").innerText = "-";
+    }
+
+    rows.forEach(function (row) {
+        const check = row.querySelector(".bug-check");
+
+        if (check != null) {
+            check.addEventListener("click", function (event) {
+                event.stopPropagation();
+                
+                if (check.checked) {
+                    setDetail(row);
+                } else {
+                    clearDetail();
+                }
+               // setDetail(row);
+            });
+        }
+
+        row.addEventListener("click", function (event) {
+            if (
+                event.target.closest("a") ||
+                event.target.closest("button") ||
+                event.target.closest("form")
+            ) {
+                return;
+            }
+
+            setDetail(row);
+        });
+    });
+
+    document.querySelectorAll(".filter-dropdown-btn").forEach(function (button) {
+        button.addEventListener("click", function (event) {
+            event.stopPropagation();
+
+            const dropdown = button.closest(".filter-dropdown");
+
+            document.querySelectorAll(".filter-dropdown").forEach(function (item) {
+                if (item !== dropdown) {
+                    item.classList.remove("open");
+                }
+            });
+
+            dropdown.classList.toggle("open");
+        });
+    });
+
+    document.addEventListener("click", function () {
+        document.querySelectorAll(".filter-dropdown").forEach(function (item) {
+            item.classList.remove("open");
+        });
+    });
+
+    document.querySelectorAll(".filter-dropdown-panel").forEach(function (panel) {
+        panel.addEventListener("click", function (event) {
+            event.stopPropagation();
+        });
+    });
+</script>
+
+</div>
+</body>
+</html>

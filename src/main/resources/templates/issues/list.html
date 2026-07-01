@@ -718,6 +718,20 @@
 
 				preserveSelectedRemoteFilterValues();
 
+				function preloadFilterOptions() {
+					if (!filterOptionUrl || filterOptionsLoaded || filterOptionsLoading) {
+						return;
+					}
+
+					loadFilterOptions();
+				}
+
+				if (window.requestIdleCallback) {
+					window.requestIdleCallback(preloadFilterOptions, { timeout: 1200 });
+				} else {
+					window.setTimeout(preloadFilterOptions, 700);
+				}
+
 				document.addEventListener('click', function(event) {
 					document.querySelectorAll('.filter-dropdown[open]').forEach(function(dropdown) {
 						if (!dropdown.contains(event.target)) {
