@@ -12,7 +12,11 @@ public interface BugService {
 	
 	public int updateBug(BugVO bugVO);
 	
+    public int updateBugByReporter(BugVO bugVO);
+	
 	public int delete(String bugId);
 	
 	public int deleteBugByReporter(BugVO bugVO);
+	
+	public BugVO selectBugAddInfoByExecutionId(String executionId);
 }

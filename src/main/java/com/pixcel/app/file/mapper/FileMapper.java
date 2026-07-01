@@ -23,4 +23,5 @@ public interface FileMapper {
 	
 	public List<FileVO> selectByDocumentVersion(int documentVersionId);
 	public int copyFile(FileVO fileVO);
+	public List<FileDownloadHistoryVO> selectDownloadHistory(@Param("connectAddress") String connectAddress,@Param("documentVersionId") int documentVersionId);
 }

@@ -18,4 +18,8 @@ public interface TestExecutionMapper {
 	public int insertTestExecution(TestExecutionVO testExecutionVO);
 	
 	public int insertTestExecutionList(TestExecutionVO testExecutionVO);
+	
+	public String selectExecutionIdByMappingId(String mappingId);
+	
+	public int updateTestExecution(TestExecutionVO testExecutionVO);
 }

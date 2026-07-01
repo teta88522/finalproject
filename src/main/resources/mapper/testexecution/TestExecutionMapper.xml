@@ -68,6 +68,17 @@
           AND pv.project_id = #{projectId}
 
     </select>
+    
+    <select id="selectExecutionIdByMappingId" parameterType="string" resultType="string">
+    	SELECT execution_id
+    	FROM (
+        	SELECT execution_id
+        	FROM test_execution
+        	WHERE mapping_id = #{mappingId}
+        	ORDER BY executed_at DESC, created_at DESC, execution_id DESC
+    	)
+    	WHERE ROWNUM = 1
+	</select>
 
 
     <!-- 테스트에 매핑된 테스트케이스 + 최신 수행결과 -->
@@ -181,6 +192,23 @@
 <insert id="insertTestExecution"
         parameterType="com.pixcel.app.testexecution.service.TestExecutionVO">
 
+    <selectKey keyProperty="executionId"
+               resultType="string"
+               order="BEFORE">
+        SELECT
+            'EXEC_' || TO_CHAR(SYSDATE, 'YYYYMM') || '_' ||
+            LPAD(
+                NVL((
+                    SELECT MAX(TO_NUMBER(SUBSTR(execution_id, -4))) + 1
+                    FROM test_execution
+                    WHERE execution_id LIKE 'EXEC_' || TO_CHAR(SYSDATE, 'YYYYMM') || '_%'
+                ), 1),
+                4,
+                '0'
+            )
+        FROM dual
+    </selectKey>
+
     INSERT INTO test_execution (
         execution_id,
         mapping_id,
@@ -191,32 +219,16 @@
         executed_at,
         created_at
     )
-    SELECT
-        'EXEC_' || TO_CHAR(SYSDATE, 'YYYYMM') || '_' ||
-        LPAD(
-            NVL((
-                SELECT MAX(TO_NUMBER(SUBSTR(execution_id, -4))) + 1
-                FROM test_execution
-                WHERE execution_id LIKE 'EXEC_' || TO_CHAR(SYSDATE, 'YYYYMM') || '_%'
-            ), 1),
-            4,
-            '0'
-        ) AS execution_id,
-
-        #{mappingId} AS mapping_id,
-        #{executorId} AS executor_id,
-        NVL(#{resultStatusCode}, 'o001') AS result_status_code,
-        #{executionComment} AS execution_comment,
-
-        NVL((
-            SELECT MAX(retry_no) + 1
-            FROM test_execution
-            WHERE mapping_id = #{mappingId}
-        ), 0) AS retry_no,
-
-        SYSDATE AS executed_at,
-        SYSDATE AS created_at
-    FROM dual
+    VALUES (
+        #{executionId},
+        #{mappingId},
+        #{executorId},
+        NVL(#{resultStatusCode}, 'o001'),
+        #{executionComment},
+        0,
+        SYSDATE,
+        SYSDATE
+    )
 
 </insert>
     
@@ -289,5 +301,18 @@
         ON input_data.mapping_id = retry_data.mapping_id
 
 </insert>
+
+<update id="updateTestExecution"
+        parameterType="com.pixcel.app.testexecution.service.TestExecutionVO">
+
+    UPDATE test_execution
+    SET
+        executor_id = #{executorId},
+        result_status_code = NVL(#{resultStatusCode}, 'o001'),
+        execution_comment = #{executionComment},
+        executed_at = SYSDATE
+    WHERE execution_id = #{executionId}
+
+</update>
 
 </mapper>

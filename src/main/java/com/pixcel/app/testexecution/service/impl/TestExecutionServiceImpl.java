@@ -30,7 +30,16 @@ public class TestExecutionServiceImpl implements TestExecutionService {
 	@Override
 	@Transactional
 	public int insertTestExecution(TestExecutionVO testExecutionVO) {
-		return testExecutionMapper.insertTestExecution(testExecutionVO);
+		
+		String executionId = testExecutionMapper.selectExecutionIdByMappingId(testExecutionVO.getMappingId());
+		
+		if(executionId == null || executionId.equals("")) {
+			return testExecutionMapper.insertTestExecution(testExecutionVO);
+		}
+		
+		testExecutionVO.setExecutionId(executionId);
+		
+		return testExecutionMapper.updateTestExecution(testExecutionVO);
 	}
 
 	@Override
