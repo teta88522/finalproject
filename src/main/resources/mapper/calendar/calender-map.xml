@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.pixcel.app.calendar.mapper.CalendarMapper">
+
+
+    <select id="getEvents" resultType="CalendarDto">
+        SELECT 
+    		title,
+    		start_date,
+    		due_date
+		FROM issue
+		WHERE project_id = #{projectId}
+    </select>
+    
+</mapper>

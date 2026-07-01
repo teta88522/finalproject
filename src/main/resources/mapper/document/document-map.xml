@@ -15,7 +15,8 @@
             description,
             setting_code_id
             status_code,
-            status_name
+            status_name,
+            created_at
         from document
         ORDER BY document_id DESC
     </select>
@@ -158,6 +159,7 @@
             category_name
         from document_category
         WHERE project_id = #{projectId}
+        ORDER BY document_category_id DESC
     </select>
 
 

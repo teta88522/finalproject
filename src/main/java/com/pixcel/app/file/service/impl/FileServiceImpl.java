@@ -14,6 +14,7 @@ import java.util.zip.ZipOutputStream;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -84,7 +85,6 @@ public class FileServiceImpl implements FileService{
 					vo.setFileVersion(nextVersion);
 					vo.setConnectAddress(connectAddress);
 					vo.setDocumentVersionId(req.getDocumentVersionId());
-					System.out.print(vo);
 					fileMapper.insertFile(vo);
 					
 					count++;
@@ -193,16 +193,13 @@ public class FileServiceImpl implements FileService{
 	@Override
 	public void copyOldFiles(int oldDocumentVersionId, int newDocumentVersionId, List<MultipartFile> uploadFiles) {
 		
-		System.out.println("oldVersion = " + oldDocumentVersionId);
-	    System.out.println("newVersion = " + newDocumentVersionId);
 
-		
 		List<FileVO> oldFiles = fileMapper.selectByDocumentVersion(oldDocumentVersionId);
 		List<String> uplaodNames = uploadFiles.stream()
 											.filter(f -> !f.isEmpty())
 											.map(MultipartFile::getOriginalFilename)
 											.toList();
-		System.out.println(oldFiles);
+
 		for(FileVO file : oldFiles) {
 			if(uplaodNames.contains(file.getOriginalName())) {
 				continue;
@@ -212,6 +209,13 @@ public class FileServiceImpl implements FileService{
 			fileMapper.copyFile(file);
 		}
 		
+	}
+
+
+	@Override
+	public List<FileDownloadHistoryVO> selectDownloadHistory(@Param("connectAddress") String connectAddress,@Param("documentVersionId") int documentVersionId) {
+
+		return fileMapper.selectDownloadHistory(connectAddress, documentVersionId);
 	}
 	
 }
