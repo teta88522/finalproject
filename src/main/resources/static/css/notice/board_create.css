@@ -107,3 +107,73 @@ textarea.form-control {
     margin-top: 5px;
     display: block;
 }
+
+/* 📝 게시판 폼 전용 우측 단일 정렬 및 호버 애니메이션 스타일 */
+.board-form-actions {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    margin-top: 20px;
+}
+.btn-board-delete {
+    background-color: #e74c3c;
+    color: #fff !important;
+    text-decoration: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    height: 38px;
+    width: 80px; /* 📝 변경: 80px 가로폭 고정 */
+    box-sizing: border-box;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+.btn-board-delete:hover {
+    background-color: #c0392b;
+}
+.btn-board-cancel {
+    background-color: #7f8c8d; /* 📝 변경: 차분한 회색 */
+    color: #fff !important;
+    text-decoration: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    height: 38px;
+    width: 80px; /* 📝 변경: 80px 가로폭 고정 */
+    box-sizing: border-box;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+.btn-board-cancel:hover {
+    background-color: #616a6b;
+}
+.btn-board-submit {
+    background-color: #006df0; /* 📝 변경: 시원한 파란색 */
+    color: #fff !important;    /* 📝 변경: 흰색 글씨 */
+    text-decoration: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    height: 38px;
+    width: 80px; /* 📝 변경: 80px 가로폭 고정 */
+    box-sizing: border-box;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+.btn-board-submit:hover {
+    background-color: #0056c0;
+}

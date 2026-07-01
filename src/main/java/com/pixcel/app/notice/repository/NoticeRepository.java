@@ -3,9 +3,9 @@ package com.pixcel.app.notice.repository;
 import java.util.List;
 import java.util.Optional;
 
-import org.apache.ibatis.annotations.Param;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.pixcel.app.notice.entity.NoticeEntity;
@@ -21,5 +21,7 @@ public interface NoticeRepository extends JpaRepository<NoticeEntity, String> {
                    ") WHERE ROWNUM <= 1", 
            nativeQuery = true)
     Optional<NoticeEntity> findLatestBoardIdByPrefix(@Param("prefix") String prefix);
-   public List<NoticeEntity> findByProjectId(String projectId);
+
+    @Query("SELECT n FROM NoticeEntity n LEFT JOIN FETCH n.user WHERE n.projectId = :projectId")
+    List<NoticeEntity> findByProjectId(@Param("projectId") String projectId);
 }

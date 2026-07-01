@@ -35,18 +35,66 @@
 	
 	<select id="countPostList" resultType="long">
         SELECT COUNT(*) 
-        FROM POST 
-        WHERE BOARD_ID = #{boardId}
+        FROM POST p
+        LEFT JOIN USERS u ON p.CREATED_BY = u.USER_ID
+        WHERE p.BOARD_ID = #{boardId}
         <if test="searchDTO.keyword != null and searchDTO.keyword != ''">
             <choose>
                 <when test="searchDTO.searchType == 'title'">
-                    AND TITLE LIKE '%' || #{searchDTO.keyword} || '%'
+                    AND p.TITLE LIKE '%' || #{searchDTO.keyword} || '%'
                 </when>
                 <when test="searchDTO.searchType == 'author'">
-                    AND CREATED_BY LIKE '%' || #{searchDTO.keyword} || '%'
+                    AND u.USER_NAME LIKE '%' || #{searchDTO.keyword} || '%'
                 </when>
             </choose>
         </if>
     </select>
 	
+       <delete id="deletePostFile">
+        DELETE FROM attach_file
+        WHERE connect_address = #{postId}
+        AND file_id = #{fileId}
+        AND file_code = 'f008'
+    </delete>
+
+     <select id="selectLatestPosts" resultType="PostRequestDTO">
+        SELECT * FROM (
+            SELECT 
+                p.POST_ID AS postId,
+                p.BOARD_ID AS boardId,
+                p.TITLE AS title,
+                p.CONTENT AS content,
+                p.CREATED_AT AS createdAt,
+                p.CREATED_BY AS createdBy,
+                p.VIEW_COUNT AS viewCount,
+                u.USER_NAME AS userName
+            FROM POST p
+            LEFT JOIN USERS u ON p.CREATED_BY = u.USER_ID
+            WHERE p.BOARD_ID IN (
+                SELECT BOARD_ID FROM BOARD WHERE PROJECT_ID = #{projectId}
+            )
+            ORDER BY p.CREATED_AT DESC
+        ) WHERE ROWNUM &lt;= 5
+    </select>
+
+        <select id="selectPopularPosts" resultType="PostRequestDTO">
+        SELECT * FROM (
+            SELECT 
+                p.POST_ID AS postId,
+                p.BOARD_ID AS boardId,
+                p.TITLE AS title,
+                p.CONTENT AS content,
+                p.CREATED_AT AS createdAt,
+                p.CREATED_BY AS createdBy,
+                p.VIEW_COUNT AS viewCount,
+                u.USER_NAME AS userName
+            FROM POST p
+            LEFT JOIN USERS u ON p.CREATED_BY = u.USER_ID
+            WHERE p.BOARD_ID IN (
+                SELECT BOARD_ID FROM BOARD WHERE PROJECT_ID = #{projectId}
+            )
+            ORDER BY NVL(p.VIEW_COUNT, 0) DESC, p.CREATED_AT DESC
+        ) WHERE ROWNUM &lt;= 5
+    </select>
+
 </mapper>

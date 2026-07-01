@@ -6,4 +6,6 @@ public interface NoticeService {
 	public String createNoticeBoard(NoticeRequestDTO requestDto);
 	public List<NoticeRequestDTO> getBoardList(String projectId);
 	public NoticeRequestDTO getBoardDetail(String boardId);
+	public void updateBoard(NoticeRequestDTO noticeRequestDto);
+	public boolean deleteBoard(String boardId);
 }

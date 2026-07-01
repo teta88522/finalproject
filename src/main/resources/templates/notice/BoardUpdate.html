@@ -1,0 +1,102 @@
+<!-- 2026-07-01 -->
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{common/layouts/default_layout}">
+<head>
+    <meta charset="UTF-8">
+    <title>게시판 정보 수정</title>
+    <link rel="stylesheet" th:href="@{/css/notice/board_create.css}" />
+</head>
+<body>
+    <div layout:fragment="Content">
+        <div class="kiaalap-wrapper board-container">
+            <div class="kiaalap-panel form-panel">
+                <div class="panel-header">
+                    <h2>게시판 정보 수정</h2>
+                </div>
+
+                <div class="panel-body">
+                    <form id="boardUpdateForm"
+                          th:action="@{/project/{projectId}/notice/BoardUpdate(projectId=${projectId})}"
+                          th:object="${board}"
+                          method="POST"
+                          novalidate>
+
+                        <input type="hidden" name="projectId" th:value="${projectId}" />
+                        <input type="hidden" name="boardId" th:value="${board.boardId}" />
+
+                        <div class="form-group">
+                            <label class="form-label" for="boardName">
+                                게시판 이름 <span class="required">*</span>
+                            </label>
+                            <input type="text"
+                                   id="boardName"
+                                   th:field="*{boardName}"
+                                   class="form-control"
+                                   placeholder="예: 공지사항, 자유게시판" />
+                            
+                            <div id="boardNameError" class="error-message" style="display: none">
+                                게시판 이름을 입력해주세요.
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="description">
+                                설명 <span class="required">*</span>
+                            </label>
+                            <textarea id="description"
+                                      th:field="*{description}"
+                                      class="form-control"
+                                      rows="5"
+                                      placeholder="이 게시판의 용도와 상세 설명을 입력하세요."></textarea>
+                            
+                            <div id="descError" class="error-message" style="display: none">
+                                게시판 설명을 입력해주세요.
+                            </div>
+                        </div>
+
+                        <div class="board-form-actions">
+                            <a th:href="@{/project/{projectId}/notice/BoardDelete(projectId=${projectId}, boardId=${board.boardId})}"
+                               class="btn-board-delete"
+                               th:onclick="return confirmDelete([[${board.postCount}]])">
+                                삭제
+                            </a>
+                            <a th:href="@{/project/{projectId}/notice/BoardList(projectId=${projectId})}" 
+                               class="btn-board-cancel">
+                                취소
+                            </a>
+                            <a href="javascript:void(0)" 
+                               id="btnSubmit" 
+                               class="btn-board-submit">
+                                수정
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <script th:src="@{/js/notice/board_update.js}"></script>
+        
+        <script th:inline="javascript">
+            /*<![CDATA[*/
+            // 📝 타임리프 주석식 문법을 적용하여 IDE의 자바스크립트 문법 에러 경고를 완전히 처단합니다.
+            const errorMessage = /*[[${errorMessage}]]*/ null;
+            if (errorMessage) {
+                alert(errorMessage);
+            }
+
+            // 게시판 삭제 전 글 개수 안전 차단기
+            function confirmDelete(postCount) {
+                if (postCount > 0) {
+                    alert("게시글이 존재하는 게시판은 삭제할 수 없습니다. (현재 등록된 글: " + postCount + "개)");
+                    return false; // 이동 차단
+                }
+                return confirm("정말로 이 게시판을 삭제하시겠습니까?\n삭제 시 복구할 수 없습니다.");
+            }
+            /*]]>*/
+        </script>
+    </div>
+</body>
+</html>

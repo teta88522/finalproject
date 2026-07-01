@@ -18,4 +18,5 @@ public class NoticeRequestDTO {
 	private String createdBy;
 	private String description;
 	private String userName;
+	private Long postCount; // 📝 추가: 게시판 소속 총 글 개수
 }

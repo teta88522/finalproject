@@ -1,0 +1,88 @@
+<!-- 2026-07-01 -->
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{common/layouts/default_layout}">
+<head>
+    <meta charset="UTF-8">
+    <title>게시글 수정</title>
+    <link rel="stylesheet" th:href="@{/css/common-ui.css}">
+    <link rel="stylesheet" th:href="@{/css/issues/issues.css}">
+    <link rel="stylesheet" th:href="@{/css/notice/post_create.css}">
+    <link rel="stylesheet" th:href="@{/css/notice/post_detail.css}"> <!-- 기존 첨부파일 리스트용 -->
+</head>
+<body>
+<div layout:fragment="Content">
+    <div class="post-create-card">
+        <h1>게시글 수정</h1>
+        <form id="documentEditForm" th:action="@{/project/{projectId}/notice/PostUpdate(projectId=${projectId})}" method="post" enctype="multipart/form-data">
+            <input type="hidden" name="postId" th:value="${post.postId}">
+            <input type="hidden" name="boardId" th:value="${post.boardId}">
+            
+            <div class="form-group">
+                <label class="form-label">제목 *</label>
+                <input type="text" id="title" name="title" th:value="${post.title}" class="form-control" placeholder="제목을 입력하세요" required>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">설명</label>
+                <textarea id="content" name="content" class="form-control" rows="10" th:text="${post.content}" required placeholder="설명을 입력하세요"></textarea>
+            </div>
+            
+            <!-- 기존 첨부파일 목록 (일감 스타일 슬림 리스트 유지) -->
+            <div class="file-section" th:if="${files != null and not #lists.isEmpty(files)}">
+                <h3>기존 첨부파일</h3>
+                <ul class="issues-detail-file-list" id="existingFileList">
+                    <li class="issues-file-item" th:each="file : ${files}" th:id="|file-item-${file.fileId}|">
+                        <div class="issues-file-name-wrapper">
+                            <span class="issues-file-icon">📎</span>
+                            <span class="issues-file-name-text" th:text="${file.originalName}">파일명.zip</span>
+                        </div>
+                        <div>
+                            <button type="button" class="btn-delete-file" th:onclick="removeExistingFile([[${file.fileId}]])" style="background: none; border: none; color: #e74c3c; cursor: pointer; font-weight: bold;">X</button>
+                        </div>
+                    </li>
+                </ul>
+                <div id="deleteFilesContainer"></div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">신규 첨부파일</label>
+                <div class="issues-file-box">
+                    <div>
+                        <label for="fileInput" class="btn btn-custon-rounded-four btn-default issues-file-select">
+                            파일 선택
+                        </label> 
+                        <input type="file" id="fileInput" name="files" multiple class="issues-file-input"> 
+                        <span id="fileCount" class="issues-file-count">파일 0개</span>
+                    </div>
+                    <ul id="fileList" class="issues-file-list"></ul>
+                </div>
+            </div>
+            
+            <div class="btn-area">
+                <a th:href="@{/project/{projectId}/notice/post_detail(projectId=${projectId}, boardId=${boardId}, postId=${post.postId})}" class="btn-cancel">취소</a>
+                <button type="submit" class="btn-submit">등록</button>
+            </div>
+        </form>
+    </div>
+    
+    <!-- 기존 파일 삭제용 인라인 스크립트 -->
+    <script th:inline="javascript">
+        function removeExistingFile(fileId) {
+            if (confirm("이 첨부파일을 삭제 목록에 추가하시겠습니까? (수정 등록 시 실제 삭제됩니다)")) {
+                const item = document.getElementById('file-item-' + fileId);
+                if (item) item.remove();
+                
+                const container = document.getElementById('deleteFilesContainer');
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'deleteFileIds';
+                input.value = fileId;
+                container.appendChild(input);
+            }
+        }
+    </script>
+</div>
+</body>
+</html>
