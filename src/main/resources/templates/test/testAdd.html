@@ -78,24 +78,17 @@
                             </option>
                         </select>
 
-						<label for="teamName">그룹</label>
-						<select id="teamName"
-        							th:field="*{teamName}"
-        							required>
-    						<option value="">그룹 선택</option>
-    						<option th:each="group : ${groupList}"
-            						th:value="${group.groupName}"
-            						th:text="${group.groupName}">
-        							그룹명
-    						</option>
-						</select>
-						<!-- 
-                        <label for="retryNo">재수행차수</label>
-                        <input type="number"
-                               id="retryNo"
-                               value="0"
-                               readonly>
-                         -->
+                        <label for="teamName">그룹</label>
+                        <select id="teamName"
+                                th:field="*{teamName}"
+                                required>
+                            <option value="">그룹 선택</option>
+                            <option th:each="group : ${groupList}"
+                                    th:value="${group.groupName}"
+                                    th:text="${group.groupName}">
+                                그룹명
+                            </option>
+                        </select>
                     </div>
 
                     <!-- TEST 테이블 NOT NULL 기본값 -->
@@ -130,7 +123,7 @@
 
                         <label for="caseStatusCode">상태</label>
                         <select id="caseStatusCode">
-                        	<option value="g001" th:selected="${testCaseSearchVO.statusCode == 'g001'}">활성</option>
+                            <option value="g001" th:selected="${testCaseSearchVO.statusCode == 'g001'}">활성</option>
                             <option value="g002" th:selected="${testCaseSearchVO.statusCode == 'g002'}">비활성</option>
                         </select>
 
@@ -313,7 +306,8 @@
                                   placeholder="테스트의 목적, 범위, 특이사항 등을 입력하세요(선택)"></textarea>
                     </section>
 
-					<div id="selectedHiddenInputs"></div>
+                    <div id="selectedHiddenInputs"></div>
+
                     <div class="btn-area">
                         <a th:href="@{/project/{projectId}/tests(projectId=${projectId})}"
                            class="btn-cancel">
@@ -339,6 +333,20 @@
         const projectId = /*[[${projectId}]]*/ '';
 
         const storageKey = 'selectedTestCases_' + projectId;
+
+        /*
+            새로고침이면 선택 항목 초기화
+            - F5
+            - Ctrl + R
+            - 브라우저 새로고침 버튼
+
+            페이징 이동은 reload가 아니라 navigate라서 선택값 유지됨
+        */
+        const navigationEntries = performance.getEntriesByType('navigation');
+
+        if (navigationEntries.length > 0 && navigationEntries[0].type === 'reload') {
+            sessionStorage.removeItem(storageKey);
+        }
 
         const caseSearchBtn = document.getElementById('caseSearchBtn');
         const caseTypeCode = document.getElementById('caseTypeCode');
@@ -603,11 +611,16 @@
             });
         }
 
-        teamName.addEventListener('keyup', updateSummaryText);
-        teamName.addEventListener('change', updateSummaryText);
-        assigneeId.addEventListener('change', updateSummaryText);
+        if (teamName) {
+            teamName.addEventListener('keyup', updateSummaryText);
+            teamName.addEventListener('change', updateSummaryText);
+        }
 
-        testCreateForm.addEventListener('submit', function () {
+        if (assigneeId) {
+            assigneeId.addEventListener('change', updateSummaryText);
+        }
+
+        testCreateForm.addEventListener('submit', function (event) {
             updateHiddenInputs();
 
             const selectedCases = getSelectedCases();
@@ -625,7 +638,7 @@
         updateSelectedTable();
         updateSummaryText();
     });
-</script>
+    </script>
 
 </div>
 </body>

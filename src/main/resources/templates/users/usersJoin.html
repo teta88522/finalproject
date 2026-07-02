@@ -89,10 +89,15 @@
                 <input type="text"
                        id="phone"
                        th:field="*{phone}"
-                       placeholder="010-1234-1234">
+                       placeholder="01012341234"
+                       maxlength="11"
+                       inputmode="numeric">
             </div>
 
+            <p class="info-message" id="phoneCheckMessage"></p>
+
             <input type="hidden" id="idCheckYn" value="N">
+            <input type="hidden" id="phoneCheckYn" value="N">
 
             <div class="form-btn-area">
                 <button type="submit" class="user-btn">회원가입</button>
@@ -183,6 +188,61 @@
         }
     });
 
+    document.getElementById("phone").addEventListener("input", function () {
+        const phoneInput = document.getElementById("phone");
+        const message = document.getElementById("phoneCheckMessage");
+        const phoneCheckYn = document.getElementById("phoneCheckYn");
+
+        // 숫자 이외 문자 제거
+        phoneInput.value = phoneInput.value.replace(/[^0-9]/g, "");
+
+        // 11자리 초과 입력 방지
+        if (phoneInput.value.length > 11) {
+            phoneInput.value = phoneInput.value.substring(0, 11);
+        }
+
+        const phone = phoneInput.value;
+
+        phoneCheckYn.value = "N";
+        message.innerText = "";
+
+        if (phone.length === 0) {
+            return;
+        }
+
+        if (phone.length < 11) {
+            message.innerText = "* 연락처는 숫자 11자리로 입력하세요.";
+            message.style.color = "red";
+            return;
+        }
+
+        if (!phone.startsWith("010")) {
+            message.innerText = "* 연락처는 010으로 시작해야 합니다.";
+            message.style.color = "red";
+            return;
+        }
+
+        fetch("/checkPhone?phone=" + encodeURIComponent(phone))
+            .then(response => response.json())
+            .then(data => {
+                if (data.duplicated) {
+                    message.innerText = "* 이미 등록된 연락처입니다.";
+                    message.style.color = "red";
+                    phoneCheckYn.value = "N";
+                } else {
+                    message.innerText = "* 사용가능한 연락처입니다.";
+                    message.style.color = "#3366cc";
+                    phoneCheckYn.value = "Y";
+                }
+            })
+            .catch(error => {
+                console.log(error);
+                message.innerText = "* 연락처 확인 중 오류가 발생했습니다.";
+                message.style.color = "red";
+                phoneCheckYn.value = "N";
+            });
+    });
+
     function checkJoinForm() {
         const userName = document.getElementById("userName").value;
         const loginId = document.getElementById("loginId").value;
@@ -191,6 +251,7 @@
         const email = document.getElementById("email").value;
         const phone = document.getElementById("phone").value;
         const idCheckYn = document.getElementById("idCheckYn").value;
+        const phoneCheckYn = document.getElementById("phoneCheckYn").value;
 
         if (userName.trim() === "") {
             alert("이름을 입력하세요.");
@@ -206,11 +267,18 @@
 
         if (idCheckYn !== "Y") {
             alert("아이디 중복확인을 해주세요.");
+            document.getElementById("loginId").focus();
             return false;
         }
 
         if (password.trim() === "") {
             alert("비밀번호를 입력하세요.");
+            document.getElementById("password").focus();
+            return false;
+        }
+
+        if (password.length < 8) {
+            alert("비밀번호는 8자 이상 입력하세요.");
             document.getElementById("password").focus();
             return false;
         }
@@ -229,6 +297,24 @@
 
         if (phone.trim() === "") {
             alert("연락처를 입력하세요.");
+            document.getElementById("phone").focus();
+            return false;
+        }
+
+        if (!/^[0-9]{11}$/.test(phone)) {
+            alert("연락처는 숫자 11자리로 입력하세요.");
+            document.getElementById("phone").focus();
+            return false;
+        }
+
+        if (!phone.startsWith("010")) {
+            alert("연락처는 010으로 시작해야 합니다.");
+            document.getElementById("phone").focus();
+            return false;
+        }
+
+        if (phoneCheckYn !== "Y") {
+            alert("이미 등록된 연락처이거나 연락처 확인이 완료되지 않았습니다.");
             document.getElementById("phone").focus();
             return false;
         }

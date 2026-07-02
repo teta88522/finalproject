@@ -38,6 +38,7 @@ public interface TestService {
     // 테스트 수정 + 테스트케이스매핑 수정
     public int updateTestWithCases(TestVO testVO);
     
+    public int selectProjectGroupCount(String projectId);
     
 
 }

@@ -364,6 +364,20 @@
     color: #267a35;
 }
 
+/* 상세정보 상태/심각도/우선순위 뱃지 */
+.badge-detail-wrap {
+    display: flex;
+    align-items: center;
+    min-height: 38px;
+    padding: 7px 10px;
+}
+
+.detail-value .badge {
+    min-width: 58px;
+    height: 24px;
+    padding: 0 10px;
+}
+
 .row-actions {
     display: flex;
     gap: 6px;
@@ -430,10 +444,6 @@
 .bug-check {
     width: 16px;
     height: 16px;
-    cursor: pointer;
-}
-
-.bug-table tbody tr {
     cursor: pointer;
 }
 

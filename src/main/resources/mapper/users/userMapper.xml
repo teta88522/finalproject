@@ -118,4 +118,14 @@
     SET password = #{password}
     WHERE user_id = #{userId}
 	</update>
+	
+	
+<!-- 연락처 중복 확인 -->
+<select id="checkPhone"
+        parameterType="string"
+        resultType="int">
+    SELECT COUNT(*)
+    FROM users
+    WHERE REPLACE(phone, '-', '') = #{phone}
+</select>
 </mapper>

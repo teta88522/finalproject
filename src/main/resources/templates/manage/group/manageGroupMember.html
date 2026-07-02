@@ -18,7 +18,7 @@
             <div>
                 <h1 class="detail-page-title">관리 &gt; 그룹 구성원 배정</h1>
                 <p class="detail-page-sub-title">
-                    그룹에 구성원을 추가하고, 구성원별 개인 역할을 지정할 수 있습니다.
+                    그룹에 구성원을 추가하거나 제외할 수 있습니다.
                 </p>
             </div>
 
@@ -32,20 +32,18 @@
             <span th:text="${message}">메시지</span>
         </div>
 
+        <!-- 구성원 추가 form -->
         <form th:action="@{/manage/groups/{projectGroupId}/members/add(projectGroupId=${manageGroup.projectGroupId})}"
               method="post"
               id="completeAssignForm">
 
-            <input type="hidden"
-                   id="groupRoleName"
-                   th:value="${manageGroup.roleName != null ? manageGroup.roleName : ''}">
-
             <div id="assignHiddenArea"></div>
 
+            <!-- 그룹 정보 -->
             <div class="detail-section">
                 <div class="section-title">그룹 정보</div>
                 <div class="section-sub-text">
-                    현재 선택된 그룹 정보입니다. 구성원을 배정할 때 개인 역할을 함께 지정합니다.
+                    현재 선택된 그룹 정보입니다. 구성원을 그룹에 배정할 수 있습니다.
                 </div>
 
                 <div class="form-grid">
@@ -73,12 +71,14 @@
                     <div class="form-field">
                         <label>현재 구성원 수</label>
                         <input type="text"
+                               id="assignedMemberCount"
                                th:value="${assignedMemberList == null ? 0 : #lists.size(assignedMemberList)}"
                                readonly>
                     </div>
                 </div>
             </div>
 
+            <!-- 배정 가능한 구성원 -->
             <div class="detail-section">
                 <div class="section-title">배정 가능한 구성원</div>
                 <div class="section-sub-text">
@@ -93,12 +93,13 @@
                                 <th>ID</th>
                                 <th>이름</th>
                                 <th>Email</th>
-                                <th>지정할 역할</th>
+                                <th>관리</th>
                             </tr>
                         </thead>
 
                         <tbody id="assignableMemberBody">
-                            <tr th:if="${assignableMemberList == null or #lists.isEmpty(assignableMemberList)}">
+                            <tr th:if="${assignableMemberList == null or #lists.isEmpty(assignableMemberList)}"
+                                id="assignableEmptyRow">
                                 <td colspan="5" class="empty-row">
                                     배정 가능한 구성원이 없습니다.
                                 </td>
@@ -120,23 +121,11 @@
                                 <td th:text="${member.email != null ? member.email : '-'}">email@test.com</td>
 
                                 <td>
-                                    <div class="member-role-form">
-                                        <select class="member-role-select">
-                                            <option value="">역할 선택</option>
-
-                                            <option th:each="role : ${manageRoleList}"
-                                                    th:value="${role.roleId}"
-                                                    th:text="${role.roleName}">
-                                                역할명
-                                            </option>
-                                        </select>
-
-                                        <button type="button"
-                                                class="mini-btn"
-                                                onclick="addAssignCart(this)">
-                                            추가
-                                        </button>
-                                    </div>
+                                    <button type="button"
+                                            class="mini-btn"
+                                            onclick="addAssignCart(this)">
+                                        추가
+                                    </button>
                                 </td>
                             </tr>
                         </tbody>
@@ -144,6 +133,7 @@
                 </div>
             </div>
 
+            <!-- 선택한 구성원 -->
             <div class="detail-section">
                 <div class="section-title">선택한 구성원</div>
                 <div class="section-sub-text">
@@ -158,79 +148,14 @@
                                 <th>ID</th>
                                 <th>이름</th>
                                 <th>Email</th>
-                                <th>개인 역할</th>
                                 <th>관리</th>
                             </tr>
                         </thead>
 
                         <tbody id="assignCartBody">
                             <tr id="assignCartEmptyRow">
-                                <td colspan="6" class="empty-row">
+                                <td colspan="5" class="empty-row">
                                     선택한 구성원이 없습니다.
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div class="detail-section">
-                <div class="section-title">현재 그룹 구성원</div>
-                <div class="section-sub-text">
-                    현재 이 그룹에 배정된 구성원입니다. 구성원별 개인 역할을 확인할 수 있습니다.
-                </div>
-
-                <div class="member-table-wrap">
-                    <table class="member-table">
-                        <thead>
-                            <tr>
-                                <th>소속 팀명</th>
-                                <th>ID</th>
-                                <th>이름</th>
-                                <th>Email</th>
-                                <th>개인 역할</th>
-                                <th>관리</th>
-                            </tr>
-                        </thead>
-
-                        <tbody id="assignedMemberBody">
-                            <tr th:if="${assignedMemberList == null or #lists.isEmpty(assignedMemberList)}"
-                                id="assignedEmptyRow">
-                                <td colspan="6" class="empty-row">
-                                    현재 그룹에 배정된 구성원이 없습니다.
-                                </td>
-                            </tr>
-
-                            <tr th:each="member : ${assignedMemberList}">
-                                <td th:text="${member.teamName != null ? member.teamName : '-'}">팀명</td>
-
-                                <td th:text="${member.loginId != null ? member.loginId : '-'}">loginId</td>
-
-                                <td th:text="${member.userName != null ? member.userName : '-'}">이름</td>
-
-                                <td th:text="${member.email != null ? member.email : '-'}">email@test.com</td>
-
-                                <td>
-                                    <span class="role-badge"
-                                          th:text="${member.roleName != null ? member.roleName : '-'}">
-                                        역할명
-                                    </span>
-                                </td>
-
-                                <td>
-                                    <form th:action="@{/manage/groups/{projectGroupId}/members/remove(projectGroupId=${manageGroup.projectGroupId})}"
-                                          method="post"
-                                          class="inline-form"
-                                          onsubmit="return confirm('해당 구성원을 그룹에서 제외하시겠습니까?');">
-
-                                        <input type="hidden"
-                                               name="projectMemberId"
-                                               th:value="${member.projectMemberId}">
-
-                                        <button type="submit" class="mini-btn delete">
-                                            제외
-                                        </button>
-                                    </form>
                                 </td>
                             </tr>
                         </tbody>
@@ -252,34 +177,74 @@
 
         </form>
 
+        <!-- 현재 그룹 구성원 -->
+        <div class="detail-section">
+            <div class="section-title">현재 그룹 구성원</div>
+            <div class="section-sub-text">
+                현재 이 그룹에 배정된 구성원입니다.
+            </div>
+
+            <div class="member-table-wrap">
+                <table class="member-table">
+                    <thead>
+                        <tr>
+                            <th>소속 팀명</th>
+                            <th>ID</th>
+                            <th>이름</th>
+                            <th>Email</th>
+                            <th>관리</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="assignedMemberBody">
+                        <tr th:if="${assignedMemberList == null or #lists.isEmpty(assignedMemberList)}"
+                            id="assignedEmptyRow">
+                            <td colspan="5" class="empty-row">
+                                현재 그룹에 배정된 구성원이 없습니다.
+                            </td>
+                        </tr>
+
+                        <tr th:each="member : ${assignedMemberList}"
+                            th:data-project-member-id="${member.projectMemberId}"
+                            th:data-team-name="${member.teamName != null ? member.teamName : '-'}"
+                            th:data-login-id="${member.loginId != null ? member.loginId : '-'}"
+                            th:data-user-name="${member.userName != null ? member.userName : '-'}"
+                            th:data-email="${member.email != null ? member.email : '-'}">
+
+                            <td th:text="${member.teamName != null ? member.teamName : '-'}">팀명</td>
+
+                            <td th:text="${member.loginId != null ? member.loginId : '-'}">loginId</td>
+
+                            <td th:text="${member.userName != null ? member.userName : '-'}">이름</td>
+
+                            <td th:text="${member.email != null ? member.email : '-'}">email@test.com</td>
+
+                            <td>
+                                <button type="button"
+                                        class="mini-btn delete"
+                                        th:data-project-member-id="${member.projectMemberId}"
+                                        th:data-remove-url="@{/manage/groups/{projectGroupId}/members/remove/ajax(projectGroupId=${manageGroup.projectGroupId})}"
+                                        onclick="removeAssignedMember(this)">
+                                    제외
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
     </div>
 
     <script>
         function addAssignCart(button) {
             const sourceRow = button.closest("tr");
-            const roleSelect = sourceRow.querySelector(".member-role-select");
 
             const projectMemberId = sourceRow.dataset.projectMemberId;
             const teamName = sourceRow.dataset.teamName;
             const loginId = sourceRow.dataset.loginId;
             const userName = sourceRow.dataset.userName;
             const email = sourceRow.dataset.email;
-
-            const roleId = roleSelect.value;
-            const roleName = roleSelect.options[roleSelect.selectedIndex].text;
-            const groupRoleName = document.getElementById("groupRoleName").value;
-
-            if (!roleId) {
-                alert("구성원에게 지정할 역할을 선택하세요.");
-                roleSelect.focus();
-                return;
-            }
-
-            if (groupRoleName !== "" && roleName === groupRoleName) {
-                alert("그룹 역할과 동일한 개인 역할은 배정할 수 없습니다.");
-                roleSelect.focus();
-                return;
-            }
 
             if (document.querySelector("#assignCartBody tr[data-project-member-id='" + projectMemberId + "']")) {
                 alert("이미 선택한 구성원입니다.");
@@ -296,14 +261,12 @@
 
             const cartRow = document.createElement("tr");
             cartRow.setAttribute("data-project-member-id", projectMemberId);
-            cartRow.setAttribute("data-role-id", roleId);
 
             cartRow.innerHTML =
                 "<td>" + escapeHtml(teamName) + "</td>" +
                 "<td>" + escapeHtml(loginId) + "</td>" +
                 "<td>" + escapeHtml(userName) + "</td>" +
                 "<td>" + escapeHtml(email) + "</td>" +
-                "<td><span class='role-badge'>" + escapeHtml(roleName) + "</span></td>" +
                 "<td>" +
                     "<button type='button' class='mini-btn delete' onclick='removeAssignCart(this)'>" +
                         "제외" +
@@ -325,12 +288,6 @@
 
             if (sourceRow) {
                 sourceRow.style.display = "";
-
-                const roleSelect = sourceRow.querySelector(".member-role-select");
-
-                if (roleSelect) {
-                    roleSelect.value = "";
-                }
             }
 
             cartRow.remove();
@@ -340,7 +297,7 @@
             if (cartBody.querySelectorAll("tr[data-project-member-id]").length === 0) {
                 cartBody.innerHTML =
                     "<tr id='assignCartEmptyRow'>" +
-                        "<td colspan='6' class='empty-row'>선택한 구성원이 없습니다.</td>" +
+                        "<td colspan='5' class='empty-row'>선택한 구성원이 없습니다.</td>" +
                     "</tr>";
             }
 
@@ -355,18 +312,115 @@
 
             cartRows.forEach(function (row) {
                 const projectMemberInput = document.createElement("input");
+
                 projectMemberInput.type = "hidden";
                 projectMemberInput.name = "projectMemberIds";
                 projectMemberInput.value = row.dataset.projectMemberId;
 
-                const roleInput = document.createElement("input");
-                roleInput.type = "hidden";
-                roleInput.name = "roleIds";
-                roleInput.value = row.dataset.roleId;
-
                 hiddenArea.appendChild(projectMemberInput);
-                hiddenArea.appendChild(roleInput);
             });
+        }
+
+        function removeAssignedMember(button) {
+            const projectMemberId = button.dataset.projectMemberId;
+            const removeUrl = button.dataset.removeUrl;
+            const row = button.closest("tr");
+
+            if (!confirm("해당 구성원을 그룹에서 제외하시겠습니까?")) {
+                return;
+            }
+
+            const teamName = row.dataset.teamName || "-";
+            const loginId = row.dataset.loginId || "-";
+            const userName = row.dataset.userName || "-";
+            const email = row.dataset.email || "-";
+
+            button.disabled = true;
+            button.innerText = "처리중";
+
+            fetch(removeUrl, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8"
+                },
+                body: "projectMemberId=" + encodeURIComponent(projectMemberId)
+            })
+            .then(function (response) {
+                return response.json();
+            })
+            .then(function (data) {
+                if (!data.result) {
+                    alert(data.message || "구성원 제외에 실패했습니다.");
+                    button.disabled = false;
+                    button.innerText = "제외";
+                    return;
+                }
+
+                addBackToAssignableMember(projectMemberId, teamName, loginId, userName, email);
+
+                if (row) {
+                    row.remove();
+                }
+
+                const countInput = document.getElementById("assignedMemberCount");
+
+                if (countInput) {
+                    const currentCount = parseInt(countInput.value || "0", 10);
+                    countInput.value = Math.max(currentCount - 1, 0);
+                }
+
+                const assignedBody = document.getElementById("assignedMemberBody");
+                const remainRows = assignedBody.querySelectorAll("tr[data-project-member-id]");
+
+                if (remainRows.length === 0) {
+                    assignedBody.innerHTML =
+                        "<tr id='assignedEmptyRow'>" +
+                            "<td colspan='5' class='empty-row'>현재 그룹에 배정된 구성원이 없습니다.</td>" +
+                        "</tr>";
+                }
+
+                alert(data.message || "구성원이 그룹에서 제외되었습니다.");
+            })
+            .catch(function () {
+                alert("서버 통신 중 오류가 발생했습니다.");
+                button.disabled = false;
+                button.innerText = "제외";
+            });
+        }
+
+        function addBackToAssignableMember(projectMemberId, teamName, loginId, userName, email) {
+            const assignableBody = document.getElementById("assignableMemberBody");
+
+            const emptyRow = document.getElementById("assignableEmptyRow");
+
+            if (emptyRow) {
+                emptyRow.remove();
+            }
+
+            if (document.querySelector("#assignableMemberBody tr[data-project-member-id='" + projectMemberId + "']")) {
+                return;
+            }
+
+            const newRow = document.createElement("tr");
+
+            newRow.setAttribute("data-project-member-id", projectMemberId);
+            newRow.setAttribute("data-team-name", teamName);
+            newRow.setAttribute("data-login-id", loginId);
+            newRow.setAttribute("data-user-name", userName);
+            newRow.setAttribute("data-email", email);
+
+            newRow.innerHTML =
+                "<td>" + escapeHtml(teamName) + "</td>" +
+                "<td>" + escapeHtml(loginId) + "</td>" +
+                "<td>" + escapeHtml(userName) + "</td>" +
+                "<td>" + escapeHtml(email) + "</td>" +
+                "<td>" +
+                    "<button type='button' class='mini-btn' onclick='addAssignCart(this)'>" +
+                        "추가" +
+                    "</button>" +
+                "</td>";
+
+            assignableBody.appendChild(newRow);
         }
 
         document.getElementById("completeAssignForm").addEventListener("submit", function (event) {

@@ -29,10 +29,11 @@
 .add-user-info {
     min-width: 220px;
     padding: 14px 18px;
-    border-radius: 10px;
-    background-color: #fff;
-    border: 1px solid #e1e6ef;
-    box-shadow: 0 2px 8px rgba(20, 35, 60, 0.04);
+    border: 1px solid #e1e5ee;
+    border-radius: 12px;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(20, 30, 50, 0.04);
+    text-align: center;
 }
 
 .add-user-info span {
