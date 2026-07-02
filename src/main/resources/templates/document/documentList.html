@@ -34,6 +34,125 @@
 
 					</div>
                     </div>
+                    <div class="search-section issues-search-section">
+					<div class="search-header">
+						<div class="search-title">검색조건</div>
+					</div>
+
+					<form id="documentSearchForm"
+						th:action="@{/project/{projectId}/document/list(projectId=${projectId})}"
+						method="get">
+
+						<div class="search-form-row issues-search-row">
+							
+							<div class="search-field">
+            <label>버전</label>
+
+            <details class="filter-dropdown"
+                     data-placeholder="전체"
+                     data-filter-group="version">
+
+                <summary>
+                    <span class="filter-selected-text"
+                          th:text="${selectedVersionText}">전체</span>
+                </summary>
+
+                <div class="filter-check-list filter-dropdown-panel"
+                     id="versionFilter">
+                </div>
+
+            </details>
+        </div>
+
+        <!-- ===================== -->
+        <!-- 마일스톤 -->
+        <!-- ===================== -->
+        <div class="search-field">
+            <label>마일스톤</label>
+
+            <details class="filter-dropdown"
+                     data-placeholder="전체"
+                     data-filter-group="milestone">
+
+                <summary>
+                    <span class="filter-selected-text"
+                          th:text="${selectedMilestoneText}">전체</span>
+                </summary>
+
+                <div class="filter-check-list filter-dropdown-panel"
+                     id="milestoneFilter">
+                </div>
+
+            </details>
+        </div>
+
+        <!-- ===================== -->
+        <!-- 제목 -->
+        <!-- ===================== -->
+        <div class="search-field">
+            <label for="keyword">제목</label>
+            <input type="text"
+                   id="keyword"
+                   name="keyword"
+                   placeholder="문서 제목">
+        </div>
+
+        <!-- ===================== -->
+        <!-- 작성자 -->
+        <!-- ===================== -->
+        <div class="search-field">
+            <label>작성자</label>
+
+            <details class="filter-dropdown"
+                     data-placeholder="전체"
+                     data-filter-group="writer">
+
+                <summary>
+                    <span class="filter-selected-text"
+                          th:text="${selectedWriterText}">전체</span>
+                </summary>
+
+                <div class="filter-check-list filter-dropdown-panel"
+                     id="writerFilter">
+                </div>
+
+            </details>
+        </div>
+
+        <!-- ===================== -->
+        <!-- 날짜 -->
+        <!-- ===================== -->
+        <div class="search-field issues-date-field">
+            <label>날짜</label>
+
+            <div class="issues-date-range">
+                <input type="date"
+                       id="startDate"
+                       name="startDate">
+
+                <span class="issues-date-separator">~</span>
+
+                <input type="date"
+                       id="dueDate"
+                       name="dueDate">
+            </div>
+        </div>
+
+    </div>
+
+						<div class="search-btn-area">
+							
+								<a th:href="@{/project/{projectId}/document/list(projectId=${projectId})}"
+								class="btn btn-custon-rounded-four btn-default filter-btn">
+								초기화 </a>
+
+							<button type="submit"
+								class="btn btn-custon-rounded-four btn-primary filter-btn">
+								검색</button>
+						</div>
+					</form>
+					
+				</div>
                     <div class="asset-inner" style="border:1px solid #eef0f3; border-radius:8px; overflow:hidden;">
                         <table class="table table-hover" style="margin:0; font-size:13px;">
                             <thead>
@@ -42,7 +161,7 @@
                                     <th style="border-bottom:1px solid #eef0f3; padding:10px 12px; color:#888; font-weight:500;">타이틀</th>
                                     <th style="border-bottom:1px solid #eef0f3; padding:10px 12px; color:#888; font-weight:500;">활성</th>
                                     <th style="border-bottom:1px solid #eef0f3; padding:10px 12px; color:#888; font-weight:500;">크기</th>
-                                    <th style="border-bottom:1px solid #eef0f3; padding:10px 12px; color:#888; font-weight:500;">변경일시</th>
+                                    <th style="border-bottom:1px solid #eef0f3; padding:10px 12px; color:#888; font-weight:500;">작성일시</th>
                                     <th style="border-bottom:1px solid #eef0f3; padding:10px 12px; color:#888; font-weight:500;">버전</th>
                                     <th style="border-bottom:1px solid #eef0f3; padding:10px 12px; color:#888; font-weight:500;">마일스톤</th>
                                     <th style="border-bottom:1px solid #eef0f3; padding:10px 12px; color:#888; font-weight:500;">작성자</th>
@@ -62,7 +181,15 @@
                                     <td style="padding:10px 12px; color:#bbb;">—</td>
                                     <td style="padding:10px 12px; color:#777;">—</td>
                                 </tr>
-                                <tr th:each="categoryNo : ${categoryNoList}" th:value="${categoryNo.documentId}">
+                                <tr class="doc-row" th:each="categoryNo : ${categoryNoList}" th:value="${categoryNo.documentId}"
+    th:data-version="${categoryNo.versionId}"
+    th:data-version-name="${categoryNo.versionName}"
+    th:data-milestone="${categoryNo.milestoneId}"
+    th:data-milestone-name="${categoryNo.milestoneTitle}"
+    th:data-writer-id="${categoryNo.createdBy}"
+    th:data-writer-name="${categoryNo.userName}"
+    th:data-title="${categoryNo.title}"
+    th:data-created-at="${categoryNo.createdAt != null ? #dates.format(categoryNo.createdAt, 'yyyy-MM-dd') : ''}">
                                     <td style="padding:10px 12px;"><input type="checkbox"></td>
                                     <td style="padding:10px 12px;">
                                         <i class="fa fa-file-text-o" style="margin-right:7px; color:#7b8cde;"></i>
@@ -72,7 +199,9 @@
                                         <span style="font-size:11px; padding:3px 9px; background:#eef2ff; color:#5566cc; border-radius:20px;" th:text="${categoryNo.statusName}"></span>
                                     </td>
                                     <td style="padding:10px 12px; color:#777;">—</td>
-                                    <td style="padding:10px 12px; color:#777;" th:text="${categoryNo.updatedAt}"></td>
+                                    <td style="padding:10px 12px; color:#777;" 
+    									th:text="${categoryNo.createdAt != null ? #dates.format(categoryNo.createdAt, 'yyyy-MM-dd') : '—'}">
+									</td>
                                     <td style="padding:10px 12px; color:#bbb;" th:text="${categoryNo.versionName}">—</td>
                                     <td style="padding:10px 12px;">
                                         <span style="font-size:11px; padding:3px 9px; background:#e8f5e9; color:#2e7d32; border-radius:20px;" th:text="${categoryNo.milestoneTitle}"></span>
@@ -94,12 +223,13 @@
         </div>
     </div>
 </div>
+
 <div class="modal fade" id="categoryModal" tabindex="-1" role="dialog">
   <div class="modal-dialog" role="document" style="border-radius:20px;">
     <div class="modal-content" style="border-radius:20px; overflow:hidden; border:none;">
 
       <!-- form 추가 -->
-      <form th:action=@{/project/{projectId}/document/addcategory(projectId=${projectId})} method="post">
+      <form th:action="@{/project/{projectId}/document/addcategory(projectId=${projectId})}" method="post">
 
         <!-- 헤더 -->
         <div style="background:#1a6fe8; padding:18px 24px; display:flex; align-items:center; justify-content:space-between;">
@@ -147,6 +277,163 @@
     </div>
   </div>
 </div>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    // =========================
+    // 0. URL 쿼리 파라미터로 검색값 복원
+    // =========================
+    const urlParams = new URLSearchParams(window.location.search);
+
+    const keywordInput = document.getElementById("keyword");
+    if (keywordInput) keywordInput.value = urlParams.get("keyword") || "";
+
+    const startDateInput = document.getElementById("startDate");
+    if (startDateInput) startDateInput.value = urlParams.get("startDate") || "";
+
+    const dueDateInput = document.getElementById("dueDate");
+    if (dueDateInput) dueDateInput.value = urlParams.get("dueDate") || "";
+
+    const rows = document.querySelectorAll(".doc-row");
+
+    // id -> name 매핑으로 관리 (버전/마일스톤/작성자 전부 동일 패턴)
+    const versionMap = new Map();
+    const milestoneMap = new Map();
+    const writerMap = new Map();
+
+    rows.forEach(row => {
+        const versionId = row.dataset.version;
+        const versionName = row.dataset.versionName;
+        const milestoneId = row.dataset.milestone;
+        const milestoneName = row.dataset.milestoneName;
+        const writerId = row.dataset.writerId;
+        const writerName = row.dataset.writerName;
+
+        if (versionId && versionName) versionMap.set(versionId, versionName);
+        if (milestoneId && milestoneName) milestoneMap.set(milestoneId, milestoneName);
+        if (writerId && writerName) writerMap.set(writerId, writerName);
+    });
+
+    // =========================
+    // 공통: 체크박스 목록 렌더링
+    // =========================
+    function renderFilterOptions(boxEl, dataMap, paramName, selectedValues) {
+        dataMap.forEach((name, id) => {
+            const checked = selectedValues.includes(id) ? "checked" : "";
+            boxEl.insertAdjacentHTML("beforeend", `
+                <label class="filter-check-item">
+                    <input type="checkbox" name="${paramName}" value="${id}" ${checked}>
+                    <span>${name}</span>
+                </label>
+            `);
+        });
+    }
+
+    // =========================
+    // 공통: 요약 텍스트(전체 / 선택된 이름들) 갱신
+    // =========================
+    function updateSummaryText(groupName) {
+        const panel = document.querySelector(`.filter-dropdown[data-filter-group="${groupName}"]`);
+        if (!panel) return;
+
+        const summarySpan = panel.querySelector(".filter-selected-text");
+        const checkedBoxes = panel.querySelectorAll('input[type="checkbox"]:checked');
+
+        if (checkedBoxes.length === 0) {
+            summarySpan.textContent = "전체";
+        } else {
+            const names = Array.from(checkedBoxes).map(cb => cb.nextElementSibling.textContent);
+            summarySpan.textContent = names.join(", ");
+        }
+    }
+
+    // =========================
+    // 1. 버전 필터
+    // =========================
+    const versionBox = document.getElementById("versionFilter");
+    const selectedVersions = urlParams.getAll("versionIdList");
+    renderFilterOptions(versionBox, versionMap, "versionIdList", selectedVersions);
+
+    // =========================
+    // 2. 마일스톤 필터
+    // =========================
+    const milestoneBox = document.getElementById("milestoneFilter");
+    const selectedMilestones = urlParams.getAll("milestoneIdList");
+    renderFilterOptions(milestoneBox, milestoneMap, "milestoneIdList", selectedMilestones);
+
+    // =========================
+    // 3. 작성자 필터
+    // =========================
+    const writerBox = document.getElementById("writerFilter");
+    const selectedWriters = urlParams.getAll("writerIdList");
+    renderFilterOptions(writerBox, writerMap, "writerIdList", selectedWriters);
+
+    // =========================
+    // 3-1. 페이지 로드시 요약 텍스트 초기 반영 + 체크박스 변경시 즉시 반영
+    // =========================
+    ["version", "milestone", "writer"].forEach(groupName => {
+        updateSummaryText(groupName);
+
+        const panel = document.querySelector(`.filter-dropdown[data-filter-group="${groupName}"]`);
+        if (panel) {
+            panel.addEventListener("change", function (e) {
+                if (e.target.matches('input[type="checkbox"]')) {
+                    updateSummaryText(groupName);
+                }
+            });
+        }
+    });
+
+    // =========================
+    // 4. URL 파라미터 기준으로 실제 행(row) 필터링
+    // =========================
+    function applyFilters() {
+        const keyword = (urlParams.get("keyword") || "").trim().toLowerCase();
+        const startDate = urlParams.get("startDate") || "";
+        const dueDate = urlParams.get("dueDate") || "";
+
+        let visibleCount = 0;
+
+        document.querySelectorAll(".doc-row").forEach(row => {
+            let visible = true;
+
+            if (selectedVersions.length > 0 && !selectedVersions.includes(row.dataset.version)) {
+                visible = false;
+            }
+
+            if (visible && selectedMilestones.length > 0 && !selectedMilestones.includes(row.dataset.milestone)) {
+                visible = false;
+            }
+
+            if (visible && selectedWriters.length > 0 && !selectedWriters.includes(row.dataset.writerId)) {
+                visible = false;
+            }
+
+            if (visible && keyword) {
+                const title = (row.dataset.title || "").toLowerCase();
+                if (!title.includes(keyword)) {
+                    visible = false;
+                }
+            }
+
+            if (visible && (startDate || dueDate)) {
+                const rowDate = row.dataset.createdAt || "";
+                if (startDate && rowDate && rowDate < startDate) visible = false;
+                if (dueDate && rowDate && rowDate > dueDate) visible = false;
+            }
+
+            row.style.display = visible ? "" : "none";
+            if (visible) visibleCount++;
+        });
+
+        const noTotalSpan = document.querySelector("tfoot span:last-of-type");
+        if (noTotalSpan) noTotalSpan.textContent = visibleCount;
+    }
+
+    applyFilters();
+
+});
+</script>
 </div>
 </body>
 

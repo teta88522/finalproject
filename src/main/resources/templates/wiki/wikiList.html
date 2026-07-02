@@ -4,68 +4,7 @@
       layout:decorate="~{common/layouts/default_layout}">
 <head>
 <meta charset="UTF-8">
-<style>
-  .wiki-list-wrap {
-    background: #fff;
-    border-radius: 12px;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
-    padding: 24px;
-  }
-  .wiki-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-  }
-  .wiki-header h4 {
-    margin: 0;
-    font-size: 18px;
-    font-weight: 600;
-    color: #333;
-  }
-  .btn-new-wiki {
-    padding: 8px 18px;
-    background: #4f46e5;
-    color: #fff;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 14px;
-  }
-  .btn-new-wiki:hover {
-    background: #4338ca;
-  }
-  .wiki-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 16px;
-    border: 1px solid #f0f0f0;
-    border-radius: 8px;
-    margin-bottom: 10px;
-    cursor: pointer;
-    transition: box-shadow 0.2s;
-  }
-  .wiki-item:hover {
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-  }
-  .wiki-item-title {
-    font-size: 15px;
-    font-weight: 500;
-    color: #333;
-  }
-  .wiki-item-meta {
-    font-size: 12px;
-    color: #aaa;
-    margin-top: 4px;
-  }
-  .wiki-empty {
-    text-align: center;
-    padding: 60px 0;
-    color: #aaa;
-    font-size: 14px;
-  }
-</style>
+<link rel="stylesheet" th:href="@{/css/wiki/wiki.css}">
 </head>
 <body>
 <div layout:fragment="Content">
@@ -78,7 +17,15 @@
                     <!-- 헤더 -->
                     <div class="wiki-header">
                         <h4>📄 위키</h4>
-                        <button class="btn-new-wiki" onclick="createWiki()">+ 새 위키</button>
+                    <button
+        					type="button"
+        					data-toggle="modal"
+        					data-target="#wikiModal"
+        					style="display:flex; align-items:center; gap:6px; font-size:13px; padding:6px 14px; border:1px solid #ddd; border-radius:6px; background:#fff; color:#555; cursor:pointer;">
+        					<i class="fa fa-plus" style="font-size:11px;"></i>
+        					새 위키
+    					</button>
+                       
                     </div>
 
                     <!-- 위키 목록 -->
@@ -93,7 +40,7 @@
                             <div>
                                 <div class="wiki-item-title" th:text="${wiki.title}">제목</div>
                                 <div class="wiki-item-meta">
-                                    <span th:text="${wiki.createdBy}">작성자</span>
+                                    <span th:text="${wiki.userName}">작성자</span>
                                     &nbsp;·&nbsp;
                                     <span th:text="${#dates.format(wiki.createdAt, 'yyyy-MM-dd')}">날짜</span>
                                 </div>
@@ -107,26 +54,59 @@
         </div>
     </div>
 </div>
+<div class="modal fade" id="wikiModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="wiki" style="border-radius:20px;">
+    <div class="modal-content" style="border-radius:20px; overflow:hidden; border:none;">
 
-<script>
-    const projectId = '[[${projectId}]]';
+      <!-- form 추가 -->
+      <form th:action="@{/project/{projectId}/wiki/create(projectId=${projectId})}" method="post">
 
-    function createWiki() {
-        const title = prompt('위키 제목을 입력하세요')
-        if (!title) return
+        <!-- 헤더 -->
+        <div style="background:#1a6fe8; padding:18px 24px; display:flex; align-items:center; justify-content:space-between;">
+          <h4 style="color:#fff; margin:0; font-size:15px; font-weight:500;">
+            새 위키 만들기
+          </h4>
+          <span data-dismiss="modal" style="color:#fff; font-size:18px; cursor:pointer;">✕</span>
+        </div>
 
-        fetch(`/project/${projectId}/wiki/create`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ title: title, projectId: projectId })
-        })
-        .then(res => res.json())
-        .then(data => {
-            location.href = `/project/${projectId}/wiki/${data.wikiId}`
-        })
-        .catch(err => console.error('위키 생성 실패:', err))
-    }
-</script>
+        <!-- 바디 -->
+        <div class="modal-body" style="padding:24px;">
+          <div class="form-group">
+            <label style="font-size:13px; color:#555;">
+              위키 이름 <span style="color:#e24b4a">*</span>
+            </label>
+
+            <input
+              type="text"
+              name="title"
+              class="form-control"
+              placeholder="위키 이름을 입력하세요"
+              required
+              style="border-radius:10px; border:1px solid #ddd; font-size:13px; height:36px;">
+          </div>
+        </div>
+
+        <!-- 푸터 -->
+        <div class="modal-footer" style="border-top:1px solid #f0f0f0; padding:14px 24px 20px;">
+          <button
+            type="button"
+            class="btn btn-default btn-custon-three btn-custon-rounded-three"
+            data-dismiss="modal">
+            취소
+          </button>
+
+          <button
+            onclick="createWiki()"
+            class="btn btn-primary btn-custon-three btn-custon-rounded-three">
+            생성
+          </button>
+        </div>
+
+      </form>
+
+    </div>
+  </div>
+</div>
 </div>
 </body>
 </html>

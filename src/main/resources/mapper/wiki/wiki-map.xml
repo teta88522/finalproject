@@ -139,8 +139,16 @@
     	WHERE version_id = #{versionId}
 	</select>
 	<select id="selectWikiList" resultType="WikiPageVO">
-    SELECT wiki_id, project_id, title, summary, created_by, created_at
-    FROM wiki_page
+    SELECT
+    	w.wiki_id,
+    	w.project_id,
+    	w.title,
+    	w.summary,
+    	w.created_by,
+    	w.created_at,
+    	u.user_name
+    FROM wiki_page w
+    LEFT JOIN users u ON w.created_by = u.user_id
     WHERE project_id = #{projectId}
     ORDER BY created_at DESC
 </select>

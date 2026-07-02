@@ -57,7 +57,8 @@
             d.description,
             d.setting_code_id,
             d.status_code,
-            d.status_name
+            d.status_name,
+            d.created_at
         from document d
         LEFT JOIN milestone m ON d.milestone_id = m.milestone_id
         LEFT JOIN project_version v ON d.version_id = v.version_id

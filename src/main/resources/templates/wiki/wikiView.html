@@ -54,6 +54,54 @@
     margin-right: 8px;
   }
   .btn-back:hover { background: #f5f5f5; }
+  .btn-history {
+    padding: 8px 16px;
+    background: #fff;
+    color: #555;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    margin-right: 8px;
+  }
+  .btn-history:hover { background: #f5f5f5; }
+
+  /* 본문 + 히스토리 레이아웃 */
+  .wiki-body-wrap {
+    display: flex;
+    gap: 24px;
+    align-items: flex-start;
+  }
+  .wiki-main { flex: 1; min-width: 0; }
+
+  /* 히스토리 패널 */
+  .history-panel {
+    width: 260px;
+    flex-shrink: 0;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    overflow: hidden;
+    display: none;
+  }
+  .history-panel.open { display: block; }
+  .history-panel-title {
+    padding: 12px 16px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #e0e0e0;
+    font-weight: 600;
+    font-size: 14px;
+  }
+  .history-list { max-height: 600px; overflow-y: auto; }
+  .history-item {
+    padding: 12px 16px;
+    border-bottom: 1px solid #f0f0f0;
+    cursor: pointer;
+  }
+  .history-item:hover { background: #f8f9fa; }
+  .history-item.active { background: #e8eeff; border-left: 3px solid #3d6ef5; }
+  .history-item-version { font-size: 11px; color: #aaa; }
+  .history-item-date { font-size: 12px; color: #888; margin-top: 2px; }
+  .history-item-author { font-size: 12px; color: #555; margin-top: 2px; }
 
   /* 마크다운 렌더링 스타일 */
   .wiki-content { font-size: 15px; line-height: 1.8; color: #1a1a1a; }
@@ -91,6 +139,21 @@
   .wiki-toc li { margin: 4px 0; font-size: 13px; display: list-item; }
   .wiki-toc a { color: #3d6ef5; text-decoration: none; }
   .wiki-toc a:hover { text-decoration: underline; }
+
+  /* 복원 버튼 */
+  .btn-restore {
+    width: 100%;
+    padding: 8px;
+    margin-top: 8px;
+    background: #3d6ef5;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    display: none;
+  }
+  .btn-restore.visible { display: block; }
 </style>
 </head>
 <body>
@@ -109,19 +172,37 @@
                 <span th:text="${page != null ? page.createdBy : ''}">작성자</span>
                 &nbsp;·&nbsp;
                 <span th:text="${page != null ? #dates.format(page.createdAt, 'yyyy-MM-dd') : ''}">날짜</span>
-                <span th:if="${page != null and page.updatedAt != null}">
-                  &nbsp;·&nbsp; 수정됨
-                </span>
               </div>
             </div>
-            <div>
+            <div style="display:flex; align-items:center; gap:8px;">
               <a th:href="@{/project/{pid}/wiki/(pid=${projectId})}" class="btn-back">← 목록</a>
+              <button class="btn-history" onclick="toggleHistory()">🕐 히스토리</button>
               <a th:href="@{/project/{pid}/wiki/{wid}/edit(pid=${projectId}, wid=${wikiId})}" class="btn-edit">✏️ 편집</a>
             </div>
           </div>
 
-          <!-- 본문 -->
-          <div id="wikiContent" class="wiki-content"></div>
+          <!-- 본문 + 히스토리 -->
+          <div class="wiki-body-wrap">
+
+            <!-- 본문 -->
+            <div class="wiki-main">
+              <div id="wikiContent" class="wiki-content"></div>
+            </div>
+
+            <!-- 히스토리 패널 -->
+            <div id="historyPanel" class="history-panel">
+              <div class="history-panel-title">🕐 버전 히스토리</div>
+              <div class="history-list" id="historyList">
+                <p style="padding:16px; color:#aaa; font-size:13px;">불러오는 중...</p>
+              </div>
+              <div style="padding:12px;">
+                <button id="restoreBtn" class="btn-restore" onclick="restoreVersion()">
+                  이 버전으로 복원
+                </button>
+              </div>
+            </div>
+
+          </div>
 
         </div>
       </div>
@@ -135,10 +216,19 @@
   const projectId = [[${projectId}]]
   const wikiId = [[${wikiId}]]
 
-  try {
-    const parsed = JSON.parse(content)
-    const markdown = typeof parsed === 'string' ? parsed : (parsed.markdown || '')
+  let selectedVersionId = null
 
+  // 마크다운 렌더링
+  function renderMarkdown(raw) {
+    try {
+      const parsed = JSON.parse(raw)
+      return typeof parsed === 'string' ? parsed : (parsed.markdown || '')
+    } catch(e) {
+      return ''
+    }
+  }
+
+  function displayContent(markdown) {
     marked.setOptions({ breaks: true, gfm: true })
     const html = marked.parse(markdown)
 
@@ -159,18 +249,106 @@
       tocHtml += '</ol></div>'
     }
 
-    // 헤딩에 id 추가
-    const finalHtml = html.replace(/<h([234])[^>]*>/g, (match, level, offset) => {
-      const idx = Array.from(html.matchAll(/<h[234]/g)).findIndex(m => m.index === offset)
-      return `<h${level} id="heading-${idx}">`
+    let idx = 0
+    const finalHtml = html.replace(/<h([234])>/g, (match, level) => {
+      return `<h${level} id="heading-${idx++}">`
     })
 
     document.getElementById('wikiContent').innerHTML = tocHtml + finalHtml
+  }
 
-  } catch(e) {
+  // 초기 렌더링
+  const markdown = renderMarkdown(content)
+  if (markdown) {
+    displayContent(markdown)
+  } else {
     document.getElementById('wikiContent').innerHTML = '<p style="color:#aaa;">내용이 없습니다.</p>'
   }
 
+  // 히스토리 토글
+  function toggleHistory() {
+    const panel = document.getElementById('historyPanel')
+    panel.classList.toggle('open')
+    if (panel.classList.contains('open')) {
+      loadHistory()
+    }
+  }
+
+  // 히스토리 로드
+  function loadHistory() {
+    fetch(`/project/${projectId}/wiki/versions/${wikiId}`)
+      .then(res => res.json())
+      .then(list => {
+        const container = document.getElementById('historyList')
+        if (!Array.isArray(list) || list.length === 0) {
+          container.innerHTML = '<p style="padding:16px; color:#aaa; font-size:13px;">버전 없음</p>'
+          return
+        }
+        container.innerHTML = ''
+        list.forEach((v, i) => {
+          const div = document.createElement('div')
+          div.className = 'history-item' + (i === 0 ? ' active' : '')
+          div.innerHTML = `
+            <div style="font-size:13px; font-weight:500;">${v.title || '제목없음'}</div>
+            <div class="history-item-version">${v.versionNo}</div>
+            <div class="history-item-date">${v.createdAt}</div>
+            <div class="history-item-author">by ${v.createdBy || ''}</div>
+          `
+          div.onclick = () => previewVersion(v.versionId, div)
+          container.appendChild(div)
+        })
+      })
+      .catch(err => console.error('히스토리 로드 실패:', err))
+  }
+
+  // 버전 미리보기
+  function previewVersion(versionId, el) {
+    // 선택 표시
+    document.querySelectorAll('.history-item').forEach(e => e.classList.remove('active'))
+    el.classList.add('active')
+    selectedVersionId = versionId
+
+    // 복원 버튼 표시
+    document.getElementById('restoreBtn').classList.add('visible')
+
+    fetch(`/project/${projectId}/wiki/version/${versionId}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.content) {
+          const md = renderMarkdown(data.content)
+          displayContent(md)
+        }
+      })
+      .catch(err => console.error('버전 로드 실패:', err))
+  }
+
+  // 버전 복원
+  function restoreVersion() {
+    if (!selectedVersionId) return
+    if (!confirm('이 버전으로 복원하시겠습니까?')) return
+
+    fetch(`/project/${projectId}/wiki/version/${selectedVersionId}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.content) {
+          // 복원 = 새 버전으로 저장
+          fetch(`/project/${projectId}/wiki/save`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              wikiId: wikiId,
+              title: document.querySelector('.wiki-view-title').textContent,
+              content: data.content
+            })
+          })
+          .then(() => {
+            alert('복원 완료!')
+            location.reload()
+          })
+        }
+      })
+      .catch(err => console.error('복원 실패:', err))
+  }
 </script>
 </div>
 </body>

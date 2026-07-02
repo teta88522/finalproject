@@ -16,6 +16,7 @@ public class WikiPageVO {
     private Date editingStartedAt;
     private Date editingExpiresAt;
     private String createdBy;
+    private String userName;
     private Date createdAt;
     private String updatedBy;
     private Date updatedAt;

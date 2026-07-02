@@ -91,18 +91,14 @@ public class WikiController {
 
     // 위키 생성
     @PostMapping("/create")
-    @ResponseBody
-    public ResponseEntity<?> createWiki(@RequestBody WikiPageVO vo,
+    public String createWiki(WikiPageVO vo,
                                         @PathVariable String projectId, @CookieValue(value="userId", required =false)String userId) {
-        String wikiId = "WIKI_PAGE_"
-                      + new java.text.SimpleDateFormat("yyMM").format(new java.util.Date())
-                      + "_" + String.format("%04d", (int)(Math.random() * 9999));
-        vo.setWikiId(wikiId);
+
         vo.setProjectId(projectId);
         vo.setCurrentVersionNo("v1");
         vo.setCreatedBy(userId);
         wikiService.insertWikiPage(vo);
-        return ResponseEntity.ok(vo);
+        return "redirect:/project/" + projectId +"/document/list";
     }
 
     // 버전 목록

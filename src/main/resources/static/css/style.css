@@ -240,14 +240,28 @@ body {
   overflow-y: auto;
   transition: all 0.3s;
 }
-#sidebar {
-  min-width: 200px;
-  background: #fff;
-  color: #fff;
-  position: fixed;
-  transition: all 0.3s;
-  z-index: 999;
-  height: 100%;
+#sidebar{
+	min-width: 220px;
+    width: 220px;
+    position:fixed;
+    background:#07172e;
+    overflow:hidden;
+}
+
+.sidebar-pattern{
+    position:absolute;
+    left:0;
+    bottom:0;
+    width:240px;
+
+    z-index:0;
+    pointer-events:none;
+}
+
+.left-custom-menu-adp-wrap{
+    position:relative;
+    z-index:1;
+    background:transparent;
 }
 .mini-navbar .all-content-wrapper {
   margin-left: 80px;
@@ -380,7 +394,7 @@ body {
   border-radius: 0;
   border: 0px solid #fff;
   box-shadow: none;
-  background: #ebebeb;
+  background: transparent !important;
 }
 .left-custom-menu-adp-wrap .dropdown-menu {
   position: relative;
@@ -393,7 +407,7 @@ body {
   a:hover {
   padding: 15px 30px;
   transition: all 0.4s ease 0s;
-  background: #fff;
+  background: transparent !important;
 }
 .left-custom-menu-adp-wrap
   ul.left-sidebar-menu-pro
@@ -438,7 +452,7 @@ body {
 .left-custom-menu-adp-wrap ul.left-sidebar-menu-pro li a:focus,
 .left-custom-menu-adp-wrap ul.left-sidebar-menu-pro li a:active,
 .left-custom-menu-adp-wrap ul.left-sidebar-menu-pro li a:visited {
-  background: #ebebeb;
+  background: transparent !important;
   color: #444;
 }
 .left-custom-menu-adp-wrap ul.left-sidebar-menu-pro li .indicator-right-menu {
@@ -2399,7 +2413,6 @@ ul.two-part-sp li {
   right: 0;
   height: 56px;
   z-index: 10000;
-  background: #1565ff;
 }
 
 .header-top-area {
@@ -2410,9 +2423,16 @@ ul.two-part-sp li {
   height: auto !important;
   min-height: 50px;
   z-index: 9999;
-  background: #006DF0;
+}
+.header-advance-area {
+    background: url('/img/header-bg2.png') no-repeat center center !important;
+    background-size: cover !important;
 }
 
+.header-top-area {
+    background: url('/img/header-bg1.png') no-repeat center center !important;
+    background-size: cover !important;
+}
 /* 사이드바 - 헤더 아래부터 */
 .left-sidebar-pro {
   position: fixed;
@@ -4330,7 +4350,8 @@ div#sparklinehome canvas {
   background: #006df0;
 }
 .sidebar-nav .metismenu {
-  background: #fff;
+  background-image: url("/img/sidebar-pattern.png") !important;
+  background-color: transparent !important;
 }
 .sidebar-nav {
   background: #fff;
@@ -4338,20 +4359,50 @@ div#sparklinehome canvas {
 .sidebar-nav ul {
   background: #fff;
 }
+#sidebar .submenu-angle{
+    background: #031225;
+}
 #sidebar.active .sidebar-nav ul.metismenu li ul.submenu-angle {
   position: absolute;
   right: -180px;
   top: 0px;
   text-align: left;
-  width: 180px;
-  background: #fff;
+  width: 80px;
+  background-image: url("/img/sidebar-pattern.png") !important;
+  background-color:#031225;
   -webkit-box-shadow: 0 1px 4px rgba(0, 0, 0, 0.175);
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.175);
 }
 #sidebar.active .sidebar-nav .metismenu a:hover,
 #sidebar.active .sidebar-nav .metismenu a:focus,
 #sidebar.active .sidebar-nav .metismenu a:active {
-  background: #f6f8fa;
+  background: #DD6C56 url("/img/mouse-pattern.png")
+
+                no-repeat right bottom;
+
+    background-size: 80px;
+
+    color: #fff;
+}
+.left-custom-menu-adp-wrap,
+.mCustomScrollBox,
+.mCSB_container{
+
+    background:#07172e url("/img/sidebar-pattern.png")
+               no-repeat left bottom;
+
+    background-size:240px;
+}
+
+.metismenu {
+    height: 100%;
+
+    background-image:url("/img/sidebar-pattern.png");
+    background-repeat:no-repeat;
+    background-position:left bottom;
+    background-size:150px;
+
+    background-size: 180px;
 }
 #sidebar.active .mCustomScrollBox {
   overflow: unset;
@@ -4365,7 +4416,13 @@ div#sparklinehome canvas {
 .sidebar-nav .metismenu a:hover,
 .sidebar-nav .metismenu a:focus,
 .sidebar-nav .metismenu a:active {
-  background: #f6f6f6;
+  background: #DD6C56 url("/img/mouse-pattern.png")
+
+                no-repeat right bottom;
+
+    background-size: 240px;
+
+    color: #fff;
 }
 .header-top-menu .navbar-nav > li .dropdown-menu,
 .header-right-info ul.header-right-menu li .author-message-top,
@@ -4400,15 +4457,23 @@ div#sparklinehome canvas {
 .header-top-menu .navbar-nav > li > a:hover {
   color: #fff;
 }
-#sidebar {
-  background: #fff;
+#sidebar::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 240px;
+    height: 990px;
+
+    background: url("/img/sidebar-pattern.png") no-repeat left bottom;
+    background-size: 240px auto;
+
+    pointer-events: none;
+    position: absolute;
 }
-#sidebar .sidebar-header {
-  background: #fff;
-}
+
 #sidebar.active .sidebar-header {
   padding-top: 10px;
-  position: relative;
   z-index: 9;
   padding-bottom: 10px;
 }
@@ -5083,6 +5148,13 @@ div#sparklinehome canvas {
 /*----------------------------------------*/
 /*  19. Mini Sidebar
 /*----------------------------------------*/
+.mini-navbar .sidebar-title {
+    display: none;
+}
+.mini-navbar .sidebar-header {
+    justify-content: center;
+    padding: 5px 0; /* 좌우 패딩도 줄여서 버튼이 딱 가운데 오도록 */
+}
 #sidebar.active .sidebar-nav .metismenu {
   margin-top: 12px;
 }
@@ -5172,7 +5244,7 @@ div#sparklinehome canvas {
   margin: 0px 0px;
 }
 .mCS-light-1.mCSB_scrollTools .mCSB_dragger .mCSB_dragger_bar {
-  background-color: #006df0;
+  background-color: #DD6C56 ;
 }
 .mCS-light-1.mCSB_scrollTools .mCSB_draggerRail {
   background-color: #ccc;
@@ -5227,7 +5299,7 @@ div#sparklinehome canvas {
 .wizard > .steps .current a,
 .wizard > .steps .current a:hover,
 .wizard > .steps .current a:active {
-  background: #2184be;
+  background: #DD6C56 ;
   color: #fff;
   cursor: default;
 }
@@ -5326,7 +5398,7 @@ div#sparklinehome canvas {
 .wizard > .actions a,
 .wizard > .actions a:hover,
 .wizard > .actions a:active {
-  background: #2184be;
+  background: #DD6C56 ;
   color: #fff;
   display: block;
   padding: 0.5em 1em;

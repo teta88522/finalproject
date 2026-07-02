@@ -2,19 +2,25 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <th:block th:fragment="SiderProjectFragment">
 	<!-- Start Left menu area -->
-	<nav id="sidebar" class="">
+	<nav id="sidebar" class="sidebar">
 		<div class="left-custom-menu-adp-wrap comment-scrollbar">
 			<nav class="sidebar-nav left-sidebar-menu-pro">
+			<img class="sidebar-pattern"
+         src="/img/sidebar-pattern.png"
+         alt="">
 				<!-- Sidebar Button -->
-				<div style="display:flex; justify-content:space-between; align-items:center; 
-            		padding:5px 15px; border-bottom:1px solid #eee;">
-   				<span style="font-weight:bold; font-size:15px; color:#333;">프로젝트 메뉴</span>
+				<div class="sidebar-header"
+     style="display:flex;
+            justify-content:space-between;
+            align-items:center;
+            padding:5px 15px;
+            border-bottom:1px solid #eee; background-color: #0b2447;">
+   				<span class="sidebar-title" style="font-weight:bold; font-size:15px; color:#fff;">프로젝트 메뉴</span>
     			<button type="button" id="sidebarCollapse"
-        			style="background:none; border:none; cursor:pointer; padding:0; font-size:18px; color:#555;">
+        			style="background:none; border:none; cursor:pointer; padding:0; font-size:18px; color:#fff;">
         			<i class="fa fa-bars"></i>
     			</button>
 				</div>
-				
 				<ul class="metismenu" id="menu1">
 					<!-- 대시보드 -->
 					<li>

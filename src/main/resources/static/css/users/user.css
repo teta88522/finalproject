@@ -23,7 +23,7 @@ body {
 .user-left {
     width: 36%;
     min-height: 100vh;
-    background-color: #292fa3;
+    background-color: #031229;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -31,9 +31,11 @@ body {
 
 /* 추후 팀 로고 영역 */
 .user-logo-area {
-    color: #ffffff;
     font-size: 28px;
     font-weight: bold;
+}
+.logo-img {
+    max-width: 100%;
 }
 
 /* 오른쪽 폼 영역 */

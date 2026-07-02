@@ -74,7 +74,7 @@
  
                 <!-- 연결된 파일 목록 -->
                 <div style="display:flex; align-items:flex-start; padding:12px 16px;">
-                    <label style="width:120px; font-size:13px; color:#888; font-weight:500; margin:0; padding-top:4px;">연결된 문서 목록</label>
+                    <label style="width:120px; font-size:13px; color:#888; font-weight:500; margin:0; padding-top:4px;">이전 버전 문서 목록</label>
                     <!-- ⑥ 목록 -->
             		<a th:href="@{/project/{projectId}/document/historylist/{documentId}(projectId=${projectId},documentId=${docDetail.documentId})}" class="btn btn-default btn-custon-three btn-custon-rounded-four" style="font-size:13px; padding:6px 16px;">
                 		<i class="fa fa-list" style="margin-right:5px;"></i> 바로가기
@@ -108,7 +108,7 @@
    					th:href="@{/project/{projectId}/document/detail/{documentId}/download(projectId=${projectId},documentId=${docDetail.documentId})}">
 
     			<i class="fa fa-download" style="margin-right:5px;"></i>
-    			파일 다운로드
+    			전체 파일 다운로드
 			</a>
             <!-- ⑥ 목록 -->
             <a th:href="@{/project/{projectId}/document/list(projectId=${projectId})}" class="btn btn-default btn-custon-three btn-custon-rounded-four" style="font-size:13px; padding:6px 16px;">
