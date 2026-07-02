@@ -227,7 +227,7 @@
     width: 100%;
     border-collapse: collapse;
     table-layout: fixed;
-    min-width: 980px;
+    min-width: 820px;
 }
 
 .member-table thead {
@@ -261,41 +261,31 @@
     background-color: #f7faff;
 }
 
-/* 역할 form */
-.member-role-form {
-    display: flex;
-    align-items: center;
-    margin: 0;
+/* 5컬럼 기준 */
+.member-table th:nth-child(1),
+.member-table td:nth-child(1) {
+    width: 20%;
 }
 
-.member-role-select {
-    height: 34px;
-    min-width: 150px;
-    border: 1px solid #d7dde8;
-    border-radius: 6px;
-    padding: 0 8px;
-    font-size: 13px;
-    color: #333;
-    background-color: #fff;
-    outline: none;
-    box-sizing: border-box;
-    cursor: pointer;
+.member-table th:nth-child(2),
+.member-table td:nth-child(2) {
+    width: 18%;
 }
 
-.member-role-select:hover {
-    border-color: #9bbcff;
+.member-table th:nth-child(3),
+.member-table td:nth-child(3) {
+    width: 16%;
 }
 
-.member-role-select:focus {
-    border-color: #2f6fed;
-    box-shadow: 0 0 0 3px rgba(47, 111, 237, 0.12);
+.member-table th:nth-child(4),
+.member-table td:nth-child(4) {
+    width: 34%;
 }
 
-/* 역할 변경 버튼 영역 */
-.member-role-change-area {
-    display: flex;
-    justify-content: flex-end;
-    margin-top: 16px;
+.member-table th:nth-child(5),
+.member-table td:nth-child(5) {
+    width: 12%;
+    text-align: center;
 }
 
 /* 작은 버튼 */
@@ -367,7 +357,7 @@
 /* 반응형 */
 @media (max-width: 900px) {
     .member-table {
-        min-width: 1000px;
+        min-width: 820px;
     }
 }
 
@@ -400,8 +390,7 @@
     }
 
     .form-btn-area,
-    .delete-form,
-    .member-role-change-area {
+    .delete-form {
         justify-content: stretch;
     }
 

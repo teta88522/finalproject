@@ -1,5 +1,7 @@
 package com.pixcel.app.testcase.service;
 
+import java.util.List;
+
 import lombok.Data;
 
 @Data
@@ -12,6 +14,11 @@ public class TestCaseSearchVO {
 	private String statusCode;
 	private String priorityCode;
 	private String title;
+	
+	private List<String> versionIdList;
+	private List<String> testTypeCodeList;
+	private List<String> statusCodeList;
+	private List<String> priorityCodeList;
 	
 	//페이징
 	private int page = 1;

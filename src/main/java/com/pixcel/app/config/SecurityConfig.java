@@ -53,7 +53,7 @@ public class SecurityConfig {
 							response.addCookie(authYnCookie);
 							response.addCookie(subscribeYnCookie);
 
-							response.sendRedirect("/");
+							response.sendRedirect("/myproject/list");
 						})
 
 						.failureUrl("/login?error=true").permitAll())

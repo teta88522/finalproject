@@ -112,13 +112,11 @@
 							class="mini-click-non">테스트</span>
 					</a>
 						<ul class="submenu-angle" aria-expanded="false">
-							<li><a th:href="@{/project/{projectId}/tests/list(projectId=${projectId})}"> <span
+							<li><a th:href="@{/project/{projectId}/tests(projectId=${projectId})}"> <span
 									class="mini-sub-pro">테스트 목록</span></a></li>
-							<li><a th:href="@{/testcaseslist}"> <span
+							<li><a th:href="@{/project/{projectId}/testcases(projectId=${projectId})}"> <span
 									class="mini-sub-pro">테스트케이스 목록</span></a></li>
-							<li><a th:href="@{/testcases}"> <span
-									class="mini-sub-pro">테스트케이스</span></a></li>
-							<li><a th:href="@{/buglist}"> <span class="mini-sub-pro">버그
+							<li><a th:href="@{/project/{projectId}/bugs(projectId=${projectId})}"> <span class="mini-sub-pro">버그
 										목록</span></a></li>
 						</ul></li>
 

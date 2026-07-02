@@ -1,5 +1,7 @@
 package com.pixcel.app.test.service;
 
+import java.util.List;
+
 import lombok.Data;
 
 @Data
@@ -20,5 +22,10 @@ public class TestSearchVO {
 	
 	private String loginUserId;
 	private String subscribeYn;
+	
+	private List<String> teamNameList;
+	private List<String> statusCodeList;
+	private List<String> testTypeCodeList;
+	private List<String> priorityCodeList;
 	
 }

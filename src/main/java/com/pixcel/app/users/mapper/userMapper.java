@@ -15,6 +15,8 @@ public interface userMapper {
 	//아이디 중복 확인(회원가입시)
 	public int checkLoginId(String loginId);
 	
+	public int checkPhone(String phone);
+	
 	//로그인
 	public userServiceVO selectUserByLoginId(String loginId);
 

@@ -117,4 +117,9 @@ public class TestServiceImpl implements TestService {
 		
 		return result;
 	}
+
+	@Override
+	public int selectProjectGroupCount(String projectId) {
+		return testMapper.selectProjectGroupCount(projectId);
+	}
 }

@@ -37,6 +37,13 @@ public class userServiceImpl implements userService {
 			return resultMap;
 		}
 		
+		int phoneCount = userMapper.checkPhone(userVO.getPhone());
+		if(phoneCount > 0) {
+			resultMap.put("result", false);
+			resultMap.put("message", "이미 등록된 연락처입니다.");
+			return resultMap;
+		}
+		
 		// 비밀번호 암호화
 		String encodedPassword = passwordEncoder.encode(userVO.getPassword());
 		userVO.setPassword(encodedPassword);
@@ -114,6 +121,12 @@ public class userServiceImpl implements userService {
 		
 		return updatePasswordMap;
 
+	}
+
+	@Override
+	public boolean checkPhone(String phone) {
+		int count = userMapper.checkPhone(phone);
+		return count > 0;
 	}
 
 

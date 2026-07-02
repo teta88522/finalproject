@@ -26,7 +26,6 @@
             </a>
         </div>
 
-        <!-- 요약 카드 -->
         <section class="summary-section">
             <div class="summary-card">
                 <span class="summary-label">전체 테스트</span>
@@ -38,7 +37,7 @@
                 <strong th:text="${testSummary != null ? testSummary.expectedCount : 0}">0</strong>
             </div>
 
-            <div class="summary-card progress">
+            <div class="summary-card progress-card">
                 <span class="summary-label">진행중</span>
                 <strong th:text="${testSummary != null ? testSummary.progressCount : 0}">0</strong>
             </div>
@@ -49,7 +48,6 @@
             </div>
         </section>
 
-        <!-- 검색 조건 -->
         <section class="search-section">
             <div class="section-title">검색 조건</div>
 
@@ -60,62 +58,188 @@
 
                 <div class="search-grid">
 
-                    <label for="projectName">프로젝트</label>
-                    <input type="text"
-                           id="projectName"
-                           th:field="*{projectName}"
-                           placeholder="프로젝트명">
+                    <div class="search-field">
+                        <label for="projectName">프로젝트</label>
+                        <input type="text"
+                               id="projectName"
+                               th:field="*{projectName}"
+                               placeholder="프로젝트명">
+                    </div>
 
-                    <label for="versionName">버전</label>
-                    <input type="text"
-                           id="versionName"
-                           th:field="*{versionName}"
-                           placeholder="버전명">
+                    <div class="search-field">
+                        <label for="versionName">버전</label>
+                        <input type="text"
+                               id="versionName"
+                               th:field="*{versionName}"
+                               placeholder="버전명">
+                    </div>
 
-                    <label for="teamName">그룹</label>
-                    <input type="text"
-                           id="teamName"
-                           th:field="*{teamName}"
-                           placeholder="그룹명">
+                    <div class="search-field filter-group">
+                        <label>그룹</label>
 
-                    <label for="title">테스트명</label>
-                    <input type="text"
-                           id="title"
-                           th:field="*{title}"
-                           placeholder="테스트명">
+                        <div class="filter-dropdown">
+                            <button type="button" class="filter-dropdown-btn">그룹 선택</button>
 
-                    <label for="statusCode">상태</label>
-                    <select id="statusCode" th:field="*{statusCode}">
-                        <option value="">전체</option>
-                        <option value="a001">예정</option>
-                        <option value="a002">진행중</option>
-                        <option value="a003">종료</option>
-                    </select>
+                            <div class="filter-check-list filter-dropdown-panel">
+                                <label class="filter-check-item"
+                                       th:each="group : ${groupList}">
+                                    <input type="checkbox"
+                                           name="teamNameList"
+                                           th:value="${group.groupName}"
+                                           th:checked="${testSearchVO.teamNameList != null and #lists.contains(testSearchVO.teamNameList, group.groupName)}">
+                                    <span th:text="${group.groupName}">그룹명</span>
+                                </label>
 
-                    <label for="testTypeCode">유형</label>
-                    <select id="testTypeCode" th:field="*{testTypeCode}">
-                        <option value="">전체</option>
-                        <option value="d001">기능</option>
-                        <option value="d002">UI/UX</option>
-                        <option value="d003">성능</option>
-                        <option value="d004">보안</option>
-                        <option value="d005">데이터</option>
-                        <option value="d006">기타</option>
-                    </select>
+                                <div th:if="${groupList == null or #lists.isEmpty(groupList)}"
+                                     class="filter-empty">
+                                    등록된 그룹이 없습니다.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
-                    <label for="priorityCode">우선순위</label>
-                    <select id="priorityCode" th:field="*{priorityCode}">
-                        <option value="">전체</option>
-                        <option value="c001">상</option>
-                        <option value="c002">중</option>
-                        <option value="c003">하</option>
-                    </select>
+                    <div class="search-field">
+                        <label for="title">테스트명</label>
+                        <input type="text"
+                               id="title"
+                               th:field="*{title}"
+                               placeholder="테스트명">
+                    </div>
 
-                    <label for="assigneeName">담당자</label>
-                    <input type="text"
-                           id="assigneeName"
-                           th:field="*{assigneeName}"
-                           placeholder="담당자명">
+                    <div class="search-field filter-group">
+                        <label>상태</label>
+
+                        <div class="filter-dropdown">
+                            <button type="button" class="filter-dropdown-btn">상태 선택</button>
+
+                            <div class="filter-check-list filter-dropdown-panel">
+                                <label class="filter-check-item">
+                                    <input type="checkbox"
+                                           name="statusCodeList"
+                                           value="a001"
+                                           th:checked="${testSearchVO.statusCodeList != null and #lists.contains(testSearchVO.statusCodeList, 'a001')}">
+                                    <span>예정</span>
+                                </label>
+
+                                <label class="filter-check-item">
+                                    <input type="checkbox"
+                                           name="statusCodeList"
+                                           value="a002"
+                                           th:checked="${testSearchVO.statusCodeList != null and #lists.contains(testSearchVO.statusCodeList, 'a002')}">
+                                    <span>진행중</span>
+                                </label>
+
+                                <label class="filter-check-item">
+                                    <input type="checkbox"
+                                           name="statusCodeList"
+                                           value="a003"
+                                           th:checked="${testSearchVO.statusCodeList != null and #lists.contains(testSearchVO.statusCodeList, 'a003')}">
+                                    <span>종료</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="search-field filter-group">
+                        <label>유형</label>
+
+                        <div class="filter-dropdown">
+                            <button type="button" class="filter-dropdown-btn">유형 선택</button>
+
+                            <div class="filter-check-list filter-dropdown-panel">
+                                <label class="filter-check-item">
+                                    <input type="checkbox"
+                                           name="testTypeCodeList"
+                                           value="d001"
+                                           th:checked="${testSearchVO.testTypeCodeList != null and #lists.contains(testSearchVO.testTypeCodeList, 'd001')}">
+                                    <span>기능</span>
+                                </label>
+
+                                <label class="filter-check-item">
+                                    <input type="checkbox"
+                                           name="testTypeCodeList"
+                                           value="d002"
+                                           th:checked="${testSearchVO.testTypeCodeList != null and #lists.contains(testSearchVO.testTypeCodeList, 'd002')}">
+                                    <span>UI/UX</span>
+                                </label>
+
+                                <label class="filter-check-item">
+                                    <input type="checkbox"
+                                           name="testTypeCodeList"
+                                           value="d003"
+                                           th:checked="${testSearchVO.testTypeCodeList != null and #lists.contains(testSearchVO.testTypeCodeList, 'd003')}">
+                                    <span>성능</span>
+                                </label>
+
+                                <label class="filter-check-item">
+                                    <input type="checkbox"
+                                           name="testTypeCodeList"
+                                           value="d004"
+                                           th:checked="${testSearchVO.testTypeCodeList != null and #lists.contains(testSearchVO.testTypeCodeList, 'd004')}">
+                                    <span>보안</span>
+                                </label>
+
+                                <label class="filter-check-item">
+                                    <input type="checkbox"
+                                           name="testTypeCodeList"
+                                           value="d005"
+                                           th:checked="${testSearchVO.testTypeCodeList != null and #lists.contains(testSearchVO.testTypeCodeList, 'd005')}">
+                                    <span>데이터</span>
+                                </label>
+
+                                <label class="filter-check-item">
+                                    <input type="checkbox"
+                                           name="testTypeCodeList"
+                                           value="d006"
+                                           th:checked="${testSearchVO.testTypeCodeList != null and #lists.contains(testSearchVO.testTypeCodeList, 'd006')}">
+                                    <span>기타</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="search-field filter-group">
+                        <label>우선순위</label>
+
+                        <div class="filter-dropdown">
+                            <button type="button" class="filter-dropdown-btn">우선순위 선택</button>
+
+                            <div class="filter-check-list filter-dropdown-panel">
+                                <label class="filter-check-item">
+                                    <input type="checkbox"
+                                           name="priorityCodeList"
+                                           value="c001"
+                                           th:checked="${testSearchVO.priorityCodeList != null and #lists.contains(testSearchVO.priorityCodeList, 'c001')}">
+                                    <span>상</span>
+                                </label>
+
+                                <label class="filter-check-item">
+                                    <input type="checkbox"
+                                           name="priorityCodeList"
+                                           value="c002"
+                                           th:checked="${testSearchVO.priorityCodeList != null and #lists.contains(testSearchVO.priorityCodeList, 'c002')}">
+                                    <span>중</span>
+                                </label>
+
+                                <label class="filter-check-item">
+                                    <input type="checkbox"
+                                           name="priorityCodeList"
+                                           value="c003"
+                                           th:checked="${testSearchVO.priorityCodeList != null and #lists.contains(testSearchVO.priorityCodeList, 'c003')}">
+                                    <span>하</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="search-field">
+                        <label for="assigneeName">담당자</label>
+                        <input type="text"
+                               id="assigneeName"
+                               th:field="*{assigneeName}"
+                               placeholder="담당자명">
+                    </div>
+
                 </div>
 
                 <div class="search-btn-area">
@@ -131,7 +255,6 @@
             </form>
         </section>
 
-        <!-- 목록 -->
         <section class="list-section">
             <div class="list-top">
                 <div class="section-title">테스트 목록</div>
@@ -171,20 +294,14 @@
 
                         <tr th:each="test : ${testList}">
                             <td class="id-cell">
-                                <a th:href="@{/project/{projectId}/tests/{testId}(
-                                        projectId=${projectId},
-                                        testId=${test.testId}
-                                   )}"
+                                <a th:href="@{/project/{projectId}/tests/{testId}(projectId=${projectId}, testId=${test.testId})}"
                                    th:text="${test.testId}">
                                     TEST_ID
                                 </a>
                             </td>
 
                             <td class="test-name-cell">
-                                <a th:href="@{/project/{projectId}/tests/{testId}(
-                                        projectId=${projectId},
-                                        testId=${test.testId}
-                                   )}"
+                                <a th:href="@{/project/{projectId}/tests/{testId}(projectId=${projectId}, testId=${test.testId})}"
                                    th:text="${test.title}">
                                     테스트명
                                 </a>
@@ -220,10 +337,7 @@
 
                             <td>
                                 <a th:if="${subscribeYn == 'Y' or test.createdBy == loginUserId}"
-                                   th:href="@{/project/{projectId}/tests/{testId}/edit(
-                                        projectId=${projectId},
-                                        testId=${test.testId}
-                                   )}"
+                                   th:href="@{/project/{projectId}/tests/{testId}/edit(projectId=${projectId}, testId=${test.testId})}"
                                    class="btn-row-edit">
                                     수정
                                 </a>
@@ -259,6 +373,35 @@
                     }
                 });
             }
+        });
+
+        document.addEventListener("click", function (event) {
+            const dropdownButton = event.target.closest(".filter-dropdown-btn");
+
+            if (dropdownButton) {
+                event.preventDefault();
+                event.stopPropagation();
+
+                const dropdown = dropdownButton.closest(".filter-dropdown");
+
+                document.querySelectorAll(".filter-dropdown").forEach(function (item) {
+                    if (item !== dropdown) {
+                        item.classList.remove("open");
+                    }
+                });
+
+                dropdown.classList.toggle("open");
+                return;
+            }
+
+            if (event.target.closest(".filter-dropdown-panel")) {
+                event.stopPropagation();
+                return;
+            }
+
+            document.querySelectorAll(".filter-dropdown").forEach(function (item) {
+                item.classList.remove("open");
+            });
         });
     </script>
 

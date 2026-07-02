@@ -59,11 +59,22 @@ public class UsersController {
     	return map;
     }
     
+    //연락처 중복체크
+    @GetMapping("/checkPhone")
+    @ResponseBody
+    public Map<String, Object> checkPhone(@RequestParam String phone){
+    	Map<String, Object> map = new HashMap<>();
+    	
+    	boolean duplicated = userService.checkPhone(phone);
+    	map.put("duplicated", duplicated);
+    	
+    	return map;
+    }
     
-    //임시 홈컨트롤 생성
+    
     @GetMapping("/")
     public String home() {
-    	return "users/home";
+    	return "users/usersLogin";
     }
     
     //김덕모 마이페이지

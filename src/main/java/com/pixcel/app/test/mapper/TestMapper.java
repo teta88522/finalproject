@@ -55,4 +55,6 @@ public interface TestMapper {
     // 기존 테스트-테스트케이스 매핑 삭제
     public int deleteTestCaseMapping(String testId);
     
+    public int selectProjectGroupCount(String projectId);
+    
 }
