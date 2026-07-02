@@ -54,4 +54,9 @@ public class NoticeEntity {
 	@OneToMany(mappedBy = "notice")
 	@Builder.Default
 	private List<PostEntity> posts = new ArrayList<>();
+
+	public void updateBoard(String boardName, String description){
+		this.boardName = boardName;
+		this.description = description;
+	}
 }

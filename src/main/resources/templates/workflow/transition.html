@@ -118,7 +118,8 @@
 
 						<div class="search-btn-area">
 							<a th:href="@{/workflow/transition}"
-								class="btn btn-custon-rounded-four btn-default filter-btn">
+								class="btn btn-custon-rounded-four btn-default filter-btn"
+								data-workflow-clear-draft="all">
 								초기화 </a>
 
 							<button type="submit"
@@ -318,7 +319,8 @@
 									closedYn=${searchVO.closedYn},
 									applyTargetCode=${searchVO.applyTargetCode}
 								)}"
-								class="btn btn-custon-rounded-four btn-default"> 초기화 </a>
+								class="btn btn-custon-rounded-four btn-default"
+								data-workflow-clear-draft="current"> 초기화 </a>
 
 							<button type="submit"
 								class="btn btn-custon-rounded-four btn-primary"
@@ -364,6 +366,16 @@
 								const filterDropdowns = Array
 										.from(document
 												.querySelectorAll('.filter-dropdown'));
+								const roleInput = document
+										.querySelector('.workflow-transition-form input[name="roleId"]');
+								const issueTypeInput = document
+										.querySelector('.workflow-transition-form input[name="issueTypeId"]');
+								const closedYnInput = document
+										.querySelector('.workflow-transition-form input[name="closedYn"]');
+								const applyTargetInput = document
+										.querySelector('.workflow-transition-form input[name="applyTargetCode"]');
+								const defaultTargetCode = 'j001';
+								const syncedTargetCodes = [ 'j002', 'j003' ];
 
 								function updateFilterSummary(dropdown) {
 									const checkedLabels = Array
@@ -426,6 +438,263 @@
 										}
 									});
 								});
+
+								function getInputValue(input) {
+									return input ? input.value || '' : '';
+								}
+
+								function getCurrentTargetCode() {
+									return getInputValue(applyTargetInput)
+											|| defaultTargetCode;
+								}
+
+								function getWorkflowDraftScopeKey() {
+									return [
+											'workflowTransitionDraft',
+											getInputValue(roleInput),
+											getInputValue(issueTypeInput),
+											getInputValue(closedYnInput) ]
+											.join('|');
+								}
+
+								function getWorkflowDraftKey(targetCode) {
+									return getWorkflowDraftScopeKey() + '|'
+											+ targetCode;
+								}
+
+								function getDefaultSyncKey() {
+									return getWorkflowDraftScopeKey()
+											+ '|defaultSync';
+								}
+
+								function readStoredValue(key) {
+									try {
+										return window.sessionStorage
+												.getItem(key);
+									} catch (error) {
+										return null;
+									}
+								}
+
+								function writeStoredValue(key, value) {
+									try {
+										window.sessionStorage.setItem(key,
+												value);
+									} catch (error) {
+										// 세션 저장소를 사용할 수 없는 환경에서는 화면 저장 없이 동작한다.
+									}
+								}
+
+								function removeStoredValue(key) {
+									try {
+										window.sessionStorage.removeItem(key);
+									} catch (error) {
+										// 세션 저장소를 사용할 수 없는 환경에서는 무시한다.
+									}
+								}
+
+								function readStoredSet(key) {
+									const storedValue = readStoredValue(key);
+
+									if (!storedValue) {
+										return null;
+									}
+
+									try {
+										const valueList = JSON
+												.parse(storedValue);
+										return Array.isArray(valueList) ? new Set(
+												valueList) : null;
+									} catch (error) {
+										return null;
+									}
+								}
+
+								function writeStoredSet(key, valueSet) {
+									writeStoredValue(key, JSON.stringify(Array
+											.from(valueSet)));
+								}
+
+								function readDefaultSyncState() {
+									const storedValue = readStoredValue(getDefaultSyncKey());
+
+									if (!storedValue) {
+										return {
+											checked : new Set(),
+											unchecked : new Set()
+										};
+									}
+
+									try {
+										const state = JSON.parse(storedValue);
+
+										return {
+											checked : new Set(Array
+													.isArray(state.checked) ? state.checked
+													: []),
+											unchecked : new Set(Array
+													.isArray(state.unchecked) ? state.unchecked
+													: [])
+										};
+									} catch (error) {
+										return {
+											checked : new Set(),
+											unchecked : new Set()
+										};
+									}
+								}
+
+								function writeDefaultSyncState(state) {
+									writeStoredValue(getDefaultSyncKey(), JSON
+											.stringify({
+												checked : Array
+														.from(state.checked),
+												unchecked : Array
+														.from(state.unchecked)
+											}));
+								}
+
+								function getCurrentCheckedSet() {
+									return new Set(transitionChecks.filter(
+											function(check) {
+												return check.checked;
+											}).map(function(check) {
+										return check.value;
+									}));
+								}
+
+								function persistCurrentTargetDraft() {
+									writeStoredSet(
+											getWorkflowDraftKey(getCurrentTargetCode()),
+											getCurrentCheckedSet());
+								}
+
+								function clearAllDraftsForCurrentScope() {
+									removeStoredValue(getDefaultSyncKey());
+									[ defaultTargetCode ].concat(
+											syncedTargetCodes).forEach(
+											function(targetCode) {
+												removeStoredValue(getWorkflowDraftKey(targetCode));
+											});
+								}
+
+								function clearCurrentTargetDraft() {
+									removeStoredValue(getWorkflowDraftKey(getCurrentTargetCode()));
+
+									if (getCurrentTargetCode() === defaultTargetCode) {
+										removeStoredValue(getDefaultSyncKey());
+									}
+								}
+
+								function updateTargetDraftIfPresent(targetCode,
+										changedChecks) {
+									const draftKey = getWorkflowDraftKey(targetCode);
+									const draftSet = readStoredSet(draftKey);
+
+									if (!draftSet) {
+										return;
+									}
+
+									changedChecks.forEach(function(check) {
+										if (!check.value) {
+											return;
+										}
+
+										if (check.checked) {
+											draftSet.add(check.value);
+											return;
+										}
+
+										draftSet.delete(check.value);
+									});
+
+									writeStoredSet(draftKey, draftSet);
+								}
+
+								function syncDefaultChecksToOwnerTargets(
+										changedChecks) {
+									if (getCurrentTargetCode() !== defaultTargetCode) {
+										return;
+									}
+
+									const syncState = readDefaultSyncState();
+
+									changedChecks.forEach(function(check) {
+										if (!check.value) {
+											return;
+										}
+
+										if (check.checked) {
+											syncState.checked.add(check.value);
+											syncState.unchecked
+													.delete(check.value);
+											return;
+										}
+
+										syncState.unchecked.add(check.value);
+										syncState.checked.delete(check.value);
+									});
+
+									writeDefaultSyncState(syncState);
+									syncedTargetCodes.forEach(function(
+											targetCode) {
+										updateTargetDraftIfPresent(targetCode,
+												changedChecks);
+									});
+								}
+
+								function applyStoredWorkflowState() {
+									const currentTargetCode = getCurrentTargetCode();
+
+									if (currentTargetCode !== defaultTargetCode) {
+										const syncState = readDefaultSyncState();
+
+										transitionChecks.forEach(function(check) {
+											if (syncState.checked
+													.has(check.value)) {
+												check.checked = true;
+											}
+
+											if (syncState.unchecked
+													.has(check.value)) {
+												check.checked = false;
+											}
+										});
+									}
+
+									const draftSet = readStoredSet(getWorkflowDraftKey(currentTargetCode));
+
+									if (!draftSet) {
+										return;
+									}
+
+									transitionChecks.forEach(function(check) {
+										check.checked = draftSet
+												.has(check.value);
+									});
+								}
+
+								const successMessage = document
+										.querySelector('.workflow-transition-page .page-message-success');
+
+								if (successMessage) {
+									clearAllDraftsForCurrentScope();
+								}
+
+								document.querySelectorAll('[data-workflow-clear-draft]')
+										.forEach(function(link) {
+											link
+													.addEventListener(
+															'click',
+															function() {
+																if (link.dataset.workflowClearDraft === 'all') {
+																	clearAllDraftsForCurrentScope();
+																	return;
+																}
+
+																clearCurrentTargetDraft();
+															});
+										});
 
 								function getEnabledTransitionChecks() {
 									return transitionChecks.filter(function(
@@ -516,6 +785,8 @@
 																	check.checked = allCheck.checked;
 																});
 
+														syncDefaultChecksToOwnerTargets(enabledChecks);
+														persistCurrentTargetDraft();
 														allCheck.indeterminate = false;
 														updateAllRowChecks();
 													});
@@ -536,6 +807,8 @@
 																			check.checked = rowCheck.checked;
 																		});
 
+																syncDefaultChecksToOwnerTargets(rowTransitionChecks);
+																persistCurrentTargetDraft();
 																rowCheck.indeterminate = false;
 																updateAllCheck();
 															});
@@ -547,11 +820,14 @@
 													.addEventListener(
 															'change',
 															function() {
+																syncDefaultChecksToOwnerTargets([ check ]);
+																persistCurrentTargetDraft();
 																updateRowCheck(check.dataset.rowKey);
 																updateAllCheck();
 															});
 										});
 
+								applyStoredWorkflowState();
 								updateAllRowChecks();
 								updateAllCheck();
 

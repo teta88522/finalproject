@@ -24,8 +24,8 @@
 				    type="button" 
 				    class="btn btn-default" 
 				    id="btnSettings"
-				    th:data-url="@{/project/{id}/roadmap/setting_list(id=${projectId})}">
-				    <i class="fas fa-cog"></i> 설정
+				    th:data-url="@{/project/{projectId}/roadmap/setting_create(projectId=${projectId})}">
+				    <i class="far fa-plus-square"></i> 버전 생성
 				</button>
             </div>
 
@@ -116,7 +116,7 @@
 									<div class="issue-list" th:if="${milestone.issueList != null}">
 									    <div class="issue-item" th:each="issue : ${milestone.issueList}" th:if="${issue.issueId != null}">
 									        <div class="issue-main" style="display: flex; align-items: center; gap: 10px;">
-									            <a th:href="@{/issues/detail(id=${issue.issueId})}" 
+									            <a th:href="@{/project/{projectId}/issues/{id}(projectId=${projectId},id=${issue.issueId})}" 
 									               class="issue-title hover-primary js-issue-title" 
 									               th:text="${issue.title}" style="text-decoration:none; color:#333;">일감 제목</a>
 									            <span class="status-badge dynamic-badge" 

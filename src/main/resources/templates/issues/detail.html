@@ -149,6 +149,8 @@
 											class="required dynamic-required">*</span></span>
 										<input type="number" min="0" max="99999" class="form-control"
 											th:field="*{estimatedHours}" th:disabled="${!canUpdateIssue}">
+										<span class="issues-estimated-total"
+											th:text="|총 소요 ${timeLogTotalHours}시간|">총 소요 0시간</span>
 									</div>
 
 									<div class="issues-info-item dynamic-field"
@@ -246,6 +248,8 @@
 										소요시간
 										<strong id="issueTimelogTabCount" th:text="${timeLogTotalCount}">0</strong>
 									</button>
+									<a class="btn btn-custon-rounded-four btn-primary btn-xs issues-timelog-top-action"
+										th:href="@{/project/{projectId}/issues/timelog/create(projectId=${selectedProjectId}, issueId=${issue.issueId})}">소요시간 등록</a>
 								</div>
 
 								<div class="issues-activity-panel is-active"
@@ -339,6 +343,27 @@
 								<div class="issues-side-info">
 									<span>상태</span>
 									<strong th:text="${issue.issueStatusName}">New</strong>
+								</div>
+
+								<div class="issues-child-box">
+									<div class="issues-child-title">
+										<span>하위 일감</span>
+										<strong th:text="|${#lists.size(childIssueList)}건|">0건</strong>
+									</div>
+									<div th:if="${#lists.isEmpty(childIssueList)}" class="issues-child-empty">
+										등록된 하위 일감이 없습니다.
+									</div>
+									<a th:each="child : ${childIssueList}" class="issues-child-item"
+										th:href="@{/project/{projectId}/issues/{issueId}(projectId=${selectedProjectId}, issueId=${child.issueId})}">
+										<span class="issues-child-main">
+											<strong th:text="${child.displayIssueNo}">#0001</strong>
+											<span th:text="${child.title}">하위 일감 제목</span>
+										</span>
+										<span class="issues-child-meta">
+											<span th:text="${child.issueStatusName != null ? child.issueStatusName : '-'}">상태</span>
+											<span th:text="|${child.progressRate != null ? child.progressRate : 0}%|">0%</span>
+										</span>
+									</a>
 								</div>
 
 								<div class="form-group issues-reason-group" th:if="${canUpdateIssue}">

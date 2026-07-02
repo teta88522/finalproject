@@ -44,11 +44,6 @@
 					등록해주세요.</div>
 
 				<div class="workflow-summary-card">
-					<div class="workflow-summary-card-title">
-						<h4>업무흐름 전체조회</h4>
-						<p>교차 셀의 숫자는 해당 일감유형과 역할에 설정된 상태전환 개수입니다.</p>
-					</div>
-
 					<div
 						th:if="${!#lists.isEmpty(issueTypeList) and !#lists.isEmpty(roleList)}"
 						class="workflow-summary-table-wrap">

@@ -1,6 +1,7 @@
 package com.pixcel.app.users.mapper;
 
 import java.util.List;
+import java.util.Map;
 
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -15,6 +16,8 @@ public interface userMapper {
 	//아이디 중복 확인(회원가입시)
 	public int checkLoginId(String loginId);
 	
+	public int checkPhone(String phone);
+	
 	//로그인
 	public userServiceVO selectUserByLoginId(String loginId);
 
@@ -23,4 +26,7 @@ public interface userMapper {
 	public List<ProjectVO> selectMyProjectList(@Param("userId") String userId);
 	public int updateUser(userServiceVO userVO);
 	public int updatePassword(@Param("userId") String userId,@Param("password")String password);
+	public int updateSubscribeStatus(String email);
+	public List<ProjectVO> getFilteredProjects(Map<String, Object> params);
+	public int updateUnsubscribeStatus(String userId);
 }

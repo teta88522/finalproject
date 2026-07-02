@@ -1,5 +1,7 @@
 package com.pixcel.app.users.service;
 
+import java.util.Date;
+
 import lombok.Data;
 
 @Data
@@ -12,5 +14,8 @@ public class userServiceVO {
 	private String phone;
 	private String authYN;
 	private String subscribeYN;
+	private String identityVerifiedYn;
+	private Date identityVerifiedAt;
+	private Date subscribeAt;
 	
 }

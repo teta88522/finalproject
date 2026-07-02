@@ -15,6 +15,8 @@ import com.pixcel.app.notice.repository.PostRepository;
 import com.pixcel.app.notice.service.PostRequestDTO;
 import com.pixcel.app.notice.service.PostSearchDTO;
 import com.pixcel.app.notice.service.PostService;
+import com.pixcel.app.file.service.FileService;
+import com.pixcel.app.file.service.FileVO;
 
 import lombok.RequiredArgsConstructor;
 
@@ -23,6 +25,8 @@ import lombok.RequiredArgsConstructor;
 public class PostServiceImpl implements PostService{
 	private final PostRepository postRepository;
 	private final PostMapper postMapper;
+	private final FileService fileService;
+    
 	
 	@Override
     public Page<PostRequestDTO> getPostListByBoardId(String boardId, PostSearchDTO searchDTO, Pageable pageable) {
@@ -48,11 +52,8 @@ public class PostServiceImpl implements PostService{
         // 2. Repository를 통해 가장 최근 ID를 조회하고, 다음 시퀀스를 생성
         String nextPostId = postRepository.findLatestPostIdByPrefix(prefix)
             .map(post -> {
-                // "POST_2607_" 이후의 숫자(예: "0001")만 잘라내기
                 String lastSeqStr = post.getPostId().substring(prefix.length());
-                // 숫자로 변환 후 1 증가
                 int nextSeq = Integer.parseInt(lastSeqStr) + 1;
-                // 다시 4자리 문자열 포맷으로 변환하여 prefix와 결합
                 return prefix + String.format("%04d", nextSeq);
             })
             // 조회된 ID가 없으면 (해당 월의 첫 게시글) "0001"로 시작
@@ -70,5 +71,61 @@ public class PostServiceImpl implements PostService{
                 
         // 4. 저장
         postRepository.save(post);
+        dto.setPostId(nextPostId);
     }
+	
+	@Override
+    @Transactional
+	public PostRequestDTO getPostDetail(String postId) {
+		PostEntity post = postRepository.findById(postId).orElseThrow(()-> new RuntimeException("게시글을 찾을 수 없습니다"));
+		
+        post.increaseViewCount();
+		return PostRequestDTO.builder()
+	            .postId(post.getPostId())
+	            .boardId(post.getBoardId()) // ⚠️ boardId 필드 바인딩 누락 복구
+	            .title(post.getTitle())
+	            .content(post.getContent())
+	            .createdBy(post.getCreatedBy())
+	            .createdAt(post.getCreatedAt())
+	            .viewCount(post.getViewCount())
+	            .userName(post.getUser() != null ? post.getUser().getUserName() : "알 수 없음")
+	            .build();
+	}
+
+    @Override
+    @Transactional
+    public void updatePost(PostRequestDTO dto, List<String> deleteFileIds){
+        PostEntity post = postRepository.findById(dto.getPostId()).orElseThrow(() -> new RuntimeException("게시글을 찾을 수 없습니다"));
+        post.updatePost(dto.getTitle(), dto.getContent(), dto.getCreatedBy());
+        
+        // 삭제할 파일들이 넘어오면 DB에서 제거
+        if (deleteFileIds != null && !deleteFileIds.isEmpty()) {
+            for (String fileId : deleteFileIds) {
+                postMapper.deletePostFile(dto.getPostId(), fileId);
+            }
+        }
+    }
+
+    @Override
+    @Transactional
+    public void deletePost(String postId) {
+        // 1. 게시글에 연동된 모든 첨부파일 삭제
+        List<FileVO> files = fileService.selectAll(postId, null);
+        if (files != null && !files.isEmpty()) {
+            for (FileVO file : files) {
+                postMapper.deletePostFile(postId, file.getFileId());
+            }
+        }
+        // 2. 게시글 본문 삭제 (벌크 쿼리 즉시 반영)
+        postRepository.deletePostByPostId(postId);
+    }
+
+    @Override
+	public List<PostRequestDTO> getLatestPosts(String projectId) {
+		return postMapper.selectLatestPosts(projectId);
+	}
+    @Override
+	public List<PostRequestDTO> getPopularPosts(String projectId) {
+		return postMapper.selectPopularPosts(projectId);
+	}
 }

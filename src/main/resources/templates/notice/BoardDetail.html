@@ -1,30 +1,35 @@
+<!-- 2026-07-01 -->
 <!doctype html>
 <html xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{common/layouts/default_layout}">
 <head>
     <meta charset="UTF-8">
-    <!-- 디자인 통일을 위한 전용 CSS 연결 -->
     <link rel="stylesheet" th:href="@{/css/notice/board_detail.css}">
 </head>
 <body>
 <div layout:fragment="Content">
     
-    <!-- 1. 상단 타이틀 및 글 등록 버튼 영역 -->
-    <div class="board-header">
-        <h2 th:text="${board.boardName}">게시판 이름</h2>
-        <a th:href="@{/project/{projectId}/notice/PostCreate(projectId=${projectId}, boardId=${board.boardId})}" class="btn-primary">글 등록</a>
-    </div>
+    <div class="board-detail-container">
+    
+        <!-- 1. 상단 타이틀 및 글 등록 버튼 영역 -->
+        <div class="board-header">
+            <h2 th:text="${board.boardName}">게시판 이름</h2>
+            <div class="board-header-actions">
+                <a th:href="@{/project/{projectId}/notice/BoardList(projectId=${projectId})}" class="btn-secondary">목록</a>
+                <a th:href="@{/project/{projectId}/notice/PostCreate(projectId=${projectId}, boardId=${board.boardId})}" class="btn-primary">글 등록</a>
+            </div>
+        </div>
 
-    <!-- 2. 검색 조건 필터 박스 (사진과 동일한 레이아웃) -->
+        <!-- 2. 검색 조건 필터 박스 (완벽한 칼대칭 정렬) -->
     <div class="search-filter-box">
         <h3 class="filter-title">검색조건</h3>
         <form id="searchForm" th:action="@{/project/{projectId}/notice/BoardDetail(projectId=${projectId})}" method="get">
             <input type="hidden" name="boardId" th:value="${board.boardId}">
             
-            <div class="filter-grid">
-                <!-- 기간 필터 -->
-                <div class="filter-item">
+            <div class="filter-grid-inline">
+                <!-- 1. 날짜 필터 -->
+                <div class="filter-item filter-date">
                     <label>날짜</label>
                     <div class="date-range">
                         <input type="date" name="startDate" id="startDate" class="form-control">
@@ -32,68 +37,95 @@
                         <input type="date" name="endDate" id="endDate" class="form-control">
                     </div>
                 </div>
-                <!-- 검색어 필터 -->
-                <div class="filter-item">
+                <!-- 2. 정렬 필터 -->
+                <div class="filter-item filter-sort">
+                    <label>정렬기준</label>
+                    <select name="sortBy" class="form-control">
+                        <option value="latest">최신순</option>
+                        <option value="views">조회수순</option>
+                    </select>
+                </div>
+                <!-- 3. 검색어 필터 -->
+                <div class="filter-item filter-search">
                     <label>검색조건</label>
                     <div class="search-input-group">
                         <select name="searchType" class="form-control select-type">
-                            <option value="title">제목</option>
-                            <option value="author">작성자</option>
+                            <option value="title" th:selected="${searchDTO != null and searchDTO.searchType == 'title'}">제목</option>
+                            <option value="author" th:selected="${searchDTO != null and searchDTO.searchType == 'author'}">작성자</option>
                         </select>
-                        <input type="text" name="keyword" class="form-control input-keyword" placeholder="검색어를 입력하세요">
+                        <input type="text" name="keyword" th:value="${searchDTO != null ? searchDTO.keyword : ''}" class="form-control input-keyword" placeholder="검색어를 입력하세요">
                     </div>
                 </div>
-            </div>
-            
-            <div class="filter-actions">
-                <button type="button" class="btn-reset" onclick="resetSearch()">초기화</button>
-                <button type="submit" class="btn-search">검색</button>
+                <!-- 4. 인라인 버튼 영역 -->
+                <div class="filter-item filter-actions-inline">
+                    <label>&nbsp;</label>
+                    <div class="actions-group">
+                        <button type="button" class="btn-reset" onclick="resetSearch()">초기화</button>
+                        <button type="submit" class="btn-search">검색</button>
+                    </div>
+                </div>
             </div>
         </form>
     </div>
 
-    <!-- 3. 게시글 목록 테이블 -->
-    <div class="table-container">
-        <table class="board-table">
-            <thead>
-                <tr>
-                    <th width="10%">번호</th>
-                    <th width="45%">제목</th>
-                    <th width="15%">작성자</th>
-                    <th width="20%">날짜</th>
-                    <th width="10%">조회수</th>
-                </tr>
-            </thead>
-<tbody>
-    <!-- 1. postList.content 가 아니라 postPage.content 로 수정 -->
-    <tr th:each="post : ${postPage.content}">
-        <td th:text="${post.postId}">1</td>
-        <td class="text-left">
-            <a th:href="@{/project/{projectId}/notice/post/{postId}(projectId=${projectId}, postId=${post.postId})}" th:text="${post.title}">게시글 제목</a>
-            <!-- 2. DTO에 없는 commentCount 호출 부분 완전 삭제 -->
-        </td>
-        <td th:text="${post.createdBy}">홍길동</td>
-        <td th:text="${#temporals.format(post.createdAt, 'yyyy-MM-dd')}">2026-07-01</td>
-        <td th:text="${post.viewCount != null ? post.viewCount : 0}">15</td>
-    </tr>
-    <!-- 추가: 게시글이 없을 때 보여줄 화면 -->
-    <tr th:if="${#lists.isEmpty(postPage.content)}">
-        <td colspan="5" style="text-align: center; padding: 20px;">등록된 게시글이 없습니다.</td>
-    </tr>
-</tbody>
-        </table>
-    </div>
+        <!-- 3. 게시글 목록 테이블 -->
+        <div class="table-container">
+            <table class="board-table">
+                <thead>
+                    <tr>
+                        <th width="10%">번호</th>
+                        <th width="45%">제목</th>
+                        <th width="15%">작성자</th>
+                        <th width="20%">날짜</th>
+                        <th width="10%">조회수</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="post, stat : ${postPage.content}">
+                 
+                        <td th:text="${postPage.totalElements - (postPage.number * postPage.size) - stat.index}">10</td>
+                        <td class="text-left">
+                            <a th:href="@{/project/{projectId}/notice/post_detail(projectId=${projectId}, postId=${post.postId}, boardId=${board.boardId})}" 
+                               th:text="${post.title}">게시글 제목</a>
+                        </td>
+                        <td th:text="${post.userName}">이름</td>
+                        <td th:text="${#temporals.format(post.createdAt, 'yyyy-MM-dd')}">yyy-MM-dd</td>
+                        <td th:text="${post.viewCount != null ? post.viewCount : 0}">01</td>
+                    </tr>
+                    <!-- 추가: 게시글이 없을 때 보여줄 화면 -->
+                    <tr th:if="${#lists.isEmpty(postPage.content)}">
+                        <td colspan="5" style="text-align: center; padding: 20px;">등록된 게시글이 없습니다.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
 
-    <!-- 4. 페이징 영역 (사진 디자인과 동일하게 구성) -->
-    <div class="pagination-container">
-        <ul class="pagination">
-            <li><a href="#" class="page-nav">이전</a></li>
-            <!-- JPA 연동 후 th:each로 번호 반복 출력 예정 -->
-            <li><a href="#" class="page-num active">1</a></li>
-            <li><a href="#" class="page-num">2</a></li>
-            <li><a href="#" class="page-num">3</a></li>
-            <li><a href="#" class="page-nav">다음</a></li>
-        </ul>
+        <!-- 4. 페이징 영역 (사진 디자인과 동일하게 구성) -->
+        <div class="pagination-container" th:if="${postPage.totalPages > 0}">
+            <ul class="pagination">
+                <!-- 이전 버튼 -->
+                <li th:classappend="${postPage.first} ? 'disabled'">
+                    <a th:href="@{/project/{projectId}/notice/BoardDetail(projectId=${projectId}, boardId=${board.boardId}, page=${postPage.number - 1})}" 
+                       class="page-nav">이전</a>
+                </li>
+
+                <!-- 페이지 번호 반복 생성 (시작 페이지 ~ 끝 페이지) -->
+                <!-- 예: 현재 페이지 기준 좌우 2개씩 보여줌 -->
+                <li th:each="pageNum : ${#numbers.sequence(0, postPage.totalPages - 1)}"
+                    th:if="${pageNum >= postPage.number - 2 and pageNum <= postPage.number + 2}">
+                    <a th:href="@{/project/{projectId}/notice/BoardDetail(projectId=${projectId}, boardId=${board.boardId}, page=${pageNum})}" 
+                       th:text="${pageNum + 1}"
+                       th:classappend="${pageNum == postPage.number} ? 'active'"
+                       class="page-num">1</a>
+                </li>
+
+                <!-- 다음 버튼 -->
+                <li th:classappend="${postPage.last} ? 'disabled'">
+                    <a th:href="@{/project/{projectId}/notice/BoardDetail(projectId=${projectId}, boardId=${board.boardId}, page=${postPage.number + 1})}" 
+                       class="page-nav">다음</a>
+                </li>
+            </ul>
+        </div>
     </div>
 
 </div>

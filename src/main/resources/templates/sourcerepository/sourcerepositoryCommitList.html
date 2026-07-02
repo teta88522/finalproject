@@ -18,19 +18,16 @@
 						th:text="'총 ' + ${totalElements} + '개 커밋'">총 0개 커밋</div>
 				</div>
 				<div class="list-header-meta" th:text="'Branch: ' + ${branch}">Branch:
-					master</div>
+					main</div>
 			</div>
 
-			<!-- Controls -->
+			<!-- Controls - ✅ select에 ID 추가됨 -->
 			<div class="list-controls">
 				<form method="get" style="display: flex; gap: 10px; width: 100%;">
-					<select name="branch" onchange="this.form.submit()">
-						<option value="master" th:selected="${branch == 'master'}">📌
-							master</option>
-						<option value="develop" th:selected="${branch == 'develop'}">🔧
-							develop</option>
-						<option value="main" th:selected="${branch == 'main'}">⭐
-							main</option>
+					<select id="branchSelect" name="branch"
+						onchange="this.form.submit()"
+						style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+						<option th:value="${branch}" th:text="${branch}"></option>
 					</select>
 					<button type="submit">조회</button>
 				</form>
@@ -50,10 +47,10 @@
 							<span>✍️</span> <span th:text="${commit.authorName}">John
 								Doe</span>
 						</div>
-						<div th:if="${commit.issueId and commit.issueId != '-'}"
+						<div th:if="${commit.issueId != null and commit.issueId != '-'}"
 							class="list-commit-issue" th:text="'#' + ${commit.issueId}">
 							#123</div>
-						<div th:if="!${commit.issueId} or ${commit.issueId == '-'}"
+						<div th:if="${commit.issueId == null or commit.issueId == '-'}"
 							class="list-commit-issue none">이슈 없음</div>
 					</div>
 
@@ -95,7 +92,38 @@
 					class="disabled">다음 →</span>
 			</div>
 		</div>
-	</div>
-</body>
 
+		<!-- ✅ 동적 branch 로드 JavaScript -->
+		<!-- ✅✅ layout:fragment="Content" 안쪽으로 이동: Thymeleaf Layout Dialect는 fragment 밖의
+		     내용을 최종 렌더링에서 제외시켜서, 예전 위치(fragment 밖)에서는 이 스크립트가
+		     브라우저에 아예 전달되지 않아 /api/branches가 영영 호출되지 않던 문제가 있었음. -->
+		<script>
+		document.addEventListener('DOMContentLoaded', function() {
+		    const projectId = '[[${projectId}]]';
+		    const currentBranch = '[[${branch}]]';
+		    
+		    fetch(`/project/${projectId}/sourcerepository/api/branches`)
+		        .then(response => response.json())
+		        .then(data => {
+		            const select = document.getElementById('branchSelect');
+		            if (!select) {
+		                console.error('branchSelect element not found');
+		                return;
+		            }
+		            select.innerHTML = '';
+		            
+		            data.forEach(branch => {
+		                const option = document.createElement('option');
+		                option.value = branch;
+		                option.textContent = branch;
+		                if (branch === currentBranch) option.selected = true;
+		                select.appendChild(option);
+		            });
+		        })
+		        .catch(error => console.error('Error loading branches:', error));
+		});
+		</script>
+	</div>
+
+</body>
 </html>

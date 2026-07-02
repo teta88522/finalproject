@@ -113,6 +113,18 @@ public class IssueTypeServiceImpl implements IssueTypeService {
 		return trimmedValue.isEmpty() ? null : trimmedValue;
 	}
 
+	private List<String> normalizeProjectIdList(List<String> projectIdList) {
+		if (projectIdList == null || projectIdList.isEmpty()) {
+			return Collections.emptyList();
+		}
+
+		return projectIdList.stream()
+				.map(this::trimToNull)
+				.filter(projectId -> projectId != null)
+				.distinct()
+				.collect(Collectors.toList());
+	}
+
 	// 일감유형별 표준 항목 사용 여부 요약 목록을 조회한다.
 	@Override
 	public List<IssueTypeVO> getIssueTypeSummaryList(IssueTypeVO searchVO) {
@@ -134,6 +146,7 @@ public class IssueTypeServiceImpl implements IssueTypeService {
 		}
 
 		issueType.setProjectIdList(issueTypeMapper.selectAppliedProjectIdList(issueTypeId, userId));
+		issueType.setUsedProjectIdList(issueTypeMapper.selectIssueTypeUsedProjectIdList(issueTypeId, userId));
 		applyFieldSettingList(issueType, issueTypeMapper.selectFieldSettingListByIssueType(issueTypeId, userId));
 
 		return issueType;
@@ -173,6 +186,7 @@ public class IssueTypeServiceImpl implements IssueTypeService {
 
 		issueType.setUserId(userId);
 		issueType.setRoadmapYn(null);
+		issueType.setProjectIdList(normalizeProjectIdList(issueType.getProjectIdList()));
 
 		validateIssueType(issueType);
 		validateFieldSetting(issueType);
@@ -187,12 +201,44 @@ public class IssueTypeServiceImpl implements IssueTypeService {
 	// 기존 일감유형을 복사하여 신규 일감유형으로 등록한다.
 	@Override
 	@Transactional
+	public void updateIssueType(IssueTypeVO issueType, String userId) {
+		validateUserId(userId);
+
+		if (issueType == null || trimToNull(issueType.getIssueTypeId()) == null) {
+			throw new IllegalArgumentException("수정할 일감유형 정보가 없습니다.");
+		}
+
+		issueType.setUserId(userId);
+		issueType.setRoadmapYn(null);
+		issueType.setIssueTypeId(trimToNull(issueType.getIssueTypeId()));
+		issueType.setProjectIdList(normalizeProjectIdList(issueType.getProjectIdList()));
+
+		validateIssueType(issueType);
+		validateFieldSetting(issueType);
+		validateIssueTypeUpdateCondition(issueType);
+
+		int updateCount = issueTypeMapper.updateIssueType(issueType);
+		if (updateCount == 0) {
+			throw new IllegalArgumentException("수정할 일감유형이 없습니다.");
+		}
+
+		boolean issueTypeUsedByIssue = isIssueTypeUsedByIssue(issueType.getIssueTypeId(), userId);
+		updateIssueTypeProjectList(issueType, userId);
+		if (!issueTypeUsedByIssue) {
+			issueTypeMapper.deleteIssueTypeFieldSettingByIssueTypeId(issueType.getIssueTypeId(), userId);
+			insertIssueTypeFieldSettingListBulk(issueType);
+		}
+	}
+
+	@Override
+	@Transactional
 	public void copyIssueType(IssueTypeVO issueType, String userId) {
 		validateUserId(userId);
 
 		issueType.setUserId(userId);
 		issueType.setIssueTypeId(null);
 		issueType.setRoadmapYn(null);
+		issueType.setProjectIdList(normalizeProjectIdList(issueType.getProjectIdList()));
 
 		validateIssueType(issueType);
 		validateFieldSetting(issueType);
@@ -251,6 +297,78 @@ public class IssueTypeServiceImpl implements IssueTypeService {
 	}
 
 	// 일감유형 적용 프로젝트를 등록한다.
+	private void validateIssueTypeUpdateCondition(IssueTypeVO issueType) {
+		IssueTypeVO validation = issueTypeMapper.selectIssueTypeUpdateValidation(issueType);
+
+		if (validation == null || validation.getInitialStatusCount() == null
+				|| validation.getInitialStatusCount() == 0) {
+			throw new IllegalArgumentException("선택한 초기 상태를 사용할 수 없습니다.");
+		}
+
+		if (validation.getDuplicateCount() != null && validation.getDuplicateCount() > 0) {
+			throw new IllegalArgumentException("이미 사용 중인 일감유형명입니다.");
+		}
+
+		List<String> projectIdList = issueType.getProjectIdList();
+
+		if (projectIdList != null && !projectIdList.isEmpty()) {
+			Set<String> uniqueProjectIdSet = new HashSet<>(projectIdList);
+			int selectedProjectCount = validation.getSelectedProjectCount() == null ? 0
+					: validation.getSelectedProjectCount();
+
+			if (selectedProjectCount != uniqueProjectIdSet.size()) {
+				throw new IllegalArgumentException("선택한 프로젝트 중 사용할 수 없는 프로젝트가 있습니다.");
+			}
+		}
+	}
+
+	private void updateIssueTypeProjectList(IssueTypeVO issueType, String userId) {
+		List<String> currentProjectIdList = issueTypeMapper.selectAppliedProjectIdList(issueType.getIssueTypeId(),
+				userId);
+		if (currentProjectIdList == null) {
+			currentProjectIdList = Collections.emptyList();
+		}
+
+		List<String> selectedProjectIdList = issueType.getProjectIdList() == null ? Collections.emptyList()
+				: issueType.getProjectIdList();
+		Set<String> selectedProjectIdSet = new HashSet<>(selectedProjectIdList);
+
+		List<String> removedProjectIdList = currentProjectIdList.stream()
+				.filter(projectId -> !selectedProjectIdSet.contains(projectId))
+				.collect(Collectors.toList());
+
+		if (!removedProjectIdList.isEmpty()) {
+			int usedCount = issueTypeMapper.countIssueTypeUsedInProjects(issueType.getIssueTypeId(), userId,
+					removedProjectIdList);
+
+			if (usedCount > 0) {
+				throw new IllegalArgumentException("이미 일감에서 사용 중인 프로젝트에서는 이 일감유형을 해제할 수 없습니다.");
+			}
+
+			issueTypeMapper.deleteIssueTypeProjectByProjectIdList(issueType.getIssueTypeId(), userId,
+					removedProjectIdList);
+		}
+
+		Set<String> currentProjectIdSet = new HashSet<>(currentProjectIdList);
+		List<String> addedProjectIdList = selectedProjectIdList.stream()
+				.filter(projectId -> !currentProjectIdSet.contains(projectId))
+				.collect(Collectors.toList());
+
+		if (addedProjectIdList.isEmpty()) {
+			return;
+		}
+
+		IssueTypeVO insertTarget = new IssueTypeVO();
+		insertTarget.setIssueTypeId(issueType.getIssueTypeId());
+		insertTarget.setProjectIdList(addedProjectIdList);
+		insertIssueTypeProjectListBulk(insertTarget);
+	}
+
+	private boolean isIssueTypeUsedByIssue(String issueTypeId, String userId) {
+		List<String> usedProjectIdList = issueTypeMapper.selectIssueTypeUsedProjectIdList(issueTypeId, userId);
+		return usedProjectIdList != null && !usedProjectIdList.isEmpty();
+	}
+
 	private void insertIssueTypeProjectList(IssueTypeVO issueType) {
 
 		if (issueType.getProjectIdList() == null || issueType.getProjectIdList().isEmpty()) {

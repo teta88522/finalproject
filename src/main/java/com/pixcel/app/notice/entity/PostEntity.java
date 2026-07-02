@@ -3,6 +3,7 @@ package com.pixcel.app.notice.entity;
 import java.time.LocalDateTime;
 
 import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.domain.Persistable;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import jakarta.persistence.Column;
@@ -25,7 +26,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
-public class PostEntity {
+public class PostEntity implements Persistable<String> {
 	@Id
 	@Column(name = "POST_ID")
 	private String postId;
@@ -48,7 +49,13 @@ public class PostEntity {
 	@CreatedDate
 	@Column(name = "CREATED_AT")
 	private LocalDateTime createdAt;
+
+	@Column(name = "UPDATED_AT")
+	private LocalDateTime updatedAt;
 	
+	@Column(name = "CREATE_By")
+	private String createBy;
+
 	@ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "BOARD_ID", insertable = false, updatable = false)
     private NoticeEntity notice;
@@ -56,4 +63,26 @@ public class PostEntity {
 	@ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "CREATED_BY", referencedColumnName = "USER_ID", insertable = false, updatable = false)
     private UserEntity user;
+
+	@Override
+    public String getId() {
+        return this.postId;
+    }
+
+	
+    @Override
+    public boolean isNew() {
+        return true; 
+    }
+
+	public void increaseViewCount() {
+        this.viewCount = (this.viewCount != null ? this.viewCount : 0) + 1;
+    }
+
+	public void updatePost(String title, String content, String modifierId) {
+        this.title = title;
+        this.content = content;
+        this.createBy = modifierId;
+        this.updatedAt = LocalDateTime.now();
+    }
 }

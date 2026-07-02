@@ -1,3 +1,4 @@
+<!-- 2026-07-01 -->
 <!doctype html>
 <html xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
@@ -22,69 +23,106 @@
                 </div>
             </div>
 
-            <div class="dashboard-section">
-                <h3 class="section-title">게시판 목록</h3>
-                <div class="table-responsive">
-                    <table class="board-table">
-                        <colgroup>
-                            <col style="width: 25%;">
-                            <col style="width: 45%;">
-                            <col style="width: 15%;">
-                            <col style="width: 15%;">
-                        </colgroup>
-                        <thead>
-                            <tr>
-                                <th>게시판</th>
-                                <th>설명</th>
-                                <th>글 수</th>
-                                <th>생성자</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr th:each="board : ${boardList}">
-                                <td>
-                                    <a th:href="@{/project/{projectId}/notice/BoardDetail(projectId=${projectId}, boardId=${board.boardId})}"class="board-name-link">
-                                   
-                                        <span th:text="${board.boardName}">자유게시판</span>
-                                    </a>
-                                </td>
-                                <td class="text-muted" th:text="${board.description}">설명입니다.</td>
-                                <td class="text-center text-muted">-</td>
-                                <td class="text-center">
-                    				<span class="text-muted" th:text="${board.userName}">홍길동</span>
-               					 </td>
-                            </tr>
-                            
-                            <tr th:if="${#lists.isEmpty(boardList)}">
-                                <td colspan="4" class="empty-state">
-                                    생성된 게시판이 없습니다. 우측 상단의 '새 게시판' 버튼을 눌러보세요!
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div class="dashboard-widgets">
-                <div class="widget-card">
-                    <h3 class="section-title">최신 게시글</h3>
-                    <div class="widget-content">
-                        <div class="empty-widget">
-                            <i class="far fa-folder-open"></i>
-                            <p>아직 등록된 게시글이 없습니다.</p>
-                        </div>
-                    </div>
-                </div>
+            <!-- 2-Column 레이아웃 분할 -->
+            <div class="dashboard-content-layout">
                 
-                <div class="widget-card">
-                    <h3 class="section-title">인기 게시글 (준비중)</h3>
-                    <div class="widget-content">
-                        <div class="empty-widget">
-                            <i class="fas fa-chart-line"></i>
-                            <p>데이터가 모이면 보여드릴게요!</p>
+                <!-- 좌측 영역: 게시판 목록 -->
+                <div class="dashboard-main-column">
+                    <div class="dashboard-section">
+                        <h3 class="section-title">게시판 목록</h3>
+                        <div class="table-responsive">
+                            <table class="board-table">
+                                <colgroup>
+                                    <col style="width: 20%;">
+                                    <col style="width: 40%;">
+                                    <col style="width: 10%;">
+                                    <col style="width: 15%;">
+                                    <col style="width: 15%;">
+                                </colgroup>
+                                <thead>
+                                    <tr>
+                                        <th>게시판</th>
+                                        <th>설명</th>
+                                        <th>글 수</th>
+                                        <th>생성자</th>
+                                        <th>관리</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="board : ${boardList}">
+                                        <td>
+                                            <a th:href="@{/project/{projectId}/notice/BoardDetail(projectId=${projectId}, boardId=${board.boardId})}" class="board-name-link">
+                                                <span th:text="${board.boardName}">자유게시판</span>
+                                            </a>
+                                        </td>
+                                        <td class="text-muted" th:text="${board.description}">설명입니다.</td>
+                                        <td class="text-center text-muted" th:text="${board.postCount != null ? board.postCount : 0}">0</td>
+                                        <td class="text-center">
+                                            <span class="text-muted" th:text="${board.userName}">홍길동</span>
+                                        </td>
+                                        <td class="text-center">
+                                            <a th:href="@{/project/{projectId}/notice/BoardUpdate(projectId=${projectId}, boardId=${board.boardId})}" class="btn-manage-link">⚙️ 관리</a>
+                                        </td>
+                                    </tr>
+                                    
+                                    <tr th:if="${#lists.isEmpty(boardList)}">
+                                        <td colspan="5" class="empty-state">
+                                            생성된 게시판이 없습니다. 우측 상단의 '새 게시판' 버튼을 눌러보세요!
+                                        </td>
+                                    </tr>
+                                </tbody>
+                             </table>
                         </div>
                     </div>
                 </div>
+
+                <!-- 우측 영역: 사이드바 위젯 -->
+                <div class="dashboard-side-column">
+                    <div class="widget-card">
+                        <h3 class="section-title">최신 게시글</h3>
+                        <div class="widget-content">
+                            <ul class="widget-list" th:if="${latestPosts != null and not #lists.isEmpty(latestPosts)}">
+                                <li class="widget-item" th:each="post : ${latestPosts}">
+                                    <a th:href="@{/project/{projectId}/notice/post_detail(projectId=${projectId}, boardId=${post.boardId}, postId=${post.postId})}" class="widget-link">
+                                        <span class="board-badge" th:text="${post.boardName}">게시판명</span>
+                                        <span class="widget-post-title" th:text="${post.title}">최신글 제목</span>
+                                    </a>
+                                    <span class="widget-post-meta" th:text="${post.userName}">작성자</span>
+                                </li>
+                            </ul>
+                            <div class="empty-widget" th:if="${latestPosts == null or #lists.isEmpty(latestPosts)}">
+                                <i class="far fa-folder-open"></i>
+                                <p>아직 등록된 게시글이 없습니다.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="widget-card">
+                        <h3 class="section-title">인기 게시글</h3>
+                        <div class="widget-content">
+                            <ul class="widget-list" th:if="${popularPosts != null and not #lists.isEmpty(popularPosts)}">
+                                <li class="widget-item" th:each="post, stat : ${popularPosts}">
+                                    <div class="popular-rank-wrapper">
+                                        <span class="rank-badge" th:text="${stat.index + 1}">1</span>
+                                        <a th:href="@{/project/{projectId}/notice/post_detail(projectId=${projectId}, boardId=${post.boardId}, postId=${post.postId})}" class="widget-link">
+                                            <span class="board-badge" th:text="${post.boardName}">게시판명</span>
+                                            <span class="widget-post-title" th:text="${post.title}">인기글 제목</span>
+                                        </a>
+                                    </div>
+                                    <div class="popular-meta-group">
+                                        <span class="widget-post-meta" th:text="${post.userName}">작성자</span>
+                                        <span class="widget-views-meta" th:text="|👁️ ${post.viewCount != null ? post.viewCount : 0}|">조회수</span>
+                                    </div>
+                                </li>
+                            </ul>
+                            <div class="empty-widget" th:if="${popularPosts == null or #lists.isEmpty(popularPosts)}">
+                                <i class="fas fa-chart-line"></i>
+                                <p>데이터가 모이면 보여드릴게요!</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
             </div>
 
         </div>

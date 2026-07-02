@@ -41,7 +41,6 @@ h2 {
     margin-bottom: 8px;
 }
 
-/* 인포 박스 내의 Input 공통 스타일 */
 .info-grid .form-control {
     border-radius: 8px !important;
     border: 1px solid #cdd4ee !important;
@@ -54,11 +53,11 @@ h2 {
 }
 
 .readonly-id {
-    background-color: #e4e7f5 !important; /* 아이디 필드는 읽기전용 회색 처리 */
+    background-color: #e4e7f5 !important;
     color: #6c757d !important;
 }
 
-
+/* [통일된 버튼 배치를 위한 핵심 스타일] */
 .input-inline-btn-group {
     position: relative;
     display: flex;
@@ -66,36 +65,22 @@ h2 {
     width: 100%;
 }
 
-.input-inline-btn-group input {
-    width: 100%;
+/* 인풋 박스 오른쪽에 버튼 공간 확보 */
+.input-inline-btn-group .form-control {
     padding-right: 90px !important; 
 }
 
-/* 구독그룹 & 비밀번호그룹 (인풋 + 버튼) */
-.subscribe-group,
-.password-group {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-}
-
-.subscribe-group input,
-.password-group input {
-    flex: 1;
-}
-
-/* 구독하기 & 비밀번호 변경 버튼 */
-.input-inline-btn-group .btn-primary,
-.input-inline-btn-group .btn-warning {
+/* 모든 버튼 통일 (구독/해지/변경 버튼 전부 동일 적용) */
+.input-inline-btn-group .btn {
     position: absolute;
-    right: 6px;
+    right: 4px;
     top: 4px;
     bottom: 4px;
-    height: calc(100% - 8px) !important; 
+    height: 34px !important; /* 비밀번호 변경 버튼과 동일한 높이 */
     border-radius: 6px !important;
-    padding: 0 14px !important;
+    padding: 0 16px !important;
     font-size: 12px !important;
-    font-weight: 500 !important;
+    font-weight: 600 !important;
     border: none !important;
     cursor: pointer;
     white-space: nowrap;
@@ -104,27 +89,21 @@ h2 {
     justify-content: center;
 }
 
-/* 구독하기 버튼 색상 (시안의 어두운 청록/남색) */
-.input-inline-btn-group .btn-primary {
-    background-color: #1f2d6c !important;
-    color: #ffffff !important;
-}
+/* 색상 테마 - 색깔만 담당 */
+.btn-primary { background-color: #1f2d6c !important; color: #ffffff !important; }
+.btn-warning { background-color: #f7941d !important; color: #ffffff !important; }
+.btn-danger { background-color: #e60000 !important; color: #ffffff !important; }
 
-/* 비밀번호 변경 버튼 색상 (주황/옐로우) */
-.input-inline-btn-group .btn-warning {
-    background-color: #f7941d !important;
-    color: #ffffff !important;
-}
-
+/* 하단 버튼 */
 .action-buttons {
     display: flex;
     justify-content: flex-end;
     gap: 10px;
-    margin-top: 45px; /
+    margin-top: 45px; 
 }
 
 .btn-primary#btnEdit {
-    background-color: #1f2d6c !important; /* 남색 버튼 */
+    background-color: #1f2d6c !important;
     color: #ffffff !important;
     font-size: 14px !important;
     font-weight: bold !important;
@@ -134,7 +113,7 @@ h2 {
 }
 
 .btn-success#btnSave {
-    background-color: #28a745 !important; /* 수정 완료용 녹색 버튼 */
+    background-color: #28a745 !important;
     color: #ffffff !important;
     font-size: 14px !important;
     font-weight: bold !important;
@@ -144,7 +123,7 @@ h2 {
 }
 
 .btn-danger {
-    background-color: #e60000 !important; /* 탈퇴 빨간색 버튼 */
+    background-color: #e60000 !important;
     color: #ffffff !important;
     font-size: 14px !important;
     font-weight: bold !important;
@@ -153,7 +132,9 @@ h2 {
     border: none !important;
 }
 
-
+/* ========================================================== */
+/* 2. 프로젝트 필터 */
+/* ========================================================== */
 .project-filter-section {
     background-color: #ffffff;
     border: 1px solid #e2e8f0;
@@ -217,27 +198,43 @@ h2 {
     font-size: 13px !important;
 }
 
-/* 필터 초기화 버튼 위치 정렬 */
+/* [핵심 수정] 검색과 초기화 버튼을 가로로 나란히 정렬 */
 .filter-item:last-child {
     grid-column: span 4;
     display: flex;
-    align-items: flex-start;
-    margin-top: 10px;
+    flex-direction: row !important; /* 세로 정렬 무시하고 가로 정렬 강제 */
+    gap: 8px;                       /* 버튼 사이 간격 생성 */
+    align-items: center;
+    margin-top: 16px;
+}
+
+/* 검색, 초기화 버튼 스타일 및 크기 완벽 통일 */
+#btnSearch, #btnFilterReset {
+    height: 34px !important;
+    padding: 0 20px !important;
+    border-radius: 6px !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+}
+
+#btnSearch {
+    border: none !important;
 }
 
 #btnFilterReset {
     background-color: #ffffff !important;
     color: #334155 !important;
     border: 1px solid #cbd5e1 !important;
-    border-radius: 6px !important;
-    height: 34px !important;
-    padding: 0 20px !important;
-    font-size: 13px !important;
-    font-weight: 500 !important;
-    cursor: pointer;
 }
 
-
+/* ========================================================== */
+/* 3. 프로젝트 테이블 목록 */
+/* ========================================================== */
 .project-table-container {
     background: #ffffff;
     border: 1px solid #e2e8f0;
@@ -264,7 +261,6 @@ h2 {
     font-weight: 600;
 }
 
-/* 상태 배지 스타일링 */
 .status-badge {
     display: inline-block;
     padding: 4px 10px;
@@ -274,20 +270,9 @@ h2 {
     text-align: center;
 }
 
-.status-ready {
-    background-color: #ffedd5; /* 연황색 */
-    color: #ea580c;
-}
-
-.status-ing {
-    background-color: #dbeafe; /* 연푸른색 */
-    color: #2563eb;
-}
-
-.status-done {
-    background-color: #f1f5f9; /* 연회색 */
-    color: #475569;
-}
+.status-ready { background-color: #ffedd5; color: #ea580c; }
+.status-ing { background-color: #dbeafe; color: #2563eb; }
+.status-done { background-color: #f1f5f9; color: #475569; }
 
 .no-data {
     text-align: center;
@@ -295,81 +280,18 @@ h2 {
     padding: 40px !important;
 }
 
-
-.password-modal-dialog {
-    max-width: 400px;
-    margin: 10% auto;
-}
-
-.password-modal-content {
-    border-radius: 12px;
-    overflow: hidden;
-    border: none;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-}
-
-.modal-header-custom {
-    background-color: #1f2d6c; /* 남색 테마 */
-    padding: 16px 20px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-
-.modal-header-custom h4 {
-    color: #ffffff;
-    margin: 0;
-    font-size: 15px;
-    font-weight: 500;
-}
-
-.modal-header-custom span {
-    color: #ffffff;
-    font-size: 18px;
-    cursor: pointer;
-}
-
-.password-modal-body {
-    padding: 24px;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-}
-
-.password-modal-body label {
-    font-size: 12px;
-    font-weight: 500;
-    color: #64748b;
-    margin-bottom: 4px;
-}
-
-.password-modal-body .required {
-    color: #ef4444;
-}
-
-.modal-input {
-    border-radius: 6px !important;
-    border: 1px solid #cbd5e1 !important;
-    font-size: 13px !important;
-    height: 36px !important;
-}
-
-.password-modal-footer {
-    border-top: 1px solid #f1f5f9;
-    padding: 14px 24px;
-    display: flex;
-    justify-content: flex-end;
-    gap: 8px;
-    background-color: #f8fafc;
-}
-
-.password-modal-footer button {
-    font-size: 13px;
-    border-radius: 6px;
-}
-
-.btn-modal-submit {
-    background-color: #1f2d6c !important;
-    border: none !important;
-    color: #ffffff !important;
-}
+/* ========================================================== */
+/* 4. 모달 스타일 (기존 유지) */
+/* ========================================================== */
+.password-modal-dialog { max-width: 400px; margin: 10% auto; }
+.password-modal-content { border-radius: 12px; overflow: hidden; border: none; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15); }
+.modal-header-custom { background-color: #1f2d6c; padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; }
+.modal-header-custom h4 { color: #ffffff; margin: 0; font-size: 15px; font-weight: 500; }
+.modal-header-custom span { color: #ffffff; font-size: 18px; cursor: pointer; }
+.password-modal-body { padding: 24px; display: flex; flex-direction: column; gap: 16px; }
+.password-modal-body label { font-size: 12px; font-weight: 500; color: #64748b; margin-bottom: 4px; }
+.password-modal-body .required { color: #ef4444; }
+.modal-input { border-radius: 6px !important; border: 1px solid #cbd5e1 !important; font-size: 13px !important; height: 36px !important; }
+.password-modal-footer { border-top: 1px solid #f1f5f9; padding: 14px 24px; display: flex; justify-content: flex-end; gap: 8px; background-color: #f8fafc; }
+.password-modal-footer button { font-size: 13px; border-radius: 6px; }
+.btn-modal-submit { background-color: #1f2d6c !important; border: none !important; color: #ffffff !important; }

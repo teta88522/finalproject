@@ -56,6 +56,12 @@ public class RepositoryServiceImpl implements RepositoryService {
 			throw new RuntimeException("프로젝트 ID가 전달되지 않았습니다. 폼 데이터를 확인하세요.");
 		}
 
+		// ✅ 자료실 자체 업로드 화면에서 올린 파일은 file_code가 안 넘어오므로 기본값 지정
+		// (검색조건 VO와 필드를 공유하기 때문에 VO 기본값이 아니라 여기서 세팅)
+		if (repositoryVO.getFileCode() == null || repositoryVO.getFileCode().isEmpty()) {
+			repositoryVO.setFileCode("f009");
+		}
+
 		// 2. [추가] VERSION_ID가 없을 경우 DB에서 조회하여 자동 세팅[cite: 14]
 		if (repositoryVO.getVersionId() == null || repositoryVO.getVersionId().isEmpty()) {
 			String versionId = repositoryMapper.selectRecentVersionIdByProjectId(repositoryVO.getProjectId());
@@ -157,6 +163,26 @@ public class RepositoryServiceImpl implements RepositoryService {
 	@Override
 	public List<Map<String, Object>> getSourceCodeList(){
 		return repositoryMapper.selectSourceCodeList();
+	}
+
+	// 8. 파일 다운로드 이력 등록
+	@Override
+	public void logFileDownload(String fileId, String downloadUserId) {
+		if (fileId == null || fileId.isEmpty() || downloadUserId == null || downloadUserId.isEmpty()) {
+			return;
+		}
+		com.pixcel.app.file.service.FileDownloadHistoryVO historyVO =
+				com.pixcel.app.file.service.FileDownloadHistoryVO.builder()
+						.fileId(fileId)
+						.downloadUserId(downloadUserId)
+						.build();
+		repositoryMapper.insertDownloadHistory(historyVO);
+	}
+
+	// 9. 파일별 다운로드 이력 조회
+	@Override
+	public List<com.pixcel.app.file.service.FileDownloadHistoryVO> getDownloadHistory(String fileId) {
+		return repositoryMapper.selectDownloadHistoryByFileId(fileId);
 	}
 
 }

@@ -16,6 +16,7 @@ public interface RoadmapService {
 	public List<RoadmapVO> getRoadmapFull(String projectId);
 	public RoadmapVO getRoadmapDetail(String projectId, String versionId);
 	public List<MilestonesVO> getRoadmapMilestones(String projectId, String versionId);
+	public int updateCompletion(String versionId, String projectId);
 	// 류송지 추가
 	public List<RoadmapVO> getVersionId(String projectId);
 }

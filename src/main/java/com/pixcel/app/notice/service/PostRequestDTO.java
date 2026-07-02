@@ -23,4 +23,5 @@ public class PostRequestDTO {
 	private LocalDateTime createdAt;
 	private LocalDateTime updatedAt;
 	private String userName;
+	private String boardName; // 📝 추가: 게시판 이름
 }

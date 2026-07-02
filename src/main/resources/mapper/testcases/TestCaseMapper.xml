@@ -6,370 +6,403 @@
 <mapper namespace="com.pixcel.app.testcase.mapper.TestCaseMapper">
 
     <!-- 테스트 생성 화면용 테스트케이스 총 개수 -->
-	<select id="selectTestCaseCount"
-        	parameterType="com.pixcel.app.testcase.service.TestCaseSearchVO"
-        	resultType="int">
+    <select id="selectTestCaseCount"
+            parameterType="com.pixcel.app.testcase.service.TestCaseSearchVO"
+            resultType="int">
 
-    	SELECT
-        	COUNT(*)
-    	FROM test_case tc
-    	WHERE tc.version_id IN (
-        	SELECT pv.version_id
-        	FROM project_version pv
-        	WHERE pv.project_id = #{projectId}
-    	)
+        SELECT
+            COUNT(*)
+        FROM test_case tc
+        WHERE tc.version_id IN (
+            SELECT pv.version_id
+            FROM project_version pv
+            WHERE pv.project_id = #{projectId}
+        )
 
-    	<if test="versionId != null and versionId != ''">
-        	AND tc.version_id = #{versionId}
-    	</if>
+        <if test="versionIdList != null and versionIdList.size() > 0">
+            AND tc.version_id IN
+            <foreach collection="versionIdList" item="versionId" open="(" separator="," close=")">
+                #{versionId}
+            </foreach>
+        </if>
 
-    	<if test="testTypeCode != null and testTypeCode != ''">
-        	AND tc.test_type_code = #{testTypeCode}
-    	</if>
+        <if test="testTypeCodeList != null and testTypeCodeList.size() > 0">
+            AND tc.test_type_code IN
+            <foreach collection="testTypeCodeList" item="testTypeCode" open="(" separator="," close=")">
+                #{testTypeCode}
+            </foreach>
+        </if>
 
-    	<if test="statusCode != null and statusCode != ''">
-        	AND tc.status_code = #{statusCode}
-    	</if>
+        <if test="statusCodeList != null and statusCodeList.size() > 0">
+            AND tc.status_code IN
+            <foreach collection="statusCodeList" item="statusCode" open="(" separator="," close=")">
+                #{statusCode}
+            </foreach>
+        </if>
 
-    	<if test="priorityCode != null and priorityCode != ''">
-        	AND tc.priority_code = #{priorityCode}
-    	</if>
+        <if test="priorityCodeList != null and priorityCodeList.size() > 0">
+            AND tc.priority_code IN
+            <foreach collection="priorityCodeList" item="priorityCode" open="(" separator="," close=")">
+                #{priorityCode}
+            </foreach>
+        </if>
 
-    	<if test="title != null and title != ''">
-        	AND tc.title LIKE '%' || #{title} || '%'
-    	</if>
+        <if test="title != null and title != ''">
+            AND tc.title LIKE '%' || #{title} || '%'
+        </if>
 
-	</select>
+    </select>
 
 
     <!-- 테스트 생성 화면용 테스트케이스 목록 페이징 -->
-	<select id="selectTestCaseList"
-        	parameterType="com.pixcel.app.testcase.service.TestCaseSearchVO"
-        	resultType="com.pixcel.app.testcase.service.TestCaseVO">
+    <select id="selectTestCaseList"
+            parameterType="com.pixcel.app.testcase.service.TestCaseSearchVO"
+            resultType="com.pixcel.app.testcase.service.TestCaseVO">
 
-    	SELECT
-        	page_tc.test_case_id       AS "testCaseId",
-        	page_tc.version_id         AS "versionId",
-        	page_tc.version_name       AS "versionName",
-    	    page_tc.title              AS "title",
+        SELECT
+            page_tc.test_case_id       AS "testCaseId",
+            page_tc.version_id         AS "versionId",
+            page_tc.version_name       AS "versionName",
+            page_tc.title              AS "title",
 
-	        page_tc.test_type_code     AS "testTypeCode",
-    	    page_tc.test_type_name     AS "testTypeName",
-	
-        	page_tc.status_code        AS "statusCode",
-        	page_tc.status_name        AS "statusName",
+            page_tc.test_type_code     AS "testTypeCode",
+            page_tc.test_type_name     AS "testTypeName",
 
-        	page_tc.priority_code      AS "priorityCode",
-        	page_tc.priority_name      AS "priorityName",
+            page_tc.status_code        AS "statusCode",
+            page_tc.status_name        AS "statusName",
 
-        	page_tc.pre_condition      AS "preCondition",
-        	page_tc.expected_result    AS "expectedResult",	
-        	page_tc.description        AS "description",
-        	page_tc.exe_enviroment     AS "exeEnviroment",
+            page_tc.priority_code      AS "priorityCode",
+            page_tc.priority_name      AS "priorityName",
 
-        	page_tc.created_by         AS "createdBy",
-        	NVL(creator.login_id, page_tc.created_by) AS "createdByName",
+            page_tc.pre_condition      AS "preCondition",
+            page_tc.expected_result    AS "expectedResult",
+            page_tc.description        AS "description",
+            page_tc.exe_enviroment     AS "exeEnviroment",
 
-        	page_tc.created_at         AS "createdAt",
-        	page_tc.updated_at         AS "updatedAt"
+            page_tc.created_by         AS "createdBy",
+            NVL(creator.login_id, page_tc.created_by) AS "createdByName",
 
-    	FROM (
-        	SELECT
-            	inner_query.*
-        	FROM (
-            	SELECT
-                	base_query.*,
-                	ROWNUM AS row_no
-            	FROM (
-                	SELECT
-                    	tc.test_case_id,
-                    	tc.version_id,
-                    	pv.version_name,
-                    	tc.title,
+            page_tc.created_at         AS "createdAt",
+            page_tc.updated_at         AS "updatedAt"
 
-                    	tc.test_type_code,
-                    	CASE tc.test_type_code
-                        	WHEN 'd001' THEN '기능'
-                        	WHEN 'd002' THEN 'UI/UX'
-                        	WHEN 'd003' THEN '성능'
-                        	WHEN 'd004' THEN '보안'
-                        	WHEN 'd005' THEN '데이터'
-                        	WHEN 'd006' THEN '기타'
-                        	ELSE tc.test_type_code
-                    	END AS test_type_name,
+        FROM (
+            SELECT
+                inner_query.*
+            FROM (
+                SELECT
+                    base_query.*,
+                    ROWNUM AS row_no
+                FROM (
+                    SELECT
+                        tc.test_case_id,
+                        tc.version_id,
+                        pv.version_name,
+                        tc.title,
 
-                    	tc.status_code,
-                    	CASE tc.status_code
-                        	WHEN 'g001' THEN '활성'
-                        	WHEN 'g002' THEN '비활성'
-                        	ELSE tc.status_code
-                    	END AS status_name,
+                        tc.test_type_code,
+                        CASE tc.test_type_code
+                            WHEN 'd001' THEN '기능'
+                            WHEN 'd002' THEN 'UI/UX'
+                            WHEN 'd003' THEN '성능'
+                            WHEN 'd004' THEN '보안'
+                            WHEN 'd005' THEN '데이터'
+                            WHEN 'd006' THEN '기타'
+                            ELSE tc.test_type_code
+                        END AS test_type_name,
 
-                    	tc.priority_code,
-                    	CASE tc.priority_code
-                    	    WHEN 'c001' THEN '상'
-                	        WHEN 'c002' THEN '중'
-            	            WHEN 'c003' THEN '하'
-        	                ELSE tc.priority_code
-    	                END AS priority_name,
+                        tc.status_code,
+                        CASE tc.status_code
+                            WHEN 'g001' THEN '활성'
+                            WHEN 'g002' THEN '비활성'
+                            ELSE tc.status_code
+                        END AS status_name,
 
-                    	tc.pre_condition,
-	                    tc.expected_result,
-                    	tc.description,
-                    	tc.exe_enviroment,
+                        tc.priority_code,
+                        CASE tc.priority_code
+                            WHEN 'c001' THEN '상'
+                            WHEN 'c002' THEN '중'
+                            WHEN 'c003' THEN '하'
+                            ELSE tc.priority_code
+                        END AS priority_name,
 
-                    	tc.created_by,
+                        tc.pre_condition,
+                        tc.expected_result,
+                        tc.description,
+                        tc.exe_enviroment,
 
-                    	TO_CHAR(tc.created_at, 'YYYY-MM-DD') AS created_at,
-                    	TO_CHAR(tc.updated_at, 'YYYY-MM-DD') AS updated_at
+                        tc.created_by,
 
-                	FROM test_case tc
-                	JOIN project_version pv
-                    	ON tc.version_id = pv.version_id
+                        TO_CHAR(tc.created_at, 'YYYY-MM-DD') AS created_at,
+                        TO_CHAR(tc.updated_at, 'YYYY-MM-DD') AS updated_at
 
-                	WHERE pv.project_id = #{projectId}
+                    FROM test_case tc
+                    JOIN project_version pv
+                        ON tc.version_id = pv.version_id
 
-                	<if test="versionId != null and versionId != ''">
-                    	AND tc.version_id = #{versionId}
-                	</if>
+                    WHERE pv.project_id = #{projectId}
 
-                	<if test="testTypeCode != null and testTypeCode != ''">
-                    	AND tc.test_type_code = #{testTypeCode}
-                	</if>
+                    <if test="versionIdList != null and versionIdList.size() > 0">
+                        AND tc.version_id IN
+                        <foreach collection="versionIdList" item="versionId" open="(" separator="," close=")">
+                            #{versionId}
+                        </foreach>
+                    </if>
 
-                	<if test="statusCode != null and statusCode != ''">
-    	                AND tc.status_code = #{statusCode}
-	                </if>
+                    <if test="testTypeCodeList != null and testTypeCodeList.size() > 0">
+                        AND tc.test_type_code IN
+                        <foreach collection="testTypeCodeList" item="testTypeCode" open="(" separator="," close=")">
+                            #{testTypeCode}
+                        </foreach>
+                    </if>
 
-            	    <if test="priorityCode != null and priorityCode != ''">
-        	            AND tc.priority_code = #{priorityCode}
-    	            </if>
+                    <if test="statusCodeList != null and statusCodeList.size() > 0">
+                        AND tc.status_code IN
+                        <foreach collection="statusCodeList" item="statusCode" open="(" separator="," close=")">
+                            #{statusCode}
+                        </foreach>
+                    </if>
 
-	                <if test="title != null and title != ''">
-            	        AND tc.title LIKE '%' || #{title} || '%'
-        	        </if>
+                    <if test="priorityCodeList != null and priorityCodeList.size() > 0">
+                        AND tc.priority_code IN
+                        <foreach collection="priorityCodeList" item="priorityCode" open="(" separator="," close=")">
+                            #{priorityCode}
+                        </foreach>
+                    </if>
 
-    	            ORDER BY
-	                    tc.created_at DESC,
-                	    tc.test_case_id DESC
+                    <if test="title != null and title != ''">
+                        AND tc.title LIKE '%' || #{title} || '%'
+                    </if>
 
-            	) base_query
-            	WHERE ROWNUM &lt;= #{endRow}
-        	) inner_query
-        	WHERE inner_query.row_no &gt;= #{startRow}
-    	) page_tc
+                    ORDER BY
+                        tc.created_at DESC,
+                        tc.test_case_id DESC
 
-    	LEFT JOIN users creator
-        	ON page_tc.created_by = creator.user_id
+                ) base_query
+                WHERE ROWNUM &lt;= #{endRow}
+            ) inner_query
+            WHERE inner_query.row_no &gt;= #{startRow}
+        ) page_tc
 
-    	ORDER BY
-        	page_tc.created_at DESC,
-    	    page_tc.test_case_id DESC
+        LEFT JOIN users creator
+            ON page_tc.created_by = creator.user_id
 
-	</select>
-	
-	<!-- 테스트케이스 등록 -->
-	<insert id="insertTestCase"
-        	parameterType="com.pixcel.app.testcase.service.TestCaseVO">
+        ORDER BY
+            page_tc.created_at DESC,
+            page_tc.test_case_id DESC
 
-    	<selectKey keyProperty="testCaseId"
-               	   resultType="string"
-            	   order="BEFORE">
-        	SELECT
-            	'TC_' || TO_CHAR(SYSDATE, 'YYYYMM') || '_' ||
-            	LPAD(
-                	NVL((
-                    	SELECT MAX(TO_NUMBER(SUBSTR(test_case_id, -4))) + 1
-                    	FROM test_case
-                    	WHERE test_case_id LIKE 'TC_' || TO_CHAR(SYSDATE, 'YYYYMM') || '_%'
-                	), 1),
-                	4,
-                	'0'
-            	)
-        	FROM dual
-    	</selectKey>
-
-    	INSERT INTO test_case (
-        	test_case_id,
-        	version_id,
-        	title,
-        	test_type_code,
-        	status_code,
-        	priority_code,
-        	pre_condition,
-        	expected_result,
-        	description,
-        	created_by,
-        	created_at,
-        	updated_at,
-        	exe_enviroment
-    	) VALUES (
-        	#{testCaseId},
-        	#{versionId},
-        	#{title},
-        	#{testTypeCode},
-        	#{statusCode},
-        	#{priorityCode},
-        	#{preCondition},
-        	#{expectedResult},
-        	#{description},
-        	#{createdBy},
-        	SYSDATE,
-        	NULL,
-        	#{exeEnviroment}
-    	)
-	</insert>
-
-	<!-- 테스트케이스 절차 등록 -->
-	<insert id="insertTestCaseStep"
-        	parameterType="com.pixcel.app.testcase.service.TestCaseVO">
-
-    	INSERT INTO test_case_step (
-        	step_id,
-        	test_case_id,
-        	step_no,
-        	step_description,
-        	expected_result
-    	)
-    	<foreach collection="stepDescriptionList"
-             	 item="stepDescription"
-             	 index="index"
-            	 separator="UNION ALL">
-        	SELECT
-            	'TCS_' || TO_CHAR(SYSDATE, 'YYYYMM') || '_' ||
-            	LPAD(
-                	NVL((
-                    	SELECT MAX(TO_NUMBER(SUBSTR(step_id, -4)))
-                    	FROM test_case_step
-                    	WHERE step_id LIKE 'TCS_' || TO_CHAR(SYSDATE, 'YYYYMM') || '_%'
-                	), 0) + #{index} + 1,
-                	4,
-                	'0'
-            	) AS step_id,
-            	#{testCaseId} AS test_case_id,
-            	#{index} + 1 AS step_no,
-            	#{stepDescription} AS step_description,
-            	#{stepExpectedResultList[${index}]} AS expected_result
-        	FROM dual
-    	</foreach>
-	</insert>
-	
-	<!-- 테스트케이스 상세 조회 -->
-	<select id="selectTestCaseDetail"
-    	    resultType="com.pixcel.app.testcase.service.TestCaseVO">
-
-    	SELECT
-        	tc.test_case_id       AS "testCaseId",
-        	tc.version_id         AS "versionId",
-        	pv.version_name       AS "versionName",
-
-        	tc.title              AS "title",
-
-        	tc.test_type_code     AS "testTypeCode",
-        	CASE tc.test_type_code
-            	WHEN 'd001' THEN '기능'
-            	WHEN 'd002' THEN 'UI/UX'
-            	WHEN 'd003' THEN '성능'
-            	WHEN 'd004' THEN '보안'
-            	WHEN 'd005' THEN '데이터'
-            	WHEN 'd006' THEN '기타'
-            	ELSE tc.test_type_code
-        	END AS "testTypeName",
-
-        	tc.status_code        AS "statusCode",
-        	CASE tc.status_code
-            	WHEN 'g001' THEN '활성'
-            	WHEN 'g002' THEN '비활성'
-            	ELSE tc.status_code
-        	END AS "statusName",
-
-        	tc.priority_code      AS "priorityCode",
-        	CASE tc.priority_code
-            	WHEN 'c001' THEN '상'
-            	WHEN 'c002' THEN '중'
-            	WHEN 'c003' THEN '하'
-            	ELSE tc.priority_code
-        	END AS "priorityName",
-
-        	tc.pre_condition      AS "preCondition",
-        	tc.expected_result    AS "expectedResult",
-        	tc.description        AS "description",
-        	tc.exe_enviroment     AS "exeEnviroment",
-
-	        tc.created_by         AS "createdBy",
-    	    NVL(u.login_id, tc.created_by) AS "createdByName",
-
-        	TO_CHAR(tc.created_at, 'YYYY-MM-DD') AS "createdAt",
-        	TO_CHAR(tc.updated_at, 'YYYY-MM-DD') AS "updatedAt"
-
-    	FROM test_case tc
-    	JOIN project_version pv
-        	ON tc.version_id = pv.version_id
-    	LEFT JOIN users u
-        	ON tc.created_by = u.user_id
-
-    	WHERE tc.test_case_id = #{testCaseId}
-      	AND pv.project_id = #{projectId}
-
-	</select>
+    </select>
 
 
-	<!-- 테스트케이스 절차 목록 조회 -->
-	<select id="selectTestCaseStepList"
-    	    parameterType="string"
-        	resultType="com.pixcel.app.testcase.service.TestCaseStepVO">
+    <!-- 테스트케이스 등록 -->
+    <insert id="insertTestCase"
+            parameterType="com.pixcel.app.testcase.service.TestCaseVO">
 
-    	SELECT
-        	step_id          AS "stepId",
-        	test_case_id     AS "testCaseId",
-        	step_no          AS "stepNo",
-        	step_description AS "stepDescription",
-        	expected_result  AS "expectedResult"
-    	FROM test_case_step
-    	WHERE test_case_id = #{testCaseId}
-    	ORDER BY step_no ASC
+        <selectKey keyProperty="testCaseId"
+                   resultType="string"
+                   order="BEFORE">
+            SELECT
+                'TC_' || TO_CHAR(SYSDATE, 'YYYYMM') || '_' ||
+                LPAD(
+                    NVL((
+                        SELECT MAX(TO_NUMBER(SUBSTR(test_case_id, -4))) + 1
+                        FROM test_case
+                        WHERE test_case_id LIKE 'TC_' || TO_CHAR(SYSDATE, 'YYYYMM') || '_%'
+                    ), 1),
+                    4,
+                    '0'
+                )
+            FROM dual
+        </selectKey>
 
-	</select>
-	
-	<!-- 테스트케이스 수정 -->
-	<update id="updateTestCase"
-        	parameterType="com.pixcel.app.testcase.service.TestCaseVO">
+        INSERT INTO test_case (
+            test_case_id,
+            version_id,
+            title,
+            test_type_code,
+            status_code,
+            priority_code,
+            pre_condition,
+            expected_result,
+            description,
+            created_by,
+            created_at,
+            updated_at,
+            exe_enviroment
+        ) VALUES (
+            #{testCaseId},
+            #{versionId},
+            #{title},
+            #{testTypeCode},
+            #{statusCode},
+            #{priorityCode},
+            #{preCondition},
+            #{expectedResult},
+            #{description},
+            #{createdBy},
+            SYSDATE,
+            NULL,
+            #{exeEnviroment}
+        )
 
-    	UPDATE test_case
-    	SET
-        	version_id = #{versionId},
-        	title = #{title},
-        	test_type_code = #{testTypeCode},
-        	status_code = #{statusCode},
-        	priority_code = #{priorityCode},
-        	pre_condition = #{preCondition},
-        	expected_result = #{expectedResult},
-        	description = #{description},
-        	exe_enviroment = #{exeEnviroment},
-        	updated_at = SYSDATE
-    	WHERE test_case_id = #{testCaseId}
+    </insert>
 
-	</update>
 
-	<!-- 테스트케이스 절차 삭제 -->
-	<delete id="deleteTestCaseStep"
-    	    parameterType="string">
+    <!-- 테스트케이스 절차 등록 -->
+    <insert id="insertTestCaseStep"
+            parameterType="com.pixcel.app.testcase.service.TestCaseVO">
 
-	    DELETE FROM test_case_step
-    	WHERE test_case_id = #{testCaseId}
+        INSERT INTO test_case_step (
+            step_id,
+            test_case_id,
+            step_no,
+            step_description,
+            expected_result
+        )
+        <foreach collection="stepDescriptionList"
+                 item="stepDescription"
+                 index="index"
+                 separator="UNION ALL">
+            SELECT
+                'TCS_' || TO_CHAR(SYSDATE, 'YYYYMM') || '_' ||
+                LPAD(
+                    NVL((
+                        SELECT MAX(TO_NUMBER(SUBSTR(step_id, -4)))
+                        FROM test_case_step
+                        WHERE step_id LIKE 'TCS_' || TO_CHAR(SYSDATE, 'YYYYMM') || '_%'
+                    ), 0) + #{index} + 1,
+                    4,
+                    '0'
+                ) AS step_id,
+                #{testCaseId} AS test_case_id,
+                #{index} + 1 AS step_no,
+                #{stepDescription} AS step_description,
+                #{stepExpectedResultList[${index}]} AS expected_result
+            FROM dual
+        </foreach>
 
-	</delete>
-	
-	<!-- 테스트케이스 작성자 확인 -->
-	<select id="checkTestCaseOwner"
-        	parameterType="com.pixcel.app.testcase.service.TestCaseVO"
-        	resultType="int">
+    </insert>
 
-    	SELECT
-        	COUNT(*)
-    	FROM test_case
-    	WHERE test_case_id = #{testCaseId}
-      	AND created_by = #{createdBy}
 
-	</select>
+    <!-- 테스트케이스 상세 조회 -->
+    <select id="selectTestCaseDetail"
+            resultType="com.pixcel.app.testcase.service.TestCaseVO">
+
+        SELECT
+            tc.test_case_id       AS "testCaseId",
+            tc.version_id         AS "versionId",
+            pv.version_name       AS "versionName",
+
+            tc.title              AS "title",
+
+            tc.test_type_code     AS "testTypeCode",
+            CASE tc.test_type_code
+                WHEN 'd001' THEN '기능'
+                WHEN 'd002' THEN 'UI/UX'
+                WHEN 'd003' THEN '성능'
+                WHEN 'd004' THEN '보안'
+                WHEN 'd005' THEN '데이터'
+                WHEN 'd006' THEN '기타'
+                ELSE tc.test_type_code
+            END AS "testTypeName",
+
+            tc.status_code        AS "statusCode",
+            CASE tc.status_code
+                WHEN 'g001' THEN '활성'
+                WHEN 'g002' THEN '비활성'
+                ELSE tc.status_code
+            END AS "statusName",
+
+            tc.priority_code      AS "priorityCode",
+            CASE tc.priority_code
+                WHEN 'c001' THEN '상'
+                WHEN 'c002' THEN '중'
+                WHEN 'c003' THEN '하'
+                ELSE tc.priority_code
+            END AS "priorityName",
+
+            tc.pre_condition      AS "preCondition",
+            tc.expected_result    AS "expectedResult",
+            tc.description        AS "description",
+            tc.exe_enviroment     AS "exeEnviroment",
+
+            tc.created_by         AS "createdBy",
+            NVL(u.login_id, tc.created_by) AS "createdByName",
+
+            TO_CHAR(tc.created_at, 'YYYY-MM-DD') AS "createdAt",
+            TO_CHAR(tc.updated_at, 'YYYY-MM-DD') AS "updatedAt"
+
+        FROM test_case tc
+        JOIN project_version pv
+            ON tc.version_id = pv.version_id
+        LEFT JOIN users u
+            ON tc.created_by = u.user_id
+
+        WHERE tc.test_case_id = #{testCaseId}
+          AND pv.project_id = #{projectId}
+
+    </select>
+
+
+    <!-- 테스트케이스 절차 목록 조회 -->
+    <select id="selectTestCaseStepList"
+            parameterType="string"
+            resultType="com.pixcel.app.testcase.service.TestCaseStepVO">
+
+        SELECT
+            step_id          AS "stepId",
+            test_case_id     AS "testCaseId",
+            step_no          AS "stepNo",
+            step_description AS "stepDescription",
+            expected_result  AS "expectedResult"
+        FROM test_case_step
+        WHERE test_case_id = #{testCaseId}
+        ORDER BY step_no ASC
+
+    </select>
+
+
+    <!-- 테스트케이스 수정 -->
+    <update id="updateTestCase"
+            parameterType="com.pixcel.app.testcase.service.TestCaseVO">
+
+        UPDATE test_case
+        SET
+            version_id = #{versionId},
+            title = #{title},
+            test_type_code = #{testTypeCode},
+            status_code = #{statusCode},
+            priority_code = #{priorityCode},
+            pre_condition = #{preCondition},
+            expected_result = #{expectedResult},
+            description = #{description},
+            exe_enviroment = #{exeEnviroment},
+            updated_at = SYSDATE
+        WHERE test_case_id = #{testCaseId}
+
+    </update>
+
+
+    <!-- 테스트케이스 절차 삭제 -->
+    <delete id="deleteTestCaseStep"
+            parameterType="string">
+
+        DELETE FROM test_case_step
+        WHERE test_case_id = #{testCaseId}
+
+    </delete>
+
+
+    <!-- 테스트케이스 작성자 확인 -->
+    <select id="checkTestCaseOwner"
+            parameterType="com.pixcel.app.testcase.service.TestCaseVO"
+            resultType="int">
+
+        SELECT
+            COUNT(*)
+        FROM test_case
+        WHERE test_case_id = #{testCaseId}
+          AND created_by = #{createdBy}
+
+    </select>
+
 </mapper>

@@ -48,7 +48,7 @@ public class RoadmapController {
         
         roadmapService.insertRoadmap(roadmapVO);
         // 💡 핵심 2: 404 에러 방지를 위해 리다이렉트는 무조건 절대 경로(풀 주소)로 적습니다.
-        return "redirect:/project/" + projectId + "/roadmap/setting_list"; 
+        return "redirect:/project/" + projectId + "/roadmap/roadmap_list"; 
     }
 
     @GetMapping("/setting_list")
@@ -136,5 +136,19 @@ public class RoadmapController {
         model.addAttribute("roadmap", roadmap);
         
         return "roadmap/roadmap_detail";
+    }
+    
+    @PostMapping("/roadmap_detail")
+    public String completeRoadmap(@RequestParam("versionId") String versionId, 
+                                  @PathVariable("projectId") String projectId,
+                                  RedirectAttributes rttr) {
+        try {
+            roadmapService.updateCompletion(versionId, projectId);
+            rttr.addFlashAttribute("message", "로드맵이 완료 처리되었습니다.");
+        } catch (Exception e) {
+            rttr.addFlashAttribute("errorMessage", "완료 처리 중 오류가 발생했습니다.");
+        }
+        
+        return "redirect:/project/" + projectId + "/roadmap/roadmap_detail";
     }
 }

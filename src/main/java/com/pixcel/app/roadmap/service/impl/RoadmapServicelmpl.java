@@ -31,6 +31,13 @@ public class RoadmapServicelmpl implements RoadmapService {
 	}
 	@Override
 	public int updateRoadmap(RoadmapVO roadmapVO) {
+		
+		RoadmapVO current = roadmapMapper.getsettingDetail(roadmapVO.getVersionId(), roadmapVO.getProjectId());
+		
+		if ("k003".equals(current.getStatusCode())) {
+	        throw new RuntimeException("완료된 로드맵은 수정할 수 없습니다.");
+	    }
+		
 	    return roadmapMapper.updateRoadmap(roadmapVO);
 	}
 	@Override
@@ -59,5 +66,10 @@ public class RoadmapServicelmpl implements RoadmapService {
 	@Override
 	public List<RoadmapVO> getVersionId(String projectId) {
 		return roadmapMapper.getVersionId(projectId);
+	}
+	
+	@Override
+	public int updateCompletion(String versionId, String projectId) {
+		return roadmapMapper.updateCompletion(versionId, projectId);
 	}
 }

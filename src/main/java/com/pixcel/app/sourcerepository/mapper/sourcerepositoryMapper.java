@@ -22,11 +22,18 @@ public interface sourcerepositoryMapper {
 	// 4. 프로젝트 + 브랜치별 Commit 총 개수
 	public int countSourcerepositoryCommitsByProjectAndBranch(@Param("projectId") String projectId, @Param("branchName") String branchName);
 
-	// 5. SHA로 특정 Commit 조회
-	public sourcerepositoryVO selectSourcerepositoryCommitBySha(@Param("commitHash") String commitHash);
+	// 5. SHA(+branch)로 특정 Commit 조회
+	// ✅ 같은 SHA가 여러 브랜치에 걸쳐 존재할 수 있어(브랜치별 dedup 수정 이후) branchName으로 좁힘.
+	//    branchName이 없으면 가장 최근 커밋 1건을 반환.
+	public sourcerepositoryVO selectSourcerepositoryCommitBySha(@Param("commitHash") String commitHash,
+			@Param("branchName") String branchName);
 
 	// 6. 중복 체크 (같은 SHA가 이미 있는지)
 	public int existsSourcerepositoryCommitBySha(@Param("commitHash") String commitHash);
+
+	// ✅ 6-1. 중복 체크 (같은 프로젝트+브랜치 내에 같은 SHA가 있는지) - 브랜치별 동기화 시 사용
+	public int existsSourcerepositoryCommitByShaAndBranch(@Param("commitHash") String commitHash,
+			@Param("projectId") String projectId, @Param("branchName") String branchName);
 
 	// 7. 단일 Commit 삭제
 	public int deleteSourcerepositoryCommit(@Param("commitId") String commitId);
@@ -39,4 +46,7 @@ public interface sourcerepositoryMapper {
 
 	// 10. 이슈별 모든 Commit 조회
 	public List<sourcerepositoryVO> selectSourcerepositoryCommitsByIssueId(@Param("issueId") String issueId);
+	
+	// DB에서 프로젝트의 모든 BRANCH_NAME 조회 (중복 제거)
+	public String selectFirstBranchNameByProjectId(@Param("projectId") String projectId);
 }

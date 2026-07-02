@@ -33,24 +33,36 @@
             AND pv.version_name LIKE '%' || #{versionName} || '%'
         </if>
 
-        <if test="teamName != null and teamName != ''">
-            AND t.team_name LIKE '%' || #{teamName} || '%'
+        <if test="teamNameList != null and teamNameList.size() > 0">
+            AND t.team_name IN
+            <foreach collection="teamNameList" item="teamName" open="(" separator="," close=")">
+                #{teamName}
+            </foreach>
         </if>
 
         <if test="title != null and title != ''">
             AND t.title LIKE '%' || #{title} || '%'
         </if>
 
-        <if test="statusCode != null and statusCode != ''">
-            AND t.status_code = #{statusCode}
+        <if test="statusCodeList != null and statusCodeList.size() > 0">
+            AND t.status_code IN
+            <foreach collection="statusCodeList" item="statusCode" open="(" separator="," close=")">
+                #{statusCode}
+            </foreach>
         </if>
 
-        <if test="testTypeCode != null and testTypeCode != ''">
-            AND t.test_type_code = #{testTypeCode}
+        <if test="testTypeCodeList != null and testTypeCodeList.size() > 0">
+            AND t.test_type_code IN
+            <foreach collection="testTypeCodeList" item="testTypeCode" open="(" separator="," close=")">
+                #{testTypeCode}
+            </foreach>
         </if>
 
-        <if test="priorityCode != null and priorityCode != ''">
-            AND t.priority_code = #{priorityCode}
+        <if test="priorityCodeList != null and priorityCodeList.size() > 0">
+            AND t.priority_code IN
+            <foreach collection="priorityCodeList" item="priorityCode" open="(" separator="," close=")">
+                #{priorityCode}
+            </foreach>
         </if>
 
         <if test="assigneeName != null and assigneeName != ''">
@@ -61,156 +73,168 @@
 
 
     <!-- 관리자 테스트 목록 -->
-	<select id="selectAdminTestList"
-        parameterType="com.pixcel.app.test.service.TestSearchVO"
-        resultType="com.pixcel.app.test.service.TestVO">
+    <select id="selectAdminTestList"
+            parameterType="com.pixcel.app.test.service.TestSearchVO"
+            resultType="com.pixcel.app.test.service.TestVO">
 
-    WITH base_t AS (
+        WITH base_t AS (
+            SELECT
+                t.test_id,
+                t.version_id,
+                pv.project_id,
+                p.project_name,
+                pv.version_name,
+                t.title,
+                t.priority_code,
+                t.test_type_code,
+                t.status_code,
+                t.assignee_id,
+                t.created_by,
+                t.description,
+                t.start_date,
+                t.end_date,
+                t.created_at,
+                t.updated_at,
+                t.team_name
+            FROM test t
+            JOIN project_version pv
+                ON t.version_id = pv.version_id
+            JOIN project p
+                ON pv.project_id = p.project_id
+
+            <if test="assigneeName != null and assigneeName != ''">
+            JOIN users assignee_filter
+                ON t.assignee_id = assignee_filter.user_id
+            </if>
+
+            WHERE pv.project_id = #{projectId}
+              AND p.owner_id = #{loginUserId}
+
+            <if test="projectName != null and projectName != ''">
+                AND p.project_name LIKE '%' || #{projectName} || '%'
+            </if>
+
+            <if test="versionName != null and versionName != ''">
+                AND pv.version_name LIKE '%' || #{versionName} || '%'
+            </if>
+
+            <if test="teamNameList != null and teamNameList.size() > 0">
+                AND t.team_name IN
+                <foreach collection="teamNameList" item="teamName" open="(" separator="," close=")">
+                    #{teamName}
+                </foreach>
+            </if>
+
+            <if test="title != null and title != ''">
+                AND t.title LIKE '%' || #{title} || '%'
+            </if>
+
+            <if test="statusCodeList != null and statusCodeList.size() > 0">
+                AND t.status_code IN
+                <foreach collection="statusCodeList" item="statusCode" open="(" separator="," close=")">
+                    #{statusCode}
+                </foreach>
+            </if>
+
+            <if test="testTypeCodeList != null and testTypeCodeList.size() > 0">
+                AND t.test_type_code IN
+                <foreach collection="testTypeCodeList" item="testTypeCode" open="(" separator="," close=")">
+                    #{testTypeCode}
+                </foreach>
+            </if>
+
+            <if test="priorityCodeList != null and priorityCodeList.size() > 0">
+                AND t.priority_code IN
+                <foreach collection="priorityCodeList" item="priorityCode" open="(" separator="," close=")">
+                    #{priorityCode}
+                </foreach>
+            </if>
+
+            <if test="assigneeName != null and assigneeName != ''">
+                AND assignee_filter.user_name LIKE '%' || #{assigneeName} || '%'
+            </if>
+        ),
+        tc_count AS (
+            SELECT
+                tcm.test_id,
+                COUNT(*) AS total_case_count
+            FROM test_case_mapping tcm
+            JOIN base_t bt
+                ON tcm.test_id = bt.test_id
+            GROUP BY tcm.test_id
+        )
         SELECT
-            t.test_id,
-            t.version_id,
-            pv.project_id,
-            p.project_name,
-            pv.version_name,
-            t.title,
-            t.priority_code,
-            t.test_type_code,
-            t.status_code,
-            t.assignee_id,
-            t.created_by,
-            t.description,
-            t.start_date,
-            t.end_date,
-            t.created_at,
-            t.updated_at,
-            t.team_name
-        FROM test t
-        JOIN project_version pv
-            ON t.version_id = pv.version_id
-        JOIN project p
-            ON pv.project_id = p.project_id
+            bt.test_id AS "testId",
+            bt.version_id AS "versionId",
+            bt.project_id AS "projectId",
+            bt.project_name AS "projectName",
+            bt.version_name AS "versionName",
+            bt.title AS "title",
 
-        <if test="assigneeName != null and assigneeName != ''">
-        JOIN users assignee_filter
-            ON t.assignee_id = assignee_filter.user_id
-        </if>
+            bt.priority_code AS "priorityCode",
+            CASE bt.priority_code
+                WHEN 'c001' THEN '상'
+                WHEN 'c002' THEN '중'
+                WHEN 'c003' THEN '하'
+                ELSE bt.priority_code
+            END AS "priorityName",
 
-        WHERE pv.project_id = #{projectId}
-          AND p.owner_id = #{loginUserId}
+            bt.test_type_code AS "testTypeCode",
+            CASE bt.test_type_code
+                WHEN 'd001' THEN '기능'
+                WHEN 'd002' THEN 'UI/UX'
+                WHEN 'd003' THEN '성능'
+                WHEN 'd004' THEN '보안'
+                WHEN 'd005' THEN '데이터'
+                WHEN 'd006' THEN '기타'
+                ELSE bt.test_type_code
+            END AS "testTypeName",
 
-        <if test="projectName != null and projectName != ''">
-            AND p.project_name LIKE '%' || #{projectName} || '%'
-        </if>
+            bt.status_code AS "statusCode",
+            CASE bt.status_code
+                WHEN 'a001' THEN '예정'
+                WHEN 'a002' THEN '진행중'
+                WHEN 'a003' THEN '종료'
+                ELSE bt.status_code
+            END AS "statusName",
 
-        <if test="versionName != null and versionName != ''">
-            AND pv.version_name LIKE '%' || #{versionName} || '%'
-        </if>
+            bt.assignee_id AS "assigneeId",
+            assignee.user_name AS "assigneeName",
+            assignee.login_id AS "assigneeLoginId",
 
-        <if test="teamName != null and teamName != ''">
-            AND t.team_name LIKE '%' || #{teamName} || '%'
-        </if>
+            bt.created_by AS "createdBy",
+            creator.user_name AS "createdByName",
+            creator.login_id AS "createdByLoginId",
 
-        <if test="title != null and title != ''">
-            AND t.title LIKE '%' || #{title} || '%'
-        </if>
+            bt.description AS "description",
+            TO_CHAR(bt.start_date, 'YYYY-MM-DD') AS "startDate",
+            TO_CHAR(bt.end_date, 'YYYY-MM-DD') AS "endDate",
+            TO_CHAR(bt.created_at, 'YYYY-MM-DD') AS "createdAt",
+            TO_CHAR(bt.updated_at, 'YYYY-MM-DD') AS "updatedAt",
+            bt.team_name AS "teamName",
 
-        <if test="statusCode != null and statusCode != ''">
-            AND t.status_code = #{statusCode}
-        </if>
+            NVL(tc_count.total_case_count, 0) AS "totalCaseCount",
 
-        <if test="testTypeCode != null and testTypeCode != ''">
-            AND t.test_type_code = #{testTypeCode}
-        </if>
+            0 AS "executionCount",
+            0 AS "successCount",
+            0 AS "failCount",
+            0 AS "holdCount",
+            0 AS "progressCount",
+            0 AS "progressRate"
 
-        <if test="priorityCode != null and priorityCode != ''">
-            AND t.priority_code = #{priorityCode}
-        </if>
+        FROM base_t bt
+        LEFT JOIN users assignee
+            ON bt.assignee_id = assignee.user_id
+        LEFT JOIN users creator
+            ON bt.created_by = creator.user_id
+        LEFT JOIN tc_count
+            ON bt.test_id = tc_count.test_id
 
-        <if test="assigneeName != null and assigneeName != ''">
-            AND assignee_filter.user_name LIKE '%' || #{assigneeName} || '%'
-        </if>
-    ),
-    tc_count AS (
-        SELECT
-            tcm.test_id,
-            COUNT(*) AS total_case_count
-        FROM test_case_mapping tcm
-        JOIN base_t bt
-            ON tcm.test_id = bt.test_id
-        GROUP BY tcm.test_id
-    )
-    SELECT
-        bt.test_id AS "testId",
-        bt.version_id AS "versionId",
-        bt.project_id AS "projectId",
-        bt.project_name AS "projectName",
-        bt.version_name AS "versionName",
-        bt.title AS "title",
+        ORDER BY
+            bt.created_at DESC,
+            bt.test_id DESC
 
-        bt.priority_code AS "priorityCode",
-        CASE bt.priority_code
-            WHEN 'c001' THEN '상'
-            WHEN 'c002' THEN '중'
-            WHEN 'c003' THEN '하'
-            ELSE bt.priority_code
-        END AS "priorityName",
-
-        bt.test_type_code AS "testTypeCode",
-        CASE bt.test_type_code
-            WHEN 'd001' THEN '기능'
-            WHEN 'd002' THEN 'UI/UX'
-            WHEN 'd003' THEN '성능'
-            WHEN 'd004' THEN '보안'
-            WHEN 'd005' THEN '데이터'
-            WHEN 'd006' THEN '기타'
-            ELSE bt.test_type_code
-        END AS "testTypeName",
-
-        bt.status_code AS "statusCode",
-        CASE bt.status_code
-            WHEN 'a001' THEN '예정'
-            WHEN 'a002' THEN '진행중'
-            WHEN 'a003' THEN '종료'
-            ELSE bt.status_code
-        END AS "statusName",
-
-        bt.assignee_id AS "assigneeId",
-        assignee.user_name AS "assigneeName",
-        assignee.login_id AS "assigneeLoginId",
-
-        bt.created_by AS "createdBy",
-        creator.user_name AS "createdByName",
-        creator.login_id AS "createdByLoginId",
-
-        bt.description AS "description",
-        TO_CHAR(bt.start_date, 'YYYY-MM-DD') AS "startDate",
-        TO_CHAR(bt.end_date, 'YYYY-MM-DD') AS "endDate",
-        TO_CHAR(bt.created_at, 'YYYY-MM-DD') AS "createdAt",
-        TO_CHAR(bt.updated_at, 'YYYY-MM-DD') AS "updatedAt",
-        bt.team_name AS "teamName",
-
-        NVL(tc_count.total_case_count, 0) AS "totalCaseCount",
-
-        0 AS "executionCount",
-        0 AS "successCount",
-        0 AS "failCount",
-        0 AS "holdCount",
-        0 AS "progressCount",
-        0 AS "progressRate"
-
-    FROM base_t bt
-    LEFT JOIN users assignee
-        ON bt.assignee_id = assignee.user_id
-    LEFT JOIN users creator
-        ON bt.created_by = creator.user_id
-    LEFT JOIN tc_count
-        ON bt.test_id = tc_count.test_id
-
-    ORDER BY
-        bt.created_at DESC,
-        bt.test_id DESC
-
-</select>
+    </select>
 
 
     <!-- 일반 사용자 테스트 요약 -->
@@ -240,24 +264,36 @@
             AND pv.version_name LIKE '%' || #{versionName} || '%'
         </if>
 
-        <if test="teamName != null and teamName != ''">
-            AND t.team_name LIKE '%' || #{teamName} || '%'
+        <if test="teamNameList != null and teamNameList.size() > 0">
+            AND t.team_name IN
+            <foreach collection="teamNameList" item="teamName" open="(" separator="," close=")">
+                #{teamName}
+            </foreach>
         </if>
 
         <if test="title != null and title != ''">
             AND t.title LIKE '%' || #{title} || '%'
         </if>
 
-        <if test="statusCode != null and statusCode != ''">
-            AND t.status_code = #{statusCode}
+        <if test="statusCodeList != null and statusCodeList.size() > 0">
+            AND t.status_code IN
+            <foreach collection="statusCodeList" item="statusCode" open="(" separator="," close=")">
+                #{statusCode}
+            </foreach>
         </if>
 
-        <if test="testTypeCode != null and testTypeCode != ''">
-            AND t.test_type_code = #{testTypeCode}
+        <if test="testTypeCodeList != null and testTypeCodeList.size() > 0">
+            AND t.test_type_code IN
+            <foreach collection="testTypeCodeList" item="testTypeCode" open="(" separator="," close=")">
+                #{testTypeCode}
+            </foreach>
         </if>
 
-        <if test="priorityCode != null and priorityCode != ''">
-            AND t.priority_code = #{priorityCode}
+        <if test="priorityCodeList != null and priorityCodeList.size() > 0">
+            AND t.priority_code IN
+            <foreach collection="priorityCodeList" item="priorityCode" open="(" separator="," close=")">
+                #{priorityCode}
+            </foreach>
         </if>
 
         <if test="assigneeName != null and assigneeName != ''">
@@ -269,154 +305,166 @@
 
     <!-- 일반 사용자 테스트 목록 -->
     <select id="selectUserTestList"
-        parameterType="com.pixcel.app.test.service.TestSearchVO"
-        resultType="com.pixcel.app.test.service.TestVO">
+            parameterType="com.pixcel.app.test.service.TestSearchVO"
+            resultType="com.pixcel.app.test.service.TestVO">
 
-    WITH base_t AS (
+        WITH base_t AS (
+            SELECT
+                t.test_id,
+                t.version_id,
+                pv.project_id,
+                p.project_name,
+                pv.version_name,
+                t.title,
+                t.priority_code,
+                t.test_type_code,
+                t.status_code,
+                t.assignee_id,
+                t.created_by,
+                t.description,
+                t.start_date,
+                t.end_date,
+                t.created_at,
+                t.updated_at,
+                t.team_name
+            FROM test t
+            JOIN project_version pv
+                ON t.version_id = pv.version_id
+            JOIN project p
+                ON pv.project_id = p.project_id
+
+            <if test="assigneeName != null and assigneeName != ''">
+            JOIN users assignee_filter
+                ON t.assignee_id = assignee_filter.user_id
+            </if>
+
+            WHERE pv.project_id = #{projectId}
+
+            <if test="projectName != null and projectName != ''">
+                AND p.project_name LIKE '%' || #{projectName} || '%'
+            </if>
+
+            <if test="versionName != null and versionName != ''">
+                AND pv.version_name LIKE '%' || #{versionName} || '%'
+            </if>
+
+            <if test="teamNameList != null and teamNameList.size() > 0">
+                AND t.team_name IN
+                <foreach collection="teamNameList" item="teamName" open="(" separator="," close=")">
+                    #{teamName}
+                </foreach>
+            </if>
+
+            <if test="title != null and title != ''">
+                AND t.title LIKE '%' || #{title} || '%'
+            </if>
+
+            <if test="statusCodeList != null and statusCodeList.size() > 0">
+                AND t.status_code IN
+                <foreach collection="statusCodeList" item="statusCode" open="(" separator="," close=")">
+                    #{statusCode}
+                </foreach>
+            </if>
+
+            <if test="testTypeCodeList != null and testTypeCodeList.size() > 0">
+                AND t.test_type_code IN
+                <foreach collection="testTypeCodeList" item="testTypeCode" open="(" separator="," close=")">
+                    #{testTypeCode}
+                </foreach>
+            </if>
+
+            <if test="priorityCodeList != null and priorityCodeList.size() > 0">
+                AND t.priority_code IN
+                <foreach collection="priorityCodeList" item="priorityCode" open="(" separator="," close=")">
+                    #{priorityCode}
+                </foreach>
+            </if>
+
+            <if test="assigneeName != null and assigneeName != ''">
+                AND assignee_filter.user_name LIKE '%' || #{assigneeName} || '%'
+            </if>
+        ),
+        tc_count AS (
+            SELECT
+                tcm.test_id,
+                COUNT(*) AS total_case_count
+            FROM test_case_mapping tcm
+            JOIN base_t bt
+                ON tcm.test_id = bt.test_id
+            GROUP BY tcm.test_id
+        )
         SELECT
-            t.test_id,
-            t.version_id,
-            pv.project_id,
-            p.project_name,
-            pv.version_name,
-            t.title,
-            t.priority_code,
-            t.test_type_code,
-            t.status_code,
-            t.assignee_id,
-            t.created_by,
-            t.description,
-            t.start_date,
-            t.end_date,
-            t.created_at,
-            t.updated_at,
-            t.team_name
-        FROM test t
-        JOIN project_version pv
-            ON t.version_id = pv.version_id
-        JOIN project p
-            ON pv.project_id = p.project_id
+            bt.test_id AS "testId",
+            bt.version_id AS "versionId",
+            bt.project_id AS "projectId",
+            bt.project_name AS "projectName",
+            bt.version_name AS "versionName",
+            bt.title AS "title",
 
-        <if test="assigneeName != null and assigneeName != ''">
-        JOIN users assignee_filter
-            ON t.assignee_id = assignee_filter.user_id
-        </if>
+            bt.priority_code AS "priorityCode",
+            CASE bt.priority_code
+                WHEN 'c001' THEN '상'
+                WHEN 'c002' THEN '중'
+                WHEN 'c003' THEN '하'
+                ELSE bt.priority_code
+            END AS "priorityName",
 
-        WHERE pv.project_id = #{projectId}
+            bt.test_type_code AS "testTypeCode",
+            CASE bt.test_type_code
+                WHEN 'd001' THEN '기능'
+                WHEN 'd002' THEN 'UI/UX'
+                WHEN 'd003' THEN '성능'
+                WHEN 'd004' THEN '보안'
+                WHEN 'd005' THEN '데이터'
+                WHEN 'd006' THEN '기타'
+                ELSE bt.test_type_code
+            END AS "testTypeName",
 
-        <if test="projectName != null and projectName != ''">
-            AND p.project_name LIKE '%' || #{projectName} || '%'
-        </if>
+            bt.status_code AS "statusCode",
+            CASE bt.status_code
+                WHEN 'a001' THEN '예정'
+                WHEN 'a002' THEN '진행중'
+                WHEN 'a003' THEN '종료'
+                ELSE bt.status_code
+            END AS "statusName",
 
-        <if test="versionName != null and versionName != ''">
-            AND pv.version_name LIKE '%' || #{versionName} || '%'
-        </if>
+            bt.assignee_id AS "assigneeId",
+            assignee.user_name AS "assigneeName",
+            assignee.login_id AS "assigneeLoginId",
 
-        <if test="teamName != null and teamName != ''">
-            AND t.team_name LIKE '%' || #{teamName} || '%'
-        </if>
+            bt.created_by AS "createdBy",
+            creator.user_name AS "createdByName",
+            creator.login_id AS "createdByLoginId",
 
-        <if test="title != null and title != ''">
-            AND t.title LIKE '%' || #{title} || '%'
-        </if>
+            bt.description AS "description",
+            TO_CHAR(bt.start_date, 'YYYY-MM-DD') AS "startDate",
+            TO_CHAR(bt.end_date, 'YYYY-MM-DD') AS "endDate",
+            TO_CHAR(bt.created_at, 'YYYY-MM-DD') AS "createdAt",
+            TO_CHAR(bt.updated_at, 'YYYY-MM-DD') AS "updatedAt",
+            bt.team_name AS "teamName",
 
-        <if test="statusCode != null and statusCode != ''">
-            AND t.status_code = #{statusCode}
-        </if>
+            NVL(tc_count.total_case_count, 0) AS "totalCaseCount",
 
-        <if test="testTypeCode != null and testTypeCode != ''">
-            AND t.test_type_code = #{testTypeCode}
-        </if>
+            0 AS "executionCount",
+            0 AS "successCount",
+            0 AS "failCount",
+            0 AS "holdCount",
+            0 AS "progressCount",
+            0 AS "progressRate"
 
-        <if test="priorityCode != null and priorityCode != ''">
-            AND t.priority_code = #{priorityCode}
-        </if>
+        FROM base_t bt
+        LEFT JOIN users assignee
+            ON bt.assignee_id = assignee.user_id
+        LEFT JOIN users creator
+            ON bt.created_by = creator.user_id
+        LEFT JOIN tc_count
+            ON bt.test_id = tc_count.test_id
 
-        <if test="assigneeName != null and assigneeName != ''">
-            AND assignee_filter.user_name LIKE '%' || #{assigneeName} || '%'
-        </if>
-    ),
-    tc_count AS (
-        SELECT
-            tcm.test_id,
-            COUNT(*) AS total_case_count
-        FROM test_case_mapping tcm
-        JOIN base_t bt
-            ON tcm.test_id = bt.test_id
-        GROUP BY tcm.test_id
-    )
-    SELECT
-        bt.test_id AS "testId",
-        bt.version_id AS "versionId",
-        bt.project_id AS "projectId",
-        bt.project_name AS "projectName",
-        bt.version_name AS "versionName",
-        bt.title AS "title",
+        ORDER BY
+            bt.created_at DESC,
+            bt.test_id DESC
 
-        bt.priority_code AS "priorityCode",
-        CASE bt.priority_code
-            WHEN 'c001' THEN '상'
-            WHEN 'c002' THEN '중'
-            WHEN 'c003' THEN '하'
-            ELSE bt.priority_code
-        END AS "priorityName",
-
-        bt.test_type_code AS "testTypeCode",
-        CASE bt.test_type_code
-            WHEN 'd001' THEN '기능'
-            WHEN 'd002' THEN 'UI/UX'
-            WHEN 'd003' THEN '성능'
-            WHEN 'd004' THEN '보안'
-            WHEN 'd005' THEN '데이터'
-            WHEN 'd006' THEN '기타'
-            ELSE bt.test_type_code
-        END AS "testTypeName",
-
-        bt.status_code AS "statusCode",
-        CASE bt.status_code
-            WHEN 'a001' THEN '예정'
-            WHEN 'a002' THEN '진행중'
-            WHEN 'a003' THEN '종료'
-            ELSE bt.status_code
-        END AS "statusName",
-
-        bt.assignee_id AS "assigneeId",
-        assignee.user_name AS "assigneeName",
-        assignee.login_id AS "assigneeLoginId",
-
-        bt.created_by AS "createdBy",
-        creator.user_name AS "createdByName",
-        creator.login_id AS "createdByLoginId",
-
-        bt.description AS "description",
-        TO_CHAR(bt.start_date, 'YYYY-MM-DD') AS "startDate",
-        TO_CHAR(bt.end_date, 'YYYY-MM-DD') AS "endDate",
-        TO_CHAR(bt.created_at, 'YYYY-MM-DD') AS "createdAt",
-        TO_CHAR(bt.updated_at, 'YYYY-MM-DD') AS "updatedAt",
-        bt.team_name AS "teamName",
-
-        NVL(tc_count.total_case_count, 0) AS "totalCaseCount",
-
-        0 AS "executionCount",
-        0 AS "successCount",
-        0 AS "failCount",
-        0 AS "holdCount",
-        0 AS "progressCount",
-        0 AS "progressRate"
-
-    FROM base_t bt
-    LEFT JOIN users assignee
-        ON bt.assignee_id = assignee.user_id
-    LEFT JOIN users creator
-        ON bt.created_by = creator.user_id
-    LEFT JOIN tc_count
-        ON bt.test_id = tc_count.test_id
-
-    ORDER BY
-        bt.created_at DESC,
-        bt.test_id DESC
-
-</select>
+    </select>
 
 
     <!-- 프로젝트 버전 목록 -->
@@ -464,14 +512,11 @@
             parameterType="string"
             resultType="com.pixcel.app.test.service.TestGroupVO">
 
-        SELECT DISTINCT
+        SELECT
             pg.project_group_id AS "groupId",
-            pg.group_name AS "groupName"
-        FROM project_member pm
-        JOIN project_group pg
-            ON pm.project_group_id = pg.project_group_id
-        WHERE pm.project_id = #{projectId}
-          AND pm.project_group_id IS NOT NULL
+            pg.group_name      AS "groupName"
+        FROM project_group pg
+        WHERE pg.project_id = #{projectId}
         ORDER BY
             pg.group_name ASC
 
@@ -566,133 +611,146 @@
         </foreach>
 
     </insert>
-    
-    
+
+
     <!-- 테스트 상세 조회 -->
-	<select id="selectTestDetail"
-	        resultType="com.pixcel.app.test.service.TestVO">
+    <select id="selectTestDetail"
+            resultType="com.pixcel.app.test.service.TestVO">
 
-    	SELECT
-        	t.test_id AS "testId",
-	        t.version_id AS "versionId",
-    	    t.title AS "title",
-        	t.priority_code AS "priorityCode",
-	        t.test_type_code AS "testTypeCode",
-    	    t.status_code AS "statusCode",
-        	t.assignee_id AS "assigneeId",
-	        t.description AS "description",
-    	    TO_CHAR(t.start_date, 'YYYY-MM-DD') AS "startDate",
-        	TO_CHAR(t.end_date, 'YYYY-MM-DD') AS "endDate",
-	        t.created_by AS "createdBy",
-    	    TO_CHAR(t.created_at, 'YYYY-MM-DD') AS "createdAt",
-	        TO_CHAR(t.updated_at, 'YYYY-MM-DD') AS "updatedAt",
-    	    t.team_name AS "teamName"
+        SELECT
+            t.test_id AS "testId",
+            t.version_id AS "versionId",
+            t.title AS "title",
+            t.priority_code AS "priorityCode",
+            t.test_type_code AS "testTypeCode",
+            t.status_code AS "statusCode",
+            t.assignee_id AS "assigneeId",
+            t.description AS "description",
+            TO_CHAR(t.start_date, 'YYYY-MM-DD') AS "startDate",
+            TO_CHAR(t.end_date, 'YYYY-MM-DD') AS "endDate",
+            t.created_by AS "createdBy",
+            TO_CHAR(t.created_at, 'YYYY-MM-DD') AS "createdAt",
+            TO_CHAR(t.updated_at, 'YYYY-MM-DD') AS "updatedAt",
+            t.team_name AS "teamName"
 
-	    FROM test t
-    	JOIN project_version pv
-        	ON t.version_id = pv.version_id
+        FROM test t
+        JOIN project_version pv
+            ON t.version_id = pv.version_id
 
-	    WHERE t.test_id = #{testId}
-    	  AND pv.project_id = #{projectId}
+        WHERE t.test_id = #{testId}
+          AND pv.project_id = #{projectId}
 
-	</select>
-
-
-	<!-- 테스트에 매핑된 테스트케이스 목록 -->
-	<select id="selectMappedTestCaseList"
-        	parameterType="string"
-        	resultType="com.pixcel.app.testcase.service.TestCaseVO">
-    	SELECT
-	        tc.test_case_id      AS "testCaseId",
-        	tc.version_id        AS "versionId",
-    	    pv.version_name      AS "versionName",
-
-	        tc.title             AS "title",
-
-        	tc.test_type_code    AS "testTypeCode",
-    	    CASE tc.test_type_code
-	            WHEN 'd001' THEN '기능'
-            	WHEN 'd002' THEN 'UI/UX'
-        	    WHEN 'd003' THEN '성능'
-    	        WHEN 'd004' THEN '보안'
-	            WHEN 'd005' THEN '데이터'
-            	WHEN 'd006' THEN '기타'
-        	    ELSE tc.test_type_code
-    	    END AS "testTypeName",
-
-	        tc.status_code       AS "statusCode",
-        	CASE tc.status_code
-    	        WHEN 'g001' THEN '활성'
-	            WHEN 'g002' THEN '비활성'
-            	ELSE tc.status_code
-        	END AS "statusName",
-
-    	    tc.priority_code     AS "priorityCode",
-	        CASE tc.priority_code
-        	    WHEN 'c001' THEN '상'
-    	        WHEN 'c002' THEN '중'
-	            WHEN 'c003' THEN '하'
-            	ELSE tc.priority_code
-        	END AS "priorityName",
-
-    	    tc.expected_result   AS "expectedResult"
-
-	    FROM test_case_mapping tcm
-	    JOIN test_case tc
-    	    ON tcm.test_case_id = tc.test_case_id
-	    JOIN project_version pv
-    	    ON tc.version_id = pv.version_id
-
-	    WHERE tcm.test_id = #{testId}
-
-	    ORDER BY tcm.sort_order ASC
-
-	</select>
+    </select>
 
 
-	<!-- 테스트 작성자 확인 -->
-	<select id="checkTestOwner"
-        	parameterType="com.pixcel.app.test.service.TestVO"
-        	resultType="int">
+    <!-- 테스트에 매핑된 테스트케이스 목록 -->
+    <select id="selectMappedTestCaseList"
+            parameterType="string"
+            resultType="com.pixcel.app.testcase.service.TestCaseVO">
 
-    	SELECT
-	        COUNT(*)
-    	FROM test
-    	WHERE test_id = #{testId}
-    	  AND created_by = #{createdBy}
+        SELECT
+            tc.test_case_id      AS "testCaseId",
+            tc.version_id        AS "versionId",
+            pv.version_name      AS "versionName",
 
-	</select>
+            tc.title             AS "title",
+
+            tc.test_type_code    AS "testTypeCode",
+            CASE tc.test_type_code
+                WHEN 'd001' THEN '기능'
+                WHEN 'd002' THEN 'UI/UX'
+                WHEN 'd003' THEN '성능'
+                WHEN 'd004' THEN '보안'
+                WHEN 'd005' THEN '데이터'
+                WHEN 'd006' THEN '기타'
+                ELSE tc.test_type_code
+            END AS "testTypeName",
+
+            tc.status_code       AS "statusCode",
+            CASE tc.status_code
+                WHEN 'g001' THEN '활성'
+                WHEN 'g002' THEN '비활성'
+                ELSE tc.status_code
+            END AS "statusName",
+
+            tc.priority_code     AS "priorityCode",
+            CASE tc.priority_code
+                WHEN 'c001' THEN '상'
+                WHEN 'c002' THEN '중'
+                WHEN 'c003' THEN '하'
+                ELSE tc.priority_code
+            END AS "priorityName",
+
+            tc.expected_result   AS "expectedResult"
+
+        FROM test_case_mapping tcm
+        JOIN test_case tc
+            ON tcm.test_case_id = tc.test_case_id
+        JOIN project_version pv
+            ON tc.version_id = pv.version_id
+
+        WHERE tcm.test_id = #{testId}
+
+        ORDER BY tcm.sort_order ASC
+
+    </select>
 
 
-	<!-- 테스트 수정 -->
-	<update id="updateTest"
-        	parameterType="com.pixcel.app.test.service.TestVO">
+    <!-- 테스트 작성자 확인 -->
+    <select id="checkTestOwner"
+            parameterType="com.pixcel.app.test.service.TestVO"
+            resultType="int">
 
-    	UPDATE test
-    	SET
-        	version_id = #{versionId},
-        	title = #{title},
-        	priority_code = #{priorityCode},
-        	test_type_code = #{testTypeCode},
-        	status_code = #{statusCode},
-        	assignee_id = #{assigneeId},
-        	description = #{description},
-        	start_date = TO_DATE(#{startDate}, 'YYYY-MM-DD'),
-        	end_date = TO_DATE(#{endDate}, 'YYYY-MM-DD'),
-        	updated_at = SYSDATE,
-        	team_name = #{teamName}
-    	WHERE test_id = #{testId}
+        SELECT
+            COUNT(*)
+        FROM test
+        WHERE test_id = #{testId}
+          AND created_by = #{createdBy}
 
-	</update>
+    </select>
 
 
-	<!-- 기존 테스트-테스트케이스 매핑 삭제 -->
-	<delete id="deleteTestCaseMapping"
-        	parameterType="string">
+    <!-- 테스트 수정 -->
+    <update id="updateTest"
+            parameterType="com.pixcel.app.test.service.TestVO">
 
-    	DELETE FROM test_case_mapping
-    	WHERE test_id = #{testId}
+        UPDATE test
+        SET
+            version_id = #{versionId},
+            title = #{title},
+            priority_code = #{priorityCode},
+            test_type_code = #{testTypeCode},
+            status_code = #{statusCode},
+            assignee_id = #{assigneeId},
+            description = #{description},
+            start_date = TO_DATE(#{startDate}, 'YYYY-MM-DD'),
+            end_date = TO_DATE(#{endDate}, 'YYYY-MM-DD'),
+            updated_at = SYSDATE,
+            team_name = #{teamName}
+        WHERE test_id = #{testId}
 
-	</delete>
+    </update>
+
+
+    <!-- 기존 테스트-테스트케이스 매핑 삭제 -->
+    <delete id="deleteTestCaseMapping"
+            parameterType="string">
+
+        DELETE FROM test_case_mapping
+        WHERE test_id = #{testId}
+
+    </delete>
+
+
+    <!-- 프로젝트 그룹 개수 -->
+    <select id="selectProjectGroupCount"
+            parameterType="string"
+            resultType="int">
+
+        SELECT COUNT(*)
+        FROM project_group
+        WHERE project_id = #{projectId}
+
+    </select>
 
 </mapper>

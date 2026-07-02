@@ -93,6 +93,9 @@ public class TestController {
         CompletableFuture<TestSummaryVO> summaryFuture;
         CompletableFuture<List<TestVO>> listFuture;
 
+        CompletableFuture<List<TestGroupVO>> groupListFuture =
+                CompletableFuture.supplyAsync(() -> testService.selectProjectGroupList(projectId));
+
         if (isAdmin) {
             summaryFuture = CompletableFuture.supplyAsync(() -> testService.selectAdminTestSummary(testSearchVO));
             listFuture = CompletableFuture.supplyAsync(() -> testService.selectAdminTestList(testSearchVO));
@@ -101,17 +104,15 @@ public class TestController {
             listFuture = CompletableFuture.supplyAsync(() -> testService.selectUserTestList(testSearchVO));
         }
 
-        CompletableFuture.allOf(summaryFuture, listFuture).join();
+        CompletableFuture.allOf(summaryFuture, listFuture, groupListFuture).join();
 
         TestSummaryVO testSummary = summaryFuture.join();
         List<TestVO> testList = listFuture.join();
-
-        System.out.println("test list async query total = " + (System.currentTimeMillis() - asyncStart) + "ms");
+        List<TestGroupVO> groupList = groupListFuture.join();
 
         model.addAttribute("testSummary", testSummary);
         model.addAttribute("testList", testList);
-
-        System.out.println("TOTAL test list page = " + (System.currentTimeMillis() - start) + "ms");
+        model.addAttribute("groupList",groupList);
 
         if (isAdmin) {
             return "test/testAdminList";
@@ -127,6 +128,7 @@ public class TestController {
 	                          @CookieValue(value = "user_pk", required = false) String userPk,
 	                          @CookieValue(value = "loginId", required = false) String loginId,
 	                          @CookieValue(value = "subscribeYn", required = false) String subscribeYn,
+	                          RedirectAttributes redirectAttributes,
 	                          Model model) {
 
 	    long start = System.currentTimeMillis();
@@ -146,6 +148,18 @@ public class TestController {
 	    if (testCaseSearchVO.getStatusCode() == null || testCaseSearchVO.getStatusCode().equals("")) {
 	        testCaseSearchVO.setStatusCode("g001");
 	    }
+	    
+	    int projectGroupCount = testService.selectProjectGroupCount(projectId);
+
+	    if (projectGroupCount == 0) {
+	        redirectAttributes.addFlashAttribute(
+	                "alertMessage",
+	                "현재 프로젝트에 생성된 그룹이 없습니다. 그룹을 먼저 생성하세요."
+	        );
+
+	        return "redirect:/manage/groups";
+	    }
+	    
 
 	    testCaseSearchVO.calculateSimplePaging();
 
@@ -174,8 +188,8 @@ public class TestController {
 	    List<TestVO> versionList = versionListFuture.join();
 	    List<TestUserVO> assigneeList = assigneeListFuture.join();
 	    List<TestGroupVO> groupList = groupListFuture.join();
-
-	    System.out.println("test add async query total = " + (System.currentTimeMillis() - asyncStart) + "ms");
+	    
+	    
 
 	    boolean hasNext = false;
 

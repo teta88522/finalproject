@@ -1,0 +1,83 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{common/layouts/default_layout}">
+
+<head>
+<meta charset="UTF-8">
+<title>일감유형 배정</title>
+
+<link rel="stylesheet" th:href="@{/css/common-ui.css}">
+<link rel="stylesheet" th:href="@{/css/issues/issues.css}">
+</head>
+
+<body>
+	<div layout:fragment="Content">
+		<div class="issues-type-assign-page">
+			<div class="container-fluid">
+
+				<div class="issues-header">
+					<div>
+						<h3>일감유형 배정</h3>
+						<p>
+							<span th:text="${projectInfo.projectName}">프로젝트명</span>
+							프로젝트에서 사용할 일감유형을 선택합니다.
+						</p>
+					</div>
+				</div>
+
+				<div th:if="${errorMessage}" class="page-message page-message-error"
+					th:text="${errorMessage}"></div>
+
+				<form
+					th:action="@{/project/{projectId}/issues/type-assign(projectId=${selectedProjectId})}"
+					method="post" class="issues-type-assign-form">
+
+					<div class="issues-card issues-type-assign-card">
+						<div class="issues-card-title">
+							<h4>사용할 일감유형</h4>
+						</div>
+
+						<div th:if="${#lists.isEmpty(assignableIssueTypeList)}"
+							class="issues-empty-box">
+							먼저 일감유형 관리에서 사용할 유형을 생성해주세요.
+						</div>
+
+						<div th:unless="${#lists.isEmpty(assignableIssueTypeList)}"
+							class="issues-type-assign-list">
+							<label th:each="issueType : ${assignableIssueTypeList}"
+								class="issues-type-assign-item"
+								th:classappend="${issueType.projectAppliedYn == 'Y' and issueType.usedCount != null and issueType.usedCount > 0} ? ' is-locked' : ''">
+								<input type="checkbox" name="issueTypeIdList"
+									th:value="${issueType.issueTypeId}"
+									th:checked="${issueType.projectAppliedYn == 'Y'}"
+									th:disabled="${issueType.projectAppliedYn == 'Y' and issueType.usedCount != null and issueType.usedCount > 0}">
+								<input type="hidden" name="issueTypeIdList"
+									th:if="${issueType.projectAppliedYn == 'Y' and issueType.usedCount != null and issueType.usedCount > 0}"
+									th:value="${issueType.issueTypeId}">
+								<span class="issues-type-assign-name"
+									th:text="${issueType.issueTypeName}">유형명</span>
+								<span class="issues-type-assign-meta">
+									초기상태
+									<strong th:text="${issueType.initialStatusName}">신규</strong>
+								</span>
+								<span class="issues-type-assign-lock"
+									th:if="${issueType.projectAppliedYn == 'Y' and issueType.usedCount != null and issueType.usedCount > 0}"
+									th:text="|사용중 ${issueType.usedCount}건|">사용중 1건</span>
+							</label>
+						</div>
+					</div>
+
+					<div class="issues-form-actions">
+						<a th:href="@{/project/{projectId}/issues/create(projectId=${selectedProjectId})}"
+							class="btn btn-custon-rounded-four btn-default">취소</a>
+						<button type="submit" class="btn btn-custon-rounded-four btn-primary"
+							th:disabled="${#lists.isEmpty(assignableIssueTypeList)}">저장</button>
+					</div>
+				</form>
+
+			</div>
+		</div>
+	</div>
+</body>
+</html>

@@ -1,0 +1,59 @@
+<!-- 2026-07-01 -->
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{common/layouts/default_layout}">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" th:href="@{/css/notice/post_detail.css}">
+</head>
+<body>
+<div layout:fragment="Content">
+    <div class="post-detail-wrapper">
+        
+        <div class="post-card">
+            <!-- 1. 제목 및 메타 데이터 (작성자 줄에 게시글 제목 융합 정렬) -->
+            <div class="post-header">
+                <h1 class="post-board-title" th:text="${boardName}">00 게시판</h1>
+                <div class="post-meta-row">
+                    <span class="meta-item post-title-meta" th:text="${post.title}">게시글 제목</span>
+                    <div class="meta-info-group">
+                        <span class="meta-item">작성자: <strong th:text="${post.userName}">홍길동</strong></span>
+                        <span class="meta-item">등록일: <strong th:text="${#temporals.format(post.createdAt, 'yyyy-MM-dd')}">2026-07-01</strong></span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 2. 본문 내용 (가두는 회색 영역을 완전히 제거하고 여백 확장) -->
+            <div class="post-body" th:text="${post.content}">
+                본문 내용이 여기에 표시됩니다.
+            </div>
+            
+            <!-- 3. 첨부파일 영역 (파일명 클릭 다운로드 방식) -->
+            <div class="file-section" th:if="${files != null and not #lists.isEmpty(files)}">
+                <h3>첨부파일</h3>
+                <ul class="issues-detail-file-list">
+                    <li class="issues-file-item" th:each="file : ${files}">
+                        <div class="issues-file-name-wrapper">
+                            <span class="issues-file-icon">📎</span>
+                            <!-- 파일명 텍스트 자체를 다운로드 링크로 감싸기 -->
+                            <a th:href="@{/project/{projectId}/notice/files/{fileId}/download(projectId=${projectId}, fileId=${file.fileId})}" class="issues-file-download-link">
+                                <span class="issues-file-name-text" th:text="${file.originalName}">파일명.zip</span>
+                            </a>
+                            <span class="issues-file-version" th:text="|v${file.fileVersion}|">v1</span>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 4. 버튼 영역 -->
+        <div class="button-area">
+            <a th:href="@{/project/{projectId}/notice/PostDelete(projectId=${projectId}, boardId=${boardId}, postId=${post.postId})}" class="btn-delete" onclick="return confirm('정말로 삭제하시겠습니까?')">삭제</a>
+            <a th:href="@{/project/{projectId}/notice/BoardDetail(projectId=${projectId}, boardId=${post.boardId})}" class="btn-list">목록</a>
+            <a th:href="@{/project/{projectId}/notice/PostUpdate(projectId=${projectId}, boardId=${post.boardId}, postId=${post.postId})}" class="btn-edit">수정</a>
+        </div>
+    </div>
+</div>
+</body>
+</html>

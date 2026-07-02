@@ -22,7 +22,29 @@
 .file-name { flex-grow: 1; color: #888; font-size: 0.9em; }
 .file-icon { margin-left: 10px; }
 
-.btn-area { text-align: right; margin-top: 20px; }
+.btn-area {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+}
+.btn-cancel {
+    background-color: #fff;
+    color: #4a5568;
+    border: 1px solid #cbd5e0;
+    padding: 10px 25px;
+    border-radius: 4px;
+    text-decoration: none;
+    font-size: 14px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-sizing: border-box;
+}
+.btn-cancel:hover {
+    background-color: #f7fafc;
+}
 .btn-submit {
     background-color: #4a5568;
     color: white;
@@ -30,4 +52,6 @@
     border: none;
     border-radius: 4px;
     cursor: pointer;
+    font-size: 14px;
+    box-sizing: border-box;
 }

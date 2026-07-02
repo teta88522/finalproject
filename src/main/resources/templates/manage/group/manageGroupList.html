@@ -1,230 +1,240 @@
 <!doctype html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{common/layouts/default_layout}">
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{common/layouts/default_layout}">
 <head>
 <meta charset="UTF-8">
 <title>관리 - 그룹</title>
 
-<link rel="stylesheet" th:href="@{/css/manage/group/manageGroupList.css}">
+<link rel="stylesheet" th:href="@{/css/common-ui.css}">
+<link rel="stylesheet" th:href="@{/css/common-fliter.css}">
+<link rel="stylesheet"
+	th:href="@{/css/manage/group/manageGroupList.css}">
 </head>
 
 <body>
-<div layout:fragment="Content">
+	<div layout:fragment="Content">
 
-    <div class="manage-group-page">
+		<div class="manage-group-page">
 
-        <!-- 상단 영역 -->
-        <div class="manage-page-header">
-            <div>
-                <h1 class="manage-page-title">관리 &gt; 그룹</h1>
-                <p class="manage-page-sub-title">
-                    본인이 생성한 프로젝트의 그룹을 조회하고 관리할 수 있습니다.
-                </p>
-            </div>
+			<div class="manage-page-header">
+				<div>
+					<h1 class="manage-page-title">관리 &gt; 그룹</h1>
+					<p class="manage-page-sub-title">본인이 생성한 프로젝트의 그룹을 조회하고 관리할 수
+						있습니다.</p>
+				</div>
 
-            <div class="manage-user-info">
-                <span>관리자</span>
-                <strong th:text="${ownerId}">USER_ID</strong>
-            </div>
-        </div>
+				<div class="manage-user-info">
+					<span>관리자</span> <strong
+						th:text="${userName != null ? userName : ownerId}">USER_ID</strong>
+				</div>
+			</div>
 
-        <!-- 메시지 -->
-        <div th:if="${message != null}" class="message-box">
-            <span th:text="${message}">메시지</span>
-        </div>
+			<div th:if="${message != null}" class="message-box">
+				<span th:text="${message}">메시지</span>
+			</div>
 
-        <!-- 검색 조건 -->
-        <div class="search-section">
-            <div class="search-header">
-                <div class="search-title">검색조건</div>
+			<!-- 검색 조건 -->
+			<div class="search-section manage-group-search">
+				<div class="search-header">
+					<div class="search-title">검색조건</div>
 
-                <a th:href="@{/manage/groups/new}"
-                   class="search-action-btn">
-                    그룹 생성
-                </a>
-            </div>
+					<a th:href="@{/manage/groups/new}"
+						class="btn btn-custon-rounded-four btn-primary search-action-btn">
+						그룹 생성 </a>
+				</div>
 
-            <form th:action="@{/manage/groups}" method="get">
+				<form th:action="@{/manage/groups}" method="get">
+					<div class="search-form-row">
 
-                <div class="search-form-row">
+						<!-- 프로젝트 다중 선택 필터 -->
 
-                    <div class="search-field">
-                        <label for="projectId">프로젝트</label>
-                        <select id="projectId" name="projectId">
-                            <option value="">전체</option>
+						<div class="search-field filter-group">
+							<label>프로젝트</label>
 
-                            <option th:each="project : ${myProjectList}"
-                                    th:value="${project.projectId}"
-                                    th:text="${project.projectName}">
-                                프로젝트명
-                            </option>
-                        </select>
-                    </div>
+							<div class="filter-dropdown">
+								<button type="button" class="filter-dropdown-btn">프로젝트
+									선택</button>
 
-                    <div class="search-field">
-                        <label for="groupName">그룹명</label>
-                        <input type="text"
-                               id="groupName"
-                               name="groupName"
-                               placeholder="그룹명 입력">
-                    </div>
+								<div class="filter-check-list filter-dropdown-panel">
+									<label class="filter-check-item"
+										th:each="project : ${myProjectList}"> <input
+										type="checkbox" name="projectIdList"
+										th:value="${project.projectId}"
+										th:checked="${projectIdList != null and #lists.contains(projectIdList, project.projectId)}">
+										<span th:text="${project.projectName}">프로젝트명</span>
+									</label>
 
-                    <div class="search-field">
-                        <label for="roleName">적용 역할</label>
-                        <input type="text"
-                               id="roleName"
-                               name="roleName"
-                               placeholder="역할명 입력">
-                    </div>
+									<div
+										th:if="${myProjectList == null or #lists.isEmpty(myProjectList)}"
+										class="filter-empty">생성한 프로젝트가 없습니다.</div>
+								</div>
+							</div>
+						</div>
 
-                </div>
+						<div class="search-field">
+							<label for="groupName">그룹명</label> <input type="text"
+								id="groupName" name="groupName" th:value="${groupName}"
+								placeholder="그룹명 입력">
+						</div>
 
-                <div class="search-btn-area">
-                    <a th:href="@{/manage/groups}"
-                       class="btn-basic">
-                        초기화
-                    </a>
+						<div class="search-field">
+							<label for="roleName">적용 역할</label> <input type="text"
+								id="roleName" name="roleName" th:value="${roleName}"
+								placeholder="역할명 입력">
+						</div>
 
-                    <button type="submit" class="btn-basic btn-primary">
-                        검색
-                    </button>
-                </div>
+					</div>
 
-            </form>
-        </div>
+					<div class="search-btn-area">
+						<a th:href="@{/manage/groups}"
+							class="btn btn-custon-rounded-four btn-default filter-btn">
+							초기화 </a>
 
-        <!-- 프로젝트 목록 요약 -->
-        <div class="project-summary-section">
-            <div class="section-title">내 프로젝트 목록</div>
-            <div class="section-sub-text">
-                본인이 생성한 프로젝트 목록입니다. 그룹 생성 시 아래 프로젝트 중 하나를 선택합니다.
-            </div>
+						<button type="submit"
+							class="btn btn-custon-rounded-four btn-primary filter-btn">
+							검색</button>
+					</div>
+				</form>
+			</div>
 
-            <div class="project-chip-wrap">
-                <div th:if="${myProjectList == null or #lists.isEmpty(myProjectList)}"
-                     class="empty-project">
-                    생성한 프로젝트가 없습니다.
-                </div>
+			<!-- 프로젝트 목록 요약 -->
+			<div class="project-summary-section">
+				<div class="section-title">내 프로젝트 목록</div>
+				<div class="section-sub-text">본인이 생성한 프로젝트 목록입니다. 그룹 생성 시 아래
+					프로젝트 중 하나를 선택합니다.</div>
 
-                <span th:each="project : ${myProjectList}"
-                      class="project-chip"
-                      th:text="${project.projectName}">
-                    프로젝트명
-                </span>
-            </div>
-        </div>
+				<div class="project-chip-wrap">
+					<div
+						th:if="${myProjectList == null or #lists.isEmpty(myProjectList)}"
+						class="empty-project">생성한 프로젝트가 없습니다.</div>
 
-        <!-- 그룹 목록 -->
-        <div class="group-list-section">
+					<span th:each="project : ${myProjectList}" class="project-chip"
+						th:text="${project.projectName}"> 프로젝트명 </span>
+				</div>
+			</div>
 
-            <div class="list-header">
-                <div>
-                    <div class="section-title">그룹 목록</div>
-                    <div class="section-sub-text">
-                        본인이 생성한 프로젝트에 등록된 그룹 목록입니다.
-                    </div>
-                </div>
+			<!-- 그룹 목록 -->
+			<div class="group-list-section">
 
-                <div class="list-count">
-                    총
-                    <strong th:text="${manageGroupList == null ? 0 : #lists.size(manageGroupList)}">0</strong>
-                    건
-                </div>
-            </div>
+				<div class="list-header">
+					<div>
+						<div class="section-title">그룹 목록</div>
+						<div class="section-sub-text">본인이 생성한 프로젝트에 등록된 그룹 목록입니다.</div>
+					</div>
 
-            <div class="group-table-wrap">
-                <table class="group-table">
-                    <thead>
-                        <tr>
-                            <th>프로젝트명</th>
-                            <th>그룹명</th>
-                            <th>구성원 수</th>
-                            <th>적용 역할</th>
-                            <th>설명</th>
-                            <th>관리</th>
-                        </tr>
-                    </thead>
+					<div class="list-count">
+						총 <strong
+							th:text="${manageGroupList == null ? 0 : #lists.size(manageGroupList)}">0</strong>
+						건
+					</div>
+				</div>
 
-                    <tbody>
-                        <tr th:if="${manageGroupList == null or #lists.isEmpty(manageGroupList)}">
-                            <td colspan="6" class="empty-row">
-                                등록된 그룹이 없습니다.
-                            </td>
-                        </tr>
+				<div class="group-table-wrap">
+					<table class="group-table">
+						<thead>
+							<tr>
+								<th>프로젝트명</th>
+								<th>그룹명</th>
+								<th>구성원 수</th>
+								<th>적용 역할</th>
+								<th>설명</th>
+								<th>관리</th>
+							</tr>
+						</thead>
 
-                        <tr th:each="group : ${manageGroupList}">
-                            <td th:text="${group.projectName}">
-                                프로젝트명
-                            </td>
+						<tbody>
+							<tr
+								th:if="${manageGroupList == null or #lists.isEmpty(manageGroupList)}">
+								<td colspan="6" class="empty-row">등록된 그룹이 없습니다.</td>
+							</tr>
 
-                            <td class="group-name-cell">
-                                <a th:href="@{/manage/groups/{projectGroupId}(projectGroupId=${group.projectGroupId})}"
-                                   th:text="${group.groupName}">
-                                    그룹명
-                                </a>
-                            </td>
+							<tr th:each="group : ${manageGroupList}">
+								<td th:text="${group.projectName}">프로젝트명</td>
 
-                            <td th:text="${group.memberCount}">
-                                0
-                            </td>
+								<td class="group-name-cell"><a
+									th:href="@{/manage/groups/{projectGroupId}(projectGroupId=${group.projectGroupId})}"
+									th:text="${group.groupName}"> 그룹명 </a></td>
 
-                            <td>
-                                <span class="role-badge"
-                                      th:text="${group.roleName != null ? group.roleName : '-'}">
-                                    역할명
-                                </span>
-                            </td>
+								<td th:text="${group.memberCount}">0</td>
 
-                            <td class="desc-cell"
-                                th:text="${group.groupAnswer != null ? group.groupAnswer : '-'}">
-                                설명
-                            </td>
+								<td><span class="role-badge"
+									th:text="${group.roleName != null ? group.roleName : '-'}">
+										역할명 </span></td>
 
-                            <td class="group-action-cell">
-                                <button type="button"
-                                        class="mini-btn"
-                                        th:data-project-group-id="${group.projectGroupId}"
-                                        onclick="goGroupDetail(this)">
-                                    상세
-                                </button>
+								<td class="desc-cell"
+									th:text="${group.groupAnswer != null ? group.groupAnswer : '-'}">
+									설명</td>
 
-                                <form th:action="@{/manage/groups/delete}"
-                                      method="post"
-                                      class="inline-delete-form"
-                                      onsubmit="return confirm('그룹을 삭제하시겠습니까?');">
+								<td class="group-action-cell">
+									<button type="button" class="mini-btn"
+										th:data-project-group-id="${group.projectGroupId}"
+										onclick="goGroupDetail(this)">상세</button>
 
-                                    <input type="hidden"
-                                           name="projectGroupId"
-                                           th:value="${group.projectGroupId}">
+									<form th:action="@{/manage/groups/delete}" method="post"
+										class="inline-delete-form"
+										onsubmit="return confirm('그룹을 삭제하시겠습니까?');">
 
-                                    <button type="submit"
-                                            class="mini-btn delete">
-                                        삭제
-                                    </button>
-                                </form>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+										<input type="hidden" name="projectGroupId"
+											th:value="${group.projectGroupId}">
 
-        </div>
+										<button type="submit" class="mini-btn delete">삭제</button>
+									</form>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
 
-    </div>
+			</div>
 
-    <script>
-        function goGroupDetail(button) {
-            const projectGroupId = button.dataset.projectGroupId;
+		</div>
 
-            if (!projectGroupId) {
-                return;
-            }
+<script>
+    function goGroupDetail(button) {
+        const projectGroupId = button.dataset.projectGroupId;
 
-            location.href = "/manage/groups/" + encodeURIComponent(projectGroupId);
+        if (!projectGroupId) {
+            return;
         }
-    </script>
 
-</div>
+        location.href = "/manage/groups/" + encodeURIComponent(projectGroupId);
+    }
+
+    document.addEventListener("click", function (event) {
+        const dropdownButton = event.target.closest(".filter-dropdown-btn");
+
+        if (dropdownButton) {
+            event.preventDefault();
+            event.stopPropagation();
+
+            const dropdown = dropdownButton.closest(".filter-dropdown");
+
+            document.querySelectorAll(".filter-dropdown").forEach(function (item) {
+                if (item !== dropdown) {
+                    item.classList.remove("open");
+                }
+            });
+
+            dropdown.classList.toggle("open");
+            return;
+        }
+
+        if (event.target.closest(".filter-dropdown-panel")) {
+            event.stopPropagation();
+            return;
+        }
+
+        document.querySelectorAll(".filter-dropdown").forEach(function (item) {
+            item.classList.remove("open");
+        });
+    });
+</script>
+<script th:if="${alertMessage != null}" th:inline="javascript">
+    const alertMessage = /*[[${alertMessage}]]*/ '';
+    alert(alertMessage);
+    
+</script>
+
 </body>
 </html>

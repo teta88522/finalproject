@@ -30,7 +30,14 @@
 						<label>구독여부</label>
 						<div class="input-inline-btn-group">
 							<input type="text" th:value="${user.subscribeYN == 'Y' ? '구독 중' : '미 구독'}" readonly class="form-control" />
-							<button type="button" data-toggle="modal" data-target="#subscribeModal" class="btn btn-primary btn-sm">구독하기</button>
+        
+        							<button type="button" 
+                							class="btn btn-sm"
+                							th:classappend="${user.subscribeYN == 'Y' ? 'btn-danger' : 'btn-primary'}"
+                							th:text="${user.subscribeYN == 'Y' ? '해지' : '구독하기'}"
+                							th:attr="data-target=${user.subscribeYN == 'Y' ? '#unsubscribeModal' : '#subscribeModal'}"
+                							data-toggle="modal">
+        							</button>
 						</div>
 					</div>
 					<!-- 아이디 -->
@@ -64,49 +71,39 @@
 
 		<!-- 2. 참여 중인 프로젝트 검색/필터 영역 -->
 		<h3>참여중인 프로젝트</h3>
-		<div class="project-filter-section">
-			<div class="filter-wrap">
-				<!-- 프로젝트명 -->
-				<div class="filter-item">
-					<label>프로젝트 명</label>
-					<div class="project-search-wrap">
-						<input type="text" id="filterProjectNameInput" placeholder="프로젝트명 검색" class="form-control" />
-						<select id="filterProjectNameSelect" class="form-control">
-							<option value="">전체</option>
-							<option th:each="p : ${projects}" th:value="${p.projectName}" th:text="${p.projectName}"></option>
-						</select>
-					</div>
-				</div>
-				<!-- 기간 -->
-				<div class="filter-item">
-					<label>시작일 범위</label>
-					<div class="date-range-wrap">
-						<input type="date" id="filterStartDate" class="form-control" />
-						<span>~</span>
-						<input type="date" id="filterEndDate" class="form-control" />
-					</div>
-				</div>
-				<!-- 담당자 -->
-				<div class="filter-item">
-					<label>담당자</label>
-					<input type="text" id="filterOwner" placeholder="담당자 검색" class="form-control filter-owner-input" />
-				</div>
-				<!-- 상태 -->
-				<div class="filter-item">
-					<label>상태</label>
-					<select id="filterStatus" class="form-control filter-status-select">
-						<option value="">전체</option>
-						<option value="a001">예정</option>
-						<option value="a002">진행중</option>
-						<option value="a003">종료</option>
-					</select>
-				</div>
-				<!-- 초기화 -->
-				<div class="filter-item">
-					<button type="button" id="btnFilterReset" class="btn btn-secondary">초기화</button>
-				</div>
-			</div>
-		</div>
+<div class="project-filter-section">
+    <div class="filter-wrap">
+        <div class="filter-item">
+            <label>프로젝트 명</label>
+            <input type="text" id="searchProjectName" class="form-control" placeholder="프로젝트명 검색">
+        </div>
+        <div class="filter-item">
+            <label>시작일 범위</label>
+            <div class="date-range-wrap">
+                <input type="date" id="searchStartDate" class="form-control">
+                <span>~</span>
+                <input type="date" id="searchEndDate" class="form-control">
+            </div>
+        </div>
+        <div class="filter-item">
+            <label>담당자</label>
+            <input type="text" id="searchOwner" class="form-control" placeholder="담당자 검색">
+        </div>
+        <div class="filter-item">
+            <label>상태</label>
+            <select id="searchStatus" class="form-control">
+                <option value="">전체</option>
+                <option value="a001">예정</option>
+                <option value="a002">진행중</option>
+                <option value="a003">종료</option>
+            </select>
+        </div>
+        <div class="filter-item btn-group-wrap">
+            <button type="button" id="btnSearch" class="btn btn-primary">검색</button>
+            <button type="button" id="btnFilterReset" class="btn btn-secondary">초기화</button>
+        </div>
+    </div>
+</div>
 
 		<!-- 3. 프로젝트 목록 테이블 -->
 		<div class="project-table-container">
@@ -229,6 +226,26 @@
 			</div>
 		</div>
 	</div>
+	
+	<div class="modal fade" id="unsubscribeModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog password-modal-dialog" role="document">
+        <div class="modal-content password-modal-content">
+            <form id="unsubscribeForm" th:action="@{/subscribe/unsubscribe}" method="post">
+                <div class="modal-header-custom">
+                    <h4>구독 해지</h4>
+                    <span data-dismiss="modal">✕</span>
+                </div>
+                <div class="modal-body password-modal-body">
+                    <p style="text-align: center; margin: 20px 0;">정말로 구독을 해지하시겠습니까?</p>
+                </div>
+                <div class="modal-footer password-modal-footer">
+                    <button type="button" class="btn btn-default btn-sm" data-dismiss="modal">아니오</button>
+                    <button type="submit" class="btn btn-danger btn-sm">네, 해지하겠습니다</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 	<script th:src="@{/js/users/userMypage.js}"></script>
 </div>
 </body>

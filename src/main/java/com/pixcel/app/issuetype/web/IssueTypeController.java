@@ -107,7 +107,49 @@ public class IssueTypeController {
 		}
 	}
 
-	// 일감유형 복사 화면으로 이동한다.
+	// 일감유형 수정 화면으로 이동한다.
+	@GetMapping("/issuetype/update")
+	public String issueTypeUpdateForm(@CookieValue(value = "userId", required = false) String userId,
+			@RequestParam("issueTypeId") String issueTypeId, Model model, RedirectAttributes redirectAttributes) {
+
+		String loginUserId = getLoginUserId(userId);
+
+		try {
+			IssueTypeVO issueType = issueTypeService.getIssueTypeDetail(issueTypeId, loginUserId);
+
+			model.addAttribute("issueType", issueType);
+			model.addAttribute("issueTypeUsed", issueType.getUsedCount() != null && issueType.getUsedCount() > 0);
+			addFormModel(model, loginUserId);
+
+			return "issuetype/update";
+
+		} catch (IllegalArgumentException e) {
+			redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+			return "redirect:/issuetype/list";
+		}
+	}
+
+	@PostMapping("/issuetype/update")
+	public String issueTypeUpdate(@CookieValue(value = "userId", required = false) String userId, IssueTypeVO issueType,
+			RedirectAttributes redirectAttributes) {
+
+		String loginUserId = getLoginUserId(userId);
+
+		try {
+			issueTypeService.updateIssueType(issueType, loginUserId);
+			redirectAttributes.addFlashAttribute("message", "일감유형을 수정했습니다.");
+
+			return "redirect:/issuetype/list";
+
+		} catch (IllegalArgumentException e) {
+			redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+			redirectAttributes.addFlashAttribute("issueType", issueType);
+
+			String issueTypeId = issueType == null ? "" : issueType.getIssueTypeId();
+			return "redirect:/issuetype/update?issueTypeId=" + issueTypeId;
+		}
+	}
+
 	@GetMapping("/issuetype/copy")
 	public String issueTypeCopyForm(@CookieValue(value = "userId", required = false) String userId,
 			@RequestParam("issueTypeId") String issueTypeId, Model model, RedirectAttributes redirectAttributes) {

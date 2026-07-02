@@ -100,7 +100,7 @@
 								<col style="width: 220px;">
 								<col style="width: 160px;">
 								<col>
-								<col style="width: 150px;">
+								<col style="width: 184px;">
 							</colgroup>
 
 							<thead>
@@ -133,8 +133,11 @@
 										th:title="${issueType.description != null ? issueType.description : '-'}">
 											설명 </span></td>
 
-									<td>
+									<td class="issuetype-action-cell">
 										<div class="table-actions">
+											<a class="btn btn-custon-rounded-four btn-default"
+												th:href="@{/issuetype/update(issueTypeId=${issueType.issueTypeId})}">
+												수정 </a>
 											<a class="btn btn-custon-rounded-four btn-default"
 												th:href="@{/issuetype/copy(issueTypeId=${issueType.issueTypeId})}">
 												복사 </a>

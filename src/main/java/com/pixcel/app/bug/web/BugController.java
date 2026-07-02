@@ -18,6 +18,7 @@ import com.pixcel.app.bug.service.BugService;
 import com.pixcel.app.bug.service.BugVO;
 import com.pixcel.app.file.service.FileDTO;
 import com.pixcel.app.file.service.FileService;
+import com.pixcel.app.file.service.FileVO;
 
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -101,6 +102,7 @@ public class BugController {
                           @CookieValue(value = "userId", required = false) String userId,
                           @CookieValue(value = "user_pk", required = false) String userPk,
                           @CookieValue(value = "subscribeYn", required = false) String subscribeYn) {
+   
 
         String loginUserId = getLoginUserId(userId, userPk);
 
@@ -130,7 +132,10 @@ public class BugController {
                              @CookieValue(value = "userId", required = false) String userId,
                              @CookieValue(value = "user_pk", required = false) String userPk,
                              @CookieValue(value="userName", required = false) String userName) {
-
+    	
+    	if(executionId == null || executionId.equals("")) {
+    		return "redirect:/project/" + projectId  + "/bugs";
+    	}
 
         String loginUserId = getLoginUserId(userId, userPk);
 
@@ -255,11 +260,14 @@ public class BugController {
         if (!isAdmin && !isWriter) {
             return "redirect:/project/" + projectId + "/bugs";
         }
+        
+        List<FileVO> fileList = fileService.selectAll(bugId, null);
 
         model.addAttribute("bugVO", bugVO);
         model.addAttribute("projectId", projectId);
         model.addAttribute("loginUserId", loginUserId);
         model.addAttribute("isAdmin", isAdmin);
+        model.addAttribute("fileList", fileList);
 
         return "bug/bugUpdate";
     }
@@ -268,6 +276,7 @@ public class BugController {
     @PostMapping("/project/{projectId}/bugs/update")
     public String updateBug(@PathVariable String projectId,
                             @ModelAttribute BugVO bugVO,
+                            @RequestParam(value = "files", required = false) List<MultipartFile> files,
                             @CookieValue(value = "userId", required = false) String userId,
                             @CookieValue(value = "user_pk", required = false) String userPk,
                             @CookieValue(value = "subscribeYn", required = false) String subscribeYn) {
@@ -284,6 +293,20 @@ public class BugController {
             bugService.updateBug(bugVO);
         } else {
             bugService.updateBugByReporter(bugVO);
+        }
+        
+        
+        if(hasUploadFiles(files)) {
+        	FileDTO uploadDTO = new FileDTO();
+        	uploadDTO.setProjectId(projectId);
+        	uploadDTO.setVersionId(bugVO.getVersionId());
+        	
+        	uploadDTO.setFileCode("f006");
+        	uploadDTO.setUploadUserId(loginUserId);
+        	
+        	uploadDTO.setConnectAddress(bugVO.getBugId());
+        	
+        	fileService.uploadFile(files, uploadDTO);
         }
 
         return "redirect:/project/" + projectId + "/bugs";

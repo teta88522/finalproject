@@ -50,7 +50,7 @@
     background: #fff;
     border: 1px solid #e0e0e0;
     border-radius: 8px;
-    margin-bottom: 30px;
+    margin-bottom: 0;
     overflow: hidden;
 }
 
@@ -121,14 +121,27 @@
     background-color: #fafafa;
 }
 
-/* 하단 위젯 영역 */
-.dashboard-widgets {
+/* 2-Column 대시보드 레이아웃 정렬 */
+.dashboard-content-layout {
     display: flex;
+    gap: 24px;
+    align-items: flex-start;
+}
+
+.dashboard-main-column {
+    flex: 1;
+    min-width: 0;
+}
+
+.dashboard-side-column {
+    width: 320px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
     gap: 20px;
 }
 
 .widget-card {
-    flex: 1;
     background: #fff;
     border: 1px solid #e0e0e0;
     border-radius: 8px;
@@ -154,4 +167,119 @@
     font-size: 24px;
     margin-bottom: 10px;
     color: #ccc;
+}
+
+/* 최신글/인기글 위젯 리스트 스타일 추가 */
+.widget-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.widget-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #f1f3f5;
+    font-size: 13px;
+    gap: 10px;
+}
+.widget-item:last-child {
+    border-bottom: none;
+}
+.widget-link {
+    text-decoration: none;
+    color: #333;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+    flex: 1;
+    display: inline-block;
+}
+.widget-link:hover .widget-post-title {
+    color: #006df0;
+    text-decoration: underline;
+}
+.widget-post-title {
+    transition: color 0.2s ease;
+}
+.widget-post-meta {
+    font-size: 11px;
+    color: #888;
+    flex-shrink: 0;
+}
+/* 인기 게시글 전용 순위 뱃지 & 그룹화 */
+.popular-rank-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+    flex: 1;
+}
+.rank-badge {
+    background-color: #e2e8f0;
+    color: #4a5568;
+    font-size: 11px;
+    font-weight: bold;
+    border-radius: 4px;
+    width: 18px;
+    height: 18px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+/* 1, 2, 3위는 하이라이팅 처리 🔥 */
+.widget-item:nth-child(1) .rank-badge {
+    background-color: #feebc8;
+    color: #dd6b20;
+}
+.widget-item:nth-child(2) .rank-badge {
+    background-color: #edf2f7;
+    color: #4a5568;
+}
+.widget-item:nth-child(3) .rank-badge {
+    background-color: #e6fffa;
+    color: #319795;
+}
+.popular-meta-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+.widget-views-meta {
+    font-size: 11px;
+    color: #a0aec0;
+}
+
+.board-badge {
+    background-color: #f1f3f5;
+    color: #495057;
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    margin-right: 6px;
+    font-weight: 600;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.btn-manage-link {
+    display: inline-block;
+    padding: 4px 8px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    background-color: #fff;
+    color: #495057;
+    text-decoration: none;
+    font-size: 12px;
+    transition: all 0.2s ease;
+}
+.btn-manage-link:hover {
+    background-color: #f8f9fa;
+    color: #212529;
+    border-color: #adb5bd;
 }

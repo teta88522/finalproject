@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{common/layouts/default_layout}">
+
+<head>
+<title>일감유형 수정</title>
+<link rel="stylesheet" th:href="@{/css/common-ui.css}">
+<link rel="stylesheet" th:href="@{/css/issuetype/issuetype.css}">
+</head>
+
+<body>
+	<div layout:fragment="Content">
+
+		<div class="issuetype-area">
+			<div class="container-fluid">
+
+				<div class="issuetype-header">
+					<div>
+						<h3>일감유형 수정</h3>
+						<p>일감 생성에 사용할 유형과 항목 설정을 수정합니다.</p>
+					</div>
+				</div>
+
+				<div th:if="${errorMessage}" class="page-message page-message-error"
+					th:text="${errorMessage}"></div>
+
+				<div th:if="${issueTypeUsed}" class="page-message page-message-info">
+					이미 이 유형으로 등록된 일감이 있으면 항목설정을 변경할 수 없고, 해당 프로젝트에서는 유형을 해제할 수 없습니다.
+				</div>
+
+				<form th:action="@{/issuetype/update}" method="post"
+					th:object="${issueType}">
+
+					<input type="hidden" th:field="*{issueTypeId}">
+
+					<div class="issuetype-form-layout">
+
+						<div class="issuetype-main-column">
+
+							<div class="issuetype-card">
+								<div class="issuetype-card-title">
+									<h4>기본 정보</h4>
+									<p>유형명, 초기 상태, 설명을 수정합니다.</p>
+								</div>
+
+								<div class="form-grid">
+									<div class="form-group">
+										<label for="issueTypeName">유형명 <span class="required">*</span></label>
+										<input type="text" id="issueTypeName"
+											th:field="*{issueTypeName}" class="form-control"
+											maxlength="100" required>
+									</div>
+
+									<div class="form-group">
+										<label for="initialStatusId">초기 상태 <span
+											class="required">*</span></label>
+										<select id="initialStatusId" th:field="*{initialStatusId}"
+											class="form-control" required>
+											<option value="">선택</option>
+											<option th:each="status : ${issueStatusList}"
+												th:value="${status.issueStatusId}"
+												th:text="${status.statusName}">신규</option>
+										</select>
+									</div>
+								</div>
+
+								<div class="form-group">
+									<label for="description">설명</label>
+									<textarea id="description" th:field="*{description}"
+										class="form-control"
+										maxlength="1000"></textarea>
+								</div>
+							</div>
+
+							<div class="issuetype-card"
+								th:classappend="${issueTypeUsed} ? ' issuetype-locked-card' : ''">
+								<div class="issuetype-card-title">
+									<h4>표준 항목 설정</h4>
+									<p>일감 등록 화면에서 사용할 항목과 필수 여부를 설정합니다.</p>
+								</div>
+
+								<div class="field-setting-table-wrap">
+									<table class="table table-hover field-setting-table">
+										<thead>
+											<tr>
+												<th>항목</th>
+												<th style="width: 90px;" class="center">사용</th>
+												<th style="width: 90px;" class="center">필수</th>
+											</tr>
+										</thead>
+										<tbody>
+											<tr>
+												<td><span class="strong-text">담당자</span></td>
+												<td class="center"><input type="checkbox" name="fieldCodeList"
+													value="ASSIGNEE"
+													th:checked="${issueType.fieldCodeList != null and #lists.contains(issueType.fieldCodeList, 'ASSIGNEE')}"
+													th:disabled="${issueTypeUsed}"></td>
+												<td class="center"><input type="checkbox" name="requiredFieldCodeList"
+													value="ASSIGNEE"
+													th:checked="${issueType.requiredFieldCodeList != null and #lists.contains(issueType.requiredFieldCodeList, 'ASSIGNEE')}"
+													th:disabled="${issueTypeUsed}"></td>
+											</tr>
+											<tr>
+												<td><span class="strong-text">마일스톤</span></td>
+												<td class="center"><input type="checkbox" name="fieldCodeList"
+													value="MILESTONE"
+													th:checked="${issueType.fieldCodeList != null and #lists.contains(issueType.fieldCodeList, 'MILESTONE')}"
+													th:disabled="${issueTypeUsed}"></td>
+												<td class="center"><input type="checkbox" name="requiredFieldCodeList"
+													value="MILESTONE"
+													th:checked="${issueType.requiredFieldCodeList != null and #lists.contains(issueType.requiredFieldCodeList, 'MILESTONE')}"
+													th:disabled="${issueTypeUsed}"></td>
+											</tr>
+											<tr>
+												<td><span class="strong-text">상위일감</span></td>
+												<td class="center"><input type="checkbox" name="fieldCodeList"
+													value="PARENT_ISSUE"
+													th:checked="${issueType.fieldCodeList != null and #lists.contains(issueType.fieldCodeList, 'PARENT_ISSUE')}"
+													th:disabled="${issueTypeUsed}"></td>
+												<td class="center"><input type="checkbox" name="requiredFieldCodeList"
+													value="PARENT_ISSUE"
+													th:checked="${issueType.requiredFieldCodeList != null and #lists.contains(issueType.requiredFieldCodeList, 'PARENT_ISSUE')}"
+													th:disabled="${issueTypeUsed}"></td>
+											</tr>
+											<tr>
+												<td><span class="strong-text">시작일</span></td>
+												<td class="center"><input type="checkbox" name="fieldCodeList"
+													value="START_DATE"
+													th:checked="${issueType.fieldCodeList != null and #lists.contains(issueType.fieldCodeList, 'START_DATE')}"
+													th:disabled="${issueTypeUsed}"></td>
+												<td class="center"><input type="checkbox" name="requiredFieldCodeList"
+													value="START_DATE"
+													th:checked="${issueType.requiredFieldCodeList != null and #lists.contains(issueType.requiredFieldCodeList, 'START_DATE')}"
+													th:disabled="${issueTypeUsed}"></td>
+											</tr>
+											<tr>
+												<td><span class="strong-text">완료기한</span></td>
+												<td class="center"><input type="checkbox" name="fieldCodeList"
+													value="DUE_DATE"
+													th:checked="${issueType.fieldCodeList != null and #lists.contains(issueType.fieldCodeList, 'DUE_DATE')}"
+													th:disabled="${issueTypeUsed}"></td>
+												<td class="center"><input type="checkbox" name="requiredFieldCodeList"
+													value="DUE_DATE"
+													th:checked="${issueType.requiredFieldCodeList != null and #lists.contains(issueType.requiredFieldCodeList, 'DUE_DATE')}"
+													th:disabled="${issueTypeUsed}"></td>
+											</tr>
+											<tr>
+												<td><span class="strong-text">추정시간</span></td>
+												<td class="center"><input type="checkbox" name="fieldCodeList"
+													value="ESTIMATED_HOURS"
+													th:checked="${issueType.fieldCodeList != null and #lists.contains(issueType.fieldCodeList, 'ESTIMATED_HOURS')}"
+													th:disabled="${issueTypeUsed}"></td>
+												<td class="center"><input type="checkbox" name="requiredFieldCodeList"
+													value="ESTIMATED_HOURS"
+													th:checked="${issueType.requiredFieldCodeList != null and #lists.contains(issueType.requiredFieldCodeList, 'ESTIMATED_HOURS')}"
+													th:disabled="${issueTypeUsed}"></td>
+											</tr>
+										</tbody>
+									</table>
+								</div>
+
+								<div class="setting-help">필수 항목은 먼저 사용 항목으로 선택되어야 합니다.</div>
+							</div>
+
+						</div>
+
+						<div class="issuetype-side-column">
+							<div class="issuetype-card project-card">
+								<div class="issuetype-card-title">
+									<h4>적용 프로젝트</h4>
+									<p>이 일감유형을 사용할 프로젝트를 선택합니다.</p>
+								</div>
+
+								<div class="project-select-wrap">
+									<table class="table table-hover project-select-table">
+										<thead>
+											<tr>
+												<th style="width: 50px;" class="center">선택</th>
+												<th>프로젝트명</th>
+											</tr>
+										</thead>
+										<tbody>
+											<tr th:if="${#lists.isEmpty(projectList)}">
+												<td colspan="2" class="empty-row">적용 가능한 프로젝트가 없습니다.</td>
+											</tr>
+											<tr th:each="project : ${projectList}"
+												th:with="projectLocked=${issueType.usedProjectIdList != null and #lists.contains(issueType.usedProjectIdList, project.projectId)}">
+												<td class="center">
+													<input type="checkbox" name="projectIdList"
+														th:value="${project.projectId}"
+														th:checked="${issueType.projectIdList != null and #lists.contains(issueType.projectIdList, project.projectId)}"
+														th:disabled="${projectLocked}">
+													<input th:if="${projectLocked}" type="hidden" name="projectIdList"
+														th:value="${project.projectId}">
+												</td>
+												<td th:text="${project.projectName}">프로젝트명</td>
+											</tr>
+										</tbody>
+									</table>
+								</div>
+							</div>
+						</div>
+
+					</div>
+
+					<div class="form-actions">
+						<a th:href="@{/issuetype/list}"
+							class="btn btn-custon-rounded-four btn-default">취소</a>
+
+						<button type="submit"
+							class="btn btn-custon-rounded-four btn-primary">저장</button>
+					</div>
+
+				</form>
+			</div>
+		</div>
+
+		<script>
+			document.addEventListener('DOMContentLoaded', function () {
+				document.querySelectorAll('input[name="fieldCodeList"]').forEach(function (useCheckbox) {
+					var requiredCheckbox = document.querySelector(
+						'input[name="requiredFieldCodeList"][value="' + useCheckbox.value + '"]'
+					);
+
+					if (!requiredCheckbox) {
+						return;
+					}
+
+					function syncRequiredCheckbox() {
+						if (useCheckbox.disabled) {
+							return;
+						}
+
+						requiredCheckbox.disabled = !useCheckbox.checked;
+
+						if (!useCheckbox.checked) {
+							requiredCheckbox.checked = false;
+						}
+					}
+
+					useCheckbox.addEventListener('change', syncRequiredCheckbox);
+					syncRequiredCheckbox();
+				});
+			});
+		</script>
+
+	</div>
+</body>
+</html>

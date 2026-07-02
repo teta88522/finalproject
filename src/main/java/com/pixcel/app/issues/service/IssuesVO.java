@@ -67,6 +67,8 @@ public class IssuesVO {
 	private String issueTypeName;
 	private String initialStatusId;
 	private String initialStatusName;
+	private String projectAppliedYn;
+	private Integer usedCount;
 
 	private String issueStatusName;
 	private String closedYn;
@@ -103,6 +105,7 @@ public class IssuesVO {
 	private Integer assigneeCount;
 	private Integer milestoneCount;
 	private Integer parentIssueCount;
+	private Integer childIncompleteCount;
 
 	/*
 	 * 일감 전체조회 검색 조건 - 제목 검색은 title 컬럼 대상 - 날짜 검색은 startDate, dueDate를 사용한다.

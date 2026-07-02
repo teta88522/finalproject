@@ -89,11 +89,8 @@
 			,c.note AS "statusName"
 			,owner.user_name AS "ownerName"
 		FROM project p
-		LEFT JOIN users owner
-			ON p.owner_id = owner.user_id
-		LEFT JOIN common_code c
-			ON p.status_code = c.code_id
-			AND c.code_name = '0A'
+		LEFT JOIN users owner ON p.owner_id = owner.user_id
+		LEFT JOIN common_code c ON p.status_code = c.code_id AND c.code_name = '0A'
 		WHERE p.owner_id = #{userId}
 		   OR EXISTS (
 				SELECT 1
@@ -105,6 +102,49 @@
 		   )
 		ORDER BY p.created_at DESC
 	</select>
+	
+	<select id="getFilteredProjects" parameterType="map" resultType="ProjectVO">
+		SELECT
+			p.project_id AS "projectId"
+			,p.owner_id AS "ownerId"
+			,p.project_name AS "projectName"
+			,p.description
+			,p.project_url AS "projectUrl"
+			,p.status_code AS "statusCode"
+			,p.start_date AS "startDate"
+			,p.end_date AS "endDate"
+			,p.created_at AS "createdAt"
+			,c.note AS "statusName"
+			,owner.user_name AS "ownerName"
+		FROM project p
+		LEFT JOIN users owner ON p.owner_id = owner.user_id
+		LEFT JOIN common_code c ON p.status_code = c.code_id AND c.code_name = '0A'
+		<where>
+			(p.owner_id = #{userId} OR EXISTS (
+				SELECT 1 FROM project_member pm
+				JOIN team_member tm ON pm.team_member_id = tm.team_member_id
+				WHERE pm.project_id = p.project_id AND tm.user_id = #{userId}
+			))
+			
+			<if test="projectName != null and projectName != ''">
+				AND p.project_name LIKE '%' || #{projectName} || '%'
+			</if>
+			<if test="ownerName != null and ownerName != ''">
+				AND owner.user_name LIKE '%' || #{ownerName} || '%'
+			</if>
+			<if test="startDate != null and startDate != ''">
+				AND p.start_date >= TO_DATE(#{startDate}, 'YYYY-MM-DD')
+			</if>
+			<if test="endDate != null and endDate != ''">
+				AND p.end_date &lt;= TO_DATE(#{endDate}, 'YYYY-MM-DD')
+			</if>
+			<if test="statusCode != null and statusCode != ''">
+				AND p.status_code = #{statusCode}
+			</if>
+		</where>
+		ORDER BY p.created_at DESC
+	</select>
+	
 	<update id="updateUser" parameterType="userServiceVO">
     UPDATE users
     SET
@@ -118,4 +158,35 @@
     SET password = #{password}
     WHERE user_id = #{userId}
 	</update>
+	
+	<update id="updateSubscribeStatus" parameterType="string">
+		UPDATE users
+		SET
+			SUBSCRIBE_YN ='Y',
+			SUBSCRIBE_AT = SYSDATE,
+			IDENTITY_VERIFIED_YN = 'Y',
+			IDENTITY_VERIFIED_AT = CASE
+									WHEN IDENTITY_VERIFIED_YN = 'Y' THEN IDENTITY_VERIFIED_AT
+									ELSE SYSDATE
+								   END
+		WHERE
+			email = #{email}
+	</update>
+	
+	<update id="updateUnsubscribeStatus" parameterType="String">
+		UPDATE users
+		SET
+			SUBSCRIBE_YN = 'N'
+		WHERE
+			user_id = #{userId}
+	</update>
+	
+<!-- 연락처 중복 확인 -->
+<select id="checkPhone"
+        parameterType="string"
+        resultType="int">
+    SELECT COUNT(*)
+    FROM users
+    WHERE REPLACE(phone, '-', '') = #{phone}
+</select>
 </mapper>

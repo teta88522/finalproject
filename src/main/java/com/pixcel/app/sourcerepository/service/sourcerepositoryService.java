@@ -22,6 +22,10 @@ public interface sourcerepositoryService {
 	// 4. GitHub에서 Commit 조회 & DB 동기화
 	public void syncSourcerepositoryFromGitHub(String projectId, String branch);
 
+	// ✅ 4-1. 저장소의 모든 브랜치를 한 번에 동기화 (브랜치마다 syncSourcerepositoryFromGitHub를 순회 호출)
+	//    반환값: {"succeeded": [성공한 브랜치명 목록], "failed": [실패한 브랜치명(+사유) 목록], "totalBranches": 전체 브랜치 수}
+	public Map<String, Object> syncAllBranchesFromGitHub(String projectId);
+
 	// 5. DB에서 Commit 조회 (페이지네이션)
 	public sourcerepositoryPageVO<sourcerepositoryVO> getSourcerepositoryCommits(String projectId, 
 																				 String branch, 
@@ -32,7 +36,8 @@ public interface sourcerepositoryService {
 	public sourcerepositoryVO getSourcerepositoryCommitDetail(String commitHash);
 
 	// 7. 단일 Commit 조회
-	public sourcerepositoryVO getSourcerepositoryCommit(String commitHash);
+	// ✅ 같은 SHA가 여러 브랜치에 걸쳐 있을 수 있어 branchName으로 좁힘 (null이면 최신 1건)
+	public sourcerepositoryVO getSourcerepositoryCommit(String commitHash, String branchName);
 
 	// 8. 프로젝트별 모든 Commit 조회
 	public List<sourcerepositoryVO> getSourcerepositoryCommitsByProjectId(String projectId);
@@ -48,4 +53,7 @@ public interface sourcerepositoryService {
 	
 	// 4. GitHub URL 검증 & 브랜치 목록 조회
 	public Map<String, Object> getGitHubBranches(String gitHubUrl);
+	
+	// DB에서 프로젝트의 첫 번째 branch 조회
+	public String getFirstBranchByProjectId(String projectId);
 }

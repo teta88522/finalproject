@@ -120,7 +120,7 @@
 						<li
 							th:each="pageNum : ${#numbers.sequence(1, repositoryPage.totalPage)}">
 							<a
-							th:href="@{/project/{projectId}/repository(projectId=${projectId}, page=${pageNum}, startDate=${param.startDate}, endDate=${param.endDate}, originalName=${param.originalName}, uploadUserId=${param.uploadUserId})}}"
+							th:href="@{/project/{projectId}/repository(projectId=${projectId}, page=${pageNum}, startDate=${param.startDate}, endDate=${param.endDate}, originalName=${param.originalName}, uploadUserId=${param.uploadUserId})}"
 							th:text="${pageNum}"
 							th:classappend="${pageNum == repositoryPage.page} ? 'active'">1</a>
 						</li>

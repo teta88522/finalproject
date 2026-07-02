@@ -17,11 +17,12 @@
                 <h2>버그 관리</h2>
                 <p>프로젝트에서 등록된 버그를 조회하고 관리합니다.</p>
             </div>
-
+            <!-- 
             <a class="btn primary"
                th:href="@{/project/{projectId}/bugs/new(projectId=${projectId})}">
                 버그 등록
             </a>
+             -->
         </div>
 
         <form class="search-box"
@@ -151,14 +152,14 @@
                     <label>담당자</label>
                     <input type="text"
                            th:field="*{assigneeId}"
-                           placeholder="담당자 ID">
+                           placeholder="담당자 이름">
                 </div>
 
                 <div class="form-group">
                     <label>발견자</label>
                     <input type="text"
                            th:field="*{reporterId}"
-                           placeholder="발견자 ID">
+                           placeholder="발견자 이름">
                 </div>
 
                 <div class="form-group">
@@ -234,8 +235,8 @@
                         th:data-expected-result="${bug.expectedResult}">
 
                         <td class="check-cell">
-    						<input type="checkbox" class="bug-check" th:value="${bug.bugId}">
-						</td>
+                            <input type="checkbox" class="bug-check" th:value="${bug.bugId}">
+                        </td>
 
                         <td class="title-cell"
                             th:text="${bug.title}">
@@ -335,17 +336,23 @@
                 <div class="detail-row three">
                     <div class="detail-section">
                         <label>상태</label>
-                        <div id="detailStatusName" class="detail-value">-</div>
+                        <div class="detail-value badge-detail-wrap">
+                            <span id="detailStatusName" class="badge status">-</span>
+                        </div>
                     </div>
 
                     <div class="detail-section">
                         <label>심각도</label>
-                        <div id="detailSeverityName" class="detail-value">-</div>
+                        <div class="detail-value badge-detail-wrap">
+                            <span id="detailSeverityName" class="badge severity">-</span>
+                        </div>
                     </div>
 
                     <div class="detail-section">
                         <label>우선순위</label>
-                        <div id="detailPriorityName" class="detail-value">-</div>
+                        <div class="detail-value badge-detail-wrap">
+                            <span id="detailPriorityName" class="badge priority">-</span>
+                        </div>
                     </div>
                 </div>
 
@@ -489,7 +496,6 @@
                 } else {
                     clearDetail();
                 }
-               // setDetail(row);
             });
         }
 
@@ -533,7 +539,7 @@
             event.stopPropagation();
         });
     });
-</script>
+    </script>
 
 </div>
 </body>

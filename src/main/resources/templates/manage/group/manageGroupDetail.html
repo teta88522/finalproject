@@ -19,13 +19,13 @@
             <div>
                 <h1 class="detail-page-title">관리 &gt; 그룹 상세</h1>
                 <p class="detail-page-sub-title">
-                    그룹 정보와 그룹 구성원의 개인 역할을 관리할 수 있습니다.
+                    그룹 정보와 그룹 구성원을 조회하고 관리할 수 있습니다.
                 </p>
             </div>
 
             <div class="detail-user-info">
                 <span>관리자</span>
-                <strong th:text="${ownerId}">USER_ID</strong>
+                <strong th:text="${userName}">USER_ID</strong>
             </div>
         </div>
 
@@ -46,7 +46,7 @@
             <div class="detail-section">
                 <div class="section-title">그룹 기본정보</div>
                 <div class="section-sub-text">
-                    그룹 자체의 역할과 기본정보를 수정합니다. 구성원 개인 역할은 아래 목록에서 별도로 수정합니다.
+                    그룹 자체의 역할과 기본정보를 수정합니다.
                 </div>
 
                 <div class="form-grid">
@@ -128,7 +128,7 @@
                 <div>
                     <div class="section-title">그룹 구성원</div>
                     <div class="section-sub-text">
-                        현재 그룹에 배정된 구성원 목록입니다. 역할을 변경한 뒤 구성원 역할 변경 버튼을 누르면 저장됩니다.
+                        현재 그룹에 배정된 구성원 목록입니다.
                     </div>
                 </div>
 
@@ -152,14 +152,13 @@
                             <th>ID</th>
                             <th>이름</th>
                             <th>Email</th>
-                            <th>개인 역할</th>
                             <th>관리</th>
                         </tr>
                     </thead>
 
                     <tbody>
                         <tr th:if="${assignedMemberList == null or #lists.isEmpty(assignedMemberList)}">
-                            <td colspan="6" class="empty-row">
+                            <td colspan="5" class="empty-row">
                                 현재 그룹에 배정된 구성원이 없습니다.
                             </td>
                         </tr>
@@ -182,30 +181,6 @@
                             </td>
 
                             <td>
-                                <form th:action="@{/manage/groups/{projectGroupId}/members/role/update(projectGroupId=${manageGroup.projectGroupId})}"
-                                      method="post"
-                                      class="member-role-form">
-
-                                    <input type="hidden"
-                                           name="projectMemberId"
-                                           th:value="${member.projectMemberId}">
-
-                                    <select name="roleId"
-                                            class="member-role-select"
-                                            th:data-original-role-id="${member.roleId != null ? member.roleId : ''}">
-                                        <option value="">역할 선택</option>
-
-                                        <option th:each="role : ${manageRoleList}"
-                                                th:value="${role.roleId}"
-                                                th:text="${role.roleName}"
-                                                th:selected="${role.roleId == member.roleId}">
-                                            역할명
-                                        </option>
-                                    </select>
-                                </form>
-                            </td>
-
-                            <td>
                                 <form th:action="@{/manage/groups/{projectGroupId}/members/remove(projectGroupId=${manageGroup.projectGroupId})}"
                                       method="post"
                                       class="inline-form"
@@ -223,16 +198,6 @@
                         </tr>
                     </tbody>
                 </table>
-            </div>
-
-            <div class="member-role-change-area"
-                 th:if="${assignedMemberList != null and !#lists.isEmpty(assignedMemberList)}">
-
-                <button type="button"
-                        class="btn-basic btn-primary"
-                        onclick="saveChangedMemberRoles();">
-                    구성원 역할 변경
-                </button>
             </div>
         </div>
 
@@ -271,68 +236,6 @@
             }
 
             return true;
-        }
-
-        function saveChangedMemberRoles() {
-            const selectList = document.querySelectorAll(".member-role-select");
-            const changedFormList = [];
-
-            selectList.forEach(function(selectBox) {
-                const originalRoleId = selectBox.dataset.originalRoleId || "";
-                const currentRoleId = selectBox.value || "";
-
-                if (originalRoleId !== currentRoleId) {
-                    changedFormList.push(selectBox.closest("form"));
-                }
-            });
-
-            if (changedFormList.length === 0) {
-                alert("변경된 역할이 없습니다.");
-                return;
-            }
-
-            for (const form of changedFormList) {
-                const roleSelect = form.querySelector("select[name='roleId']");
-
-                if (!roleSelect.value) {
-                    alert("역할이 선택되지 않은 구성원이 있습니다.");
-                    roleSelect.focus();
-                    return;
-                }
-            }
-
-            if (!confirm("변경된 구성원 역할을 저장하시겠습니까?")) {
-                return;
-            }
-
-            saveRoleFormsSequentially(changedFormList, 0);
-        }
-
-        function saveRoleFormsSequentially(formList, index) {
-            if (index >= formList.length) {
-                alert("구성원 역할이 변경되었습니다.");
-                location.reload();
-                return;
-            }
-
-            const form = formList[index];
-            const formData = new FormData(form);
-
-            fetch(form.action, {
-                method: "POST",
-                body: formData,
-                credentials: "same-origin"
-            })
-            .then(function(response) {
-                if (!response.ok) {
-                    throw new Error("역할 변경 실패");
-                }
-
-                saveRoleFormsSequentially(formList, index + 1);
-            })
-            .catch(function() {
-                alert("역할 변경 중 오류가 발생했습니다.");
-            });
         }
     </script>
 

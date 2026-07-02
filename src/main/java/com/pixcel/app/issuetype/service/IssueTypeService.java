@@ -24,6 +24,8 @@ public interface IssueTypeService {
     // 신규 일감유형을 등록한다.
     void createIssueType(IssueTypeVO issueType, String userId);
 
+    void updateIssueType(IssueTypeVO issueType, String userId);
+
     // 기존 일감유형을 복사하여 신규 일감유형으로 등록한다.
     void copyIssueType(IssueTypeVO issueType, String userId);
 
