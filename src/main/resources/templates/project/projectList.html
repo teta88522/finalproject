@@ -12,9 +12,9 @@
 
 <body>
 	<div layout:fragment="Content">
- 
+
 		<div class="project-list-page" th:data-subscribe-yn="${subscribeYn}">
- 
+
 			<!-- 상단 제목 -->
 			<div class="project-page-header">
 				<div>
@@ -23,7 +23,7 @@
 						있습니다.</p>
 				</div>
 			</div>
- 
+
 			<!-- 검색 조건 영역 -->
 			<div class="search-section project-search-class">
 				<div class="search-header">
@@ -33,10 +33,10 @@
 							생성</a>
 					</div>
 				</div>
- 
+
 				<form id="searchForm" th:action="@{/myproject/list}" method="get">
 					<div class="search-form-row">
- 
+
 						<!-- 프로젝트 명 -->
 						<div class="search-field">
 							<label for="searchProjectName">프로젝트 명</label> <input type="text"
@@ -44,7 +44,7 @@
 								th:value="${searchVO != null ? searchVO.searchProjectName : ''}"
 								placeholder="프로젝트 명을 입력해주세요.">
 						</div>
- 
+
 						<!-- 생성자 -->
 						<div class="search-field">
 							<label for="searchOwnerName">생성자</label> <input type="text"
@@ -52,7 +52,7 @@
 								th:value="${searchVO != null ? searchVO.searchOwnerName : ''}"
 								placeholder="생성자 명을 입력해주세요.">
 						</div>
- 
+
 						<!-- ✅ 프로젝트 상태 - 다중선택 (체크박스) -->
 						<div class="search-field">
 							<label>프로젝트 상태</label>
@@ -61,27 +61,25 @@
 									<span class="filter-selected-text">전체</span>
 								</summary>
 								<div class="filter-dropdown-panel">
-									<label class="filter-check-item"> 
-										<input type="checkbox" name="searchStatusCode" value="a001"
-											th:checked="${searchVO != null and searchVO.searchStatusCode != null and searchVO.searchStatusCode.contains('a001')}">
+									<label class="filter-check-item"> <input
+										type="checkbox" name="searchStatusCode" value="a001"
+										th:checked="${searchVO != null and searchVO.searchStatusCode != null and searchVO.searchStatusCode.contains('a001')}">
 										<span>예정</span>
-									</label> 
-									<label class="filter-check-item"> 
-										<input type="checkbox" name="searchStatusCode" value="a002"
-											th:checked="${searchVO != null and searchVO.searchStatusCode != null and searchVO.searchStatusCode.contains('a002')}">
+									</label> <label class="filter-check-item"> <input
+										type="checkbox" name="searchStatusCode" value="a002"
+										th:checked="${searchVO != null and searchVO.searchStatusCode != null and searchVO.searchStatusCode.contains('a002')}">
 										<span>진행중</span>
-									</label> 
-									<label class="filter-check-item"> 
-										<input type="checkbox" name="searchStatusCode" value="a003"
-											th:checked="${searchVO != null and searchVO.searchStatusCode != null and searchVO.searchStatusCode.contains('a003')}">
+									</label> <label class="filter-check-item"> <input
+										type="checkbox" name="searchStatusCode" value="a003"
+										th:checked="${searchVO != null and searchVO.searchStatusCode != null and searchVO.searchStatusCode.contains('a003')}">
 										<span>종료</span>
 									</label>
 								</div>
 							</details>
 						</div>
- 
+
 					</div>
- 
+
 					<div class="search-btn-area">
 						<a th:href="@{/myproject/list}" class="btn-basic">초기화</a>
 						<button type="button" class="btn-basic btn-primary"
@@ -89,7 +87,7 @@
 					</div>
 				</form>
 			</div>
- 
+
 			<!-- 프로젝트 목록 영역 -->
 			<div class="project-list-section">
 				<div class="list-header">
@@ -105,7 +103,7 @@
 						건
 					</div>
 				</div>
- 
+
 				<div class="project-table-wrap">
 					<table class="project-table">
 						<thead>
@@ -131,7 +129,8 @@
 								th:data-project-id="${project.projectId}"
 								onclick="goProjectDetail(this)">
 								<!-- ✅ 수정: subscribe_yn이 Y일 때만 식별자 표시 -->
-								<td th:if="${subscribeYn == 'Y'}" th:text="${project.identifier}">identifier</td>
+								<td th:if="${subscribeYn == 'Y'}"
+									th:text="${project.identifier}">identifier</td>
 								<td class="project-name-cell"><span
 									th:text="${project.projectName}">프로젝트명</span></td>
 								<td class="desc-cell" th:text="${project.description}">프로젝트
@@ -150,17 +149,17 @@
 								<td
 									th:text="${project.endDate != null ? #dates.format(project.endDate, 'yyyy/MM/dd') : '-'}">2026/12/31</td>
 								<td th:if="${subscribeYn == 'Y'}" class="project-action-cell"
-									onclick="event.stopPropagation();">
+									onclick="event.stopPropagation();"><a class="mini-btn"
+									th:href="@{/myproject/update(projectId=${project.projectId})}">수정</a>
 									<button type="button" class="mini-btn delete"
 										th:data-project-id="${project.projectId}"
 										th:data-project-name="${project.projectName}"
-										onclick="deleteProject(this)">삭제</button>
-								</td>
+										onclick="deleteProject(this)">삭제</button></td>
 							</tr>
 						</tbody>
 					</table>
 				</div>
- 
+
 				<!-- 페이징 영역 -->
 				<div class="pagination"
 					th:if="${searchVO != null and searchVO.totalPage > 0}">
@@ -168,7 +167,7 @@
 						th:classappend="${!searchVO.hasPrevious} ? ' disabled'"
 						th:disabled="${!searchVO.hasPrevious}"
 						th:onclick="${searchVO.hasPrevious} ? 'goPage(' + (searchVO.page - 1) + ')' : 'return false'">&lt;</button>
- 
+
 					<th:block
 						th:each="pageNum : ${#numbers.sequence(1, searchVO.totalPage)}">
 						<button type="button" class="page-btn"
@@ -177,7 +176,7 @@
 							<span th:text="${pageNum}">1</span>
 						</button>
 					</th:block>
- 
+
 					<button type="button" class="page-btn"
 						th:classappend="${!searchVO.hasNext} ? ' disabled'"
 						th:disabled="${!searchVO.hasNext}"
@@ -185,7 +184,7 @@
 				</div>
 			</div>
 		</div>
- 
+
 		<script th:inline="javascript">
 		/* 드롭다운 외부 클릭 시 닫기 */
 		document.addEventListener('click', function(e) {
@@ -289,7 +288,7 @@
 			}
 		}
 	</script>
- 
+
 	</div>
 </body>
 </html>

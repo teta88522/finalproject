@@ -23,14 +23,12 @@
  
 			<form th:action="@{/myproject/register}" method="post"
 				id="projectForm">
-				<div class="row g-5">
-					<div class="col-xl-8 col-lg-7">
-						<div class="row mb-4">
-							<div class="col-md-12">
-								<div class="form-section-title">제목</div>
-								<input type="text" class="form-line-control" id="projectName"
-									name="projectName" placeholder="프로젝트 이름을 입력하세요" required>
-							</div>
+				<div class="project-form-row">
+					<div class="project-form-main">
+						<div class="mb-4">
+							<div class="form-section-title">제목</div>
+							<input type="text" class="form-line-control" id="projectName"
+								name="projectName" placeholder="프로젝트 이름을 입력하세요" required>
 						</div>
  
 						<div class="mb-4">
@@ -40,7 +38,7 @@
 						</div>
 					</div>
  
-					<div class="col-xl-4 col-lg-5">
+					<div class="project-form-side">
 						<div class="mb-4">
 							<div class="form-section-title">홈페이지 URL</div>
 							<input type="url" class="form-line-control" id="projectUrl"
@@ -68,7 +66,13 @@
 									</div>
  
 									<div class="module-item">
-										<label for="m3" class="m-0 cursor-pointer">자료실</label> <input
+										<label for="m12" class="m-0 cursor-pointer">시간추적</label> <input
+											type="checkbox" name="moduleCodes" value="h002" id="m12"
+											class="moduleCheckbox">
+									</div>
+ 
+									<div class="module-item">
+										<label for="m3" class="m-0 cursor-pointer">파일</label> <input
 											type="checkbox" name="moduleCodes" value="h003" id="m3"
 											class="moduleCheckbox">
 									</div>
@@ -154,31 +158,34 @@
 				</div>
 			</form>
 		</div>
-	</div>
- 
-	<script>
-		// ✅ 날짜 검증: startDate <= endDate 확인
-		document.getElementById('projectForm').addEventListener('submit', function(e) {
-			const startDate = document.getElementById('startDate').value;
-			const endDate = document.getElementById('endDate').value;
- 
-			if (startDate && endDate) {
-				if (new Date(startDate) > new Date(endDate)) {
-					e.preventDefault();
-					alert('시작일이 완료일보다 늦을 수 없습니다.');
-					return false;
+
+		<script>
+			(function() {
+				var projectForm = document.getElementById('projectForm');
+				var startDateInput = document.getElementById('startDate');
+				var endDateInput = document.getElementById('endDate');
+
+				// ✅ 날짜 검증: startDate <= endDate 확인 (issues/list.html 패턴 참고)
+				if (projectForm && startDateInput && endDateInput) {
+					projectForm.addEventListener('submit', function(event) {
+						if (startDateInput.value && endDateInput.value
+								&& endDateInput.value < startDateInput.value) {
+							event.preventDefault();
+							alert('완료일이 시작일보다 늦을 수 없습니다.');
+							endDateInput.focus();
+						}
+					});
+
+					// ✅ startDate 변경 시 endDate의 최소값(min) 동적 설정
+					startDateInput.addEventListener('change', function() {
+						if (this.value) {
+							endDateInput.setAttribute('min', this.value);
+						}
+					});
 				}
-			}
-		});
- 
-		// ✅ endDate input에 최소값(startDate) 동적 설정
-		document.getElementById('startDate').addEventListener('change', function() {
-			const startDate = this.value;
-			if (startDate) {
-				document.getElementById('endDate').setAttribute('min', startDate);
-			}
-		});
-	</script>
+			})();
+		</script>
+	</div>
 </body>
 
 </html>
