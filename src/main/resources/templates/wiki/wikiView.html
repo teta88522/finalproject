@@ -4,157 +4,7 @@
       layout:decorate="~{common/layouts/default_layout}">
 <head>
 <meta charset="UTF-8">
-<style>
-  .wiki-view-wrap {
-    background: #fff;
-    border-radius: 12px;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
-    padding: 32px;
-  }
-  .wiki-view-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 24px;
-    padding-bottom: 16px;
-    border-bottom: 2px solid #3d6ef5;
-  }
-  .wiki-view-title {
-    font-size: 32px;
-    font-weight: 700;
-    color: #1a1a1a;
-    margin: 0;
-  }
-  .wiki-view-meta {
-    font-size: 13px;
-    color: #aaa;
-    margin-top: 6px;
-  }
-  .btn-edit {
-    padding: 8px 20px;
-    background: #3d6ef5;
-    color: #fff;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 14px;
-    text-decoration: none;
-    white-space: nowrap;
-  }
-  .btn-edit:hover { background: #2d5ee0; color: #fff; }
-  .btn-back {
-    padding: 8px 16px;
-    background: #fff;
-    color: #888;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 14px;
-    text-decoration: none;
-    margin-right: 8px;
-  }
-  .btn-back:hover { background: #f5f5f5; }
-  .btn-history {
-    padding: 8px 16px;
-    background: #fff;
-    color: #555;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 14px;
-    margin-right: 8px;
-  }
-  .btn-history:hover { background: #f5f5f5; }
-
-  /* 본문 + 히스토리 레이아웃 */
-  .wiki-body-wrap {
-    display: flex;
-    gap: 24px;
-    align-items: flex-start;
-  }
-  .wiki-main { flex: 1; min-width: 0; }
-
-  /* 히스토리 패널 */
-  .history-panel {
-    width: 260px;
-    flex-shrink: 0;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
-    overflow: hidden;
-    display: none;
-  }
-  .history-panel.open { display: block; }
-  .history-panel-title {
-    padding: 12px 16px;
-    background: #f8f9fa;
-    border-bottom: 1px solid #e0e0e0;
-    font-weight: 600;
-    font-size: 14px;
-  }
-  .history-list { max-height: 600px; overflow-y: auto; }
-  .history-item {
-    padding: 12px 16px;
-    border-bottom: 1px solid #f0f0f0;
-    cursor: pointer;
-  }
-  .history-item:hover { background: #f8f9fa; }
-  .history-item.active { background: #e8eeff; border-left: 3px solid #3d6ef5; }
-  .history-item-version { font-size: 11px; color: #aaa; }
-  .history-item-date { font-size: 12px; color: #888; margin-top: 2px; }
-  .history-item-author { font-size: 12px; color: #555; margin-top: 2px; }
-
-  /* 마크다운 렌더링 스타일 */
-  .wiki-content { font-size: 15px; line-height: 1.8; color: #1a1a1a; }
-  .wiki-content h1 { font-size: 26px; font-weight: 700; border-bottom: 2px solid #3d6ef5; padding-bottom: 6px; margin: 24px 0 12px; }
-  .wiki-content h2 { font-size: 21px; font-weight: 700; border-bottom: 1px solid #ddd; padding-bottom: 4px; margin: 20px 0 10px; }
-  .wiki-content h3 { font-size: 17px; font-weight: 700; margin: 16px 0 8px; }
-  .wiki-content h4 { font-size: 15px; font-weight: 700; margin: 12px 0 6px; }
-  .wiki-content blockquote { border-left: 4px solid #3d6ef5; background: #f0f4ff; padding: 10px 16px; margin: 12px 0; border-radius: 0 6px 6px 0; color: #444; }
-  .wiki-content pre { background: #1e1e1e; color: #d4d4d4; padding: 16px; border-radius: 8px; font-size: 13px; overflow-x: auto; margin: 12px 0; }
-  .wiki-content code { background: #f0f0f0; padding: 2px 6px; border-radius: 4px; font-size: 13px; color: #e53e3e; }
-  .wiki-content pre code { background: none; color: inherit; padding: 0; }
-  .wiki-content table { border-collapse: collapse; width: 100%; margin: 12px 0; }
-  .wiki-content th { background: #f0f4ff; border: 1px solid #ddd; padding: 8px 12px; font-weight: 600; }
-  .wiki-content td { border: 1px solid #ddd; padding: 8px 12px; }
-  .wiki-content tr:nth-child(even) td { background: #fafafa; }
-  .wiki-content ul { padding-left: 24px; margin: 8px 0; list-style-type: disc; }
-  .wiki-content ol { padding-left: 24px; margin: 8px 0; list-style-type: decimal; }
-  .wiki-content li { margin: 4px 0; display: list-item; }
-  .wiki-content hr { border: none; border-top: 2px solid #eee; margin: 20px 0; }
-  .wiki-content a { color: #3d6ef5; text-decoration: underline; }
-  .wiki-content p { margin: 8px 0; }
-
-  /* 목차 */
-  .wiki-toc {
-    background: #f8f9fa;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
-    padding: 16px;
-    margin-bottom: 24px;
-    display: inline-block;
-    min-width: 200px;
-  }
-  .wiki-toc-title { font-weight: 700; margin-bottom: 8px; font-size: 14px; }
-  .wiki-toc ol { padding-left: 20px; margin: 0; list-style-type: decimal; }
-  .wiki-toc li { margin: 4px 0; font-size: 13px; display: list-item; }
-  .wiki-toc a { color: #3d6ef5; text-decoration: none; }
-  .wiki-toc a:hover { text-decoration: underline; }
-
-  /* 복원 버튼 */
-  .btn-restore {
-    width: 100%;
-    padding: 8px;
-    margin-top: 8px;
-    background: #3d6ef5;
-    color: #fff;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 13px;
-    display: none;
-  }
-  .btn-restore.visible { display: block; }
-</style>
+<link rel="stylesheet" th:href="@{/css/wiki/wiki.css}">
 </head>
 <body>
 <div layout:fragment="Content">
@@ -195,11 +45,15 @@
               <div class="history-list" id="historyList">
                 <p style="padding:16px; color:#aaa; font-size:13px;">불러오는 중...</p>
               </div>
-              <div style="padding:12px;">
-                <button id="restoreBtn" class="btn-restore" onclick="restoreVersion()">
-                  이 버전으로 복원
-                </button>
-              </div>
+              <!-- 복원 버튼 제거 -->
+<div style="padding:12px;">
+  <button id="backToCurrentBtn" 
+          class="btn-restore" 
+          onclick="backToCurrent()"
+          style="background:#888;">
+    ← 현재 버전으로
+  </button>
+</div>
             </div>
 
           </div>
@@ -301,15 +155,14 @@
       .catch(err => console.error('히스토리 로드 실패:', err))
   }
 
-  // 버전 미리보기
+//버전 미리보기
   function previewVersion(versionId, el) {
-    // 선택 표시
     document.querySelectorAll('.history-item').forEach(e => e.classList.remove('active'))
     el.classList.add('active')
     selectedVersionId = versionId
 
-    // 복원 버튼 표시
-    document.getElementById('restoreBtn').classList.add('visible')
+    // 현재버전으로 버튼 표시
+    document.getElementById('backToCurrentBtn').classList.add('visible')
 
     fetch(`/project/${projectId}/wiki/version/${versionId}`)
       .then(res => res.json())
@@ -317,37 +170,25 @@
         if (data && data.content) {
           const md = renderMarkdown(data.content)
           displayContent(md)
+          // 이전 버전 보는 중 표시
+          document.getElementById('wikiContent').insertAdjacentHTML(
+            'afterbegin',
+            `<div style="background:#fff3cd; border:1px solid #ffc107; border-radius:6px; padding:10px 16px; margin-bottom:16px; font-size:13px;">
+              ⚠️ 이전 버전을 보고 있습니다. 복원하려면 <a href="/project/${projectId}/wiki/${wikiId}/edit" style="color:#3d6ef5;">편집 페이지</a>에서 버전 히스토리를 이용하세요.
+            </div>`
+          )
         }
       })
       .catch(err => console.error('버전 로드 실패:', err))
   }
 
-  // 버전 복원
-  function restoreVersion() {
-    if (!selectedVersionId) return
-    if (!confirm('이 버전으로 복원하시겠습니까?')) return
-
-    fetch(`/project/${projectId}/wiki/version/${selectedVersionId}`)
-      .then(res => res.json())
-      .then(data => {
-        if (data && data.content) {
-          // 복원 = 새 버전으로 저장
-          fetch(`/project/${projectId}/wiki/save`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              wikiId: wikiId,
-              title: document.querySelector('.wiki-view-title').textContent,
-              content: data.content
-            })
-          })
-          .then(() => {
-            alert('복원 완료!')
-            location.reload()
-          })
-        }
-      })
-      .catch(err => console.error('복원 실패:', err))
+  // 현재 버전으로 돌아가기
+  function backToCurrent() {
+    selectedVersionId = null
+    document.getElementById('backToCurrentBtn').classList.remove('visible')
+    document.querySelectorAll('.history-item').forEach(e => e.classList.remove('active'))
+    const md = renderMarkdown(content)
+    displayContent(md)
   }
 </script>
 </div>

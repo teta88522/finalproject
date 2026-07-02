@@ -6,7 +6,7 @@
  <th:block th:replace="~{common/configs/config :: ConfigFragment}"></th:block>
    <title layout:title-pattern="$LAYOUT_TITLE : $CONTENT_TITLE">pixcel</title>
 </head>
-<body>
+<body th:class="${menuType != null ? 'has-sidebar' : 'no-sidebar'}">
 <div class="left-sidebar-pro">
 
     <!-- th:if 는 바깥 div에, th:replace는 안쪽 div에 분리 -->

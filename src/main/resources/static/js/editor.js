@@ -14,7 +14,7 @@ if (textarea) {
   const ydoc = new Y.Doc()
 
   const provider = new WebsocketProvider(
-    'ws://localhost:8080/ws/wiki',
+    'ws://localhost/ws/wiki',
     wikiId,
     ydoc
   )
@@ -73,5 +73,86 @@ if (textarea) {
     .then(() => console.log('자동저장 완료'))
     .catch(err => console.error('저장 실패:', err))
   }, 60000)
+
+  // ===== 이미지 업로드 =====
+  const imageInput = document.getElementById('wikiImageInput')
+
+  window.triggerImageUpload = function () {
+    imageInput.click()
+  }
+
+  if (imageInput) {
+    imageInput.addEventListener('change', (e) => {
+      const file = e.target.files[0]
+      if (file) uploadWikiImage(file)
+      e.target.value = ''
+    })
+  }
+
+  function replaceInYjs(oldStr, newStr) {
+    const text = ytext.toString()
+    const idx = text.indexOf(oldStr)
+    if (idx === -1) return
+    ydoc.transact(() => {
+      ytext.delete(idx, oldStr.length)
+      ytext.insert(idx, newStr)
+    })
+  }
+
+  function uploadWikiImage(file) {
+    const placeholder = `![업로드중...](uploading)`
+    const cursorPos = textarea.selectionStart
+
+    textarea.value =
+      textarea.value.substring(0, cursorPos) +
+      placeholder +
+      textarea.value.substring(cursorPos)
+    textarea.dispatchEvent(new Event('input')) // → ytext에도 반영됨
+
+    const formData = new FormData()
+    formData.append('file', file)
+
+    fetch(`/project/${projectId}/wiki/${wikiId}/image/upload`, {
+      method: 'POST',
+      body: formData
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.error) throw new Error(data.error)
+        const markdown = `![${file.name}](${data.url})`
+        replaceInYjs(placeholder, markdown)
+        textarea.value = ytext.toString()
+      })
+      .catch(err => {
+        console.error('이미지 업로드 실패:', err)
+        replaceInYjs(placeholder, '')
+        textarea.value = ytext.toString()
+        alert('이미지 업로드에 실패했습니다.')
+      })
+  }
+
+  // 드래그앤드롭
+  textarea.addEventListener('dragover', e => e.preventDefault())
+  textarea.addEventListener('drop', e => {
+    e.preventDefault()
+    const file = e.dataTransfer.files[0]
+    if (file && file.type.startsWith('image/')) {
+      uploadWikiImage(file)
+    }
+  })
+
+  // 클립보드 붙여넣기
+  textarea.addEventListener('paste', e => {
+    const items = e.clipboardData?.items
+    if (!items) return
+    for (const item of items) {
+      if (item.type.startsWith('image/')) {
+        e.preventDefault()
+        const file = item.getAsFile()
+        uploadWikiImage(file)
+        break
+      }
+    }
+  })
 
 }

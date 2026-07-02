@@ -1,6 +1,15 @@
 package com.pixcel.app.wiki.web;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -11,13 +20,20 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.multipart.MultipartFile;
+
+import com.pixcel.app.file.mapper.FileMapper;
+import com.pixcel.app.file.service.FileDTO;
+import com.pixcel.app.file.service.FileService;
+import com.pixcel.app.file.service.FileVO;
 import com.pixcel.app.web.AllProjectController;
 import com.pixcel.app.wiki.service.WikiPageVO;
 import com.pixcel.app.wiki.service.WikiService;
 import com.pixcel.app.wiki.service.WikiVersionVO;
 
-import java.util.List;
+import jakarta.servlet.http.HttpServletResponse;
 
 @AllProjectController
 @RequestMapping("/wiki")
@@ -26,7 +42,10 @@ public class WikiController {
 
     @Autowired
     private WikiService wikiService;
-
+    
+    @Autowired
+    private FileService fileService;
+    private FileMapper fileMapper;
     // 위키 목록
     @GetMapping("/list")
     public String wikiList(@PathVariable String projectId, Model model) {
@@ -115,5 +134,61 @@ public class WikiController {
     public ResponseEntity<?> getVersionDetail(@PathVariable String versionId,
                                               @PathVariable String projectId) {
         return ResponseEntity.ok(wikiService.getVersionDetail(versionId));
+    }
+    
+
+
+    @PostMapping("/{wikiId}/image/upload")
+    @ResponseBody
+    public ResponseEntity<?> uploadWikiImage(@PathVariable String projectId,
+                                              @PathVariable String wikiId,
+                                              @RequestParam("file") MultipartFile file,
+                                              @CookieValue(value = "userId", required = false) String userId) {
+
+        FileDTO uploadDTO = new FileDTO();
+        uploadDTO.setProjectId(projectId);
+		uploadDTO.setFileCode("f001");
+		uploadDTO.setUploadUserId(userId);
+		uploadDTO.setConnectAddress(wikiId);
+
+        List<FileVO> saved = fileService.uploadFileAndReturn(List.of(file), uploadDTO);
+
+        if (saved.isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "업로드 실패"));
+        }
+
+        String fileId = saved.get(0).getFileId();
+        String url = "/project/" + projectId + "/wiki/" + wikiId + "/image/" + fileId;
+        return ResponseEntity.ok(Map.of("url", url));
+    }
+
+    // 이미지 인라인 조회 (마크다운 렌더링용)
+    @GetMapping("/{wikiId}/image/{fileId}")
+    public void viewWikiImage(@PathVariable String projectId,
+                               @PathVariable String wikiId,
+                               @PathVariable String fileId,
+                               HttpServletResponse response) throws IOException {
+
+        FileVO fileInfo = fileService.getFileById(fileId); // fileMapper 대신 fileService 사용
+        if (fileInfo == null) {
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            return;
+        }
+
+        File file = new File(fileInfo.getFilePath());
+        if (!file.exists()) {
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            return;
+        }
+
+        String contentType = Files.probeContentType(file.toPath());
+        response.setContentType(contentType != null ? contentType : "application/octet-stream");
+
+        try (InputStream is = new FileInputStream(file); OutputStream os = response.getOutputStream()) {
+            byte[] buffer = new byte[8192];
+            int length;
+            while ((length = is.read(buffer)) != -1) os.write(buffer, 0, length);
+            os.flush();
+        }
     }
 }

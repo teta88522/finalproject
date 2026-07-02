@@ -1,4 +1,4 @@
-.wiki-view-wrap {
+  .wiki-view-wrap {
     background: #fff;
     border-radius: 12px;
     box-shadow: 0 2px 12px rgba(0,0,0,0.08);
@@ -47,6 +47,54 @@
     margin-right: 8px;
   }
   .btn-back:hover { background: #f5f5f5; }
+  .btn-history {
+    padding: 8px 16px;
+    background: #fff;
+    color: #555;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    margin-right: 8px;
+  }
+  .btn-history:hover { background: #f5f5f5; }
+
+  /* 본문 + 히스토리 레이아웃 */
+  .wiki-body-wrap {
+    display: flex;
+    gap: 24px;
+    align-items: flex-start;
+  }
+  .wiki-main { flex: 1; min-width: 0; }
+
+  /* 히스토리 패널 */
+  .history-panel {
+    width: 260px;
+    flex-shrink: 0;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    overflow: hidden;
+    display: none;
+  }
+  .history-panel.open { display: block; }
+  .history-panel-title {
+    padding: 12px 16px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #e0e0e0;
+    font-weight: 600;
+    font-size: 14px;
+  }
+  .history-list { max-height: 600px; overflow-y: auto; }
+  .history-item {
+    padding: 12px 16px;
+    border-bottom: 1px solid #f0f0f0;
+    cursor: pointer;
+  }
+  .history-item:hover { background: #f8f9fa; }
+  .history-item.active { background: #e8eeff; border-left: 3px solid #3d6ef5; }
+  .history-item-version { font-size: 11px; color: #aaa; }
+  .history-item-date { font-size: 12px; color: #888; margin-top: 2px; }
+  .history-item-author { font-size: 12px; color: #555; margin-top: 2px; }
 
   /* 마크다운 렌더링 스타일 */
   .wiki-content { font-size: 15px; line-height: 1.8; color: #1a1a1a; }
@@ -84,8 +132,21 @@
   .wiki-toc li { margin: 4px 0; font-size: 13px; display: list-item; }
   .wiki-toc a { color: #3d6ef5; text-decoration: none; }
   .wiki-toc a:hover { text-decoration: underline; }
-  
-  
+
+  /* 복원 버튼 */
+  .btn-restore {
+    width: 100%;
+    padding: 8px;
+    margin-top: 8px;
+    background: #3d6ef5;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    display: none;
+  }
+  .btn-restore.visible { display: block; }
   
     .wiki-wrap {
     background: #fff;

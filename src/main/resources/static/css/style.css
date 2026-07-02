@@ -230,6 +230,15 @@ body {
   padding-top: 126px; /* 헤더 두 줄 합산 높이 */
   transition: all 0.3s;
 }
+/* 사이드바 없을 때 사이드바 공간 제거 */
+body.no-sidebar .left-sidebar-pro {
+    display: none;
+}
+
+body.no-sidebar .all-content-wrapper {
+    margin-left: 0;  /* 기존 사이드바 너비만큼 margin 제거 */
+    width: 100%;
+}
 .left-sidebar-pro {
   position: fixed;
   z-index: 9999;
