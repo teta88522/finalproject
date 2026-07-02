@@ -349,6 +349,7 @@
 		use_nl(v)
 		use_nl(sc)
 		use_nl(assignee)
+		use_nl(m)
 		index(it PK_ISSUE_TYPE)
 		index(ist PK_ISSUE_STATUS)
 		index(v IDX_PV_PROJECT_ID)
@@ -363,6 +364,8 @@
 		it.issue_type_name,
 		paged.version_id,
 		v.version_name,
+		paged.milestone_id,
+		m.title as milestone_title,
 		paged.title,
 		paged.issue_status_id,
 		ist.status_name as issue_status_name,
@@ -394,6 +397,7 @@
 		i.issue_no,
 		i.issue_type_id,
 		i.version_id,
+		i.milestone_id,
 		i.title,
 		i.issue_status_id,
 		i.setting_code_id,
@@ -430,6 +434,8 @@
 		left join project_version v
 		on paged.version_id = v.version_id
 		and paged.project_id = v.project_id
+		left join milestone m
+		on paged.milestone_id = m.milestone_id
 		where paged.row_no <![CDATA[>=]]>
 		#{startRow}
 		order by paged.row_no asc
@@ -1378,66 +1384,54 @@
 		it.issue_type_id,
 		it.issue_type_name,
 		it.initial_status_id,
-		ist.status_name as
-		initial_status_name,
+		ist.status_name as initial_status_name,
 		null as issue_status_id,
 		null as issue_status_name,
 		null as closed_yn,
 		null as version_id,
 		null as version_name,
-		null as
-		version_status_code,
+		null as version_status_code,
 		null as default_yn,
 		null as setting_code_id,
-		null as
-		setting_name,
+		null as setting_name,
 		null as assignee_id,
 		null as assignee_name,
-		1 as
-		option_sort,
-		row_number() over (order by it.created_at asc,
-		it.issue_type_id asc) as row_sort
+		null as milestone_id,
+		null as milestone_title,
+		1 as option_sort,
+		row_number() over (order by it.created_at asc, it.issue_type_id asc) as row_sort
 		from issue_type_project itp
-		join
-		issue_type it
+		join issue_type it
 		on itp.issue_type_id = it.issue_type_id
-		join issue_status
-		ist
+		join issue_status ist
 		on it.initial_status_id = ist.issue_status_id
-		where itp.project_id =
-		#{projectId}
+		where itp.project_id = #{projectId}
 
 		union all
 
 		select
 		'ISSUE_STATUS' as option_group,
-		null as
-		issue_type_id,
+		null as issue_type_id,
 		null as issue_type_name,
 		null as initial_status_id,
-		null
-		as initial_status_name,
+		null as initial_status_name,
 		ist.issue_status_id,
-		ist.status_name as
-		issue_status_name,
+		ist.status_name as issue_status_name,
 		ist.closed_yn,
 		null as version_id,
-		null as
-		version_name,
+		null as version_name,
 		null as version_status_code,
 		null as default_yn,
-		null as
-		setting_code_id,
+		null as setting_code_id,
 		null as setting_name,
 		null as assignee_id,
-		null as
-		assignee_name,
+		null as assignee_name,
+		null as milestone_id,
+		null as milestone_title,
 		2 as option_sort,
-		row_number() over (order by
-		ist.issue_status_id asc) as row_sort
+		row_number() over (order by ist.issue_status_id asc) as row_sort
 		from issue_status ist
-		join project
-		p
+		join project p
 		on ist.user_id = p.owner_id
 		where p.project_id = #{projectId}
 
@@ -1446,8 +1440,7 @@
 		select
 		'VERSION' as option_group,
 		null as issue_type_id,
-		null as
-		issue_type_name,
+		null as issue_type_name,
 		null as initial_status_id,
 		null as initial_status_name,
 		null as issue_status_id,
@@ -1459,51 +1452,100 @@
 		default_yn,
 		null as setting_code_id,
 		null as setting_name,
-		null as
-		assignee_id,
+		null as assignee_id,
 		null as assignee_name,
+		null as milestone_id,
+		null as milestone_title,
 		3 as option_sort,
-		row_number() over
-		(order by default_yn desc, created_at desc, version_id asc) as
-		row_sort
+		row_number() over (order by default_yn desc, created_at desc, version_id asc) as row_sort
 		from project_version
 		where project_id = #{projectId}
-		and
-		status_code != 'k003'
+		and status_code != 'k003'
+
+		union all
+
+		select
+		'MILESTONE' as option_group,
+		null as issue_type_id,
+		null as issue_type_name,
+		null as initial_status_id,
+		null as initial_status_name,
+		null as issue_status_id,
+		null as issue_status_name,
+		null as closed_yn,
+		null as version_id,
+		null as version_name,
+		null as version_status_code,
+		null as default_yn,
+		null as setting_code_id,
+		null as setting_name,
+		null as assignee_id,
+		null as assignee_name,
+		'__NONE__' as milestone_id,
+		'미지정' as milestone_title,
+		4 as option_sort,
+		0 as row_sort
+		from dual
+		where exists (
+		select 1
+		from issue i
+		where i.project_id = #{projectId}
+		and i.milestone_id is null
+		)
+
+		union all
+
+		select
+		'MILESTONE' as option_group,
+		null as issue_type_id,
+		null as issue_type_name,
+		null as initial_status_id,
+		null as initial_status_name,
+		null as issue_status_id,
+		null as issue_status_name,
+		null as closed_yn,
+		null as version_id,
+		null as version_name,
+		null as version_status_code,
+		null as default_yn,
+		null as setting_code_id,
+		null as setting_name,
+		null as assignee_id,
+		null as assignee_name,
+		m.milestone_id,
+		m.title as milestone_title,
+		4 as option_sort,
+		row_number() over (order by m.start_date asc nulls last, m.milestone_id asc) as row_sort
+		from milestone m
+		where m.project_id = #{projectId}
 
 		union all
 
 		select
 		'PRIORITY' as option_group,
-		null as
-		issue_type_id,
+		null as issue_type_id,
 		null as issue_type_name,
 		null as initial_status_id,
-		null
-		as initial_status_name,
+		null as initial_status_name,
 		null as issue_status_id,
-		null as
-		issue_status_name,
+		null as issue_status_name,
 		null as closed_yn,
 		null as version_id,
-		null as
-		version_name,
+		null as version_name,
 		null as version_status_code,
 		sc.default_yn,
 		sc.setting_code_id,
 		sc.setting_name,
 		null as assignee_id,
-		null as
-		assignee_name,
-		4 as option_sort,
-		row_number() over (order by
-		sc.default_yn desc, sc.setting_code_id asc) as row_sort
-		from
-		setting_code sc
+		null as assignee_name,
+		null as milestone_id,
+		null as milestone_title,
+		5 as option_sort,
+		row_number() over (order by sc.default_yn desc, sc.setting_code_id asc) as row_sort
+		from setting_code sc
 		join project p
 		on sc.user_id = p.owner_id
-		where
-		p.project_id = #{projectId}
+		where p.project_id = #{projectId}
 		and sc.setting_group_name = 'g002'
 
 		union all
@@ -1511,8 +1553,7 @@
 		select
 		'ASSIGNEE' as option_group,
 		null as issue_type_id,
-		null as
-		issue_type_name,
+		null as issue_type_name,
 		null as initial_status_id,
 		null as initial_status_name,
 		null as issue_status_id,
@@ -1526,35 +1567,30 @@
 		null as setting_name,
 		x.assignee_id,
 		x.assignee_name,
-		5 as option_sort,
-		row_number() over
-		(order by x.assignee_name, x.assignee_id) as row_sort
+		null as milestone_id,
+		null as milestone_title,
+		6 as option_sort,
+		row_number() over (order by x.assignee_name, x.assignee_id) as row_sort
 		from (
 		select
 		u.user_id as assignee_id,
 		u.user_name as assignee_name
-		from
-		project_member pm
+		from project_member pm
 		join team_member tm
-		on pm.team_member_id =
-		tm.team_member_id
+		on pm.team_member_id = tm.team_member_id
 		join users u
 		on tm.user_id = u.user_id
-		where
-		pm.project_id = #{projectId}
+		where pm.project_id = #{projectId}
 
 		union
 
 		select
-		owner_user.user_id as
-		assignee_id,
+		owner_user.user_id as assignee_id,
 		owner_user.user_name as assignee_name
 		from project p
-		join
-		users owner_user
+		join users owner_user
 		on p.owner_id = owner_user.user_id
-		where p.project_id =
-		#{projectId}
+		where p.project_id = #{projectId}
 		) x
 		)
 		order by option_sort, row_sort
@@ -1575,18 +1611,16 @@
 		null as version_id,
 		null as version_name,
 		null as setting_code_id,
-		null
-		as setting_name,
+		null as setting_name,
 		null as assignee_id,
 		null as assignee_name,
-		1 as
-		option_sort
+		null as milestone_id,
+		null as milestone_title,
+		1 as option_sort
 		from issue_type_project itp
 		join issue_type it
-		on
-		itp.issue_type_id = it.issue_type_id
-		where itp.project_id =
-		#{projectId}
+		on itp.issue_type_id = it.issue_type_id
+		where itp.project_id = #{projectId}
 		<choose>
 			<when
 				test="issueTypeIdList != null and issueTypeIdList.size() > 0">
@@ -1608,21 +1642,19 @@
 		null as issue_type_id,
 		null as issue_type_name,
 		ist.issue_status_id,
-		ist.status_name as
-		issue_status_name,
+		ist.status_name as issue_status_name,
 		null as version_id,
 		null as version_name,
-		null as
-		setting_code_id,
+		null as setting_code_id,
 		null as setting_name,
 		null as assignee_id,
-		null as
-		assignee_name,
+		null as assignee_name,
+		null as milestone_id,
+		null as milestone_title,
 		2 as option_sort
 		from issue_status ist
 		join project p
-		on
-		ist.user_id = p.owner_id
+		on ist.user_id = p.owner_id
 		where p.project_id = #{projectId}
 		<choose>
 			<when
@@ -1643,19 +1675,18 @@
 		select
 		'VERSION' as option_group,
 		null as issue_type_id,
-		null as
-		issue_type_name,
+		null as issue_type_name,
 		null as issue_status_id,
 		null as issue_status_name,
 		pv.version_id,
 		pv.version_name,
 		null as setting_code_id,
-		null as
-		setting_name,
+		null as setting_name,
 		null as assignee_id,
 		null as assignee_name,
-		3 as
-		option_sort
+		null as milestone_id,
+		null as milestone_title,
+		3 as option_sort
 		from project_version pv
 		where pv.project_id = #{projectId}
 		<choose>
@@ -1674,10 +1705,68 @@
 		union all
 
 		select
+		'MILESTONE' as option_group,
+		null as issue_type_id,
+		null as issue_type_name,
+		null as issue_status_id,
+		null as issue_status_name,
+		null as version_id,
+		null as version_name,
+		null as setting_code_id,
+		null as setting_name,
+		null as assignee_id,
+		null as assignee_name,
+		m.milestone_id,
+		m.title as milestone_title,
+		4 as option_sort
+		from milestone m
+		where m.project_id = #{projectId}
+		<choose>
+			<when test="milestoneIdList != null and milestoneIdList.size() > 0">
+				and m.milestone_id in
+				<foreach collection="milestoneIdList" item="milestoneId"
+					open="(" separator="," close=")">
+					#{milestoneId}
+				</foreach>
+			</when>
+			<otherwise>
+				and 1 = 0
+			</otherwise>
+		</choose>
+
+		union all
+
+		select
+		'MILESTONE' as option_group,
+		null as issue_type_id,
+		null as issue_type_name,
+		null as issue_status_id,
+		null as issue_status_name,
+		null as version_id,
+		null as version_name,
+		null as setting_code_id,
+		null as setting_name,
+		null as assignee_id,
+		null as assignee_name,
+		'__NONE__' as milestone_id,
+		'미지정' as milestone_title,
+		4 as option_sort
+		from dual
+		<choose>
+			<when test='milestoneIdList != null and milestoneIdList.contains("__NONE__")'>
+				where 1 = 1
+			</when>
+			<otherwise>
+				where 1 = 0
+			</otherwise>
+		</choose>
+
+		union all
+
+		select
 		'PRIORITY' as option_group,
 		null as issue_type_id,
-		null
-		as issue_type_name,
+		null as issue_type_name,
 		null as issue_status_id,
 		null as issue_status_name,
 		null as version_id,
@@ -1686,15 +1775,14 @@
 		sc.setting_name,
 		null as assignee_id,
 		null as assignee_name,
-		4 as
-		option_sort
+		null as milestone_id,
+		null as milestone_title,
+		5 as option_sort
 		from setting_code sc
 		join project p
-		on sc.user_id =
-		p.owner_id
+		on sc.user_id = p.owner_id
 		where p.project_id = #{projectId}
-		and sc.setting_group_name =
-		'g002'
+		and sc.setting_group_name = 'g002'
 		<choose>
 			<when
 				test="settingCodeIdList != null and settingCodeIdList.size() > 0">
@@ -1714,44 +1802,38 @@
 		select
 		'ASSIGNEE' as option_group,
 		null as issue_type_id,
-		null
-		as issue_type_name,
+		null as issue_type_name,
 		null as issue_status_id,
 		null as issue_status_name,
 		null as version_id,
 		null as version_name,
 		null as setting_code_id,
-		null
-		as setting_name,
+		null as setting_name,
 		x.assignee_id,
 		x.assignee_name,
-		5 as option_sort
+		null as milestone_id,
+		null as milestone_title,
+		6 as option_sort
 		from (
 		select
 		u.user_id as assignee_id,
 		u.user_name as assignee_name
-		from
-		project_member pm
+		from project_member pm
 		join team_member tm
-		on pm.team_member_id =
-		tm.team_member_id
+		on pm.team_member_id = tm.team_member_id
 		join users u
 		on tm.user_id = u.user_id
-		where
-		pm.project_id = #{projectId}
+		where pm.project_id = #{projectId}
 
 		union
 
 		select
-		owner_user.user_id as
-		assignee_id,
+		owner_user.user_id as assignee_id,
 		owner_user.user_name as assignee_name
 		from project p
-		join
-		users owner_user
+		join users owner_user
 		on p.owner_id = owner_user.user_id
-		where p.project_id =
-		#{projectId}
+		where p.project_id = #{projectId}
 		) x
 		<choose>
 			<when

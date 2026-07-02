@@ -284,11 +284,6 @@
 		from issue i
 		where i.issue_type_id = it.issue_type_id
 		)
-		or exists (
-		select 1
-		from workflow_transition wt
-		where wt.issue_type_id = it.issue_type_id
-		)
 		then 1
 		else 0
 		end as used_count,
@@ -331,6 +326,17 @@
 		#{userId}
 		and p.owner_id = #{userId}
 		order by itp.project_id ASC
+	</select>
+
+	<select id="selectIssueTypeUsedProjectIdList" resultType="string">
+		select distinct
+		i.project_id
+		from issue i
+		join issue_type it
+		on i.issue_type_id = it.issue_type_id
+		where i.issue_type_id = #{issueTypeId}
+		and it.user_id = #{userId}
+		order by i.project_id ASC
 	</select>
 
 	<!-- 일감유형에서 사용 처리된 항목 코드 조회 -->
@@ -730,21 +736,7 @@
 			<otherwise>
 				0 as selected_project_count
 			</otherwise>
-		</choose>,
-		case
-		when exists (
-		select 1
-		from issue i
-		where i.issue_type_id = #{issueTypeId}
-		)
-		or exists (
-		select 1
-		from workflow_transition wt
-		where wt.issue_type_id = #{issueTypeId}
-		)
-		then 1
-		else 0
-		end as used_count
+		</choose>
 		from dual
 	</select>
 
@@ -826,6 +818,22 @@
 		)
 	</select>
 
+	<select id="countIssueTypeUsedInProjects" resultType="int">
+		select count(*)
+		from issue i
+		where i.issue_type_id = #{issueTypeId}
+		and i.project_id in
+		<foreach collection="projectIdList" item="projectId" open="(" separator="," close=")">
+			#{projectId}
+		</foreach>
+		and exists (
+		select 1
+		from issue_type it
+		where it.issue_type_id = i.issue_type_id
+		and it.user_id = #{userId}
+		)
+	</select>
+
 	<!-- 일감유형 적용 프로젝트 삭제 -->
 	<delete id="deleteIssueTypeProjectByIssueTypeId">
 		delete from issue_type_project
@@ -837,6 +845,21 @@
 		#{issueTypeId}
 		and user_id = #{userId}
 		)
+	</delete>
+
+	<delete id="deleteIssueTypeProjectByProjectIdList">
+		delete from issue_type_project
+		where issue_type_id in
+		(
+		select issue_type_id
+		from issue_type
+		where issue_type_id = #{issueTypeId}
+		and user_id = #{userId}
+		)
+		and project_id in
+		<foreach collection="projectIdList" item="projectId" open="(" separator="," close=")">
+			#{projectId}
+		</foreach>
 	</delete>
 
 	<!-- 일감유형 항목 설정 삭제 -->

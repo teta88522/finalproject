@@ -309,11 +309,13 @@ public class IssuesController {
 		List<IssuesVO> issueTypeList = (List<IssuesVO>) pageData.get("issueTypeList");
 		List<IssuesVO> issueStatusList = (List<IssuesVO>) pageData.get("issueStatusList");
 		List<IssuesVO> versionList = (List<IssuesVO>) pageData.get("versionList");
+		List<IssuesVO> milestoneList = (List<IssuesVO>) pageData.get("milestoneList");
 		List<IssuesVO> priorityList = (List<IssuesVO>) pageData.get("priorityList");
 		List<IssuesVO> assigneeList = (List<IssuesVO>) pageData.get("assigneeList");
 		List<IssuesVO> selectedIssueTypeList = (List<IssuesVO>) pageData.get("selectedIssueTypeList");
 		List<IssuesVO> selectedIssueStatusList = (List<IssuesVO>) pageData.get("selectedIssueStatusList");
 		List<IssuesVO> selectedVersionList = (List<IssuesVO>) pageData.get("selectedVersionList");
+		List<IssuesVO> selectedMilestoneList = (List<IssuesVO>) pageData.get("selectedMilestoneList");
 		List<IssuesVO> selectedPriorityList = (List<IssuesVO>) pageData.get("selectedPriorityList");
 		List<IssuesVO> selectedAssigneeList = (List<IssuesVO>) pageData.get("selectedAssigneeList");
 
@@ -327,12 +329,15 @@ public class IssuesController {
 		model.addAttribute("issueTypeList", issueTypeList);
 		model.addAttribute("issueStatusList", issueStatusList);
 		model.addAttribute("versionList", versionList);
+		model.addAttribute("milestoneList", milestoneList);
 		model.addAttribute("priorityList", priorityList);
 		model.addAttribute("assigneeList", assigneeList);
 		model.addAttribute("selectedIssueTypeText", getSelectedOptionText(searchVO.getIssueTypeIdList(),
 				selectedIssueTypeList, IssuesVO::getIssueTypeId, IssuesVO::getIssueTypeName, "전체"));
 		model.addAttribute("selectedVersionText", getSelectedOptionText(searchVO.getVersionIdList(), selectedVersionList,
 				IssuesVO::getVersionId, IssuesVO::getVersionName, "전체"));
+		model.addAttribute("selectedMilestoneText", getSelectedOptionText(searchVO.getMilestoneIdList(),
+				selectedMilestoneList, IssuesVO::getMilestoneId, IssuesVO::getMilestoneTitle, "전체"));
 		String selectedIssueStatusText = getSelectedOptionText(searchVO.getIssueStatusIdList(), selectedIssueStatusList,
 				IssuesVO::getIssueStatusId, IssuesVO::getIssueStatusName, "전체");
 		if ("전체".equals(selectedIssueStatusText)) {

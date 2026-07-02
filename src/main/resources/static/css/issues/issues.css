@@ -325,6 +325,24 @@ body.issues-list-body {
 	align-items: end;
 }
 
+.issues-filter-pair-field {
+	min-width: 0;
+}
+
+.issues-filter-pair {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 8px;
+	width: 100%;
+}
+
+.issues-filter-pair-item {
+	display: flex;
+	flex-direction: column;
+	gap: 5px;
+	min-width: 0;
+}
+
 .issues-date-range {
 	display: flex;
 	align-items: center;
@@ -360,7 +378,7 @@ body.issues-list-body {
 
 .issues-list-table {
 	width: 100%;
-	min-width: 1020px;
+	min-width: 1120px;
 	margin-bottom: 0;
 	table-layout: fixed;
 	border-collapse: collapse;
@@ -371,27 +389,31 @@ body.issues-list-body {
 }
 
 .issues-list-table col.col-issue-type {
-	width: 8%;
+	width: 7%;
 }
 
 .issues-list-table col.col-version {
-	width: 9%;
+	width: 7%;
+}
+
+.issues-list-table col.col-milestone {
+	width: 10%;
 }
 
 .issues-list-table col.col-title {
-	width: 17%;
+	width: 20%;
 }
 
 .issues-list-table col.col-status {
-	width: 8%;
+	width: 7%;
 }
 
 .issues-list-table col.col-priority {
-	width: 8%;
+	width: 7%;
 }
 
 .issues-list-table col.col-assignee {
-	width: 8%;
+	width: 7%;
 }
 
 .issues-list-table col.col-progress {
@@ -399,11 +421,11 @@ body.issues-list-body {
 }
 
 .issues-list-table col.col-date {
-	width: 21%;
+	width: 15%;
 }
 
 .issues-list-table col.col-hours {
-	width: 6%;
+	width: 5%;
 }
 
 .issues-list-table thead th {
@@ -1506,6 +1528,9 @@ body.issues-detail-body {
 	.search-section .issues-search-row {
 		grid-template-columns: repeat(2, minmax(0, 1fr));
 	}
+	.issues-filter-pair-field {
+		grid-column: span 2;
+	}
 	.issues-table-card {
 		overflow-x: auto;
 	}
@@ -1523,6 +1548,12 @@ body.issues-detail-body {
 		flex: 1;
 	}
 	.search-section .issues-search-row {
+		grid-template-columns: 1fr;
+	}
+	.issues-filter-pair-field {
+		grid-column: auto;
+	}
+	.issues-filter-pair {
 		grid-template-columns: 1fr;
 	}
 	.issues-date-range {

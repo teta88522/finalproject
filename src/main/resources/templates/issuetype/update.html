@@ -26,7 +26,7 @@
 					th:text="${errorMessage}"></div>
 
 				<div th:if="${issueTypeUsed}" class="page-message page-message-info">
-					이미 일감 또는 업무흐름에서 사용 중인 일감유형은 안정성을 위해 수정할 수 없습니다.
+					이미 이 유형으로 등록된 일감이 있으면 항목설정을 변경할 수 없고, 해당 프로젝트에서는 유형을 해제할 수 없습니다.
 				</div>
 
 				<form th:action="@{/issuetype/update}" method="post"
@@ -38,8 +38,7 @@
 
 						<div class="issuetype-main-column">
 
-							<div class="issuetype-card"
-								th:classappend="${issueTypeUsed} ? ' issuetype-locked-card' : ''">
+							<div class="issuetype-card">
 								<div class="issuetype-card-title">
 									<h4>기본 정보</h4>
 									<p>유형명, 초기 상태, 설명을 수정합니다.</p>
@@ -50,14 +49,14 @@
 										<label for="issueTypeName">유형명 <span class="required">*</span></label>
 										<input type="text" id="issueTypeName"
 											th:field="*{issueTypeName}" class="form-control"
-											th:disabled="${issueTypeUsed}" maxlength="100" required>
+											maxlength="100" required>
 									</div>
 
 									<div class="form-group">
 										<label for="initialStatusId">초기 상태 <span
 											class="required">*</span></label>
 										<select id="initialStatusId" th:field="*{initialStatusId}"
-											class="form-control" th:disabled="${issueTypeUsed}" required>
+											class="form-control" required>
 											<option value="">선택</option>
 											<option th:each="status : ${issueStatusList}"
 												th:value="${status.issueStatusId}"
@@ -69,7 +68,7 @@
 								<div class="form-group">
 									<label for="description">설명</label>
 									<textarea id="description" th:field="*{description}"
-										class="form-control" th:disabled="${issueTypeUsed}"
+										class="form-control"
 										maxlength="1000"></textarea>
 								</div>
 							</div>
@@ -167,8 +166,7 @@
 						</div>
 
 						<div class="issuetype-side-column">
-							<div class="issuetype-card project-card"
-								th:classappend="${issueTypeUsed} ? ' issuetype-locked-card' : ''">
+							<div class="issuetype-card project-card">
 								<div class="issuetype-card-title">
 									<h4>적용 프로젝트</h4>
 									<p>이 일감유형을 사용할 프로젝트를 선택합니다.</p>
@@ -186,12 +184,15 @@
 											<tr th:if="${#lists.isEmpty(projectList)}">
 												<td colspan="2" class="empty-row">적용 가능한 프로젝트가 없습니다.</td>
 											</tr>
-											<tr th:each="project : ${projectList}">
+											<tr th:each="project : ${projectList}"
+												th:with="projectLocked=${issueType.usedProjectIdList != null and #lists.contains(issueType.usedProjectIdList, project.projectId)}">
 												<td class="center">
 													<input type="checkbox" name="projectIdList"
 														th:value="${project.projectId}"
 														th:checked="${issueType.projectIdList != null and #lists.contains(issueType.projectIdList, project.projectId)}"
-														th:disabled="${issueTypeUsed}">
+														th:disabled="${projectLocked}">
+													<input th:if="${projectLocked}" type="hidden" name="projectIdList"
+														th:value="${project.projectId}">
 												</td>
 												<td th:text="${project.projectName}">프로젝트명</td>
 											</tr>
@@ -208,8 +209,7 @@
 							class="btn btn-custon-rounded-four btn-default">취소</a>
 
 						<button type="submit"
-							class="btn btn-custon-rounded-four btn-primary"
-							th:disabled="${issueTypeUsed}">저장</button>
+							class="btn btn-custon-rounded-four btn-primary">저장</button>
 					</div>
 
 				</form>

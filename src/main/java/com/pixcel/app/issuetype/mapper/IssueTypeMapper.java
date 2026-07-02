@@ -33,6 +33,11 @@ public interface IssueTypeMapper {
             @Param("userId") String userId
     );
 
+    List<String> selectIssueTypeUsedProjectIdList(
+            @Param("issueTypeId") String issueTypeId,
+            @Param("userId") String userId
+    );
+
     // 일감유형에서 사용 처리된 항목 코드를 조회한다.
     List<String> selectUsedFieldCodeList(
             @Param("issueTypeId") String issueTypeId,
@@ -95,10 +100,22 @@ public interface IssueTypeMapper {
     // 일감유형이 일감 또는 업무흐름에서 사용 중인지 확인한다.
     int countUsedIssueType(@Param("issueTypeId") String issueTypeId);
 
+    int countIssueTypeUsedInProjects(
+            @Param("issueTypeId") String issueTypeId,
+            @Param("userId") String userId,
+            @Param("projectIdList") List<String> projectIdList
+    );
+
     // 일감유형 적용 프로젝트를 삭제한다.
     int deleteIssueTypeProjectByIssueTypeId(
             @Param("issueTypeId") String issueTypeId,
             @Param("userId") String userId
+    );
+
+    int deleteIssueTypeProjectByProjectIdList(
+            @Param("issueTypeId") String issueTypeId,
+            @Param("userId") String userId,
+            @Param("projectIdList") List<String> projectIdList
     );
 
     // 일감유형 항목 설정을 삭제한다.

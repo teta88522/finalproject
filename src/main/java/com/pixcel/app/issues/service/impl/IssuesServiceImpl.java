@@ -167,6 +167,7 @@ public class IssuesServiceImpl implements IssuesService {
 		pageData.put("issueTypeList", Collections.emptyList());
 		pageData.put("issueStatusList", Collections.emptyList());
 		pageData.put("versionList", Collections.emptyList());
+		pageData.put("milestoneList", Collections.emptyList());
 		pageData.put("priorityList", Collections.emptyList());
 		pageData.put("assigneeList", Collections.emptyList());
 		pageData.putAll(selectedFilterData);
@@ -198,6 +199,7 @@ public class IssuesServiceImpl implements IssuesService {
 		filterData.put("issueTypeList", filterOptionRows(optionRows, OPTION_ISSUE_TYPE));
 		filterData.put("issueStatusList", filterOptionRows(optionRows, OPTION_ISSUE_STATUS));
 		filterData.put("versionList", filterOptionRows(optionRows, OPTION_VERSION));
+		filterData.put("milestoneList", filterOptionRows(optionRows, OPTION_MILESTONE));
 		filterData.put("priorityList", filterOptionRows(optionRows, OPTION_PRIORITY));
 		filterData.put("assigneeList", filterOptionRows(optionRows, OPTION_ASSIGNEE));
 

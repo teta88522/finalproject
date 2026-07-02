@@ -65,12 +65,6 @@
 							type="hidden" name="issueNoSort"
 							th:value="${searchVO.issueNoSort}">
 						<input type="hidden" name="closedYn" th:value="${searchVO.closedYn}">
-						<th:block
-							th:if="${searchVO.milestoneIdList != null and searchVO.milestoneIdList.size() > 0}"
-							th:each="milestoneId : ${searchVO.milestoneIdList}">
-							<input type="hidden" name="milestoneIdList" th:value="${milestoneId}">
-						</th:block>
-
 						<div class="search-form-row issues-search-row">
 
 							<div class="search-field">
@@ -94,31 +88,6 @@
 							</div>
 
 							<div class="search-field">
-								<label>버전</label>
-								<details class="filter-dropdown" data-placeholder="전체"
-									data-filter-group="version">
-									<summary>
-										<span class="filter-selected-text"
-											th:text="${selectedVersionText}">전체</span>
-									</summary>
-									<div class="filter-check-list filter-dropdown-panel">
-										<label class="filter-check-item"
-											th:each="version : ${versionList}"> <input
-											type="checkbox" name="versionIdList"
-											th:value="${version.versionId}"
-											th:checked="${searchVO.versionIdList != null and #lists.contains(searchVO.versionIdList, version.versionId)}">
-											<span th:text="${version.versionName}">버전</span>
-										</label>
-									</div>
-								</details>
-							</div>
-
-							<div class="search-field">
-								<label for="keyword">제목</label> <input type="text" id="keyword"
-									name="keyword" th:value="${searchVO.keyword}" placeholder="제목">
-							</div>
-
-							<div class="search-field">
 								<label>상태</label>
 								<details class="filter-dropdown" data-placeholder="전체"
 									data-filter-group="status">
@@ -136,6 +105,54 @@
 										</label>
 									</div>
 								</details>
+							</div>
+
+							<div class="search-field">
+								<label for="keyword">제목</label> <input type="text" id="keyword"
+									name="keyword" th:value="${searchVO.keyword}" placeholder="제목">
+							</div>
+
+							<div class="search-field issues-filter-pair-field">
+								<div class="issues-filter-pair">
+									<div class="issues-filter-pair-item">
+										<label>버전</label>
+										<details class="filter-dropdown" data-placeholder="전체"
+											data-filter-group="version">
+											<summary>
+												<span class="filter-selected-text"
+													th:text="${selectedVersionText}">전체</span>
+											</summary>
+											<div class="filter-check-list filter-dropdown-panel">
+												<label class="filter-check-item"
+													th:each="version : ${versionList}"> <input
+													type="checkbox" name="versionIdList"
+													th:value="${version.versionId}"
+													th:checked="${searchVO.versionIdList != null and #lists.contains(searchVO.versionIdList, version.versionId)}">
+													<span th:text="${version.versionName}">버전</span>
+												</label>
+											</div>
+										</details>
+									</div>
+									<div class="issues-filter-pair-item">
+										<label>마일스톤</label>
+										<details class="filter-dropdown" data-placeholder="전체"
+											data-filter-group="milestone">
+											<summary>
+												<span class="filter-selected-text"
+													th:text="${selectedMilestoneText}">전체</span>
+											</summary>
+											<div class="filter-check-list filter-dropdown-panel">
+												<label class="filter-check-item"
+													th:each="milestone : ${milestoneList}"> <input
+													type="checkbox" name="milestoneIdList"
+													th:value="${milestone.milestoneId}"
+													th:checked="${searchVO.milestoneIdList != null and #lists.contains(searchVO.milestoneIdList, milestone.milestoneId)}">
+													<span th:text="${milestone.milestoneTitle}">마일스톤</span>
+												</label>
+											</div>
+										</details>
+									</div>
+								</div>
 							</div>
 
 							<div class="search-field">
@@ -242,6 +259,7 @@
 							<col class="col-issue-no">
 							<col class="col-issue-type">
 							<col class="col-version">
+							<col class="col-milestone">
 							<col class="col-title">
 							<col class="col-status">
 							<col class="col-priority">
@@ -276,6 +294,7 @@
 								</a></th>
 								<th>유형</th>
 								<th>버전</th>
+								<th>마일스톤</th>
 								<th>제목</th>
 								<th>상태</th>
 								<th>우선순위</th>
@@ -288,7 +307,7 @@
 
 						<tbody>
 							<tr th:if="${#lists.isEmpty(issueList)}">
-								<td colspan="10" class="empty-row">조회된 일감이 없습니다.</td>
+								<td colspan="11" class="empty-row">조회된 일감이 없습니다.</td>
 							</tr>
 
 							<tr th:each="issue : ${issueList}">
@@ -305,6 +324,10 @@
 								<td><span class="cell-text"
 									th:text="${issue.versionName != null ? issue.versionName : '-'}">
 										버전 </span></td>
+
+								<td><span class="cell-text"
+									th:text="${issue.milestoneTitle != null ? issue.milestoneTitle : '-'}">
+										마일스톤 </span></td>
 
 								<td class="issues-title-cell"><span
 									class="strong-text ellipsis-text" th:text="${issue.title}">
@@ -449,6 +472,12 @@
 						inputName : 'versionIdList',
 						valueKey : 'versionId',
 						labelKey : 'versionName'
+					},
+					milestone : {
+						listName : 'milestoneList',
+						inputName : 'milestoneIdList',
+						valueKey : 'milestoneId',
+						labelKey : 'milestoneTitle'
 					},
 					status : {
 						listName : 'issueStatusList',

@@ -84,6 +84,8 @@ public class IssueTypeVO {
      */
     private List<String> projectIdList;
 
+    private List<String> usedProjectIdList;
+
     private List<String> fieldCodeList;
 
     private List<String> requiredFieldCodeList;
