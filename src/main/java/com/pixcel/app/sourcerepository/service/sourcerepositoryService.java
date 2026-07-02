@@ -32,6 +32,9 @@ public interface sourcerepositoryService {
 																				 int page, 
 																				 int pageSize);
 
+	// ✅ 5-1. 파일 경로 기준 Commit 이력 조회 (GitHub Commits API의 path 파라미터로 실시간 조회, DB 저장 안 함)
+	public List<sourcerepositoryVO> getFileCommitHistory(String projectId, String filePath, String branch);
+
 	// 6. Commit 상세 조회 (GitHub API)
 	public sourcerepositoryVO getSourcerepositoryCommitDetail(String commitHash);
 
