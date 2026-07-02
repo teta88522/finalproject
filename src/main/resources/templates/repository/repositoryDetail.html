@@ -43,13 +43,57 @@
 
 					<div class="repo-preview"
 						style="margin-top: 20px; text-align: center;">
+
+						<!-- 이미지 미리보기 (png, jpg, jpeg, gif, svg) -->
 						<img
 							th:if="${#strings.endsWith(repository.originalName.toLowerCase(), '.png') or 
                  #strings.endsWith(repository.originalName.toLowerCase(), '.jpg') or 
                  #strings.endsWith(repository.originalName.toLowerCase(), '.jpeg') or
-                 #strings.endsWith(repository.originalName.toLowerCase(), '.gif')}"
+                 #strings.endsWith(repository.originalName.toLowerCase(), '.gif') or
+                 #strings.endsWith(repository.originalName.toLowerCase(), '.svg')}"
 							th:src="@{/project/{projectId}/repository/image(projectId=${projectId}, fileId=${repository.fileId})}"
 							style="max-width: 50%; height: auto; border: 1px solid #dee2e6; border-radius: 4px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); display: block; margin-left: 0; margin-right: auto;" />
+
+						<!-- 텍스트(txt) 미리보기 -->
+						<pre th:if="${#strings.endsWith(repository.originalName.toLowerCase(), '.txt')}"
+							th:text="${fileContentText}"
+							style="text-align: left; max-width: 100%; max-height: 400px; overflow: auto; background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 4px; padding: 12px; white-space: pre-wrap; word-break: break-all;"></pre>
+
+						<!-- 미리보기가 지원되지 않는 파일 형식 경고 -->
+						<p th:unless="${#strings.endsWith(repository.originalName.toLowerCase(), '.png') or 
+                 #strings.endsWith(repository.originalName.toLowerCase(), '.jpg') or 
+                 #strings.endsWith(repository.originalName.toLowerCase(), '.jpeg') or
+                 #strings.endsWith(repository.originalName.toLowerCase(), '.gif') or
+                 #strings.endsWith(repository.originalName.toLowerCase(), '.svg') or
+                 #strings.endsWith(repository.originalName.toLowerCase(), '.txt')}"
+							style="color: #dc3545; font-weight: 600;">미리보기가 안되는 파일입니다.</p>
+					</div>
+
+					<!-- 파일 다운로드 이력 -->
+					<div class="repo-download-history" style="margin-top: 30px;">
+						<div class="repo-file-label">다운로드 이력</div>
+						<table
+							style="width: 100%; margin-top: 8px; border-collapse: collapse; font-size: 14px;">
+							<thead>
+								<tr style="background: #f1f3f5;">
+									<th style="padding: 8px; border: 1px solid #dee2e6;">다운로드한 사람</th>
+									<th style="padding: 8px; border: 1px solid #dee2e6;">다운로드 일시</th>
+								</tr>
+							</thead>
+							<tbody id="downloadHistoryBody">
+								<tr th:if="${downloadHistoryList == null or #lists.isEmpty(downloadHistoryList)}">
+									<td colspan="2"
+										style="padding: 10px; text-align: center; border: 1px solid #dee2e6; color: #868e96;">
+										다운로드 이력이 없습니다.</td>
+								</tr>
+								<tr th:each="history : ${downloadHistoryList}">
+									<td style="padding: 8px; border: 1px solid #dee2e6;"
+										th:text="${history.userName}"></td>
+									<td style="padding: 8px; border: 1px solid #dee2e6;"
+										th:text="${history.downloadDate}"></td>
+								</tr>
+							</tbody>
+						</table>
 					</div>
 
 					<div class="repo-btn-group">
@@ -59,8 +103,9 @@
 							class="repo-btn repo-btn-list">목록</a>
 
 						<!-- 파일 다운로드 버튼 (projectId 포함) -->
-						<a
+						<a id="downloadBtn"
 							th:href="@{/project/{projectId}/repository/download(projectId=${projectId}, fileId=${repository.fileId})}"
+							th:attr="data-history-url=@{/project/{projectId}/repository/history(projectId=${projectId}, fileId=${repository.fileId})}"
 							class="repo-btn repo-btn-download">파일 다운로드</a>
 
 						<th:block
@@ -98,6 +143,62 @@
 		</div>
 
 	</div>
-</body>
 
+	<script th:inline="none">
+		// ✅ 다운로드 버튼 클릭 시, 다운로드는 그대로 진행시키고
+		//    서버에 이력이 기록될 시간을 잠깐 준 다음 이력 표만 다시 그려준다.
+		(function () {
+			var downloadBtn = document.getElementById('downloadBtn');
+			var historyBody = document.getElementById('downloadHistoryBody');
+			if (!downloadBtn || !historyBody) return;
+
+			downloadBtn.addEventListener('click', function () {
+				var historyUrl = downloadBtn.getAttribute('data-history-url');
+
+				// 서버가 파일 응답 + 이력 insert를 마칠 시간을 준 뒤 재조회 (여러 번 재시도)
+				var attempts = 0;
+				var maxAttempts = 3;
+				var poll = function () {
+					attempts++;
+					fetch(historyUrl)
+						.then(function (res) { return res.json(); })
+						.then(function (list) {
+							renderHistory(list);
+						})
+						.catch(function () { /* 무시: 다음 시도에서 재시도 */ });
+
+					if (attempts < maxAttempts) {
+						setTimeout(poll, 600);
+					}
+				};
+				setTimeout(poll, 500);
+			});
+
+			function renderHistory(list) {
+				if (!list || list.length === 0) {
+					historyBody.innerHTML =
+						'<tr><td colspan="2" style="padding: 10px; text-align: center; border: 1px solid #dee2e6; color: #868e96;">다운로드 이력이 없습니다.</td></tr>';
+					return;
+				}
+
+				var rows = list.map(function (h) {
+					var userName = h.userName ? escapeHtml(h.userName) : '알 수 없음';
+					var downloadDate = h.downloadDate ? escapeHtml(h.downloadDate) : '';
+					return '<tr>' +
+						'<td style="padding: 8px; border: 1px solid #dee2e6;">' + userName + '</td>' +
+						'<td style="padding: 8px; border: 1px solid #dee2e6;">' + downloadDate + '</td>' +
+						'</tr>';
+				}).join('');
+
+				historyBody.innerHTML = rows;
+			}
+
+			function escapeHtml(str) {
+				var div = document.createElement('div');
+				div.textContent = str;
+				return div.innerHTML;
+			}
+		})();
+	</script>
+</body>
 </html>

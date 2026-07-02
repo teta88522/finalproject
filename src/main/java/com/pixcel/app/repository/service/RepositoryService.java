@@ -7,28 +7,34 @@ import org.springframework.web.multipart.MultipartFile;
 
 public interface RepositoryService {
 	// 1. 자료실 전체 조회
-	public List<RepositoryVO> getRepositoryList(RepositoryVO searchVO);
+		public List<RepositoryVO> getRepositoryList(RepositoryVO searchVO);
 
-	// 2. 자료실 등록한 사람의 자료 상세조회
-	public List<RepositoryVO> getRepositoryListByUserId(String uploadUserId);
+		// 2. 자료실 등록한 사람의 자료 상세조회
+		public List<RepositoryVO> getRepositoryListByUserId(String uploadUserId);
 
-	// 3. 자료실 상세조회
-	public RepositoryVO getRepositoryDetail(String fileId);
+		// 3. 자료실 상세조회
+		public RepositoryVO getRepositoryDetail(String fileId);
 
-	// 4. 자료실 파일 등록
-	public int registerRepository(RepositoryVO repositoryVO, MultipartFile uploadFile);
+		// 4. 자료실 파일 등록
+		public int registerRepository(RepositoryVO repositoryVO, MultipartFile uploadFile);
 
-	// 5. 자료실 파일 수정
-	public int modifyRepository(RepositoryVO repositoryVO, MultipartFile uploadFile, String userId);
+		// 5. 자료실 파일 수정
+		public int modifyRepository(RepositoryVO repositoryVO, MultipartFile uploadFile, String userId);
 
-	// 6. 자료실 파일 삭제
-	public int removeRepository(String fileId, String userId);
-	
-	// 7. 
-	public int getTotalCount(RepositoryVO searchVO);
-	
-	// 프로젝트 구성원인지 확인하는 메서드
-	public boolean isProjectMember(String projectId, String userId);
-	
-	public List<Map<String, Object>> getSourceCodeList();
+		// 6. 자료실 파일 삭제
+		public int removeRepository(String fileId, String userId);
+		
+		// 7. 
+		public int getTotalCount(RepositoryVO searchVO);
+		
+		// 프로젝트 구성원인지 확인하는 메서드
+		public boolean isProjectMember(String projectId, String userId);
+		
+		public List<Map<String, Object>> getSourceCodeList();
+
+		// 8. 파일 다운로드 이력 등록
+		public void logFileDownload(String fileId, String downloadUserId);
+
+		// 9. 파일별 다운로드 이력 조회
+		public List<com.pixcel.app.file.service.FileDownloadHistoryVO> getDownloadHistory(String fileId);
 }

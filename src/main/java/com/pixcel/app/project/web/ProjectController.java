@@ -138,6 +138,9 @@ public class ProjectController {
 			@CookieValue(value = "userId", required = false) String userId,
 			@CookieValue(value = "subscribeYn", required = false) String subscribeYn, Model model) {
 
+		// ⏱️ 임시 시간 측정 (원인 파악 후 삭제할 것)
+		long t0 = System.currentTimeMillis();
+
 		// ✅ 1. 로그인 확인
 		if (userId == null || userId.isEmpty()) {
 			return "redirect:/login";
@@ -145,6 +148,9 @@ public class ProjectController {
 
 		// ✅ 2. 프로젝트 존재 확인
 		ProjectVO project = projectService.selectProjectDetail(projectId);
+		long t1 = System.currentTimeMillis();
+		System.out.println("[TIMING] selectProjectDetail: " + (t1 - t0) + "ms");
+
 		if (project == null) {
 			return "redirect:/myproject/list";
 		}
@@ -152,20 +158,38 @@ public class ProjectController {
 		// ✅ 3. 접근 권한 확인 (소유자 또는 구성원)
 		boolean isOwner = project.getOwnerId().equals(userId);
 		boolean isMember = projectService.isProjectMember(projectId, userId);
+		long t2 = System.currentTimeMillis();
+		System.out.println("[TIMING] isProjectMember: " + (t2 - t1) + "ms");
 
 		if (!isOwner && !isMember) {
 			return "redirect:/myproject/list";
 		}
 
 		// ✅ 4. 정상 접근 - 데이터 조회
-		List<ProjectMemberVO> projectMemberList = projectService.selectProjectMemberList(projectId);
-		List<IssueStatVO> issueStatList = projectService.selectIssueStatByProjectId(projectId);
+		// ⚡ 서로 결과가 필요 없는 독립적인 조회이므로 동시에 실행 (순차 대비 왕복 1회분 절약)
+		java.util.concurrent.CompletableFuture<List<ProjectMemberVO>> memberListFuture =
+				java.util.concurrent.CompletableFuture
+						.supplyAsync(() -> projectService.selectProjectMemberList(projectId));
+
+		java.util.concurrent.CompletableFuture<List<IssueStatVO>> issueStatFuture =
+				java.util.concurrent.CompletableFuture
+						.supplyAsync(() -> projectService.selectIssueStatByProjectId(projectId));
+
+		List<ProjectMemberVO> projectMemberList = memberListFuture.join();
+		long t3 = System.currentTimeMillis();
+		System.out.println("[TIMING] selectProjectMemberList (병렬): " + (t3 - t2) + "ms");
+
+		List<IssueStatVO> issueStatList = issueStatFuture.join();
+		long t4 = System.currentTimeMillis();
+		System.out.println("[TIMING] selectIssueStatByProjectId (병렬 완료 시점): " + (t4 - t2) + "ms");
 
 		model.addAttribute("project", project);
 		model.addAttribute("projectId", projectId);
 		model.addAttribute("subscribeYn", subscribeYn);
 		model.addAttribute("projectMemberList", projectMemberList);
 		model.addAttribute("issueStatList", issueStatList);
+
+		System.out.println("[TIMING] ===== TOTAL controller time: " + (t4 - t0) + "ms =====");
 
 		return "project/projectDetail";
 	}
@@ -363,12 +387,41 @@ public class ProjectController {
 
 		List<ProjectModulesVO> projectModuleList = projectService.selectAllModuleProjects(projectId);
 
+		// ✅ 전체 모듈 코드-이름 매핑 (프로젝트 생성 화면과 동일한 목록)
+		java.util.LinkedHashMap<String, String> moduleMap = new java.util.LinkedHashMap<>();
+		moduleMap.put("h001", "일감관리");
+		moduleMap.put("h002", "자료실");
+		moduleMap.put("h003", "저장소");
+		moduleMap.put("h004", "문서");
+		moduleMap.put("h005", "위키");
+		moduleMap.put("h006", "게시판");
+		moduleMap.put("h007", "간트차트");
+		moduleMap.put("h008", "칸반");
+		moduleMap.put("h009", "로드맵");
+		moduleMap.put("h010", "마일스톤");
+		moduleMap.put("h011", "달력");
+
+		java.util.Set<String> usedModuleCodes = new java.util.HashSet<>();
+		for (ProjectModulesVO pm : projectModuleList) {
+			usedModuleCodes.add(pm.getModuleCode());
+		}
+
 		model.addAttribute("project", project);
 		model.addAttribute("projectId", projectId);
 		model.addAttribute("subscribeYn", subscribeYn);
 		model.addAttribute("projectModuleList", projectModuleList);
+		model.addAttribute("moduleMap", moduleMap);
+		model.addAttribute("usedModuleCodes", usedModuleCodes);
 
 		return "settings/projectModuleSetting";
+	}
+
+	/* ✅ 요청하신 경로 별칭: /myproject/module?projectId=xxx 로도 같은 화면에 접근 가능 */
+	@GetMapping("/myproject/module")
+	public String projectModuleSettingAlias(@RequestParam String projectId,
+			@CookieValue(value = "userId", required = false) String userId,
+			@CookieValue(value = "subscribeYn", required = false) String subscribeYn, Model model) {
+		return projectModuleSetting(projectId, userId, subscribeYn, model);
 	}
 
 	/* 프로젝트 모듈 추가 */
@@ -392,6 +445,7 @@ public class ProjectController {
 			return "redirect:/projectdetail/" + projectId;
 
 		Map<String, Object> resultMap = projectService.insertProjectModule(projectId, moduleCode);
+//		com.pixcel.app.web.GlobalControllerAdvice.evictModuleCache(projectId); // ✅ 사이드바 캐시 무효화
 		redirectAttributes.addFlashAttribute("message", resultMap.get("message"));
 
 		return "redirect:/project/" + projectId + "/settings/modules";
@@ -418,6 +472,7 @@ public class ProjectController {
 			return "redirect:/projectdetail/" + projectId;
 
 		Map<String, Object> resultMap = projectService.deleteProjectModule(projectId, moduleCode);
+//		com.pixcel.app.web.GlobalControllerAdvice.evictModuleCache(projectId); // ✅ 사이드바 캐시 무효화
 		redirectAttributes.addFlashAttribute("message", resultMap.get("message"));
 
 		return "redirect:/project/" + projectId + "/settings/modules";
