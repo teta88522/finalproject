@@ -47,52 +47,103 @@ public class sourcerepositoryServiceImpl implements sourcerepositoryService {
 	@Value("${github.api-url:https://api.github.com}")
 	private String githubApiUrl;
 
+	// ✅ GitHub Personal Access Token (application.yml: github.token)
+	// 인증 없이 호출하면 IP당 60회/시간 제한 → 토큰 사용 시 5,000회/시간으로 상향됨
+	@Value("${github.token:}")
+	private String githubToken;
+
 	private static final Gson gson = new Gson();
+
+	// ✅ 동일 저장소에 대한 반복 호출을 줄이기 위한 초간단 캐시 (branches 조회 결과, 60초 TTL)
+	private final Map<String, CachedBranchResult> branchCache = new java.util.concurrent.ConcurrentHashMap<>();
+	private static final long BRANCH_CACHE_TTL_MILLIS = 60_000L;
+
+	private static class CachedBranchResult {
+		final Map<String, Object> result;
+		final long cachedAt;
+
+		CachedBranchResult(Map<String, Object> result) {
+			this.result = result;
+			this.cachedAt = System.currentTimeMillis();
+		}
+
+		boolean isExpired() {
+			return System.currentTimeMillis() - cachedAt > BRANCH_CACHE_TTL_MILLIS;
+		}
+	}
+
+	/**
+	 * ✅ GitHub API 호출용 공통 헤더 생성 (토큰이 설정되어 있으면 Authorization 헤더 포함)
+	 */
+	private HttpHeaders buildGitHubHeaders() {
+		HttpHeaders headers = new HttpHeaders();
+		headers.set("Accept", "application/vnd.github.v3+json");
+		if (githubToken != null && !githubToken.isEmpty()) {
+			headers.set("Authorization", "Bearer " + githubToken);
+		}
+		return headers;
+	}
 
 	/**
 	 * 1. GitHub에서 파일/폴더 목록 조회
 	 */
 	@Override
-	public List<Map<String, Object>> getRepositoryFiles(String projectId, String gitUrl,  String path, String branch) {
-	    try {
-	        String owner = parseGitHubOwner(gitUrl);
-	        String repo = parseGitHubRepo(gitUrl);
+	public List<Map<String, Object>> getRepositoryFiles(String projectId, String gitUrl, String path, String branch) {
+		try {
+			String owner = parseGitHubOwner(gitUrl);
+			String repo = parseGitHubRepo(gitUrl);
 
-	        if (owner == null || repo == null) {
-	            throw new RuntimeException("GitHub URL 파싱 실패");
-	        }
+			if (owner == null || repo == null) {
+				throw new RuntimeException("GitHub URL 파싱 실패");
+			}
 
-	        // ✅ path null 처리 개선
-	        String pathParam = "";
-	        if (path != null && !path.isEmpty() && !path.equals("null")) {
-	            pathParam = "/" + path;
-	        }
+			// ✅ path null 처리 개선
+			String pathParam = "";
+			if (path != null && !path.isEmpty() && !path.equals("null")) {
+				pathParam = "/" + path;
+			}
 
-	        String url = String.format(
-	            "%s/repos/%s/%s/contents%s?ref=%s",
-	            githubApiUrl, owner, repo, pathParam, branch
-	        );
+			String url = String.format("%s/repos/%s/%s/contents%s?ref=%s", githubApiUrl, owner, repo, pathParam,
+					branch);
 
-	        String response = restTemplate.getForObject(url, String.class);
-	        JsonArray contents = JsonParser.parseString(response).getAsJsonArray();
-	        List<Map<String, Object>> fileList = new ArrayList<>();
+			// ✅ 인증 헤더 적용 (기존 getForObject는 헤더를 태울 수 없어 exchange로 변경)
+			HttpEntity<String> entity = new HttpEntity<>(buildGitHubHeaders());
+			ResponseEntity<String> responseEntity = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
+			String response = responseEntity.getBody();
+			JsonArray contents = JsonParser.parseString(response).getAsJsonArray();
+			List<Map<String, Object>> fileList = new ArrayList<>();
 
-	        for (int i = 0; i < contents.size(); i++) {
-	            JsonObject item = contents.get(i).getAsJsonObject();
-	            Map<String, Object> fileInfo = new HashMap<>();
-	            fileInfo.put("name", item.get("name").getAsString());
-	            fileInfo.put("type", item.get("type").getAsString());
-	            fileInfo.put("path", item.get("path").getAsString());
-	            fileInfo.put("size", item.has("size") ? item.get("size").getAsInt() : 0);
-	            fileInfo.put("url", item.get("html_url").getAsString());
-	            fileList.add(fileInfo);
-	        }
+			for (int i = 0; i < contents.size(); i++) {
+				JsonObject item = contents.get(i).getAsJsonObject();
+				Map<String, Object> fileInfo = new HashMap<>();
+				fileInfo.put("name", item.get("name").getAsString());
+				fileInfo.put("type", item.get("type").getAsString());
+				fileInfo.put("path", item.get("path").getAsString());
+				fileInfo.put("size", item.has("size") ? item.get("size").getAsInt() : 0);
+				fileInfo.put("url", item.get("html_url").getAsString());
+				fileList.add(fileInfo);
+			}
 
-	        return fileList;
+			// ✅ GitHub UI처럼 폴더(dir) 먼저, 그다음 파일(file), 각각 이름 알파벳순 정렬
+			//    GitHub Contents API는 정렬을 보장하지 않으므로 서버에서 명시적으로 정렬
+			fileList.sort((a, b) -> {
+				String typeA = (String) a.get("type");
+				String typeB = (String) b.get("type");
+				boolean isDirA = "dir".equals(typeA);
+				boolean isDirB = "dir".equals(typeB);
+				if (isDirA != isDirB) {
+					return isDirA ? -1 : 1; // 폴더가 파일보다 먼저
+				}
+				String nameA = (String) a.get("name");
+				String nameB = (String) b.get("name");
+				return nameA.compareToIgnoreCase(nameB);
+			});
 
-	    } catch (Exception e) {
-	        throw new RuntimeException("파일 목록 조회 실패: " + e.getMessage(), e);
-	    }
+			return fileList;
+
+		} catch (Exception e) {
+			throw new RuntimeException("파일 목록 조회 실패: " + e.getMessage(), e);
+		}
 	}
 
 	/**
@@ -117,10 +168,8 @@ public class sourcerepositoryServiceImpl implements sourcerepositoryService {
 			String url = String.format("%s/repos/%s/%s/contents/%s?ref=%s", githubApiUrl, githubOwner, githubRepo,
 					filePath, branch);
 
-			HttpHeaders headers = new HttpHeaders();
-			headers.set("Accept", "application/vnd.github.v3+json");
-
-			HttpEntity<String> entity = new HttpEntity<>(headers);
+			// ✅ 인증 헤더 적용
+			HttpEntity<String> entity = new HttpEntity<>(buildGitHubHeaders());
 			ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
 
 			// 4. JSON 파싱
@@ -136,8 +185,6 @@ public class sourcerepositoryServiceImpl implements sourcerepositoryService {
 			throw new RuntimeException("파일 내용 조회 실패: " + e.getMessage());
 		}
 	}
-	
-	
 
 	/**
 	 * 3. GitHub URL 저장 (PROJECT 테이블 업데이트)
@@ -155,15 +202,19 @@ public class sourcerepositoryServiceImpl implements sourcerepositoryService {
 	@Override
 	public Map<String, Object> getGitHubBranches(String gitHubUrl) {
 		try {
+			// ✅ 60초 이내에 같은 저장소를 다시 조회하면 캐시된 결과를 반환 (rate limit 소진 방지)
+			CachedBranchResult cached = branchCache.get(gitHubUrl);
+			if (cached != null && !cached.isExpired()) {
+				return cached.result;
+			}
+
 			String githubOwner = parseGitHubOwner(gitHubUrl);
 			String githubRepo = parseGitHubRepo(gitHubUrl);
 
 			String repoUrl = String.format("%s/repos/%s/%s", githubApiUrl, githubOwner, githubRepo);
 
-			HttpHeaders headers = new HttpHeaders();
-			headers.set("Accept", "application/vnd.github.v3+json");
-
-			HttpEntity<String> entity = new HttpEntity<>(headers);
+			// ✅ 인증 헤더 적용 (익명 요청 60회/시간 → 토큰 사용 시 5,000회/시간)
+			HttpEntity<String> entity = new HttpEntity<>(buildGitHubHeaders());
 			ResponseEntity<String> repoResponse = restTemplate.exchange(repoUrl, HttpMethod.GET, entity, String.class);
 
 			JsonObject repoObj = gson.fromJson(repoResponse.getBody(), JsonObject.class);
@@ -192,8 +243,15 @@ public class sourcerepositoryServiceImpl implements sourcerepositoryService {
 			result.put("owner", githubOwner);
 			result.put("repo", githubRepo);
 
+			// ✅ 캐시에 저장
+			branchCache.put(gitHubUrl, new CachedBranchResult(result));
+
 			return result;
 
+		} catch (org.springframework.web.client.HttpClientErrorException.Forbidden e) {
+			// ✅ rate limit 등 403은 별도로 구분해서 원인을 명확히 알려줌
+			throw new RuntimeException(
+					"GitHub API 요청 한도를 초과했습니다(403). 잠시 후 다시 시도하거나 github.token 설정을 확인해주세요: " + e.getMessage());
 		} catch (Exception e) {
 			throw new RuntimeException("GitHub 저장소 검증 실패: " + e.getMessage());
 		}
@@ -204,97 +262,184 @@ public class sourcerepositoryServiceImpl implements sourcerepositoryService {
 	 */
 	@Override
 	public void syncSourcerepositoryFromGitHub(String projectId, String branch) {
-	    try {
-	        ProjectVO project = projectService.selectProjectDetail(projectId);
-	        if (project == null || project.getGitUrl() == null) {
-	            throw new RuntimeException("GitHub URL이 설정되지 않았습니다.");
-	        }
+		try {
+			ProjectVO project = projectService.selectProjectDetail(projectId);
+			if (project == null || project.getGitUrl() == null) {
+				throw new RuntimeException("GitHub URL이 설정되지 않았습니다.");
+			}
 
-	        // GitHub에서 Commit 목록 조회
-	        List<sourcerepositoryVO> commits = fetchCommitsFromGitHub(
-	            project.getGitUrl(), 
-	            branch
-	        );
+			// GitHub에서 Commit 목록 조회
+			List<sourcerepositoryVO> commits = fetchCommitsFromGitHub(project.getGitUrl(), branch);
 
-	        // ✨ 신규 Commit 필터링
-	        List<sourcerepositoryVO> newCommits = new ArrayList<>();
-	        for (sourcerepositoryVO commit : commits) {
-	        	int existsCount = mapper.existsSourcerepositoryCommitBySha(commit.getCommitHash());
-	        	boolean exists = existsCount > 0;
-	            if (!exists) {
-	                commit.setProjectId(projectId);
-	                commit.setBranchName(branch);
-	                commit.setCommitId(UUID.randomUUID().toString());
-	                commit.setCreatedAt(LocalDateTime.now());
-	                newCommits.add(commit);
-	            }
-	        }
+			// ✨ 신규 Commit 필터링
+			List<sourcerepositoryVO> newCommits = new ArrayList<>();
+			for (sourcerepositoryVO commit : commits) {
+				// ✅ SHA만으로 체크하면 다른 브랜치에서 이미 동기화된 커밋을 스킵해버려서
+				//    새 브랜치를 동기화할 때 대부분의 커밋이 누락되는 버그가 있었음.
+				//    프로젝트+브랜치까지 함께 체크하도록 변경.
+				int existsCount = mapper.existsSourcerepositoryCommitByShaAndBranch(
+						commit.getCommitHash(), projectId, branch);
+				boolean exists = existsCount > 0;
+				if (!exists) {
+					commit.setProjectId(projectId);
+					commit.setBranchName(branch);
+					commit.setCommitId(UUID.randomUUID().toString());
+					commit.setCreatedAt(LocalDateTime.now());
+					newCommits.add(commit);
+				}
+			}
 
-	        // ✨ 신규 Commit 개별 저장
-	        if (!newCommits.isEmpty()) {
-	            for (sourcerepositoryVO commit : newCommits) {
-	                try {
-	                    mapper.insertSourcerepositoryCommit(commit);
-	                    System.out.println("✅ Commit 저장: " + commit.getCommitHash());
-	                } catch (Exception e) {
-	                    System.err.println("❌ Commit 저장 실패: " + commit.getCommitHash() + " - " + e.getMessage());
-	                }
-	            }
-	        }
+			// ✨ 신규 Commit 개별 저장
+			int successCount = 0;
+			int failCount = 0;
+			List<String> failedShas = new ArrayList<>();
 
-	        System.out.println("✅ GitHub 동기화 완료: " + newCommits.size() + "개 Commit 저장됨");
+			if (!newCommits.isEmpty()) {
+				for (sourcerepositoryVO commit : newCommits) {
+					try {
+						// ✅ DB 컬럼(commit_message VARCHAR2(255))보다 긴 메시지가 들어오면
+						//    ORA-12899로 INSERT 자체가 실패해서 해당 커밋이 통째로 누락되는 문제가 있었음.
+						//    컬럼을 늘리는 게 근본 해결이지만, 늘리기 전까지 방어적으로 잘라서 저장.
+						String message = commit.getCommitMessage();
+						if (message != null && message.length() > 255) {
+							commit.setCommitMessage(message.substring(0, 252) + "...");
+						}
 
-	    } catch (Exception e) {
-	        throw new RuntimeException("GitHub 동기화 실패: " + e.getMessage(), e);
-	    }
+						mapper.insertSourcerepositoryCommit(commit);
+						successCount++;
+						System.out.println("✅ Commit 저장: " + commit.getCommitHash());
+					} catch (Exception e) {
+						failCount++;
+						failedShas.add(commit.getCommitHash());
+						System.err.println("❌ Commit 저장 실패: " + commit.getCommitHash() + " - " + e.getMessage());
+					}
+				}
+			}
+
+			System.out.println("✅ GitHub 동기화 완료: 성공 " + successCount + "건, 실패 " + failCount + "건 (총 "
+					+ newCommits.size() + "건 시도)");
+
+			// ✅ 일부라도 저장 실패한 게 있으면 콘솔에만 남기지 않고 예외로 알림
+			//    (컨트롤러가 이 메시지를 flash message로 화면에 띄워줌)
+			if (failCount > 0) {
+				throw new RuntimeException(String.format(
+						"%d건 저장 성공, %d건 저장 실패 (SHA: %s%s). 서버 콘솔 로그에서 상세 원인을 확인하세요.",
+						successCount, failCount,
+						String.join(", ", failedShas.subList(0, Math.min(3, failedShas.size()))),
+						failedShas.size() > 3 ? " 외 " + (failedShas.size() - 3) + "건" : ""));
+			}
+
+		} catch (Exception e) {
+			throw new RuntimeException("GitHub 동기화 실패: " + e.getMessage(), e);
+		}
 	}
-	
+
+	/**
+	 * ✅ 4-1. 저장소의 모든 브랜치를 한 번에 동기화.
+	 *    내부적으로 syncSourcerepositoryFromGitHub()를 브랜치 수만큼 반복 호출.
+	 *    한 브랜치가 실패해도 나머지 브랜치는 계속 진행하도록 브랜치별로 개별 try-catch 처리.
+	 */
+	@Override
+	public Map<String, Object> syncAllBranchesFromGitHub(String projectId) {
+		ProjectVO project = projectService.selectProjectDetail(projectId);
+		if (project == null || project.getGitUrl() == null || project.getGitUrl().isEmpty()) {
+			throw new RuntimeException("GitHub URL이 설정되지 않았습니다.");
+		}
+
+		// 1. 저장소의 실제 브랜치 목록 조회 (60초 캐시 있는 getGitHubBranches 재사용)
+		Map<String, Object> branchInfo = getGitHubBranches(project.getGitUrl());
+		@SuppressWarnings("unchecked")
+		List<Map<String, String>> branches = (List<Map<String, String>>) branchInfo.get("branches");
+
+		List<String> succeeded = new ArrayList<>();
+		List<String> failed = new ArrayList<>();
+
+		// 2. 브랜치 하나씩 순회하며 동기화 (한 브랜치 실패해도 나머지는 계속)
+		for (Map<String, String> b : branches) {
+			String branchName = b.get("name");
+			try {
+				syncSourcerepositoryFromGitHub(projectId, branchName);
+				succeeded.add(branchName);
+			} catch (Exception e) {
+				failed.add(branchName + "(" + e.getMessage() + ")");
+				System.err.println("⚠️ 브랜치 동기화 실패: " + branchName + " - " + e.getMessage());
+			}
+		}
+
+		Map<String, Object> result = new HashMap<>();
+		result.put("totalBranches", branches.size());
+		result.put("succeeded", succeeded);
+		result.put("failed", failed);
+		return result;
+	}
+
 	private List<sourcerepositoryVO> fetchCommitsFromGitHub(String gitUrl, String branch) {
-	    try {
-	        String owner = parseGitHubOwner(gitUrl);
-	        String repo = parseGitHubRepo(gitUrl);
+		try {
+			String owner = parseGitHubOwner(gitUrl);
+			String repo = parseGitHubRepo(gitUrl);
 
-	        if (owner == null || repo == null) {
-	            throw new RuntimeException("GitHub URL 파싱 실패");
-	        }
+			if (owner == null || repo == null) {
+				throw new RuntimeException("GitHub URL 파싱 실패");
+			}
 
-	        String apiUrl = "https://api.github.com/repos/" + owner + "/" + repo +
-	                       "/commits?sha=" + branch + "&per_page=30";
+			String apiUrl = githubApiUrl + "/repos/" + owner + "/" + repo + "/commits?sha=" + branch + "&per_page=30";
 
-	        String response = restTemplate.getForObject(apiUrl, String.class);
-	        JsonArray commits = JsonParser.parseString(response).getAsJsonArray();
-	        List<sourcerepositoryVO> commitList = new ArrayList<>();
+			// ✅ 인증 헤더 적용
+			HttpEntity<String> entity = new HttpEntity<>(buildGitHubHeaders());
+			ResponseEntity<String> responseEntity = restTemplate.exchange(apiUrl, HttpMethod.GET, entity, String.class);
+			String response = responseEntity.getBody();
+			JsonArray commits = JsonParser.parseString(response).getAsJsonArray();
+			List<sourcerepositoryVO> commitList = new ArrayList<>();
 
-	        for (int i = 0; i < commits.size(); i++) {
-	            JsonObject commit = commits.get(i).getAsJsonObject();
+			for (int i = 0; i < commits.size(); i++) {
+				JsonObject commit = commits.get(i).getAsJsonObject();
 
-	            sourcerepositoryVO vo = new sourcerepositoryVO();
-	            vo.setCommitHash(commit.get("sha").getAsString());
-	            vo.setCommitMessage(commit.getAsJsonObject("commit")
-	                .get("message").getAsString());
-	            vo.setAuthorName(commit.getAsJsonObject("commit")
-	                .getAsJsonObject("author").get("name").getAsString());
-	            vo.setAuthorEmail(commit.getAsJsonObject("commit")
-	                .getAsJsonObject("author").get("email").getAsString());
+				try {
+					sourcerepositoryVO vo = new sourcerepositoryVO();
+					vo.setCommitHash(commit.get("sha").getAsString());
 
-	            String committedAt = commit.getAsJsonObject("commit")
-	                .getAsJsonObject("author").get("date").getAsString();
-	            vo.setCommittedAt(LocalDateTime.parse(
-	                committedAt.replace("Z", "+00:00"),
-	                java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME
-	            ).withNano(0));
+					JsonObject commitDetail = commit.getAsJsonObject("commit");
+					vo.setCommitMessage(commitDetail.has("message") ? commitDetail.get("message").getAsString() : "");
 
-	            // ❌ 이 줄 제거!
-	            // vo.setIssueId("-");
+					// ✅ author 객체 또는 name/email이 없는 커밋(봇 커밋, GPG 서명 커밋 등)이 있을 수 있음.
+					//    author_name은 DB NOT NULL이라 null이면 그 자체로 INSERT가 실패하므로 기본값 보정.
+					//    또한 하나의 커밋 파싱 실패가 전체 30건 조회를 통째로 실패시키지 않도록 개별 try-catch로 격리.
+					JsonObject authorObj = commitDetail.has("author") && !commitDetail.get("author").isJsonNull()
+							? commitDetail.getAsJsonObject("author")
+							: null;
 
-	            commitList.add(vo);
-	        }
+					String authorName = (authorObj != null && authorObj.has("name") && !authorObj.get("name").isJsonNull())
+							? authorObj.get("name").getAsString()
+							: "Unknown";
+					String authorEmail = (authorObj != null && authorObj.has("email") && !authorObj.get("email").isJsonNull())
+							? authorObj.get("email").getAsString()
+							: null;
+					vo.setAuthorName(authorName);
+					vo.setAuthorEmail(authorEmail);
 
-	        return commitList;
+					String committedAt = (authorObj != null && authorObj.has("date") && !authorObj.get("date").isJsonNull())
+							? authorObj.get("date").getAsString()
+							: null;
+					if (committedAt != null) {
+						vo.setCommittedAt(LocalDateTime.parse(committedAt.replace("Z", "+00:00"),
+								java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME).withNano(0));
+					} else {
+						// committed_at도 DB NOT NULL이라 값이 없으면 현재 시각으로 대체
+						vo.setCommittedAt(LocalDateTime.now().withNano(0));
+					}
 
-	    } catch (Exception e) {
-	        throw new RuntimeException("GitHub Commit 조회 실패: " + e.getMessage(), e);
-	    }
+					commitList.add(vo);
+				} catch (Exception rowEx) {
+					// 커밋 1건 파싱 실패는 그 커밋만 건너뛰고 나머지는 계속 진행
+					System.err.println("⚠️ GitHub 커밋 파싱 실패(건너뜀): " + rowEx.getMessage());
+				}
+			}
+
+			return commitList;
+
+		} catch (Exception e) {
+			throw new RuntimeException("GitHub Commit 조회 실패: " + e.getMessage(), e);
+		}
 	}
 
 	/**
@@ -328,7 +473,7 @@ public class sourcerepositoryServiceImpl implements sourcerepositoryService {
 	@Override
 	public sourcerepositoryVO getSourcerepositoryCommitDetail(String commitHash) {
 		try {
-			return mapper.selectSourcerepositoryCommitBySha(commitHash);
+			return mapper.selectSourcerepositoryCommitBySha(commitHash, null);
 
 		} catch (Exception e) {
 			throw new RuntimeException("Commit 상세 조회 실패: " + e.getMessage());
@@ -337,10 +482,11 @@ public class sourcerepositoryServiceImpl implements sourcerepositoryService {
 
 	/**
 	 * 7. 단일 Commit 조회
+	 * ✅ branchName으로 좁혀서 조회 (같은 SHA가 여러 브랜치에 있을 수 있음). null이면 최신 1건.
 	 */
 	@Override
-	public sourcerepositoryVO getSourcerepositoryCommit(String commitHash) {
-		return mapper.selectSourcerepositoryCommitBySha(commitHash);
+	public sourcerepositoryVO getSourcerepositoryCommit(String commitHash, String branchName) {
+		return mapper.selectSourcerepositoryCommitBySha(commitHash, branchName);
 	}
 
 	/**
@@ -408,5 +554,30 @@ public class sourcerepositoryServiceImpl implements sourcerepositoryService {
 			throw new RuntimeException("GitHub Repo 파싱 실패: " + gitUrl);
 		}
 	}
-	
+
+	@Override
+	public String getFirstBranchByProjectId(String projectId) {
+		try {
+			String branch = mapper.selectFirstBranchNameByProjectId(projectId);
+
+			// DB에 branch가 없으면 GitHub에서 조회
+			if (branch == null || branch.isEmpty()) {
+				ProjectVO project = projectService.selectProjectDetail(projectId);
+				String gitUrl = project.getGitUrl();
+
+				if (gitUrl == null || gitUrl.isEmpty()) {
+					throw new RuntimeException("GitHub URL이 설정되지 않았습니다");
+				}
+
+				Map<String, Object> branchInfo = getGitHubBranches(gitUrl);
+				branch = (String) branchInfo.get("defaultBranch");
+			}
+
+			return branch;
+
+		} catch (Exception e) {
+			throw new RuntimeException("Branch 조회 실패: " + e.getMessage(), e);
+		}
+	}
+
 }

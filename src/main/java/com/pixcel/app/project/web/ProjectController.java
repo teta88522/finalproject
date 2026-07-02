@@ -166,13 +166,22 @@ public class ProjectController {
 		}
 
 		// ✅ 4. 정상 접근 - 데이터 조회
-		List<ProjectMemberVO> projectMemberList = projectService.selectProjectMemberList(projectId);
-		long t3 = System.currentTimeMillis();
-		System.out.println("[TIMING] selectProjectMemberList: " + (t3 - t2) + "ms");
+		// ⚡ 서로 결과가 필요 없는 독립적인 조회이므로 동시에 실행 (순차 대비 왕복 1회분 절약)
+		java.util.concurrent.CompletableFuture<List<ProjectMemberVO>> memberListFuture =
+				java.util.concurrent.CompletableFuture
+						.supplyAsync(() -> projectService.selectProjectMemberList(projectId));
 
-		List<IssueStatVO> issueStatList = projectService.selectIssueStatByProjectId(projectId);
+		java.util.concurrent.CompletableFuture<List<IssueStatVO>> issueStatFuture =
+				java.util.concurrent.CompletableFuture
+						.supplyAsync(() -> projectService.selectIssueStatByProjectId(projectId));
+
+		List<ProjectMemberVO> projectMemberList = memberListFuture.join();
+		long t3 = System.currentTimeMillis();
+		System.out.println("[TIMING] selectProjectMemberList (병렬): " + (t3 - t2) + "ms");
+
+		List<IssueStatVO> issueStatList = issueStatFuture.join();
 		long t4 = System.currentTimeMillis();
-		System.out.println("[TIMING] selectIssueStatByProjectId: " + (t4 - t3) + "ms");
+		System.out.println("[TIMING] selectIssueStatByProjectId (병렬 완료 시점): " + (t4 - t2) + "ms");
 
 		model.addAttribute("project", project);
 		model.addAttribute("projectId", projectId);
@@ -436,6 +445,7 @@ public class ProjectController {
 			return "redirect:/projectdetail/" + projectId;
 
 		Map<String, Object> resultMap = projectService.insertProjectModule(projectId, moduleCode);
+//		com.pixcel.app.web.GlobalControllerAdvice.evictModuleCache(projectId); // ✅ 사이드바 캐시 무효화
 		redirectAttributes.addFlashAttribute("message", resultMap.get("message"));
 
 		return "redirect:/project/" + projectId + "/settings/modules";
@@ -462,6 +472,7 @@ public class ProjectController {
 			return "redirect:/projectdetail/" + projectId;
 
 		Map<String, Object> resultMap = projectService.deleteProjectModule(projectId, moduleCode);
+//		com.pixcel.app.web.GlobalControllerAdvice.evictModuleCache(projectId); // ✅ 사이드바 캐시 무효화
 		redirectAttributes.addFlashAttribute("message", resultMap.get("message"));
 
 		return "redirect:/project/" + projectId + "/settings/modules";

@@ -36,11 +36,11 @@
 				</div>
 				<div class="index-info-card">
 					<div class="label">Repository</div>
-					<div class="value">-</div>
+					<div class="value" th:text="${savedGitUrl != null ? savedGitUrl : '-'}">-</div>
 				</div>
 				<div class="index-info-card">
 					<div class="label">Branch</div>
-					<div class="value">-</div>
+					<div class="value" th:text="${savedBranch != null ? savedBranch : '-'}">-</div>
 				</div>
 			</div>
 
@@ -51,6 +51,14 @@
 					class="index-btn index-btn-primary"> 📁 파일 목록 보기 </a>
 				<button type="button" data-toggle="modal" data-target="#syncModal"
 					class="index-btn index-btn-secondary">🔄 GitHub 동기화</button>
+
+				<!-- ✅ 저장된 GitHub URL이 있을 때만 노출: 저장소의 모든 브랜치를 한 번에 동기화 -->
+				<form th:if="${savedGitUrl != null and !savedGitUrl.isEmpty()}"
+					th:action="@{/project/{projectId}/sourcerepository/sync-all(projectId=${projectId})}"
+					method="post" style="display: inline;"
+					onsubmit="return confirm('저장소의 모든 브랜치를 동기화합니다. 브랜치 수에 따라 시간이 걸릴 수 있습니다. 계속할까요?');">
+					<button type="submit" class="index-btn index-btn-secondary">🔀 전체 브랜치 동기화</button>
+				</form>
 			</div>
 		</div>
 
@@ -79,6 +87,7 @@
 									<span style="color: #e24b4a">*</span>
 								</label> <input type="text" name="gitHubUrl" class="form-control"
 									placeholder="https://github.com/owner/repository" required
+									th:value="${savedGitUrl}"
 									style="border-radius: 10px; border: 1px solid #ddd; font-size: 13px; height: 36px;">
 								<small style="color: #999; margin-top: 4px; display: block;">
 									예: https://github.com/pixcel-team/pixcel-project </small>
@@ -111,14 +120,19 @@
 				</div>
 			</div>
 		</div>
-		
+
 		<script>
     const gitHubUrlInput = document.querySelector('input[name="gitHubUrl"]');
     const branchSelect = document.querySelector('select[name="branch"]');
 
-    gitHubUrlInput.addEventListener('blur', function() {
-        const url = this.value.trim();
+    // ✅ 같은 URL을 반복 검증하지 않도록 마지막으로 검증한 URL을 기억
+    let lastValidatedUrl = null;
+
+    function validateGitHubUrlAndLoadBranches(url) {
         if (!url) return;
+        if (url === lastValidatedUrl) return;
+
+        setBranchLoadingState();
 
         fetch(`/project/${getProjectIdFromURL()}/sourcerepository/validate-url?gitHubUrl=${encodeURIComponent(url)}`, {
             method: 'POST',
@@ -127,6 +141,7 @@
         .then(response => response.json())
         .then(data => {
             if (data.success && data.branches) {
+                lastValidatedUrl = url;
                 branchSelect.innerHTML = '';
                 data.branches.forEach(branch => {
                     const option = document.createElement('option');
@@ -135,18 +150,52 @@
                     if (branch.isDefault === 'true') option.selected = true;
                     branchSelect.appendChild(option);
                 });
+            } else {
+                // ✅ 실패 시 원인을 사용자에게 노출 (기존엔 조용히 무시되어 원인 파악이 불가능했음)
+                resetBranchSelectToDefault();
+                alert(data.error || 'GitHub 저장소 검증에 실패했습니다. 잠시 후 다시 시도해주세요.');
             }
         })
-        .catch(error => console.error('Error:', error));
+        .catch(error => {
+            console.error('Error:', error);
+            resetBranchSelectToDefault();
+            alert('GitHub 저장소 검증 요청 중 오류가 발생했습니다: ' + error.message);
+        });
+    }
+
+    gitHubUrlInput.addEventListener('blur', function() {
+        validateGitHubUrlAndLoadBranches(this.value.trim());
     });
+
+    // ✅ 이전에 저장해둔 GitHub URL이 이미 입력창에 채워져 있다면(재동기화 상황),
+    //    사용자가 다시 타이핑하지 않아도 자동으로 브랜치 목록을 불러옴
+    document.addEventListener('DOMContentLoaded', function() {
+        const prefilled = gitHubUrlInput.value.trim();
+        if (prefilled) {
+            validateGitHubUrlAndLoadBranches(prefilled);
+        }
+    });
+
+    function setBranchLoadingState() {
+        branchSelect.innerHTML = '<option value="">확인 중...</option>';
+    }
+
+    function resetBranchSelectToDefault() {
+        branchSelect.innerHTML = `
+            <option value="">Branch를 선택하세요</option>
+            <option value="master">master</option>
+            <option value="main">main</option>
+            <option value="develop">develop</option>
+            <option value="dev">dev</option>
+        `;
+    }
 
     function getProjectIdFromURL() {
         const match = window.location.pathname.match(/\/project\/([^/]+)\//);
         return match ? match[1] : '';
     }
 </script>
-		
+
 	</div>
 </body>
-
 </html>

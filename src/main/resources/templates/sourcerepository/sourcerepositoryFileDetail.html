@@ -59,13 +59,13 @@
 						title="코드 전체 복사">
 						📋 코드 복사
 					</button>
-					<a
-						th:href="@{${fileContent}}"
+					<button
+						type="button"
 						class="detail-action-btn detail-action-download"
-						title="파일 다운로드"
-						download>
+						onclick="downloadFile()"
+						title="파일 다운로드">
 						⬇️ 다운로드
-					</a>
+					</button>
 				</div>
 			</div>
  
@@ -88,29 +88,47 @@
 				</a>
 			</div>
 		</div>
+
+		<!-- ✅✅ layout:fragment="Content" 안쪽으로 이동: fragment 밖에 있으면 Thymeleaf Layout
+		     Dialect가 최종 렌더링에서 제외시켜서, 복사/다운로드 버튼의 onclick이
+		     "함수가 정의되지 않음" 에러로 조용히 실패하던 문제가 있었음 -->
+		<script>
+			// 파일명 복사
+			function copyFileName() {
+				const fileName = document.querySelector('.detail-file-name').textContent;
+				navigator.clipboard.writeText(fileName).then(() => {
+					alert('파일명이 복사되었습니다: ' + fileName);
+				}).catch(() => {
+					alert('복사에 실패했습니다');
+				});
+			}
+ 
+			// 코드 전체 복사
+			function copyCode() {
+				const fileContent = document.getElementById('fileContent').textContent;
+				navigator.clipboard.writeText(fileContent).then(() => {
+					alert('코드가 복사되었습니다');
+				}).catch(() => {
+					alert('복사에 실패했습니다');
+				});
+			}
+
+			// ✅ 파일 다운로드 (기존엔 파일 내용을 그대로 URL로 써서 깨져 있었음 → Blob으로 다운로드)
+			function downloadFile() {
+				const fileName = document.querySelector('.detail-file-name').textContent;
+				const fileContent = document.getElementById('fileContent').textContent;
+				const blob = new Blob([fileContent], { type: 'text/plain;charset=utf-8' });
+				const url = URL.createObjectURL(blob);
+				const a = document.createElement('a');
+				a.href = url;
+				a.download = fileName;
+				document.body.appendChild(a);
+				a.click();
+				document.body.removeChild(a);
+				URL.revokeObjectURL(url);
+			}
+		</script>
 	</div>
- 
-	<script>
-		// 파일명 복사
-		function copyFileName() {
-			const fileName = document.querySelector('.detail-file-name').textContent;
-			navigator.clipboard.writeText(fileName).then(() => {
-				alert('파일명이 복사되었습니다: ' + fileName);
-			}).catch(() => {
-				alert('복사에 실패했습니다');
-			});
-		}
- 
-		// 코드 전체 복사
-		function copyCode() {
-			const fileContent = document.getElementById('fileContent').textContent;
-			navigator.clipboard.writeText(fileContent).then(() => {
-				alert('코드가 복사되었습니다');
-			}).catch(() => {
-				alert('복사에 실패했습니다');
-			});
-		}
-	</script>
 </body>
 
 </html>
