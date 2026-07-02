@@ -145,14 +145,14 @@
 
 									<div class="issues-file-box">
 										<div>
-											<label for="fileInput"
+											<label for="issueCreateFileInput"
 												class="btn btn-custon-rounded-four btn-default issues-file-select">
-												파일 선택 </label> <input type="file" id="fileInput" name="files"
+												파일 선택 </label> <input type="file" id="issueCreateFileInput" name="files"
 												multiple class="issues-file-input"> <span
-												id="fileCount" class="issues-file-count">파일 0개</span>
+												id="issueCreateFileCount" class="issues-file-count">파일 0개</span>
 										</div>
 
-										<ul id="fileList" class="issues-file-list"></ul>
+										<ul id="issueCreateFileList" class="issues-file-list"></ul>
 									</div>
 								</div>
 							</div>
@@ -280,10 +280,14 @@
 				var milestoneSelect = document.getElementById('milestoneId');
 				var assigneeSelect = document.getElementById('assigneeId');
 				var parentIssueSelect = document.getElementById('parentIssueId');
+				var createFileInput = document.getElementById('issueCreateFileInput');
+				var createFileList = document.getElementById('issueCreateFileList');
+				var createFileCount = document.getElementById('issueCreateFileCount');
 				var createOptionUrl = /*[[@{/project/{projectId}/issues/create/options(projectId=${selectedProjectId})}]]*/ '';
 				var selectedMilestoneId = /*[[${issue.milestoneId}]]*/ '';
 				var selectedAssigneeId = /*[[${issue.assigneeId}]]*/ '';
 				var selectedParentIssueId = /*[[${issue.parentIssueId}]]*/ '';
+				var selectedCreateFiles = [];
 				var settingMap = {};
 				var loadedMilestoneCount = 0;
 
@@ -301,7 +305,65 @@
 
 				if (createForm) {
 					createForm.addEventListener('submit', function() {
+						syncCreateFiles();
 						showLoading('생성중');
+					});
+				}
+
+				if (createFileInput && createFileList && createFileCount) {
+					createFileInput.addEventListener('change', function(event) {
+						selectedCreateFiles = selectedCreateFiles.concat(Array.prototype.slice.call(event.target.files || []));
+						createFileInput.value = '';
+						renderCreateFiles();
+					});
+
+					createFileList.addEventListener('click', function(event) {
+						if (event.target.tagName !== 'BUTTON') {
+							return;
+						}
+
+						var index = Number(event.target.getAttribute('data-index'));
+						selectedCreateFiles.splice(index, 1);
+						renderCreateFiles();
+					});
+				}
+
+				function syncCreateFiles() {
+					if (!createFileInput || selectedCreateFiles.length === 0) {
+						return;
+					}
+
+					var dataTransfer = new DataTransfer();
+					selectedCreateFiles.forEach(function(file) {
+						dataTransfer.items.add(file);
+					});
+					createFileInput.files = dataTransfer.files;
+				}
+
+				function renderCreateFiles() {
+					if (!createFileList || !createFileCount) {
+						return;
+					}
+
+					createFileList.innerHTML = '';
+					createFileCount.textContent = '파일 ' + selectedCreateFiles.length + '개';
+
+					selectedCreateFiles.forEach(function(file, index) {
+						var item = document.createElement('li');
+						var name = document.createElement('span');
+						var removeButton = document.createElement('button');
+
+						item.className = 'issues-file-item';
+						name.className = 'issues-file-name';
+						name.textContent = file.name + ' (' + (file.size / 1024).toFixed(1) + ' KB)';
+
+						removeButton.type = 'button';
+						removeButton.setAttribute('data-index', index);
+						removeButton.textContent = '삭제';
+
+						item.appendChild(name);
+						item.appendChild(removeButton);
+						createFileList.appendChild(item);
 					});
 				}
 

@@ -30,9 +30,13 @@
 							class="btn btn-custon-rounded-four btn-default">목록</a>
 						<button th:if="${canUpdateTimelog}" type="submit" form="timelogDetailForm"
 							class="btn btn-custon-rounded-four btn-primary">저장</button>
-						<form th:if="${canUpdateTimelog}" class="timelog-delete-form"
+						<form th:if="${canUpdateTimelog}" class="timelog-delete-form js-pf-confirm-submit"
 							th:action="@{/project/{projectId}/issues/{issueId}/timelog/{timeLogId}/delete(projectId=${selectedProjectId}, issueId=${timelog.issueId}, timeLogId=${timelog.timeLogId})}"
-							method="post" data-confirm-message="소요시간을 삭제하시겠습니까?">
+							method="post"
+							data-confirm-title="삭제 확인"
+							data-confirm-message="소요시간을 삭제하시겠습니까?"
+							data-confirm-confirm-text="삭제"
+							data-confirm-icon="warning">
 							<button type="submit" class="btn btn-custon-rounded-four btn-danger">삭제</button>
 						</form>
 					</div>
@@ -133,6 +137,8 @@
 			</div>
 		</div>
 
+		<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+		<script th:src="@{/js/common/pf-confirm.js}"></script>
 		<script>
 			(function() {
 				document.body.classList.add('timelog-body');
@@ -157,14 +163,7 @@
 				}
 
 				if (deleteForm) {
-					deleteForm.addEventListener('submit', function(event) {
-						var message = deleteForm.getAttribute('data-confirm-message');
-
-						if (message && !confirm(message)) {
-							event.preventDefault();
-							return;
-						}
-
+					deleteForm.addEventListener('pf:confirmed-submit', function() {
 						showLoading('삭제중');
 					});
 				}

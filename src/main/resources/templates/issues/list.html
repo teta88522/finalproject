@@ -452,6 +452,8 @@
 			</div>
 		</div>
 
+		<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+		<script th:src="@{/js/common/pf-confirm.js}"></script>
 		<script th:inline="javascript">
 			(function() {
 				document.body.classList.add('issues-list-body');
@@ -774,8 +776,14 @@
 						if (startDateInput.value && dueDateInput.value
 								&& dueDateInput.value < startDateInput.value) {
 							event.preventDefault();
-							alert('완료기한은 시작일보다 빠를 수 없습니다.');
-							dueDateInput.focus();
+							if (window.PFDialog) {
+								window.PFDialog.alert('완료기한은 시작일보다 빠를 수 없습니다.', {
+									title: '검색 조건 확인',
+									icon: 'warning'
+								}).then(function() {
+									dueDateInput.focus();
+								});
+							}
 						}
 					});
 				}

@@ -208,7 +208,11 @@
 
                                         <form th:action="@{/codevalue/delete}"
                                               method="post"
-                                              onsubmit="return confirm('해당 코드값을 삭제하시겠습니까?');">
+                                              class="inline-form js-pf-confirm-submit"
+                                              data-confirm-title="삭제 확인"
+                                              data-confirm-message="해당 코드값을 삭제하시겠습니까?"
+                                              data-confirm-confirm-text="삭제"
+                                              data-confirm-icon="warning">
                                             <input type="hidden"
                                                    name="settingCodeId"
                                                    th:value="${codeValue.settingCodeId}">
@@ -233,6 +237,8 @@
         </div>
     </div>
 
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script th:src="@{/js/common/pf-confirm.js}"></script>
 <script>
     (function() {
         function updateFilterSummary(dropdown) {
