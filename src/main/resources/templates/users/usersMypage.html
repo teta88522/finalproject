@@ -110,7 +110,7 @@
 			<table class="table project-list-table">
 				<thead>
 					<tr>
-						<th><input type="checkbox" id="checkAll" /></th>
+						
 						<th>프로젝트 명</th>
 						<th>설명</th>
 						<th>관리자</th>
@@ -127,7 +127,7 @@
 					    th:data-end-date="${#dates.format(p.endDate, 'yyyy-MM-dd')}"
 					    th:data-owner-name="${p.ownerName}"
 					    th:data-status-code="${p.statusCode}">
-						<td><input type="checkbox" class="project-check" /></td>
+						
 						<td th:text="${p.projectName}"></td>
 						<td th:text="${p.description}"></td>
 						<td th:text="${p.ownerName}"></td>

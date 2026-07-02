@@ -92,7 +92,7 @@ public class UsersController {
         List<ProjectVO> myProjects = userService.selectMyProjectList(userId);
     	model.addAttribute("projects", myProjects);
 
-        return "users/usersMyPage";
+        return "users/usersMypage";
     }
 
     @PostMapping("/updateUser")

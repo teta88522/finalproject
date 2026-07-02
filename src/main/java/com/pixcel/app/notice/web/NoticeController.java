@@ -116,7 +116,7 @@ public class NoticeController {
 		model.addAttribute("searchDTO", searchDTO);
 		model.addAttribute("projectId", projectId);
 		
-		return "notice/boardDetail";
+		return "notice/BoardDetail";
 	}
 	
 	@GetMapping("/PostCreate")
