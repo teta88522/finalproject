@@ -1,6 +1,7 @@
 package com.pixcel.app.test.web;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -502,7 +503,8 @@ public class TestController {
 	                                             @PathVariable String testId,
 	                                             TestExecutionVO testExecutionVO,
 	                                             @CookieValue(value = "userId", required = false) String userId,
-	                                             @CookieValue(value = "user_pk", required = false) String userPk) {
+	                                             @CookieValue(value = "user_pk", required = false) String userPk,
+	                                             @CookieValue(value = "userName", required = false) String userName) {
 
 	    String loginUserId = getLoginUserId(userId, userPk);
 
@@ -526,26 +528,59 @@ public class TestController {
 	        testExecutionVO.setResultStatusCode("o001");
 	    }
 
+	    /*
+	     * Service에서 처리
+	     * - 미수행(o001): retryNo = 0
+	     * - 미수행 외 상태: 기존 retryNo + 1
+	     * - 기존 execution 있으면 update, 없으면 insert
+	     */
 	    testExecutionService.insertTestExecution(testExecutionVO);
 
 	    TestExecutionVO result = new TestExecutionVO();
-	    result.setMappingId(testExecutionVO.getMappingId());
-	    
-	    result.setExecutionId(testExecutionVO.getExecutionId());
-	    result.setResultStatusCode(testExecutionVO.getResultStatusCode());
 
-	    if ("o001".equals(testExecutionVO.getResultStatusCode())) {
-	        result.setResultStatusName("미수행");
-	    } else if ("o002".equals(testExecutionVO.getResultStatusCode())) {
-	        result.setResultStatusName("진행중");
-	    } else if ("o003".equals(testExecutionVO.getResultStatusCode())) {
-	        result.setResultStatusName("성공");
-	    } else if ("o004".equals(testExecutionVO.getResultStatusCode())) {
-	        result.setResultStatusName("실패");
+	    result.setMappingId(testExecutionVO.getMappingId());
+	    result.setExecutionId(testExecutionVO.getExecutionId());
+
+	    result.setResultStatusCode(testExecutionVO.getResultStatusCode());
+	    result.setResultStatusName(getExecutionStatusName(testExecutionVO.getResultStatusCode()));
+
+	    /*
+	     * AJAX 화면 즉시 갱신용
+	     */
+	    result.setRetryNo(testExecutionVO.getRetryNo());
+	    result.setExecutorId(loginUserId);
+
+	    if (userName != null && !userName.equals("")) {
+	        result.setExecutorName(userName);
 	    } else {
-	        result.setResultStatusName(testExecutionVO.getResultStatusCode());
+	        result.setExecutorName(loginUserId);
 	    }
 
+	    result.setExecutedAt(
+	        LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))
+	    );
+
 	    return result;
+	}
+	
+	private String getExecutionStatusName(String resultStatusCode) {
+
+	    if ("o001".equals(resultStatusCode)) {
+	        return "미수행";
+	    }
+
+	    if ("o002".equals(resultStatusCode)) {
+	        return "진행중";
+	    }
+
+	    if ("o003".equals(resultStatusCode)) {
+	        return "성공";
+	    }
+
+	    if ("o004".equals(resultStatusCode)) {
+	        return "실패";
+	    }
+
+	    return resultStatusCode;
 	}
 }

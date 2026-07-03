@@ -7,6 +7,9 @@
 <title>관리 - 그룹 생성</title>
 
 <link rel="stylesheet" th:href="@{/css/manage/group/manageGroupAdd.css}">
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script th:src="@{/js/common/pf-confirm.js}"></script>
 </head>
 
 <body>
@@ -108,27 +111,48 @@
 
     </div>
 
-    <script>
+    <script th:inline="javascript">
+        const message = /*[[${message}]]*/ null;
+
+        if (message != null) {
+            window.PFDialog.alert(message, {
+                title: '알림',
+                icon: 'info'
+            });
+        }
+
+        function pfAlert(message, focusTarget) {
+            window.PFDialog.alert(message, {
+                title: '그룹 생성 확인',
+                icon: 'warning'
+            }).then(function () {
+                if (focusTarget) {
+                    focusTarget.focus();
+                }
+            });
+        }
+
         function validateGroupAddForm() {
-            const projectId = document.getElementById("projectId").value;
-            const roleId = document.getElementById("roleId").value;
-            const groupName = document.getElementById("groupName").value.trim();
+            const projectIdInput = document.getElementById("projectId");
+            const roleIdInput = document.getElementById("roleId");
+            const groupNameInput = document.getElementById("groupName");
+
+            const projectId = projectIdInput.value;
+            const roleId = roleIdInput.value;
+            const groupName = groupNameInput.value.trim();
 
             if (!projectId) {
-                alert("프로젝트를 선택하세요.");
-                document.getElementById("projectId").focus();
+                pfAlert("프로젝트를 선택하세요.", projectIdInput);
                 return false;
             }
 
             if (!roleId) {
-                alert("적용 역할을 선택하세요.");
-                document.getElementById("roleId").focus();
+                pfAlert("적용 역할을 선택하세요.", roleIdInput);
                 return false;
             }
 
             if (!groupName) {
-                alert("그룹명을 입력하세요.");
-                document.getElementById("groupName").focus();
+                pfAlert("그룹명을 입력하세요.", groupNameInput);
                 return false;
             }
 

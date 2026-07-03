@@ -6,6 +6,9 @@
 <meta charset="UTF-8">
 <title>버그 수정</title>
 <link rel="stylesheet" th:href="@{/css/bug/bugUpdate.css}">
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script th:src="@{/js/common/pf-confirm.js}"></script>
 </head>
 
 <body>
@@ -30,20 +33,22 @@
             메시지
         </div>
 
-        <form class="bug-form"
+        <form class="bug-form js-pf-confirm-submit"
               th:action="@{/project/{projectId}/bugs/update(projectId=${projectId})}"
               method="post"
               enctype="multipart/form-data"
               th:object="${bugVO}"
-              onsubmit="return confirm('버그 정보를 수정하시겠습니까?');">
+              data-confirm-title="수정 확인"
+              data-confirm-message="버그 정보를 수정하시겠습니까?"
+              data-confirm-confirm-text="수정"
+              data-confirm-icon="question">
 
-            <!-- 수정 처리에 필요한 값 -->
             <input type="hidden" th:field="*{bugId}">
             <input type="hidden" th:field="*{executionId}">
             <input type="hidden" th:field="*{reporterId}">
             <input type="hidden" th:field="*{versionId}">
-			<input type="hidden" th:field="*{assigneeId}">
-			
+            <input type="hidden" th:field="*{assigneeId}">
+
             <section class="form-card">
                 <div class="card-title">
                     <h3>기본정보</h3>
@@ -192,7 +197,6 @@
                                   placeholder="정상적으로 동작했을 때의 기대 결과를 입력하세요."></textarea>
                     </div>
 
-                    <!-- 기존 첨부파일 -->
                     <div class="detail-row full file-row">
                         <label>기존 파일</label>
 
@@ -236,7 +240,6 @@
                         </div>
                     </div>
 
-                    <!-- 새 첨부파일 추가 -->
                     <div class="detail-row full file-row">
                         <label for="attachFiles">파일 추가</label>
 
@@ -269,6 +272,17 @@
         </form>
 
     </div>
+
+    <script th:inline="javascript">
+        const message = /*[[${message}]]*/ null;
+
+        if (message != null) {
+            window.PFDialog.alert(message, {
+                title: '알림',
+                icon: 'info'
+            });
+        }
+    </script>
 
 </div>
 </body>

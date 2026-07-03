@@ -30,8 +30,8 @@
 }
 
 .search-header {
-    height: 54px;
-    padding: 0 18px;
+    height: 44px;
+    padding: 0 14px;
     border-bottom: 1px solid #eef1f5;
     display: flex;
     align-items: center;
@@ -40,19 +40,19 @@
 }
 
 .search-title {
-    font-size: 15px;
+    font-size: 14px;
     font-weight: 600;
     color: #222;
 }
 
 .add-role-btn {
-    height: 32px;
-    padding: 0 14px;
+    height: 30px;
+    padding: 0 12px;
     border: 1px solid #1a6fe8;
     border-radius: 6px;
     background-color: #1a6fe8;
     color: #fff;
-    font-size: 13px;
+    font-size: 12px;
     cursor: pointer;
     box-sizing: border-box;
 }
@@ -61,55 +61,78 @@
     background-color: #155fc8;
 }
 
+/* 검색조건 */
 .search-form-row {
     display: grid;
-    grid-template-columns: 70px 1fr 50px 1fr 120px;
-    gap: 10px;
+    grid-template-columns: repeat(2, minmax(360px, 1fr));
     align-items: center;
-    padding: 16px 18px 10px 18px;
+    column-gap: 48px;
+    row-gap: 10px;
+    padding: 18px 32px 12px 32px;
     box-sizing: border-box;
 }
 
-.search-form-row label {
-    font-size: 13px;
-    color: #344054;
-    white-space: nowrap;
+.search-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
 }
 
-.search-form-row input,
-.search-form-row select {
-    height: 34px;
+.search-item label {
+    width: 64px;
+    min-width: 64px;
+    margin: 0;
+    padding: 0;
+    font-size: 12px;
+    font-weight: 600;
+    color: #344054;
+    white-space: nowrap;
+    box-sizing: border-box;
+}
+
+.search-item input,
+.search-item select {
+    flex: 1;
+    width: 100%;
+    min-width: 0;
+    height: 32px;
     border: 1px solid #d0d5dd;
     border-radius: 6px;
     background-color: #fff;
     padding: 0 10px;
-    font-size: 13px;
+    font-size: 12px;
     color: #222;
     outline: none;
     box-sizing: border-box;
 }
 
-.search-form-row input:focus,
-.search-form-row select:focus {
+.search-item input:focus,
+.search-item select:focus {
     border-color: #1a6fe8;
+    box-shadow: 0 0 0 2px rgba(26, 111, 232, 0.08);
 }
 
 .search-btn-area {
     display: flex;
-    justify-content: flex-end;
+    justify-content: flex-start;
+    align-items: center;
     gap: 8px;
-    padding: 0 18px 16px 18px;
+    padding: 0 32px 18px 32px;
     box-sizing: border-box;
 }
 
 .btn-basic {
-    height: 32px;
-    padding: 0 14px;
+    height: 30px;
+    min-width: 58px;
+    padding: 0 12px;
     border: 1px solid #d0d5dd;
     border-radius: 6px;
     background-color: #fff;
     color: #344054;
-    font-size: 13px;
+    font-size: 12px;
     cursor: pointer;
     box-sizing: border-box;
 }
@@ -253,7 +276,6 @@
     background-color: #f6f9ff;
 }
 
-/* 선택된 역할 행 - JS에서 tr.active 붙음 */
 .role-table tbody tr.active td {
     background-color: #dbeafe !important;
     color: #153e75;
@@ -275,7 +297,6 @@
     background-color: #c7ddff !important;
 }
 
-/* 컬럼 너비 */
 .role-table th:nth-child(1),
 .role-table td:nth-child(1) {
     width: 39%;
@@ -289,11 +310,11 @@
 
 .role-table th:nth-child(3),
 .role-table td:nth-child(3) {
-    width: 45%;
+    width: 42%;
     text-align: center;
+    vertical-align: middle;
 }
 
-/* 역할명 링크 */
 .role-name-link {
     display: inline-flex;
     align-items: center;
@@ -318,13 +339,6 @@
 /* ==============================
    관리 버튼
 ============================== */
-.role-table th:nth-child(3),
-.role-table td:nth-child(3) {
-    width: 42%;
-    text-align: center;
-    vertical-align: middle;
-}
-
 .role-btn-group {
     text-align: center !important;
     vertical-align: middle !important;
@@ -381,6 +395,7 @@
 .role-table tbody tr.active .mini-btn.delete:hover {
     background-color: #fff1f0;
 }
+
 /* ==============================
    역할 구성원 영역
 ============================== */
@@ -538,6 +553,42 @@
 }
 
 /* ==============================
+   검색조건 최종 강제 보정
+============================== */
+.role-list-page .search-section .search-form-row {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(360px, 1fr)) !important;
+    align-items: center !important;
+    justify-content: stretch !important;
+    column-gap: 48px !important;
+    row-gap: 10px !important;
+}
+
+.role-list-page .search-section .search-item {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    width: 100% !important;
+    min-width: 0 !important;
+}
+
+.role-list-page .search-section .search-item label {
+    width: 64px !important;
+    min-width: 64px !important;
+    max-width: 64px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    text-align: left !important;
+}
+
+.role-list-page .search-section .search-item input {
+    flex: 1 !important;
+    width: 100% !important;
+    max-width: none !important;
+    min-width: 0 !important;
+}
+
+/* ==============================
    반응형
 ============================== */
 @media (max-width: 1200px) {
@@ -563,7 +614,18 @@
 
 @media (max-width: 900px) {
     .search-form-row {
-        grid-template-columns: 70px 1fr;
+        grid-template-columns: 1fr;
+        gap: 10px;
+        padding: 14px 18px 10px 18px;
+    }
+
+    .role-list-page .search-section .search-form-row {
+        grid-template-columns: 1fr !important;
+        column-gap: 0 !important;
+    }
+
+    .search-btn-area {
+        padding: 0 18px 14px 18px;
     }
 }
 
@@ -574,10 +636,49 @@
 
     .search-header {
         height: auto;
-        padding: 14px 18px;
+        padding: 12px 14px;
         flex-direction: column;
         align-items: flex-start;
-        gap: 10px;
+        gap: 8px;
+    }
+
+    .search-form-row {
+        grid-template-columns: 1fr;
+        gap: 8px;
+        padding: 12px 14px 8px 14px;
+    }
+
+    .role-list-page .search-section .search-form-row {
+        grid-template-columns: 1fr !important;
+        gap: 8px !important;
+        padding: 12px 14px 8px 14px !important;
+    }
+
+    .search-item {
+        width: 100%;
+    }
+
+    .search-item label {
+        width: 58px;
+        min-width: 58px;
+    }
+
+    .role-list-page .search-section .search-item label {
+        width: 58px !important;
+        min-width: 58px !important;
+        max-width: 58px !important;
+    }
+
+    .search-item input,
+    .search-item select {
+        flex: 1;
+        width: 100%;
+        max-width: none;
+    }
+
+    .search-btn-area {
+        justify-content: flex-start;
+        padding: 0 14px 12px 14px;
     }
 
     .panel-header {

@@ -6,6 +6,9 @@
 <meta charset="UTF-8">
 <title>버그 목록</title>
 <link rel="stylesheet" th:href="@{/css/bug/bugList.css}">
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script th:src="@{/js/common/pf-confirm.js}"></script>
 </head>
 <body>
 <div layout:fragment="Content">
@@ -17,12 +20,6 @@
                 <h2>버그 관리</h2>
                 <p>프로젝트에서 등록된 버그를 조회하고 관리합니다.</p>
             </div>
-            <!-- 
-            <a class="btn primary"
-               th:href="@{/project/{projectId}/bugs/new(projectId=${projectId})}">
-                버그 등록
-            </a>
-             -->
         </div>
 
         <form class="search-box"
@@ -288,7 +285,11 @@
                                 <form th:if="${isAdmin or bug.reporterId == loginUserId}"
                                       th:action="@{/project/{projectId}/bugs/delete(projectId=${projectId})}"
                                       method="post"
-                                      onsubmit="return confirm('삭제하시겠습니까?');">
+                                      class="js-pf-confirm-submit"
+                                      data-confirm-title="삭제 확인"
+                                      data-confirm-message="삭제하시겠습니까?"
+                                      data-confirm-confirm-text="삭제"
+                                      data-confirm-icon="warning">
 
                                     <input type="hidden"
                                            name="bugId"
@@ -457,7 +458,7 @@
         document.getElementById("detailActualResult").innerText =
             row.dataset.actualResult || "-";
     }
-    
+
     function clearDetail() {
         contentGrid.classList.remove("detail-open");
 
@@ -490,7 +491,7 @@
         if (check != null) {
             check.addEventListener("click", function (event) {
                 event.stopPropagation();
-                
+
                 if (check.checked) {
                     setDetail(row);
                 } else {

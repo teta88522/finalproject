@@ -7,6 +7,9 @@
 <title>관리 - 그룹 구성원 배정</title>
 
 <link rel="stylesheet" th:href="@{/css/manage/group/manageGroupMember.css}">
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script th:src="@{/js/common/pf-confirm.js}"></script>
 </head>
 
 <body>
@@ -32,14 +35,12 @@
             <span th:text="${message}">메시지</span>
         </div>
 
-        <!-- 구성원 추가 form -->
         <form th:action="@{/manage/groups/{projectGroupId}/members/add(projectGroupId=${manageGroup.projectGroupId})}"
               method="post"
               id="completeAssignForm">
 
             <div id="assignHiddenArea"></div>
 
-            <!-- 그룹 정보 -->
             <div class="detail-section">
                 <div class="section-title">그룹 정보</div>
                 <div class="section-sub-text">
@@ -78,7 +79,6 @@
                 </div>
             </div>
 
-            <!-- 배정 가능한 구성원 -->
             <div class="detail-section">
                 <div class="section-title">배정 가능한 구성원</div>
                 <div class="section-sub-text">
@@ -133,7 +133,6 @@
                 </div>
             </div>
 
-            <!-- 선택한 구성원 -->
             <div class="detail-section">
                 <div class="section-title">선택한 구성원</div>
                 <div class="section-sub-text">
@@ -177,7 +176,6 @@
 
         </form>
 
-        <!-- 현재 그룹 구성원 -->
         <div class="detail-section">
             <div class="section-title">현재 그룹 구성원</div>
             <div class="section-sub-text">
@@ -236,7 +234,23 @@
 
     </div>
 
-    <script>
+    <script th:inline="javascript">
+        const message = /*[[${message}]]*/ null;
+
+        if (message != null) {
+            window.PFDialog.alert(message, {
+                title: '알림',
+                icon: 'info'
+            });
+        }
+
+        function pfAlert(message, title, icon) {
+            return window.PFDialog.alert(message, {
+                title: title || "알림",
+                icon: icon || "info"
+            });
+        }
+
         function addAssignCart(button) {
             const sourceRow = button.closest("tr");
 
@@ -247,7 +261,7 @@
             const email = sourceRow.dataset.email;
 
             if (document.querySelector("#assignCartBody tr[data-project-member-id='" + projectMemberId + "']")) {
-                alert("이미 선택한 구성원입니다.");
+                pfAlert("이미 선택한 구성원입니다.", "구성원 선택 확인", "warning");
                 return;
             }
 
@@ -326,65 +340,72 @@
             const removeUrl = button.dataset.removeUrl;
             const row = button.closest("tr");
 
-            if (!confirm("해당 구성원을 그룹에서 제외하시겠습니까?")) {
-                return;
-            }
-
-            const teamName = row.dataset.teamName || "-";
-            const loginId = row.dataset.loginId || "-";
-            const userName = row.dataset.userName || "-";
-            const email = row.dataset.email || "-";
-
-            button.disabled = true;
-            button.innerText = "처리중";
-
-            fetch(removeUrl, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8"
-                },
-                body: "projectMemberId=" + encodeURIComponent(projectMemberId)
-            })
-            .then(function (response) {
-                return response.json();
-            })
-            .then(function (data) {
-                if (!data.result) {
-                    alert(data.message || "구성원 제외에 실패했습니다.");
-                    button.disabled = false;
-                    button.innerText = "제외";
+            window.PFDialog.confirm({
+                title: "구성원 제외 확인",
+                message: "해당 구성원을 그룹에서 제외하시겠습니까?",
+                confirmText: "제외",
+                icon: "warning"
+            }).then(function (confirmed) {
+                if (!confirmed) {
                     return;
                 }
 
-                addBackToAssignableMember(projectMemberId, teamName, loginId, userName, email);
+                const teamName = row.dataset.teamName || "-";
+                const loginId = row.dataset.loginId || "-";
+                const userName = row.dataset.userName || "-";
+                const email = row.dataset.email || "-";
 
-                if (row) {
-                    row.remove();
-                }
+                button.disabled = true;
+                button.innerText = "처리중";
 
-                const countInput = document.getElementById("assignedMemberCount");
+                fetch(removeUrl, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8"
+                    },
+                    body: "projectMemberId=" + encodeURIComponent(projectMemberId)
+                })
+                .then(function (response) {
+                    return response.json();
+                })
+                .then(function (data) {
+                    if (!data.result) {
+                        pfAlert(data.message || "구성원 제외에 실패했습니다.", "제외 실패", "error");
+                        button.disabled = false;
+                        button.innerText = "제외";
+                        return;
+                    }
 
-                if (countInput) {
-                    const currentCount = parseInt(countInput.value || "0", 10);
-                    countInput.value = Math.max(currentCount - 1, 0);
-                }
+                    addBackToAssignableMember(projectMemberId, teamName, loginId, userName, email);
 
-                const assignedBody = document.getElementById("assignedMemberBody");
-                const remainRows = assignedBody.querySelectorAll("tr[data-project-member-id]");
+                    if (row) {
+                        row.remove();
+                    }
 
-                if (remainRows.length === 0) {
-                    assignedBody.innerHTML =
-                        "<tr id='assignedEmptyRow'>" +
-                            "<td colspan='5' class='empty-row'>현재 그룹에 배정된 구성원이 없습니다.</td>" +
-                        "</tr>";
-                }
+                    const countInput = document.getElementById("assignedMemberCount");
 
-                alert(data.message || "구성원이 그룹에서 제외되었습니다.");
-            })
-            .catch(function () {
-                alert("서버 통신 중 오류가 발생했습니다.");
-                button.disabled = false;
-                button.innerText = "제외";
+                    if (countInput) {
+                        const currentCount = parseInt(countInput.value || "0", 10);
+                        countInput.value = Math.max(currentCount - 1, 0);
+                    }
+
+                    const assignedBody = document.getElementById("assignedMemberBody");
+                    const remainRows = assignedBody.querySelectorAll("tr[data-project-member-id]");
+
+                    if (remainRows.length === 0) {
+                        assignedBody.innerHTML =
+                            "<tr id='assignedEmptyRow'>" +
+                                "<td colspan='5' class='empty-row'>현재 그룹에 배정된 구성원이 없습니다.</td>" +
+                            "</tr>";
+                    }
+
+                    pfAlert(data.message || "구성원이 그룹에서 제외되었습니다.", "처리 완료", "success");
+                })
+                .catch(function () {
+                    pfAlert("서버 통신 중 오류가 발생했습니다.", "통신 오류", "error");
+                    button.disabled = false;
+                    button.innerText = "제외";
+                });
             });
         }
 
@@ -429,8 +450,8 @@
             const cartRows = document.querySelectorAll("#assignCartBody tr[data-project-member-id]");
 
             if (cartRows.length === 0) {
-                alert("선택한 구성원이 없습니다.");
                 event.preventDefault();
+                pfAlert("선택한 구성원이 없습니다.", "구성원 배정 확인", "warning");
                 return false;
             }
         });

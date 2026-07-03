@@ -7,6 +7,9 @@
 <title>테스트 목록</title>
 
 <link rel="stylesheet" th:href="@{/css/test/testList.css}">
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script th:src="@{/js/common/pf-confirm.js}"></script>
 </head>
 
 <body>
@@ -359,7 +362,10 @@
         const message = /*[[${message}]]*/ null;
 
         if (message != null) {
-            alert(message);
+            window.PFDialog.alert(message, {
+                title: '알림',
+                icon: 'info'
+            });
         }
 
         document.addEventListener('DOMContentLoaded', function () {

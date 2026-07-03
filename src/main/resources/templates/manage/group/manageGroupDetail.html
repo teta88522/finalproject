@@ -7,6 +7,9 @@
 <title>관리 - 그룹 상세</title>
 
 <link rel="stylesheet" th:href="@{/css/manage/group/manageGroupDetail.css}">
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script th:src="@{/js/common/pf-confirm.js}"></script>
 </head>
 
 <body>
@@ -14,7 +17,6 @@
 
     <div class="manage-group-detail-page">
 
-        <!-- 상단 영역 -->
         <div class="detail-page-header">
             <div>
                 <h1 class="detail-page-title">관리 &gt; 그룹 상세</h1>
@@ -29,12 +31,10 @@
             </div>
         </div>
 
-        <!-- 메시지 -->
         <div th:if="${message != null}" class="message-box">
             <span th:text="${message}">메시지</span>
         </div>
 
-        <!-- 그룹 기본정보 수정 -->
         <form th:action="@{/manage/groups/update}"
               method="post"
               onsubmit="return validateGroupUpdateForm();">
@@ -122,7 +122,6 @@
             </div>
         </form>
 
-        <!-- 그룹 구성원 목록 -->
         <div class="detail-section member-section">
             <div class="member-section-top">
                 <div>
@@ -183,8 +182,11 @@
                             <td>
                                 <form th:action="@{/manage/groups/{projectGroupId}/members/remove(projectGroupId=${manageGroup.projectGroupId})}"
                                       method="post"
-                                      class="inline-form"
-                                      onsubmit="return confirm('해당 구성원을 그룹에서 제외하시겠습니까?');">
+                                      class="inline-form js-pf-confirm-submit"
+                                      data-confirm-title="구성원 제외 확인"
+                                      data-confirm-message="해당 구성원을 그룹에서 제외하시겠습니까?"
+                                      data-confirm-confirm-text="제외"
+                                      data-confirm-icon="warning">
 
                                     <input type="hidden"
                                            name="projectMemberId"
@@ -201,11 +203,13 @@
             </div>
         </div>
 
-        <!-- 그룹 삭제 -->
         <form th:action="@{/manage/groups/delete}"
               method="post"
-              class="delete-form"
-              onsubmit="return confirm('그룹을 삭제하시겠습니까?');">
+              class="delete-form js-pf-confirm-submit"
+              data-confirm-title="그룹 삭제 확인"
+              data-confirm-message="그룹을 삭제하시겠습니까?"
+              data-confirm-confirm-text="삭제"
+              data-confirm-icon="warning">
 
             <input type="hidden"
                    name="projectGroupId"
@@ -218,20 +222,41 @@
 
     </div>
 
-    <script>
+    <script th:inline="javascript">
+        const message = /*[[${message}]]*/ null;
+
+        if (message != null) {
+            window.PFDialog.alert(message, {
+                title: '알림',
+                icon: 'info'
+            });
+        }
+
+        function pfAlert(message, focusTarget) {
+            window.PFDialog.alert(message, {
+                title: '그룹 수정 확인',
+                icon: 'warning'
+            }).then(function () {
+                if (focusTarget) {
+                    focusTarget.focus();
+                }
+            });
+        }
+
         function validateGroupUpdateForm() {
-            const roleId = document.getElementById("roleId").value;
-            const groupName = document.getElementById("groupName").value.trim();
+            const roleIdInput = document.getElementById("roleId");
+            const groupNameInput = document.getElementById("groupName");
+
+            const roleId = roleIdInput.value;
+            const groupName = groupNameInput.value.trim();
 
             if (!roleId) {
-                alert("그룹 역할을 선택하세요.");
-                document.getElementById("roleId").focus();
+                pfAlert("그룹 역할을 선택하세요.", roleIdInput);
                 return false;
             }
 
             if (!groupName) {
-                alert("그룹명을 입력하세요.");
-                document.getElementById("groupName").focus();
+                pfAlert("그룹명을 입력하세요.", groupNameInput);
                 return false;
             }
 

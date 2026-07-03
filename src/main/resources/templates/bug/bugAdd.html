@@ -6,6 +6,9 @@
 <meta charset="UTF-8">
 <title>버그 등록</title>
 <link rel="stylesheet" th:href="@{/css/bug/bugAdd.css}">
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script th:src="@{/js/common/pf-confirm.js}"></script>
 </head>
 <body>
 	<div layout:fragment="Content">
@@ -30,10 +33,10 @@
 				th:action="@{/project/{projectId}/bugs/add(projectId=${projectId})}"
 				method="post" enctype="multipart/form-data" th:object="${bugVO}">
 
-				<input type="hidden" th:field="*{executionId}"> <input
-					type="hidden" th:field="*{assigneeId}"> <input
-					type="hidden" th:field="*{reporterId}"> <input
-					type="hidden" th:field="*{versionId}">
+				<input type="hidden" th:field="*{executionId}">
+				<input type="hidden" th:field="*{assigneeId}">
+				<input type="hidden" th:field="*{reporterId}">
+				<input type="hidden" th:field="*{versionId}">
 
 				<section class="form-card">
 					<div class="card-title">
@@ -42,19 +45,21 @@
 
 					<div class="form-grid">
 						<div class="form-group">
-							<label>버그 제목 <span>*</span></label> <input type="text"
+							<label>버그 제목 <span>*</span></label>
+							<input type="text"
 								th:field="*{title}" maxlength="255" placeholder="버그 제목을 입력하세요"
 								required>
 						</div>
 
 						<div class="form-group">
-							<label>발견 버전 <span>*</span></label> <input type="text"
+							<label>발견 버전 <span>*</span></label>
+							<input type="text"
 								th:field="*{foundVersion}" readonly required>
 						</div>
 
 						<div class="form-group">
-							<label>버그 유형 <span>*</span></label> <select
-								th:field="*{bugTypeCode}" required>
+							<label>버그 유형 <span>*</span></label>
+							<select th:field="*{bugTypeCode}" required>
 								<option value="">선택</option>
 								<option value="d001">기능</option>
 								<option value="d002">UI/UX</option>
@@ -66,8 +71,8 @@
 						</div>
 
 						<div class="form-group">
-							<label>심각도 <span>*</span></label> <select
-								th:field="*{severityCode}" required>
+							<label>심각도 <span>*</span></label>
+							<select th:field="*{severityCode}" required>
 								<option value="">선택</option>
 								<option value="q001">심각</option>
 								<option value="q002">높음</option>
@@ -77,8 +82,8 @@
 						</div>
 
 						<div class="form-group">
-							<label>우선순위 <span>*</span></label> <select
-								th:field="*{priorityCode}" required>
+							<label>우선순위 <span>*</span></label>
+							<select th:field="*{priorityCode}" required>
 								<option value="">선택</option>
 								<option value="c001">상</option>
 								<option value="c002">중</option>
@@ -87,8 +92,8 @@
 						</div>
 
 						<div class="form-group">
-							<label>버그 상태 <span>*</span></label> <select
-								th:field="*{bugStatusCode}" required>
+							<label>버그 상태 <span>*</span></label>
+							<select th:field="*{bugStatusCode}" required>
 								<option value="">선택</option>
 								<option value="p001">진행중</option>
 								<option value="p002">해결</option>
@@ -97,27 +102,32 @@
 						</div>
 
 						<div class="form-group">
-							<label>담당자<span>*</span></label> <input type="text"
+							<label>담당자<span>*</span></label>
+							<input type="text"
 								th:value="${bugVO.assigneeName}" readonly>
 						</div>
 
 						<div class="form-group">
-							<label>발견자</label> <input type="text"
+							<label>발견자</label>
+							<input type="text"
 								th:value="${bugVO.reporterName}" readonly>
 						</div>
 
 						<div class="form-group">
-							<label>발생일자 <span>*</span></label> <input type="date"
+							<label>발생일자 <span>*</span></label>
+							<input type="date"
 								th:field="*{occurredAtText}" required>
 						</div>
 
 						<div class="form-group full">
-							<label>발견 환경</label> <input type="text" th:field="*{testEnv}"
+							<label>발견 환경</label>
+							<input type="text" th:field="*{testEnv}"
 								maxlength="255" placeholder="예: Chrome, Windows, 테스트 서버">
 						</div>
 
 					</div>
 				</section>
+
 				<section class="form-card detail-card">
 					<div class="card-title">
 						<h3>상세정보</h3>
@@ -140,8 +150,7 @@
 						<div class="detail-row">
 							<label>재현 절차</label>
 							<textarea th:field="*{reproduceStep}" maxlength="255"
-								placeholder="재현했던 절차를 입력하세요.">
-							</textarea>
+								placeholder="재현했던 절차를 입력하세요."></textarea>
 						</div>
 
 						<div class="detail-row file-row">
@@ -174,6 +183,17 @@
 			</form>
 
 		</div>
+
+		<script th:inline="javascript">
+			const message = /*[[${message}]]*/ null;
+
+			if (message != null) {
+				window.PFDialog.alert(message, {
+					title: '알림',
+					icon: 'info'
+				});
+			}
+		</script>
 
 	</div>
 </body>
