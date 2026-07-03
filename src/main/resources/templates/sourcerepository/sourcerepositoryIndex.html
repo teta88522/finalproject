@@ -22,6 +22,11 @@
 				<span th:text="${successMessage}"></span>
 			</div>
 
+			<!-- ✅ 저장소 미연결(신규 프로젝트 등) 안내 - issues 일감생성 화면과 동일한 스타일 재사용 -->
+			<div th:if="${repoNotConnected}" class="page-message page-message-info">
+				<span>저장소 연결이 필요합니다. 'GitHub 동기화' 버튼으로 연동해주세요.</span>
+			</div>
+
 			<!-- Header -->
 			<div class="index-header">
 				<h1>📦 저장소 관리</h1>
@@ -46,9 +51,14 @@
 
 			<!-- Actions -->
 			<div class="index-actions">
-				<a
+				<!-- ✅ 동기화된 적이 없으면(savedGitUrl 없음) 클릭 안 되는 비활성 버튼으로 표시 -->
+				<a th:if="${savedGitUrl != null and !savedGitUrl.isEmpty()}"
 					th:href="@{/project/{projectId}/sourcerepository/files(projectId=${projectId})}"
 					class="index-btn index-btn-primary"> 📁 파일 목록 보기 </a>
+				<button th:unless="${savedGitUrl != null and !savedGitUrl.isEmpty()}"
+					type="button" class="index-btn index-btn-primary" disabled
+					title="먼저 GitHub 동기화를 진행해주세요"
+					style="opacity: 0.5; cursor: not-allowed;"> 📁 파일 목록 보기 </button>
 				<!-- ✅ "전체 브랜치 동기화" 버튼 제거: 모달 안의 "모든 브랜치 동기화" 체크박스로 이미 커버됨 -->
 				<button type="button" data-toggle="modal" data-target="#syncModal"
 					onclick="setSyncAllMode(false)"

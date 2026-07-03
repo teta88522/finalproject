@@ -68,7 +68,9 @@
 			<!-- Empty State -->
 			<div class="list-empty-state" th:if="${commits.isEmpty()}">
 				<p>💭 조회된 커밋이 없습니다</p>
-				<p style="font-size: 13px;">GitHub 동기화를 시도해보세요</p>
+				<p style="font-size: 13px;">이 브랜치는 아직 동기화되지 않았을 수 있습니다.
+					<a th:href="@{/project/{projectId}/sourcerepository(projectId=${projectId})}">저장소 메인에서 동기화하기 →</a>
+				</p>
 			</div>
 
 			<!-- Pagination -->

@@ -2,6 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper
 	namespace="com.pixcel.app.repository.mapper.RepositoryMapper">
+
 	<!-- RepositoryVO와 테이블 컬럼의 이름을 매칭시킨다. -->
 	<resultMap id="repositoryMap" type="RepositoryVO">
 		<id property="fileId" column="file_id" />
@@ -20,24 +21,41 @@
 		<result property="categoryName" column="category_name" />
 	</resultMap>
 
-	<select id="selectRepositoryList" parameterType="RepositoryVO" resultMap="repositoryMap">
+	<select id="selectRepositoryList" parameterType="RepositoryVO"
+		resultMap="repositoryMap">
 		SELECT * FROM (
-			SELECT ROWNUM AS rn, A.* FROM(
-				SELECT AT.*, C.note AS category_name
-				FROM attach_file AT
-				LEFT JOIN common_code C ON AT.file_code = C.code_id
-				<where>
-					AT.file_use_yn = 'n001'
-					<if test="projectId != null and projectId != ''">
-						AND AT.project_id = #{projectId}
-					</if>
-					
-					<if test="fileCode != null and fileCode != ''">
-						AND AT.file_code = #{fileCode}
-					</if>
-				</where>
-				ORDER BY AT.upload_date DESC
-			) A
+		SELECT ROWNUM AS rn, A.* FROM(
+		SELECT AT.*, C.note AS category_name
+		FROM attach_file AT
+		LEFT JOIN common_code C ON AT.file_code = C.code_id
+		<where>
+			<!-- ✅ file_use_yn 조건 제거: project_id 기준으로만 조회. 예전엔 file_use_yn='n001'이 
+				필수 조건이었는데, 업로드 시 이 값이 항상 null로 저장되던 버그가 있어서 파일이 하나도 안 보이는 문제가 있었음. 지금은 요청대로 
+				활성 여부와 무관하게 프로젝트에 속한 파일은 다 보여줌. -->
+			<if test="projectId != null and projectId != ''">
+				AT.project_id = #{projectId}
+			</if>
+
+			<if test="fileCode != null and fileCode != ''">
+				AND AT.file_code = #{fileCode}
+			</if>
+			<!-- ✅ 원래 카운트 쿼리에만 있고 목록 쿼리엔 빠져있던 필터들.
+			     그래서 파일명 등으로 검색해도 "개수"만 줄고 실제 "목록"은 필터링이 안 되던 버그였음. -->
+			<if test="originalName != null and originalName != ''">
+				AND AT.original_name LIKE '%' || #{originalName} || '%'
+			</if>
+			<if test="uploadUserId != null and uploadUserId != ''">
+				AND AT.upload_user_id LIKE '%' || #{uploadUserId} || '%'
+			</if>
+			<if test="startDate != null and startDate != ''">
+				AND TO_CHAR(AT.upload_date, 'YYYY-MM-DD') >= #{startDate}
+			</if>
+			<if test="endDate != null and endDate != ''">
+				AND TO_CHAR(AT.upload_date, 'YYYY-MM-DD') <![CDATA[ <= ]]> #{endDate}
+			</if>
+		</where>
+		ORDER BY AT.upload_date DESC
+		) A
 		)
 		WHERE rn BETWEEN #{startRow} AND #{endRow}
 	</select>
@@ -47,8 +65,8 @@
 		resultType="int">
 		SELECT COUNT(*) FROM attach_file
 		<where>
-			file_use_yn = 'n001'
-			<if test="projectId != null and projectId != ''"> AND project_id = #{projectId} </if>
+			<!-- ✅ 위와 동일: file_use_yn 조건 제거, project_id 기준으로만 카운트 -->
+			<if test="projectId != null and projectId != ''"> project_id = #{projectId} </if>
 			<if test="fileCode != null and fileCode != ''"> AND file_code = #{fileCode} </if>
 			<if test="originalName != null and originalName != ''"> AND original_name LIKE '%' || #{originalName} || '%'
 			</if>
@@ -92,42 +110,50 @@
 		resultMap="repositoryMap">
 		SELECT A.*, U.user_name AS user_name
 		FROM attach_file A
-		LEFT JOIN users U ON A.upload_user_id = U.user_id
-		WHERE A.file_id = #{fileId}
+		LEFT
+		JOIN users U ON A.upload_user_id = U.user_id
+		WHERE A.file_id =
+		#{fileId}
 	</select>
-	
-	<select id="selectMyRecentProjectId" parameterType="String" resultType="String">
+
+	<select id="selectMyRecentProjectId" parameterType="String"
+		resultType="String">
 		SELECT project_id
 		FROM (
-			SELECT pm.project_id
-			FROM project_member pm
-			WHERE pm.user_id = #{userId}
-			ORDER BY pm.joined_at DESC
+		SELECT pm.project_id
+		FROM project_member pm
+		WHERE pm.user_id = #{userId}
+		ORDER BY pm.joined_at DESC
 		)
 		WHERE ROWNUM = 1
 	</select>
-	
-	<select id="isProjectMember" parameterType="map" resultType="int">
+
+	<select id="isProjectMember" parameterType="map"
+		resultType="int">
 		SELECT COUNT(*)
 		FROM project_member pm
-		JOIN team_member tm ON pm.team_member_id = tm.team_member_id
-		WHERE pm.project_id = #{projectId}
+		JOIN team_member tm ON
+		pm.team_member_id = tm.team_member_id
+		WHERE pm.project_id =
+		#{projectId}
 		AND tm.user_id = #{userId}
 	</select>
-	
-	<select id="selectRecentVersionIdByProjectId" parameterType="String" resultType="String">
+
+	<select id="selectRecentVersionIdByProjectId"
+		parameterType="String" resultType="String">
 		SELECT version_id
 		FROM (
-			SELECT version_id
-			FROM project_version
-			WHERE project_id = #{projectId}
-			ORDER BY version_id DESC
+		SELECT version_id
+		FROM project_version
+		WHERE project_id = #{projectId}
+		ORDER BY version_id DESC
 		)
 		WHERE ROWNUM =1
 	</select>
-	
+
 	<select id="selectSourceCodeList" resultType="map">
-		SELECT code_id, note
+		SELECT code_id,
+		note
 		FROM common_code
 		WHERE code_name = '0F'
 	</select>
@@ -156,12 +182,14 @@
 		, project_id
 		, version_id
 		, file_code
-		, original_name
+		,
+		original_name
 		, stored_name
 		, file_path
 		, file_size
 		, upload_user_id
-		, upload_date
+		,
+		upload_date
 		, file_version
 		, file_use_yn
 		, connect_address
@@ -222,45 +250,51 @@
 	</delete>
 
 	<!-- 8. 자료실 파일 다운로드 이력 등록 -->
-	<insert id="insertDownloadHistory" parameterType="com.pixcel.app.file.service.FileDownloadHistoryVO">
-		<selectKey keyProperty="downloadHistoryId" resultType="string" order="BEFORE">
+	<insert id="insertDownloadHistory"
+		parameterType="com.pixcel.app.file.service.FileDownloadHistoryVO">
+		<selectKey keyProperty="downloadHistoryId"
+			resultType="string" order="BEFORE">
 			SELECT
 			'FILE_DOWNLOAD_HISTORY_'
-			|| TO_CHAR(SYSDATE, 'YYMM')
+			||
+			TO_CHAR(SYSDATE, 'YYMM')
 			|| '_'
 			|| LPAD(
-				NVL(MAX(TO_NUMBER(SUBSTR(download_history_id, -4))), 0) + 1,
-				4,
-				'0'
+			NVL(MAX(TO_NUMBER(SUBSTR(download_history_id, -4))), 0) + 1,
+			4,
+			'0'
 			)
 			FROM file_download_history
-			WHERE download_history_id LIKE 'FILE_DOWNLOAD_HISTORY_' || TO_CHAR(SYSDATE, 'YYMM') || '_%'
+			WHERE download_history_id LIKE
+			'FILE_DOWNLOAD_HISTORY_' || TO_CHAR(SYSDATE, 'YYMM') || '_%'
 		</selectKey>
 
 		INSERT INTO file_download_history (
-			download_history_id,
-			file_id,
-			download_user_id,
-			download_date
+		download_history_id,
+		file_id,
+		download_user_id,
+		download_date
 		) VALUES (
-			#{downloadHistoryId},
-			#{fileId},
-			#{downloadUserId},
-			SYSDATE
+		#{downloadHistoryId},
+		#{fileId},
+		#{downloadUserId},
+		SYSDATE
 		)
 	</insert>
 
 	<!-- 9. 자료실 파일별 다운로드 이력 조회 -->
-	<select id="selectDownloadHistoryByFileId" resultType="com.pixcel.app.file.service.FileDownloadHistoryVO">
+	<select id="selectDownloadHistoryByFileId"
+		resultType="com.pixcel.app.file.service.FileDownloadHistoryVO">
 		SELECT
-			h.download_history_id AS downloadHistoryId,
-			h.file_id AS fileId,
-			h.download_user_id AS downloadUserId,
-			u.user_name AS userName,
-			TO_CHAR(h.download_date, 'YYYY-MM-DD HH24:MI') AS downloadDate
+		h.download_history_id AS downloadHistoryId,
+		h.file_id AS fileId,
+		h.download_user_id AS downloadUserId,
+		u.user_name AS userName,
+		TO_CHAR(h.download_date, 'YYYY-MM-DD HH24:MI') AS downloadDate
 		FROM file_download_history h
 		LEFT JOIN users u ON h.download_user_id = u.user_id
-		WHERE h.file_id = #{fileId}
+		WHERE h.file_id =
+		#{fileId}
 		ORDER BY h.download_date DESC
 	</select>
 

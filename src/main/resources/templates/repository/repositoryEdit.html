@@ -12,6 +12,8 @@
     <div class="repo-container">
         <div class="repo-header">
             <h2 class="repo-title">자료실</h2>
+            <a th:href="@{/project/{projectId}/repository(projectId=${projectId})}"
+                class="repo-btn-upload" style="background:#6c757d;">목록으로</a>
         </div>
 
         <div class="repo-detail-card" style="padding: 40px; min-height: 450px;">
