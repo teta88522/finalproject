@@ -26,7 +26,7 @@
             b.expected_result AS expectedResult,
             b.assignee_id AS assigneeId,
             b.reporter_id AS reporterId,
-            b.occurred_at AS occurredAt,
+            TO_CHAR(b.occurred_at, 'YYYY-MM-DD') AS occurredAtText,
             b.created_at AS createdAt,
             b.updated_at AS updatedAt,
 
@@ -140,7 +140,7 @@
             b.expected_result AS expectedResult,
             b.assignee_id AS assigneeId,
             b.reporter_id AS reporterId,
-            b.occurred_at AS occurredAt,
+            TO_CHAR(b.occurred_at, 'YYYY-MM-DD') AS occurredAtText,
             b.created_at AS createdAt,
             b.updated_at AS updatedAt,
 
@@ -180,20 +180,20 @@
 
     <!-- 버그 등록 -->
     <insert id="insertBug" parameterType="com.pixcel.app.bug.service.BugVO">
-            <selectKey keyProperty="bugId" resultType="string" order="BEFORE">
-    			SELECT
-        			'BUG_' || TO_CHAR(SYSDATE, 'YYYYMM') || '_' ||
-        			LPAD(
-            			NVL((
-                				SELECT MAX(TO_NUMBER(SUBSTR(bug_id, -4))) + 1
-                				FROM bug
-                				WHERE bug_id LIKE 'BUG_' || TO_CHAR(SYSDATE, 'YYYYMM') || '_%'
-            				), 1),
-            			4,
-            			'0'
-        				)
-    			FROM dual
-			</selectKey>
+        <selectKey keyProperty="bugId" resultType="string" order="BEFORE">
+            SELECT
+                'BUG_' || TO_CHAR(SYSDATE, 'YYYYMM') || '_' ||
+                LPAD(
+                    NVL((
+                            SELECT MAX(TO_NUMBER(SUBSTR(bug_id, -4))) + 1
+                            FROM bug
+                            WHERE bug_id LIKE 'BUG_' || TO_CHAR(SYSDATE, 'YYYYMM') || '_%'
+                        ), 1),
+                    4,
+                    '0'
+                )
+            FROM dual
+        </selectKey>
 
         INSERT INTO bug
         (
@@ -306,39 +306,42 @@
           AND reporter_id = #{loginUserId}
 
     </delete>
-    
+
+
     <!-- 버그 등록 화면 기본정보 조회 -->
-	<select id="selectBugAddInfoByExecutionId" parameterType="String" resultType="com.pixcel.app.bug.service.BugVO">
+    <select id="selectBugAddInfoByExecutionId"
+            parameterType="String"
+            resultType="com.pixcel.app.bug.service.BugVO">
 
-    	SELECT
-        	te.execution_id AS executionId,
+        SELECT
+            te.execution_id AS executionId,
 
-        	t.test_id AS testId,
-        	t.title AS testName,
-        	t.assignee_id AS assigneeId,
+            t.test_id AS testId,
+            t.title AS testName,
+            t.assignee_id AS assigneeId,
 
-        	assignee.user_name AS assigneeName,
+            assignee.user_name AS assigneeName,
 
-        	pv.version_id AS versionId,
-        	pv.version_name AS versionName,
+            pv.version_id AS versionId,
+            pv.version_name AS versionName,
 
-        	p.project_id AS projectId,
-        	p.project_name AS projectName
+            p.project_id AS projectId,
+            p.project_name AS projectName
 
-    	FROM test_execution te
-    	JOIN test_case_mapping tcm
-        	ON te.mapping_id = tcm.mapping_id
-    	JOIN test t
-        	ON tcm.test_id = t.test_id
-    	JOIN project_version pv
-        	ON t.version_id = pv.version_id
-    	JOIN project p
-        	ON pv.project_id = p.project_id
-    	LEFT JOIN users assignee
-        	ON t.assignee_id = assignee.user_id
+        FROM test_execution te
+        JOIN test_case_mapping tcm
+            ON te.mapping_id = tcm.mapping_id
+        JOIN test t
+            ON tcm.test_id = t.test_id
+        JOIN project_version pv
+            ON t.version_id = pv.version_id
+        JOIN project p
+            ON pv.project_id = p.project_id
+        LEFT JOIN users assignee
+            ON t.assignee_id = assignee.user_id
 
-    	WHERE te.execution_id = #{executionId}
+        WHERE te.execution_id = #{executionId}
 
-	</select>
+    </select>
 
 </mapper>
