@@ -14,11 +14,11 @@
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-shrink:0;">
       <h4 style="margin:0; font-size:16px; font-weight:500; color:#333;">문서 수정</h4>
       <div style="display:flex; gap:8px;">
-        <a th:href="@{/project/{projectId}/document/list(projectId=${projectId})}" class="btn btn-default btn-custon-three btn-custon-rounded-four" style="font-size:13px; padding:6px 16px;">
-                <i class="fa fa-list" style="margin-right:5px;"></i> 목록
+        <a th:href="@{/project/{projectId}/document/list(projectId=${projectId})}" class="btn btn-custon-rounded-four custom-white-btn">
+                취소
             </a>
-        <button type="submit" form="documentEditForm" class="btn btn-default" style="font-size:13px; padding:6px 16px; border-radius:6px;">
-          <i class="fa fa-check" style="margin-right:5px;"></i> 저장 (버전 업)
+        <button type="submit" form="documentEditForm" class="btn btn-custon-rounded-four custom-default-btn">
+          저장 (버전 업)
         </button>
       </div>
     </div>

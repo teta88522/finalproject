@@ -10,7 +10,7 @@
     align-items: flex-start;
     margin-bottom: 24px;
     padding-bottom: 16px;
-    border-bottom: 2px solid #3d6ef5;
+    border-bottom: 2px solid #031225;
   }
   .wiki-view-title {
     font-size: 32px;
@@ -25,7 +25,7 @@
   }
   .btn-edit {
     padding: 8px 20px;
-    background: #3d6ef5;
+    background: #031225;
     color: #fff;
     border: none;
     border-radius: 8px;
@@ -34,7 +34,7 @@
     text-decoration: none;
     white-space: nowrap;
   }
-  .btn-edit:hover { background: #2d5ee0; color: #fff; }
+  .btn-edit:hover { background: #031225; color: #fff; }
   .btn-back {
     padding: 8px 16px;
     background: #fff;
@@ -91,18 +91,18 @@
     cursor: pointer;
   }
   .history-item:hover { background: #f8f9fa; }
-  .history-item.active { background: #e8eeff; border-left: 3px solid #3d6ef5; }
+  .history-item.active { background: #e8eeff; border-left: 3px solid #031225; }
   .history-item-version { font-size: 11px; color: #aaa; }
   .history-item-date { font-size: 12px; color: #888; margin-top: 2px; }
   .history-item-author { font-size: 12px; color: #555; margin-top: 2px; }
 
   /* 마크다운 렌더링 스타일 */
   .wiki-content { font-size: 15px; line-height: 1.8; color: #1a1a1a; }
-  .wiki-content h1 { font-size: 26px; font-weight: 700; border-bottom: 2px solid #3d6ef5; padding-bottom: 6px; margin: 24px 0 12px; }
+  .wiki-content h1 { font-size: 26px; font-weight: 700; border-bottom: 2px solid #031225; padding-bottom: 6px; margin: 24px 0 12px; }
   .wiki-content h2 { font-size: 21px; font-weight: 700; border-bottom: 1px solid #ddd; padding-bottom: 4px; margin: 20px 0 10px; }
   .wiki-content h3 { font-size: 17px; font-weight: 700; margin: 16px 0 8px; }
   .wiki-content h4 { font-size: 15px; font-weight: 700; margin: 12px 0 6px; }
-  .wiki-content blockquote { border-left: 4px solid #3d6ef5; background: #f0f4ff; padding: 10px 16px; margin: 12px 0; border-radius: 0 6px 6px 0; color: #444; }
+  .wiki-content blockquote { border-left: 4px solid #031225; background: #f0f4ff; padding: 10px 16px; margin: 12px 0; border-radius: 0 6px 6px 0; color: #444; }
   .wiki-content pre { background: #1e1e1e; color: #d4d4d4; padding: 16px; border-radius: 8px; font-size: 13px; overflow-x: auto; margin: 12px 0; }
   .wiki-content code { background: #f0f0f0; padding: 2px 6px; border-radius: 4px; font-size: 13px; color: #e53e3e; }
   .wiki-content pre code { background: none; color: inherit; padding: 0; }
@@ -114,7 +114,7 @@
   .wiki-content ol { padding-left: 24px; margin: 8px 0; list-style-type: decimal; }
   .wiki-content li { margin: 4px 0; display: list-item; }
   .wiki-content hr { border: none; border-top: 2px solid #eee; margin: 20px 0; }
-  .wiki-content a { color: #3d6ef5; text-decoration: underline; }
+  .wiki-content a { color: #031225; text-decoration: underline; }
   .wiki-content p { margin: 8px 0; }
 
   /* 목차 */
