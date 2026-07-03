@@ -1,9 +1,14 @@
 @charset "UTF-8";
 
-.detail-container {
+/* ✅ 기존 파일은 CommitDetail용 클래스(.detail-commit-info, .detail-issue-badge 등)로 채워져 있어서
+   실제 FileDetail.html이 쓰는 클래스(.file-detail-container, .detail-content 등)와 하나도 안 맞았음.
+   실제 HTML 구조에 맞춰 새로 작성. */
+
+.file-detail-container {
 	padding: 30px;
 }
 
+/* Breadcrumb */
 .detail-breadcrumb {
 	color: #666;
 	font-size: 13px;
@@ -19,125 +24,151 @@
 	text-decoration: underline;
 }
 
+/* Header */
 .detail-header {
 	background: white;
-	padding: 30px;
+	padding: 24px 30px;
 	border-radius: 8px;
 	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 	margin-bottom: 20px;
 }
 
-.detail-header h1 {
+.detail-header-top {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 16px;
+	flex-wrap: wrap;
+}
+
+.detail-header-top h1 {
 	color: #333;
-	font-size: 24px;
-	margin-bottom: 20px;
+	font-size: 22px;
+	margin: 0;
 	word-break: break-word;
 }
 
-.detail-commit-info {
-	display: grid;
-	grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-	gap: 20px;
-}
-
-.detail-info-item {
-	padding: 15px;
-	background: #f9f9f9;
+.detail-history-btn {
+	display: inline-block;
+	padding: 8px 16px;
+	background-color: #007bff;
+	color: white;
 	border-radius: 6px;
-	border-left: 3px solid #007bff;
-}
-
-.detail-info-label {
-	color: #666;
-	font-size: 12px;
-	text-transform: uppercase;
-	margin-bottom: 8px;
+	font-size: 13px;
 	font-weight: 600;
+	white-space: nowrap;
+	transition: background-color 0.2s;
 }
 
-.detail-info-value {
-	color: #333;
-	font-size: 15px;
-	word-break: break-all;
-	font-family: 'Courier New', monospace;
+.detail-history-btn:hover {
+	background-color: #0056b3;
+	color: white;
 }
 
-.detail-info-value.normal {
-	font-family: inherit;
-}
-
-.detail-card {
-	background: white;
-	padding: 25px;
-	border-radius: 8px;
-	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-	margin-bottom: 20px;
-}
-
-.detail-card h3 {
-	color: #333;
-	font-size: 16px;
-	margin-bottom: 15px;
-	border-bottom: 2px solid #f0f0f0;
-	padding-bottom: 10px;
-}
-
-.detail-commit-message-box {
-	background: #f9f9f9;
-	padding: 15px;
-	border-radius: 6px;
-	border-left: 3px solid #28a745;
-	color: #333;
-	font-family: 'Courier New', monospace;
-	white-space: pre-wrap;
-	word-break: break-word;
-	line-height: 1.6;
-}
-
-.detail-meta-grid {
-	display: grid;
-	grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-	gap: 15px;
+.detail-meta {
+	display: flex;
+	gap: 24px;
+	flex-wrap: wrap;
+	margin-top: 14px;
 }
 
 .detail-meta-item {
-	padding: 12px;
-	background: #f9f9f9;
-	border-radius: 4px;
-}
-
-.detail-meta-label {
 	color: #666;
-	font-size: 12px;
-	margin-bottom: 5px;
+	font-size: 13px;
 }
 
-.detail-meta-value {
+.detail-meta-item strong {
 	color: #333;
+	margin-right: 4px;
+}
+
+/* File Content Header (코드 복사 / 다운로드) */
+.detail-content-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	flex-wrap: wrap;
+	background: #2d2d2d;
+	padding: 12px 20px;
+	border-radius: 8px 8px 0 0;
+}
+
+.detail-content-title {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	color: #eee;
 	font-size: 14px;
 	font-weight: 600;
+	min-width: 0;
 }
 
-.detail-issue-badge {
-	display: inline-block;
-	background: #e7f3ff;
-	color: #0056b3;
-	padding: 6px 12px;
-	border-radius: 4px;
+.detail-file-icon {
+	font-size: 16px;
+}
+
+.detail-file-name {
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.detail-content-actions {
+	display: flex;
+	gap: 8px;
+	flex-shrink: 0;
+}
+
+.detail-action-btn {
+	padding: 6px 14px;
+	border: 1px solid #555;
+	border-radius: 6px;
+	background: #3c3c3c;
+	color: #eee;
+	font-size: 12px;
+	cursor: pointer;
+	transition: background-color 0.2s;
+}
+
+.detail-action-btn:hover {
+	background: #4a4a4a;
+}
+
+.detail-action-copy:hover {
+	border-color: #007bff;
+}
+
+.detail-action-download:hover {
+	border-color: #28a745;
+}
+
+/* File Content */
+.detail-content {
+	background: #1e1e1e;
+	border-radius: 0 0 8px 8px;
+	margin-bottom: 20px;
+	max-height: 70vh;
+	overflow: auto;
+}
+
+.file-content {
+	margin: 0;
+	padding: 20px;
+	color: #d4d4d4;
+	font-family: 'Courier New', Consolas, Monaco, monospace;
 	font-size: 13px;
-	font-weight: 600;
-	margin-top: 10px;
+	line-height: 1.6;
+	white-space: pre;
+	overflow-x: auto;
+	tab-size: 4;
 }
 
-.detail-issue-badge.none {
-	background: #f0f0f0;
-	color: #999;
-}
-
+/* Bottom Actions */
 .detail-actions {
 	display: flex;
 	gap: 10px;
-	margin-top: 20px;
+	flex-wrap: wrap;
 }
 
 .detail-btn {
@@ -149,16 +180,7 @@
 	cursor: pointer;
 	text-decoration: none;
 	display: inline-block;
-	transition: all 0.3s;
-}
-
-.detail-btn-primary {
-	background-color: #007bff;
-	color: white;
-}
-
-.detail-btn-primary:hover {
-	background-color: #0056b3;
+	transition: background-color 0.2s;
 }
 
 .detail-btn-secondary {
@@ -168,4 +190,29 @@
 
 .detail-btn-secondary:hover {
 	background-color: #545b62;
+	color: white;
+}
+
+/* ✅ 코드 복사 완료 모달에서 체크마크 아이콘이 그려지는 애니메이션 도중
+   테두리 밖으로 획이 삐져나가면서 2개가 겹쳐 보이는 것처럼 보이던 현상.
+   애니메이션을 끄고 완성된 모양을 바로 보여주도록 수정 (pf-confirm.js는 건드리지 않음). */
+.pf-swal-popup .swal2-success-line-tip,
+.pf-swal-popup .swal2-success-line-long,
+.pf-swal-popup .swal2-success-ring,
+.pf-swal-popup .swal2-success-circular-line-left,
+.pf-swal-popup .swal2-success-circular-line-right,
+.pf-swal-popup .swal2-success-fix {
+	animation: none !important;
+}
+
+/* ✅ 애니메이션을 꺼도 여전히 체크마크 획이 삐져나와 보였던 진짜 원인:
+   공용 CSS(common-ui.css)의 .pf-swal-popup .swal2-icon { margin-top: -28px; }가
+   아이콘을 헤더 경계선 쪽으로 바짝 밀어올려서, 체크마크 획의 끝부분이 원 밖
+   경계와 겹쳐 잘려 보였음. 공용 파일은 안 건드리고 이 페이지에서만
+   margin-top을 완화해서 아이콘이 몸통 안쪽 여유 공간에 놓이도록 수정. */
+/* ✅ margin-top을 4px로 줄였는데도 아이콘 흰색 후광(box-shadow 0 0 0 6px #fff)이
+   여전히 헤더 경계에 살짝 닿아 흰 조각이 삐져나와 보였음. 후광 크기(6px)까지
+   감안해서 여백을 더 넉넉하게 줌. */
+.pf-swal-popup .swal2-icon {
+	margin-top: 20px !important;
 }

@@ -69,38 +69,21 @@
 							style="color: #dc3545; font-weight: 600;">미리보기가 안되는 파일입니다.</p>
 					</div>
 
-					<!-- 파일 다운로드 이력 -->
-					<div class="repo-download-history" style="margin-top: 30px;">
-						<div class="repo-file-label">다운로드 이력</div>
-						<table
-							style="width: 100%; margin-top: 8px; border-collapse: collapse; font-size: 14px;">
-							<thead>
-								<tr style="background: #f1f3f5;">
-									<th style="padding: 8px; border: 1px solid #dee2e6;">다운로드한 사람</th>
-									<th style="padding: 8px; border: 1px solid #dee2e6;">다운로드 일시</th>
-								</tr>
-							</thead>
-							<tbody id="downloadHistoryBody">
-								<tr th:if="${downloadHistoryList == null or #lists.isEmpty(downloadHistoryList)}">
-									<td colspan="2"
-										style="padding: 10px; text-align: center; border: 1px solid #dee2e6; color: #868e96;">
-										다운로드 이력이 없습니다.</td>
-								</tr>
-								<tr th:each="history : ${downloadHistoryList}">
-									<td style="padding: 8px; border: 1px solid #dee2e6;"
-										th:text="${history.userName}"></td>
-									<td style="padding: 8px; border: 1px solid #dee2e6;"
-										th:text="${history.downloadDate}"></td>
-								</tr>
-							</tbody>
-						</table>
-					</div>
+					<!-- ✅ 문서관리(document)와 동일한 모달 방식으로 변경. 항상 펼쳐져 있던
+					     인라인 표 대신, 버튼을 눌러야 모달로 뜨도록 함(아래 repo-btn-group의
+					     "파일 다운로드 이력" 버튼 + 하단 downloadHistoryModal 참고). -->
+
 
 					<div class="repo-btn-group">
 
 						<a
 							th:href="@{/project/{projectId}/repository(projectId=${projectId})}"
 							class="repo-btn repo-btn-list">목록</a>
+
+						<!-- ✅ 문서관리(document)와 동일하게 모달로 여는 버튼 -->
+						<button type="button" data-toggle="modal"
+							data-target="#downloadHistoryModal" class="repo-btn"
+							style="background-color: #6c757d;">파일 다운로드 이력</button>
 
 						<!-- 파일 다운로드 버튼 (projectId 포함) -->
 						<a id="downloadBtn"
@@ -142,6 +125,63 @@
 					</div>
 				</div>
 
+			</div>
+		</div>
+
+		<!-- ✅ 파일 다운로드 이력 모달 (문서관리 documentDetail.html과 동일한 디자인) -->
+		<div class="modal fade" id="downloadHistoryModal" tabindex="-1" role="dialog">
+			<div class="modal-dialog" role="document" style="border-radius: 20px;">
+				<div class="modal-content"
+					style="border-radius: 20px; overflow: hidden; border: none;">
+
+					<!-- 헤더 -->
+					<div
+						style="background: #1a6fe8; padding: 18px 24px; display: flex; align-items: center; justify-content: space-between;">
+						<h4 style="color: #fff; margin: 0; font-size: 15px; font-weight: 500;">
+							파일 다운로드 이력</h4>
+						<span data-dismiss="modal"
+							style="color: #fff; font-size: 18px; cursor: pointer;">✕</span>
+					</div>
+
+					<!-- 바디 -->
+					<div class="modal-body"
+						style="padding: 24px; max-height: 500px; overflow-y: auto;">
+						<table class="table table-bordered table-hover"
+							style="margin-bottom: 0;">
+							<thead style="background: #f8f9fa;">
+								<tr>
+									<th style="width: 10%; text-align: center;">No</th>
+									<th style="width: 45%;">파일명</th>
+									<th style="width: 20%; text-align: center;">다운로드 사용자</th>
+									<th style="width: 25%; text-align: center;">다운로드 일시</th>
+								</tr>
+							</thead>
+							<tbody id="downloadHistoryBody">
+								<tr th:each="history, stat : ${downloadHistoryList}">
+									<td class="text-center" th:text="${stat.count}">1</td>
+									<!-- ✅ 자료실은 파일 1개짜리 이력이라 history 자체엔 파일명이 없어서
+									     repository.originalName(현재 파일명)을 그대로 표시 -->
+									<td th:text="${repository != null ? repository.originalName : '-'}">sample.pdf</td>
+									<td class="text-center" th:text="${history.userName}">홍길동</td>
+									<td class="text-center" th:text="${history.downloadDate}">
+										2026-07-01 14:30</td>
+								</tr>
+								<tr th:if="${downloadHistoryList == null or #lists.isEmpty(downloadHistoryList)}">
+									<td colspan="4" class="text-center" style="padding: 40px;">
+										다운로드 이력이 없습니다.</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+
+					<!-- 푸터 -->
+					<div class="modal-footer"
+						style="border-top: 1px solid #f0f0f0; padding: 14px 24px 20px;">
+						<button type="button"
+							class="btn btn-default btn-custon-three btn-custon-rounded-three"
+							data-dismiss="modal">닫기</button>
+					</div>
+				</div>
 			</div>
 		</div>
 

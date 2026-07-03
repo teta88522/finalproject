@@ -29,7 +29,7 @@
 
 			<!-- Header -->
 			<div class="index-header">
-				<h1>📦 저장소 관리</h1>
+				<h1>저장소 관리</h1>
 				<p>GitHub 저장소의 파일과 커밋 이력을 조회합니다</p>
 			</div>
 
@@ -54,15 +54,15 @@
 				<!-- ✅ 동기화된 적이 없으면(savedGitUrl 없음) 클릭 안 되는 비활성 버튼으로 표시 -->
 				<a th:if="${savedGitUrl != null and !savedGitUrl.isEmpty()}"
 					th:href="@{/project/{projectId}/sourcerepository/files(projectId=${projectId})}"
-					class="index-btn index-btn-primary"> 📁 파일 목록 보기 </a>
+					class="index-btn index-btn-primary">파일 목록 보기 </a>
 				<button th:unless="${savedGitUrl != null and !savedGitUrl.isEmpty()}"
 					type="button" class="index-btn index-btn-primary" disabled
 					title="먼저 GitHub 동기화를 진행해주세요"
-					style="opacity: 0.5; cursor: not-allowed;"> 📁 파일 목록 보기 </button>
+					style="opacity: 0.5; cursor: not-allowed;">파일 목록 보기 </button>
 				<!-- ✅ "전체 브랜치 동기화" 버튼 제거: 모달 안의 "모든 브랜치 동기화" 체크박스로 이미 커버됨 -->
 				<button type="button" data-toggle="modal" data-target="#syncModal"
 					onclick="setSyncAllMode(false)"
-					class="index-btn index-btn-secondary">🔄 GitHub 동기화</button>
+					class="index-btn index-btn-secondary">GitHub 동기화</button>
 			</div>
 		</div>
 

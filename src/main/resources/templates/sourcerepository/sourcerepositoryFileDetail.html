@@ -32,7 +32,7 @@
 						th:href="@{/project/{projectId}/sourcerepository/file-history(projectId=${projectId}, path=${filePath}, branch=${branch})}"
 						class="detail-history-btn"
 						style="text-decoration: none;">
-						📜 History
+						History
 					</a>
 				</div>
 				<div class="detail-meta">
@@ -48,7 +48,7 @@
 			<!-- File Content Header (코드 복사, 다운로드, 파일명 복사) -->
 			<div class="detail-content-header">
 				<div class="detail-content-title">
-					<span class="detail-file-icon">📄</span>
+					<span class="detail-file-icon"></span>
 					<span class="detail-file-name" th:text="${fileName}">README.md</span>
 				</div>
 				<div class="detail-content-actions">
@@ -57,7 +57,7 @@
 						class="detail-action-btn detail-action-copy"
 						onclick="copyCode()"
 						title="코드 전체 복사">
-						📋 코드 복사
+						코드 복사
 					</button>
 					<button
 						type="button"
@@ -84,7 +84,7 @@
 				<a
 					th:href="@{/project/{projectId}/sourcerepository(projectId=${projectId})}"
 					class="detail-btn detail-btn-secondary">
-					🏠 저장소 메인
+					저장소 메인
 				</a>
 			</div>
 		</div>

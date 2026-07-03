@@ -420,9 +420,10 @@ public class ProjectController {
 		return projectModuleSetting(projectId, userId, subscribeYn, model);
 	}
 
-	/* 프로젝트 모듈 추가 */
+	/* 프로젝트 모듈 추가 (✅ 체크박스로 여러 개 동시 추가 가능하도록 List로 변경) */
 	@PostMapping("/project/{projectId}/settings/modules/add")
-	public String insertProjectModule(@PathVariable String projectId, @RequestParam String moduleCode,
+	public String insertProjectModule(@PathVariable String projectId,
+			@RequestParam(required = false) java.util.List<String> moduleCode,
 			@CookieValue(value = "userId", required = false) String userId,
 			@CookieValue(value = "subscribeYn", required = false) String subscribeYn,
 			RedirectAttributes redirectAttributes) {
@@ -440,16 +441,28 @@ public class ProjectController {
 		if (!"Y".equals(subscribeYn))
 			return "redirect:/projectdetail/" + projectId;
 
-		Map<String, Object> resultMap = projectService.insertProjectModule(projectId, moduleCode);
+		if (moduleCode == null || moduleCode.isEmpty()) {
+			redirectAttributes.addFlashAttribute("message", "추가할 모듈을 하나 이상 선택해주세요.");
+			return "redirect:/project/" + projectId + "/settings/modules";
+		}
+
+		int successCount = 0;
+		for (String code : moduleCode) {
+			Map<String, Object> resultMap = projectService.insertProjectModule(projectId, code);
+			if (Boolean.TRUE.equals(resultMap.get("success")) || resultMap.get("success") == null) {
+				successCount++;
+			}
+		}
 //		com.pixcel.app.web.GlobalControllerAdvice.evictModuleCache(projectId); // ✅ 사이드바 캐시 무효화
-		redirectAttributes.addFlashAttribute("message", resultMap.get("message"));
+		redirectAttributes.addFlashAttribute("message", successCount + "개 모듈이 추가되었습니다.");
 
 		return "redirect:/project/" + projectId + "/settings/modules";
 	}
 
-	/* 프로젝트 모듈 삭제 */
+	/* 프로젝트 모듈 삭제 (✅ 체크박스로 여러 개 동시 삭제 가능하도록 List로 변경) */
 	@PostMapping("/project/{projectId}/settings/modules/delete")
-	public String deleteProjectModule(@PathVariable String projectId, @RequestParam String moduleCode,
+	public String deleteProjectModule(@PathVariable String projectId,
+			@RequestParam(required = false) java.util.List<String> moduleCode,
 			@CookieValue(value = "userId", required = false) String userId,
 			@CookieValue(value = "subscribeYn", required = false) String subscribeYn,
 			RedirectAttributes redirectAttributes) {
@@ -467,9 +480,20 @@ public class ProjectController {
 		if (!"Y".equals(subscribeYn))
 			return "redirect:/projectdetail/" + projectId;
 
-		Map<String, Object> resultMap = projectService.deleteProjectModule(projectId, moduleCode);
+		if (moduleCode == null || moduleCode.isEmpty()) {
+			redirectAttributes.addFlashAttribute("message", "제거할 모듈을 하나 이상 선택해주세요.");
+			return "redirect:/project/" + projectId + "/settings/modules";
+		}
+
+		int successCount = 0;
+		for (String code : moduleCode) {
+			Map<String, Object> resultMap = projectService.deleteProjectModule(projectId, code);
+			if (Boolean.TRUE.equals(resultMap.get("success")) || resultMap.get("success") == null) {
+				successCount++;
+			}
+		}
 //		com.pixcel.app.web.GlobalControllerAdvice.evictModuleCache(projectId); // ✅ 사이드바 캐시 무효화
-		redirectAttributes.addFlashAttribute("message", resultMap.get("message"));
+		redirectAttributes.addFlashAttribute("message", successCount + "개 모듈이 제거되었습니다.");
 
 		return "redirect:/project/" + projectId + "/settings/modules";
 	}

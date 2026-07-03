@@ -33,23 +33,25 @@
 					<div th:if="${projectModuleList == null or #lists.isEmpty(projectModuleList)}"
 						class="alert-secondary">현재 등록된 모듈이 없습니다.</div>
  
-					<div th:each="pm : ${projectModuleList}" class="input-group mb-2">
-						<div class="module-name"
-							th:text="${moduleMap.get(pm.moduleCode)} ?: ${pm.moduleCode}">모듈명</div>
- 
-						<!-- ✅ 프로젝트 표준 패턴(js-pf-confirm-submit)으로 통일 - 폼마다 자동으로 확인창이 붙음 -->
-						<form
-							th:action="@{/project/{projectId}/settings/modules/delete(projectId=${projectId})}"
-							method="post"
-							class="inline-form js-pf-confirm-submit"
-							data-confirm-title="모듈 제거"
-							th:attr="data-confirm-message='&quot;' + (${moduleMap.get(pm.moduleCode)} ?: ${pm.moduleCode}) + '&quot; 모듈을 프로젝트에서 제거하시겠습니까?'"
-							data-confirm-confirm-text="제거"
-							data-confirm-icon="warning">
-							<input type="hidden" name="moduleCode" th:value="${pm.moduleCode}">
-							<button type="submit" class="btn btn-outline-secondary btn-sm">제거</button>
-						</form>
-					</div>
+					<form th:if="${projectModuleList != null and !#lists.isEmpty(projectModuleList)}"
+						th:action="@{/project/{projectId}/settings/modules/delete(projectId=${projectId})}"
+						method="post"
+						class="js-pf-confirm-submit"
+						data-confirm-title="모듈 제거"
+						data-confirm-message="선택한 모듈을 프로젝트에서 제거하시겠습니까?"
+						data-confirm-confirm-text="제거"
+						data-confirm-icon="warning">
+						<div th:each="pm : ${projectModuleList}" class="input-group mb-2">
+							<div class="form-check" style="display:flex;align-items:center;gap:8px;">
+								<input class="form-check-input" type="checkbox" name="moduleCode"
+									th:value="${pm.moduleCode}" th:id="'del-' + ${pm.moduleCode}">
+								<label class="module-name" th:for="'del-' + ${pm.moduleCode}"
+									th:text="${moduleMap.get(pm.moduleCode)} ?: ${pm.moduleCode}"
+									style="margin:0;cursor:pointer;">모듈명</label>
+							</div>
+						</div>
+						<button type="submit" class="btn btn-outline-danger btn-sm mt-2">선택 제거</button>
+					</form>
  
 				</div>
 			</div>
@@ -62,14 +64,19 @@
 				<div class="card-body">
  
 					<form th:if="${availableModules != null and !#maps.isEmpty(availableModules)}"
+						id="addModuleForm"
 						th:action="@{/project/{projectId}/settings/modules/add(projectId=${projectId})}"
-						method="post" class="input-group">
-						<select name="moduleCode" class="form-select" required>
-							<option value="">추가할 모듈을 선택하세요</option>
-							<option th:each="entry : ${availableModules}" th:value="${entry.key}"
-								th:text="${entry.value}">모듈명</option>
-						</select>
-						<button type="submit" class="btn btn-primary">추가</button>
+						method="post">
+						<!-- ✅ 드롭다운(한 개씩) 대신 체크박스로 여러 모듈을 한 번에 추가할 수 있도록 변경 -->
+						<div th:each="entry : ${availableModules}" class="input-group mb-2">
+							<div class="form-check" style="display:flex;align-items:center;gap:8px;">
+								<input class="form-check-input" type="checkbox" name="moduleCode"
+									th:value="${entry.key}" th:id="'add-' + ${entry.key}">
+								<label class="module-name" th:for="'add-' + ${entry.key}"
+									th:text="${entry.value}" style="margin:0;cursor:pointer;">모듈명</label>
+							</div>
+						</div>
+						<button type="submit" class="btn btn-primary mt-2">선택 추가</button>
 					</form>
  
 					<div th:if="${availableModules == null or #maps.isEmpty(availableModules)}"
@@ -82,12 +89,43 @@
 				<a th:href="@{/projectdetail/{projectId}(projectId=${projectId})}"
 					class="btn btn-outline-secondary">돌아가기</a>
 			</div>
-
+ 
 			<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 			<script th:src="@{/js/common/pf-confirm.js}"></script>
-
+ 
+			<script>
+				// ✅ 모듈 추가/제거를 리다이렉트(POST→redirect→GET) 대신 AJAX로 처리.
+				//    pf-confirm.js는 건드리지 않고, 그 파일이 확인 후 requestSubmit()으로
+				//    다시 쏘는 실제 submit 이벤트를 여기서 가로채서(form.dataset.pfConfirmApproved
+				//    플래그로 "확인 완료된 시점"만 판별) fetch로 보내고 페이지만 새로고침.
+				function submitFormAjax(form) {
+					fetch(form.action, { method: 'POST', body: new FormData(form) })
+						.then(function () { location.reload(); })
+						.catch(function () { location.reload(); });
+				}
+ 
+				// 삭제(제거) 폼: 확인창이 있는 js-pf-confirm-submit
+				document.querySelectorAll('.js-pf-confirm-submit').forEach(function (form) {
+					form.addEventListener('submit', function (event) {
+						if (form.dataset.pfConfirmApproved === 'true') {
+							event.preventDefault();
+							submitFormAjax(form);
+						}
+					});
+				});
+ 
+				// 추가 폼: 확인창 없이 바로 AJAX 처리
+				var addModuleForm = document.getElementById('addModuleForm');
+				if (addModuleForm) {
+					addModuleForm.addEventListener('submit', function (event) {
+						event.preventDefault();
+						submitFormAjax(addModuleForm);
+					});
+				}
+			</script>
+ 
 		</div>
-
+ 
 	</div>
 </body>
 </html>

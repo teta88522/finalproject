@@ -13,7 +13,7 @@
 			<!-- Header -->
 			<div class="list-header">
 				<div>
-					<h2>📝 Commit 목록</h2>
+					<h2>Commit 목록</h2>
 					<div class="list-header-meta"
 						th:text="'총 ' + ${totalElements} + '개 커밋'">총 0개 커밋</div>
 				</div>
@@ -44,7 +44,7 @@
 
 					<div class="list-commit-meta">
 						<div class="list-commit-author">
-							<span>✍️</span> <span th:text="${commit.authorName}">John
+							<span></span> <span th:text="${commit.authorName}">John
 								Doe</span>
 						</div>
 						<div th:if="${commit.issueId != null and commit.issueId != '-'}"
@@ -67,7 +67,7 @@
 
 			<!-- Empty State -->
 			<div class="list-empty-state" th:if="${commits.isEmpty()}">
-				<p>💭 조회된 커밋이 없습니다</p>
+				<p>조회된 커밋이 없습니다</p>
 				<p style="font-size: 13px;">이 브랜치는 아직 동기화되지 않았을 수 있습니다.
 					<a th:href="@{/project/{projectId}/sourcerepository(projectId=${projectId})}">저장소 메인에서 동기화하기 →</a>
 				</p>
