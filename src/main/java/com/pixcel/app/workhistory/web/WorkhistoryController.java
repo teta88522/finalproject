@@ -23,18 +23,7 @@ public class WorkhistoryController {
 
 	private final WorkhistoryService workhistoryService;
 
-	/*
-	 * 작업내역 목록 화면.
-	 *
-	 * 해야 할 일:
-	 * 1. 로그인 사용자 확인
-	 * 2. 프로젝트 접근 가능 여부 확인
-	 * 3. 검색 조건 정리
-	 * 4. 작업내역 page id 선조회
-	 * 5. 현재 페이지 작업내역 상세 row 조회
-	 * 6. 선택된 필터 표시명 조회
-	 * 7. workhistory/workhistory.html에 필요한 model 구성
-	 */
+	/* 작업내역 목록 화면 구성. */
 	@GetMapping("/project/{projectId}/workhistory")
 	public String workhistoryList(
 			@CookieValue(value = "userId", required = false) String userId,
@@ -55,15 +44,7 @@ public class WorkhistoryController {
 		return "workhistory/workhistory";
 	}
 
-	/*
-	 * 작업내역 필터 옵션 Ajax.
-	 *
-	 * 해야 할 일:
-	 * 1. 로그인 사용자 확인
-	 * 2. 프로젝트 접근 가능 여부 확인
-	 * 3. 변경유형/변경항목/작업자/유형/상태/우선순위 옵션 조회
-	 * 4. 최초 HTML이 아니라 드롭다운을 열 때만 호출되게 유지
-	 */
+	/* 작업내역 필터 옵션 Ajax 조회. */
 	@GetMapping("/project/{projectId}/workhistory/filter-options")
 	@ResponseBody
 	public Map<String, Object> workhistoryFilterOptions(
@@ -113,10 +94,7 @@ public class WorkhistoryController {
 		model.addAttribute("selectedPriorityText",
 				pageData.getOrDefault("selectedPriorityText", "전체"));
 
-		/*
-		 * 최초 HTML에서는 옵션 목록을 비워둔다.
-		 * 옵션은 /workhistory/filter-options Ajax에서 lazy loading한다.
-		 */
+		/* 최초 HTML용 빈 필터 옵션 목록 설정. */
 		model.addAttribute("changeTypeList",
 				pageData.getOrDefault("changeTypeList", Collections.emptyList()));
 		model.addAttribute("fieldList",
