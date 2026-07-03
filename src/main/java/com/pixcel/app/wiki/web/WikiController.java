@@ -117,7 +117,7 @@ public class WikiController {
         vo.setCurrentVersionNo("v1");
         vo.setCreatedBy(userId);
         wikiService.insertWikiPage(vo);
-        return "redirect:/project/" + projectId +"/document/list";
+        return "redirect:/project/" + projectId +"/wiki/list";
     }
 
     // 버전 목록
@@ -190,5 +190,14 @@ public class WikiController {
             while ((length = is.read(buffer)) != -1) os.write(buffer, 0, length);
             os.flush();
         }
+    }
+    
+ // 제목으로 위키 검색
+    @GetMapping("/find")
+    @ResponseBody
+    public ResponseEntity<?> findByTitle(@RequestParam String title,
+                                         @PathVariable String projectId) {
+        WikiPageVO page = wikiService.getWikiByTitle(title, projectId);
+        return ResponseEntity.ok(page);
     }
 }

@@ -51,4 +51,9 @@ public class WikiServiceImpl implements WikiService {
 	public List<WikiPageVO> getWikiList(String projectId) {
 		return wikiMapper.selectWikiList(projectId);
 	}
+
+	@Override
+	public WikiPageVO getWikiByTitle(String title, String projectId) {
+		return wikiMapper.selectWikiByTitle(title, projectId);
+	}
 }

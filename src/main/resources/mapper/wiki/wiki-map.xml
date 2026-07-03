@@ -151,5 +151,11 @@
     LEFT JOIN users u ON w.created_by = u.user_id
     WHERE project_id = #{projectId}
     ORDER BY created_at DESC
-</select>
+	</select>
+	<select id="selectWikiByTitle" resultType="WikiPageVO">
+    SELECT wiki_id, title, project_id
+    FROM wiki_page
+    WHERE title = #{title}
+    AND project_id = #{projectId}
+	</select>
 </mapper>
