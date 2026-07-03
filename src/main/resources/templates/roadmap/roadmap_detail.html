@@ -26,7 +26,13 @@
 	               th:style="${roadmap.statusCode == 'k003'} ? 'pointer-events: none;' : ''">
 	                ⚙️ 관리
 	            </a>
-	            <button type="button" id="btnCompleteRoadmap" class="btn-complete" disabled>완료</button>
+	            <!-- 📝 상태가 이미 완료(k003)인 경우 서버 단에서 미리 비활성화 및 '완료됨' 텍스트 바인딩 -->
+	            <button type="button" 
+	                    id="btnCompleteRoadmap" 
+	                    class="btn-complete" 
+	                    th:disabled="${roadmap.statusCode == 'k003'}" 
+	                    th:text="${roadmap.statusCode == 'k003'} ? '완료됨' : '완료'"
+	                    th:classappend="${roadmap.statusCode == 'k003'} ? 'btn-disabled' : ''">완료</button>
 	        </div>
 	    </div>
 	    <hr class="section-divider" style="margin-bottom: 24px;" />   
@@ -123,7 +129,8 @@
                     </tr>
                   </thead>
                   <tbody>
-                    <tr th:each="issue : ${milestone.issueList}">
+               
+                    <tr th:each="issue : ${milestone.issueList}" th:if="${issue.issueId != null}">
                       <td>
                           <a th:href="@{/project/{projectId}/issues/{id}(projectId=${projectId}, id=${issue.issueId})}"
                              style="text-decoration: none; color: #006df0; font-weight: 500;"
@@ -149,7 +156,8 @@
                       </td>
                       <td th:text="${(issue.progressRate ?: 0) + '%'}">0%</td>
                     </tr>
-                    <tr th:if="${#lists.isEmpty(milestone.issueList)}">
+        
+                    <tr th:if="${#lists.isEmpty(milestone.issueList) or milestone.issueList[0].issueId == null}">
                       <td colspan="6" style="text-align: center; color: #999">
                         등록된 일감이 없습니다.
                       </td>
@@ -211,6 +219,9 @@
         const roadmapData = /*[[${roadmap}]]*/ {};
         /*]]>*/
       </script>
+      <!-- SweetAlert2 및 공통 다이얼로그 추가 -->
+      <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+      <script th:src="@{/js/common/pf-confirm.js}"></script>
       <script th:src="@{/js/roadmap/roadmap-detail.js}"></script>
     </div>
   </body>

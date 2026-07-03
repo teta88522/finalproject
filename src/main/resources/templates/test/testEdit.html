@@ -7,11 +7,16 @@
 <title>테스트 수정</title>
 
 <link rel="stylesheet" th:href="@{/css/test/testAdd.css}">
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script th:src="@{/js/common/pf-confirm.js}"></script>
 </head>
 
 <body>
 <div layout:fragment="Content">
-
+<div class="container-fluid" style="height:calc(100vh - 130px); display:flex; flex-direction:column; padding-bottom:24px;">
+   <div style="background:#fff; border-radius:12px; box-shadow:0 2px 12px rgba(0,0,0,0.08); padding:24px; flex:1; display:flex; flex-direction:column; overflow:auto;">
+	
     <div class="test-create-wrap">
 
         <div class="page-title-area">
@@ -94,13 +99,6 @@
                                 그룹명
                             </option>
                         </select>
-						<!-- 
-                        <label for="retryNo">재수행차수</label>
-                        <input type="number"
-                               id="retryNo"
-                               value="0"
-                               readonly>
-                         -->
                     </div>
 
                     <!-- TEST 테이블 NOT NULL 기본값 -->
@@ -146,7 +144,7 @@
                                placeholder="테스트 케이스 명으로 검색">
 
                         <button type="button"
-                                class="case-search-btn"
+                                class="btn btn-custon-rounded-four custom-default-btn"
                                 id="caseSearchBtn">
                             검색
                         </button>
@@ -311,11 +309,11 @@
 
                     <div class="btn-area">
                         <a th:href="@{/project/{projectId}/tests(projectId=${projectId})}"
-                           class="btn-cancel">
+                           class="btn btn-custon-rounded-four custom-white-btn">
                             취소
                         </a>
 
-                        <button type="submit" class="btn-save">
+                        <button type="submit" class="btn btn-custon-rounded-four custom-default-btn">
                             수정
                         </button>
                     </div>
@@ -341,7 +339,8 @@
         </div>
 
     </div>
-
+</div>
+</div>
     <script th:inline="javascript">
     document.addEventListener('DOMContentLoaded', function () {
 
@@ -351,7 +350,10 @@
         const message = /*[[${message}]]*/ null;
 
         if (message != null) {
-            alert(message);
+            window.PFDialog.alert(message, {
+                title: '알림',
+                icon: 'info'
+            });
         }
 
         const storageKey = 'selectedEditTestCases_' + projectId + '_' + testId;
@@ -660,8 +662,13 @@
             const selectedCases = getSelectedCases();
 
             if (Object.keys(selectedCases).length === 0) {
-                alert('테스트 케이스를 1개 이상 선택하세요.');
                 event.preventDefault();
+
+                window.PFDialog.alert('테스트 케이스를 1개 이상 선택하세요.', {
+                    title: '테스트 수정 확인',
+                    icon: 'warning'
+                });
+
                 return false;
             }
 

@@ -68,17 +68,23 @@
           AND pv.project_id = #{projectId}
 
     </select>
-    
-    <select id="selectExecutionIdByMappingId" parameterType="string" resultType="string">
-    	SELECT execution_id
-    	FROM (
-        	SELECT execution_id
-        	FROM test_execution
-        	WHERE mapping_id = #{mappingId}
-        	ORDER BY executed_at DESC, created_at DESC, execution_id DESC
-    	)
-    	WHERE ROWNUM = 1
-	</select>
+
+
+    <!-- mapping_id 기준 최신 execution_id 조회 -->
+    <select id="selectExecutionIdByMappingId"
+            parameterType="string"
+            resultType="string">
+
+        SELECT execution_id
+        FROM (
+            SELECT execution_id
+            FROM test_execution
+            WHERE mapping_id = #{mappingId}
+            ORDER BY executed_at DESC, created_at DESC, execution_id DESC
+        )
+        WHERE ROWNUM = 1
+
+    </select>
 
 
     <!-- 테스트에 매핑된 테스트케이스 + 최신 수행결과 -->
@@ -106,7 +112,7 @@
                     te.executed_at,
                     ROW_NUMBER() OVER (
                         PARTITION BY te.mapping_id
-                        ORDER BY te.retry_no DESC, te.executed_at DESC, te.created_at DESC, te.execution_id DESC
+                        ORDER BY te.executed_at DESC, te.created_at DESC, te.execution_id DESC
                     ) AS rn
                 FROM test_execution te
             )
@@ -156,8 +162,8 @@
             END AS "resultStatusName",
 
             le.execution_comment AS "executionComment",
-            NVL(le.retry_no, -1) AS "retryNo",
-            NVL(le.retry_no + 1, 0) AS "nextRetryNo",
+            NVL(le.retry_no, 0) AS "retryNo",
+            NVL(le.retry_no, 0) AS "nextRetryNo",
             TO_CHAR(le.executed_at, 'YYYY-MM-DD HH24:MI') AS "executedAt"
 
         FROM test_case_mapping tcm
@@ -188,131 +194,159 @@
     </select>
 
 
-<!-- 테스트 실행결과 개별 저장 -->
-<insert id="insertTestExecution"
-        parameterType="com.pixcel.app.testexecution.service.TestExecutionVO">
+    <!-- 현재 재수행차수 조회 -->
+    <select id="selectCurrentRetryNo"
+            parameterType="string"
+            resultType="int">
 
-    <selectKey keyProperty="executionId"
-               resultType="string"
-               order="BEFORE">
+        SELECT NVL((
+            SELECT retry_no
+            FROM (
+                SELECT retry_no
+                FROM test_execution
+                WHERE mapping_id = #{mappingId}
+                ORDER BY executed_at DESC, created_at DESC, execution_id DESC
+            )
+            WHERE ROWNUM = 1
+        ), 0)
+        FROM dual
+
+    </select>
+
+
+    <!-- 테스트 실행결과 개별 저장 -->
+    <insert id="insertTestExecution"
+            parameterType="com.pixcel.app.testexecution.service.TestExecutionVO">
+
+        <selectKey keyProperty="executionId"
+                   resultType="string"
+                   order="BEFORE">
+            SELECT
+                'EXEC_' || TO_CHAR(SYSDATE, 'YYYYMM') || '_' ||
+                LPAD(
+                    NVL((
+                        SELECT MAX(TO_NUMBER(SUBSTR(execution_id, -4))) + 1
+                        FROM test_execution
+                        WHERE execution_id LIKE 'EXEC_' || TO_CHAR(SYSDATE, 'YYYYMM') || '_%'
+                    ), 1),
+                    4,
+                    '0'
+                )
+            FROM dual
+        </selectKey>
+
+        INSERT INTO test_execution (
+            execution_id,
+            mapping_id,
+            executor_id,
+            result_status_code,
+            execution_comment,
+            retry_no,
+            executed_at,
+            created_at
+        )
+        VALUES (
+            #{executionId},
+            #{mappingId},
+            #{executorId},
+            NVL(#{resultStatusCode}, 'o001'),
+            #{executionComment},
+            #{retryNo},
+            SYSDATE,
+            SYSDATE
+        )
+
+    </insert>
+
+
+    <!-- 테스트 실행결과 전체 저장 - bulk insert -->
+    <insert id="insertTestExecutionList"
+            parameterType="com.pixcel.app.testexecution.service.TestExecutionVO">
+
+        INSERT INTO test_execution (
+            execution_id,
+            mapping_id,
+            executor_id,
+            result_status_code,
+            execution_comment,
+            retry_no,
+            executed_at,
+            created_at
+        )
+        WITH input_data AS (
+            <foreach collection="mappingIdList"
+                     item="mappingId"
+                     index="index"
+                     separator="UNION ALL">
+                SELECT
+                    #{index} AS ord,
+                    #{mappingId} AS mapping_id,
+                    #{resultStatusCodeList[${index}]} AS result_status_code,
+                    #{executionCommentList[${index}]} AS execution_comment
+                FROM dual
+            </foreach>
+        ),
+        current_max AS (
+            SELECT
+                NVL(MAX(TO_NUMBER(SUBSTR(execution_id, -4))), 0) AS max_no
+            FROM test_execution
+            WHERE execution_id LIKE 'EXEC_' || TO_CHAR(SYSDATE, 'YYYYMM') || '_%'
+        ),
+        retry_data AS (
+            SELECT
+                mapping_id,
+                NVL(MAX(retry_no) + 1, 0) AS next_retry_no
+            FROM test_execution
+            WHERE mapping_id IN (
+                SELECT mapping_id
+                FROM input_data
+            )
+            GROUP BY mapping_id
+        )
         SELECT
             'EXEC_' || TO_CHAR(SYSDATE, 'YYYYMM') || '_' ||
             LPAD(
-                NVL((
-                    SELECT MAX(TO_NUMBER(SUBSTR(execution_id, -4))) + 1
-                    FROM test_execution
-                    WHERE execution_id LIKE 'EXEC_' || TO_CHAR(SYSDATE, 'YYYYMM') || '_%'
-                ), 1),
+                current_max.max_no + ROW_NUMBER() OVER (ORDER BY input_data.ord),
                 4,
                 '0'
-            )
-        FROM dual
-    </selectKey>
+            ) AS execution_id,
 
-    INSERT INTO test_execution (
-        execution_id,
-        mapping_id,
-        executor_id,
-        result_status_code,
-        execution_comment,
-        retry_no,
-        executed_at,
-        created_at
-    )
-    VALUES (
-        #{executionId},
-        #{mappingId},
-        #{executorId},
-        NVL(#{resultStatusCode}, 'o001'),
-        #{executionComment},
-        0,
-        SYSDATE,
-        SYSDATE
-    )
+            input_data.mapping_id AS mapping_id,
+            #{executorId} AS executor_id,
 
-</insert>
-    
-    <!-- 테스트 실행결과 전체 저장 - bulk insert -->
-<insert id="insertTestExecutionList"
-        parameterType="com.pixcel.app.testexecution.service.TestExecutionVO">
+            NVL(input_data.result_status_code, 'o001') AS result_status_code,
+            input_data.execution_comment AS execution_comment,
 
-    INSERT INTO test_execution (
-        execution_id,
-        mapping_id,
-        executor_id,
-        result_status_code,
-        execution_comment,
-        retry_no,
-        executed_at,
-        created_at
-    )
-    WITH input_data AS (
-        <foreach collection="mappingIdList"
-                 item="mappingId"
-                 index="index"
-                 separator="UNION ALL">
-            SELECT
-                #{index} AS ord,
-                #{mappingId} AS mapping_id,
-                #{resultStatusCodeList[${index}]} AS result_status_code,
-                #{executionCommentList[${index}]} AS execution_comment
-            FROM dual
-        </foreach>
-    ),
-    current_max AS (
-        SELECT
-            NVL(MAX(TO_NUMBER(SUBSTR(execution_id, -4))), 0) AS max_no
-        FROM test_execution
-        WHERE execution_id LIKE 'EXEC_' || TO_CHAR(SYSDATE, 'YYYYMM') || '_%'
-    ),
-    retry_data AS (
-        SELECT
-            mapping_id,
-            NVL(MAX(retry_no) + 1, 0) AS next_retry_no
-        FROM test_execution
-        WHERE mapping_id IN (
-            SELECT mapping_id
-            FROM input_data
-        )
-        GROUP BY mapping_id
-    )
-    SELECT
-        'EXEC_' || TO_CHAR(SYSDATE, 'YYYYMM') || '_' ||
-        LPAD(
-            current_max.max_no + ROW_NUMBER() OVER (ORDER BY input_data.ord),
-            4,
-            '0'
-        ) AS execution_id,
+            CASE
+                WHEN NVL(input_data.result_status_code, 'o001') = 'o001'
+                    THEN 0
+                ELSE NVL(retry_data.next_retry_no, 1)
+            END AS retry_no,
 
-        input_data.mapping_id AS mapping_id,
-        #{executorId} AS executor_id,
+            SYSDATE AS executed_at,
+            SYSDATE AS created_at
 
-        NVL(input_data.result_status_code, 'o001') AS result_status_code,
-        input_data.execution_comment AS execution_comment,
+        FROM input_data
+        CROSS JOIN current_max
+        LEFT JOIN retry_data
+            ON input_data.mapping_id = retry_data.mapping_id
 
-        NVL(retry_data.next_retry_no, 0) AS retry_no,
+    </insert>
 
-        SYSDATE AS executed_at,
-        SYSDATE AS created_at
 
-    FROM input_data
-    CROSS JOIN current_max
-    LEFT JOIN retry_data
-        ON input_data.mapping_id = retry_data.mapping_id
+    <!-- 테스트 실행결과 수정 -->
+    <update id="updateTestExecution"
+            parameterType="com.pixcel.app.testexecution.service.TestExecutionVO">
 
-</insert>
+        UPDATE test_execution
+        SET
+            executor_id = #{executorId},
+            result_status_code = NVL(#{resultStatusCode}, 'o001'),
+            execution_comment = #{executionComment},
+            retry_no = #{retryNo},
+            executed_at = SYSDATE
+        WHERE execution_id = #{executionId}
 
-<update id="updateTestExecution"
-        parameterType="com.pixcel.app.testexecution.service.TestExecutionVO">
-
-    UPDATE test_execution
-    SET
-        executor_id = #{executorId},
-        result_status_code = NVL(#{resultStatusCode}, 'o001'),
-        execution_comment = #{executionComment},
-        executed_at = SYSDATE
-    WHERE execution_id = #{executionId}
-
-</update>
+    </update>
 
 </mapper>

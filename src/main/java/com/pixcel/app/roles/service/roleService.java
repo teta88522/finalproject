@@ -12,7 +12,7 @@ public interface roleService {
 	public Map<String,Object> insertRole(roleServiceVO roleVO, List<String> permissionIds);
 	
 	//현재 로그인 사용자가 생성한 역할 목록 조회
-	public List<roleServiceVO> selectRoleList(String createdBy);
+	public List<roleServiceVO> selectRoleList(roleSearchVO roleSearchVO);
 	
 	//선택한 역할을 담당하는 구성원 목록 조회
 	public List<roleMemberVO> selectRoleMemberList(String roleId);

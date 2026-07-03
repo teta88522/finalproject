@@ -141,13 +141,27 @@
 		                th:data-id="${milestone.milestoneId}"
 		                th:data-url="@{/project/{id}/milestones/update(id=${projectId})}">수정</button>
 		        
-		        <button type="button" class="btn-k btn-danger" id="btnDelete" 
-		                th:data-id="${milestone.milestoneId}"
-		                th:data-url="@{/project/{id}/milestones/delete(id=${projectId})}">삭제</button>
+		        <!-- 가이드라인에 맞춘 자동 컨펌 폼 구조 적용 -->
+		        <form th:action="@{/project/{id}/milestones/delete(id=${projectId})}"
+		              method="post"
+		              class="inline-form js-pf-confirm-submit"
+		              data-confirm-title="삭제 확인"
+		              data-confirm-message="정말 이 마일스톤을 삭제하시겠습니까?"
+		              data-confirm-confirm-text="삭제"
+		              data-confirm-icon="warning"
+		              style="display: inline-block;">
+		            <input type="hidden" name="milestoneId" th:value="${milestone.milestoneId}">
+		            <button type="submit" class="btn-k btn-danger">
+		                삭제
+		            </button>
+		        </form>
 		    </div>
 		</div>
 
     </div>
+<!-- SweetAlert2 및 공통 다이얼로그 추가 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script th:src="@{/js/common/pf-confirm.js}"></script>
 <script th:src="@{/js/milestones/milestone-detail.js}"></script>
 <script>
     // 화면에 .page-message 클래스를 가진 요소가 있다면

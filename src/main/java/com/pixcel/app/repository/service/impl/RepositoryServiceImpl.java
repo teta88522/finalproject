@@ -133,6 +133,8 @@ public class RepositoryServiceImpl implements RepositoryService {
 			repositoryVO.setOriginalName(originalName);
 			repositoryVO.setStoredName(storedName);
 			repositoryVO.setFilePath(savePath + storedName);
+			// ✅ 이 줄이 빠져있어서 업로드할 때마다 무조건 0바이트로 저장되고 있었음
+			repositoryVO.setFileSize(uploadFile.getSize());
 		} catch (IOException e) {
 			throw new RuntimeException("파일 업로드 중 오류가 발생했습니다.", e);
 		}
@@ -145,7 +147,18 @@ public class RepositoryServiceImpl implements RepositoryService {
 			throw new RuntimeException("본인이 작성한 자료만 삭제가 가능합니다.");
 		}
 
-		return repositoryMapper.deleteRepository(fileId);
+		int result = repositoryMapper.deleteRepository(fileId);
+
+		// ✅ DB row만 지우고 디스크의 실제 파일은 그대로 남아있던 문제 수정.
+		//    DB 삭제가 성공했을 때만 물리 파일도 삭제 (파일이 이미 없어도 예외 없이 무시)
+		if (result > 0 && target.getFilePath() != null) {
+			File physicalFile = new File(target.getFilePath());
+			if (physicalFile.exists() && !physicalFile.delete()) {
+				System.err.println("⚠️ 물리 파일 삭제 실패 (DB는 삭제됨): " + target.getFilePath());
+			}
+		}
+
+		return result;
 	}
 
 	@Override

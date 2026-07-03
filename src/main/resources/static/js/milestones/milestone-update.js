@@ -60,12 +60,12 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 	  
 	  const statusSelect = document.getElementById("statusCode");
-
+ 
 	      function toggleStartDateLock() {
 	          if (statusSelect && startDateInput && endDateInput) {
 	              const status = statusSelect.value;
 	              const allCheckboxes = document.querySelectorAll(".issue-checkbox");
-
+ 
 	              if (status === 'L003') { // [완료 상태일 때]
 	                  // A. 날짜 필드 전체 락 (시작일 + 목표일)
 	                  startDateInput.readOnly = true;
@@ -75,19 +75,19 @@ document.addEventListener("DOMContentLoaded", function() {
 	                  endDateInput.readOnly = true;
 	                  endDateInput.style.backgroundColor = '#e9ecef';
 	                  endDateInput.style.pointerEvents = 'none';
-
+ 
 	                  // B. 일감 추가 검색창 잠금
 	                  if (issueSearchInput) {
 	                      issueSearchInput.disabled = true;
 	                      issueSearchInput.style.backgroundColor = '#e9ecef';
 	                      issueSearchInput.placeholder = '완료된 마일스톤에는 일감을 추가할 수 없습니다.';
 	                  }
-
+ 
 	                  // C. 기존 연결된 일감 체크박스 해제 잠금 (연동 해제 방지)
 	                  allCheckboxes.forEach(cb => {
 	                      cb.disabled = true;
 	                  });
-
+ 
 	              } else if (status === 'L002') { // [진행 중 상태일 때]
 	                  // 시작일만 락, 목표일은 변경 허용
 	                  startDateInput.readOnly = true;
@@ -97,14 +97,14 @@ document.addEventListener("DOMContentLoaded", function() {
 	                  endDateInput.readOnly = false;
 	                  endDateInput.style.backgroundColor = '';
 	                  endDateInput.style.pointerEvents = 'auto';
-
+ 
 	                  if (issueSearchInput) {
 	                      issueSearchInput.disabled = false;
 	                      issueSearchInput.style.backgroundColor = '';
 	                      issueSearchInput.placeholder = '일감 제목 또는 버전 입력...';
 	                  }
 	                  updateCheckboxUI(); // 일반적인 버전 체크박스 UI 잠금 상태로 갱신
-
+ 
 	              } else { // [진행 예정(L001) 등 대기 상태일 때]
 	                  // 모든 락 해제
 	                  startDateInput.readOnly = false;
@@ -114,7 +114,7 @@ document.addEventListener("DOMContentLoaded", function() {
 	                  endDateInput.readOnly = false;
 	                  endDateInput.style.backgroundColor = '';
 	                  endDateInput.style.pointerEvents = 'auto';
-
+ 
 	                  if (issueSearchInput) {
 	                      issueSearchInput.disabled = false;
 	                      issueSearchInput.style.backgroundColor = '';
@@ -124,10 +124,10 @@ document.addEventListener("DOMContentLoaded", function() {
 	              }
 	          }
 	      }
-
+ 
 	      // 1. 페이지가 처음 열렸을 때 기존 상태를 읽어서 즉시 적용
 	      toggleStartDateLock();
-
+ 
 	      // 2. 사용자가 드롭다운에서 상태를 변경할 때마다 실시간 적용
 	      if (statusSelect) {
 	          statusSelect.addEventListener('change', toggleStartDateLock);

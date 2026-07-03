@@ -13,7 +13,10 @@
 
 <body>
 	<div layout:fragment="Content">
-
+	
+	<div class="container-fluid" style="height:calc(100vh - 130px); display:flex; flex-direction:column; padding-bottom:24px;">
+   <div style="background:#fff; border-radius:12px; box-shadow:0 2px 12px rgba(0,0,0,0.08); padding:24px; flex:1; display:flex; flex-direction:column; overflow:hidden;">
+	
 		<div class="issues-create-page">
 			<div class="container-fluid">
 
@@ -46,14 +49,14 @@
 					class="page-message page-message-info issues-create-empty-action">
 					<span>프로젝트에 사용할 일감유형을 바로 배정할 수 있습니다.</span>
 					<a th:href="@{/project/{projectId}/issues/type-assign(projectId=${selectedProjectId})}"
-						class="btn btn-custon-rounded-four btn-primary btn-xs">일감유형 배정</a>
+						class="btn btn-custon-rounded-four btn-primary custom-white-btn">일감유형 배정</a>
 				</div>
 
 				<div th:if="${#lists.isEmpty(versionList)}"
 					class="page-message page-message-info issues-create-empty-action">
 					<span>선택 가능한 버전이 없습니다. 진행 중인 버전이 등록된 후 일감을 생성할 수 있습니다.</span>
 					<a th:href="@{/project/{projectId}/roadmap/setting_create(projectId=${selectedProjectId})}"
-						class="btn btn-custon-rounded-four btn-primary btn-xs">버전 등록</a>
+						class="btn btn-custon-rounded-four btn-primary custom-white-btn">버전 등록</a>
 				</div>
 
 				<div th:if="${#lists.isEmpty(priorityList)}"
@@ -244,15 +247,15 @@
 					<div class="issues-form-actions">
 						<a
 							th:href="@{/project/{projectId}/issues(projectId=${selectedProjectId})}"
-							class="btn btn-custon-rounded-four btn-default"> 취소 </a>
+							class="btn btn-custon-rounded-four btn-primary custom-white-btn"> 취소 </a>
 
 						<button type="submit" name="submitAction" value="next"
-							class="btn btn-custon-rounded-four btn-primary"
+							class="btn btn-custon-rounded-four btn-primary custom-default-btn"
 							th:disabled="${#lists.isEmpty(issueTypeList) or #lists.isEmpty(versionList) or #lists.isEmpty(priorityList)}">
 							다음</button>
 
 						<button type="submit" name="submitAction" value="finish"
-							class="btn btn-custon-rounded-four btn-primary"
+							class="btn btn-custon-rounded-four btn-primary custom-default-btn"
 							th:disabled="${#lists.isEmpty(issueTypeList) or #lists.isEmpty(versionList) or #lists.isEmpty(priorityList)}">
 							완료</button>
 					</div>
@@ -261,6 +264,8 @@
 
 			</div>
 		</div>
+	</div>
+</div>
 
 		<div id="issueLoadingOverlay" class="issues-loading-overlay" hidden
 			aria-live="polite" aria-busy="true">

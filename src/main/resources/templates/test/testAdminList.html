@@ -7,11 +7,16 @@
 <title>테스트 목록</title>
 
 <link rel="stylesheet" th:href="@{/css/test/testList.css}">
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script th:src="@{/js/common/pf-confirm.js}"></script>
 </head>
 
 <body>
 <div layout:fragment="Content">
-
+<div class="container-fluid" style="height:calc(100vh - 130px); display:flex; flex-direction:column; padding-bottom:24px;">
+   <div style="background:#fff; border-radius:12px; box-shadow:0 2px 12px rgba(0,0,0,0.08); padding:24px; flex:1; display:flex; flex-direction:column; overflow:auto;">
+	
     <div class="test-list-wrap">
 
         <div class="page-title-area">
@@ -21,7 +26,7 @@
             </div>
 
             <a th:href="@{/project/{projectId}/tests/new(projectId=${projectId})}"
-               class="btn-create">
+               class="btn btn-custon-rounded-four btn-primary custom-default-btn">
                 테스트 생성
             </a>
         </div>
@@ -244,11 +249,11 @@
 
                 <div class="search-btn-area">
                     <a th:href="@{/project/{projectId}/tests(projectId=${projectId})}"
-                       class="btn-reset">
+                       class="btn btn-custon-rounded-four btn-primary custom-white-btn">
                         초기화
                     </a>
 
-                    <button type="submit" class="btn-search">
+                    <button type="submit" class="btn btn-custon-rounded-four btn-primary custom-default-btn">
                         검색
                     </button>
                 </div>
@@ -337,7 +342,7 @@
 
                             <td>
                                 <a th:href="@{/project/{projectId}/tests/{testId}/edit(projectId=${projectId}, testId=${test.testId})}"
-                                   class="btn-row-edit">
+                                   class="btn btn-custon-rounded-four btn-primary custom-white-btn">
                                     수정
                                 </a>
                             </td>
@@ -348,12 +353,16 @@
         </section>
 
     </div>
-
+</div>
+</div>
     <script th:inline="javascript">
         const message = /*[[${message}]]*/ null;
 
         if (message != null) {
-            alert(message);
+            window.PFDialog.alert(message, {
+                title: '알림',
+                icon: 'info'
+            });
         }
 
         document.addEventListener('DOMContentLoaded', function () {

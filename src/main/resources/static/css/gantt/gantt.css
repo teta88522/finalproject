@@ -61,7 +61,7 @@
     background-color: #fcfcfc; 
     padding: 20px; 
     border-radius: 4px; 
-    border: 1px solid #e5e6e7; 
+    border: 0px solid #e5e6e7; 
     align-items: end; /* 📝 밑선 칼각 일치 */
 }
 

@@ -86,11 +86,11 @@
                             <label>연결할 버전 (로드맵) <span class="required">*</span></label>
                             <select id="versionId" name="versionId" class="form-control required-input">
                                 <option value="">버전 선택</option>
-                                <option th:each="roadmap : ${roadmapList}"
-                                        th:if="${roadmap.versionId == milestone.versionId or roadmap.statusCode != 'k003'}"
-                                        th:value="${roadmap.versionId}"
-                                        th:text="${roadmap.versionName}"
-                                        th:selected="${roadmap.versionId == milestone.versionId}"></option>
+                                 <option th:each="roadmap : ${roadmapList}"
+                                         th:if="${roadmap.versionId == milestone.versionId or roadmap.statusCode != 'k003'}"
+                                         th:value="${roadmap.versionId}"
+                                         th:text="${roadmap.versionName}"
+                                         th:selected="${roadmap.versionId == milestone.versionId}"></option>
                             </select>
                         </div>
 

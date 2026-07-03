@@ -3,153 +3,515 @@
 
 <mapper namespace="com.pixcel.app.workhistory.mapper.WorkhistoryMapper">
 
-	<!--
-		작업내역 XML 작성 가이드
+	<!-- 작업내역 목록/필터 조회 쿼리. -->
 
-		주의:
-		- 현재 파일은 SQL을 직접 작성하지 않은 뼈대입니다.
-		- SQL을 넣기 전까지 WorkhistoryServiceImpl에서는 mapper 호출을 주석 처리해두었습니다.
-		- SQL 작성 후 ServiceImpl의 TODO 위치에서 mapper 호출 코드를 연결하면 됩니다.
-	-->
+	<sql id="historyChangeTypeLabel">
+		case h.change_type_code
+		when 'M001' then '일감 생성'
+		when 'M002' then '일감 수정'
+		when 'M003' then '일감 삭제'
+		when 'M004' then '파일 추가'
+		when 'M005' then '파일 삭제'
+		else h.change_type_code
+		end
+	</sql>
 
-	<!--
-		selectProjectAccess
+	<sql id="historyFieldLabel">
+		nvl(h.field_name,
+		case h.field_code
+		when 'ISSUE' then '일감'
+		when 'TITLE' then '제목'
+		when 'DESCRIPTION' then '설명'
+		when 'STATUS' then '상태'
+		when 'PRIORITY' then '우선순위'
+		when 'ASSIGNEE' then '담당자'
+		when 'PROGRESS_RATE' then '진척도'
+		when 'ESTIMATED_HOURS' then '추정시간'
+		when 'START_DATE' then '시작일'
+		when 'DUE_DATE' then '완료기한'
+		when 'MILESTONE' then '마일스톤'
+		when 'PARENT_ISSUE' then '상위일감'
+		when 'ATTACH_FILE' then '첨부파일'
+		else h.field_code
+		end)
+	</sql>
 
-		목적:
-		- 프로젝트 접근 가능 여부 확인
-		- 화면 상단 projectInfo 구성
+	<!-- 작업내역 이력 검색 조건. -->
+	<sql id="workhistoryHistoryFilters">
+		<if test="startDate != null">
+			and h.changed_at &gt;= #{startDate}
+		</if>
 
-		필요 컬럼:
-		- project_id
-		- project_name
-		- owner_id
+		<if test="endDate != null">
+			and h.changed_at &lt; #{endDate} + 1
+		</if>
 
-		조건:
-		- p.project_id = #{projectId}
-		- p.owner_id = #{userId}
-		  또는 project_member + team_member 기준으로 프로젝트 멤버인 경우
+		<if test="changeTypeCodeList != null and changeTypeCodeList.size() &gt; 0">
+			and h.change_type_code in
+			<foreach collection="changeTypeCodeList" item="changeTypeCode" open="(" separator="," close=")">
+				#{changeTypeCode}
+			</foreach>
+		</if>
 
-		결과:
-		- 접근 가능하면 1 row
-		- 접근 불가능하면 0 row
-	-->
+		<if test="fieldCodeList != null and fieldCodeList.size() &gt; 0">
+			and h.field_code in
+			<foreach collection="fieldCodeList" item="fieldCode" open="(" separator="," close=")">
+				#{fieldCode}
+			</foreach>
+		</if>
 
-	<!--
-		selectWorkhistoryPageIds
+		<if test="changedByList != null and changedByList.size() &gt; 0">
+			and h.changed_by in
+			<foreach collection="changedByList" item="changedBy" open="(" separator="," close=")">
+				#{changedBy}
+			</foreach>
+		</if>
+	</sql>
 
-		목적:
-		- 작업내역 목록 페이징용 history_id만 먼저 조회
+	<!-- 연결 일감 검색 조건. -->
+	<sql id="workhistoryIssueWhere">
+		<if test="keyword != null and keyword != ''">
+			and (
+			to_char(i.issue_no) like '%' || #{keyword} || '%'
+			or '#' || lpad(to_char(i.issue_no), 4, '0') like '%' || #{keyword} || '%'
+			or lower(i.title) like '%' || lower(#{keyword}) || '%'
+			)
+		</if>
+		<if test="issueTypeIdList != null and issueTypeIdList.size() &gt; 0">
+			and i.issue_type_id in
+			<foreach collection="issueTypeIdList" item="issueTypeId" open="(" separator="," close=")">
+				#{issueTypeId}
+			</foreach>
+		</if>
 
-		필요 컬럼:
-		- history_id
-		- row_no
+		<if test="issueStatusIdList != null and issueStatusIdList.size() &gt; 0">
+			and i.issue_status_id in
+			<foreach collection="issueStatusIdList" item="issueStatusId" open="(" separator="," close=")">
+				#{issueStatusId}
+			</foreach>
+		</if>
 
-		검색 조건:
-		- project_id
-		- startDate ~ endDate: h.changed_at 기준
-		- keyword: issue_no 또는 issue.title
-		- changeTypeCodeList: h.change_type_code
-		- fieldCodeList: h.field_code
-		- changedByList: h.changed_by
-		- issueTypeIdList: i.issue_type_id
-		- issueStatusIdList: i.issue_status_id
-		- settingCodeIdList: i.setting_code_id
+		<if test="settingCodeIdList != null and settingCodeIdList.size() &gt; 0">
+			and i.setting_code_id in
+			<foreach collection="settingCodeIdList" item="settingCodeId" open="(" separator="," close=")">
+				#{settingCodeId}
+			</foreach>
+		</if>
+	</sql>
 
-		성능 기준:
-		- 전체 COUNT(*) 하지 않기
-		- 상세 join 전에 history_id만 조회
-		- #{startRow} ~ #{endRow} 범위까지만 조회
-		- 정렬은 h.changed_at desc, h.history_id desc
-	-->
+	<select id="selectProjectAccess" resultType="WorkhistoryVO">
+		select
+		p.project_id,
+		p.project_name,
+		p.owner_id
+		from project p
+		where p.project_id = #{projectId}
+		and (
+		p.owner_id = #{userId}
+		or exists (
+		select 1
+		from project_member pm
+		join team_member tm
+		on pm.team_member_id = tm.team_member_id
+		where pm.project_id = p.project_id
+		and tm.user_id = #{userId}
+		)
+		)
+	</select>
 
-	<!--
-		selectWorkhistoryRowsByIds
+	<!-- 작업내역 목록 페이징용 history_id 선조회. -->
+	<select id="selectWorkhistoryPageIds" parameterType="WorkhistoryVO" resultType="WorkhistoryVO">
+		select
+		row_no,
+		history_id
+		from (
+		select
+		rownum as row_no,
+		page_source.history_id
+		from (
+		select
+		/*+ index(h IDX_ISSUE_HISTORY_RECENT_ISSUE) */
+		h.history_id
+		from issue_history h
+		where exists (
+		select /*+ index(i IDX_ISSUE_PROJECT_ID) */ 1
+		from issue i
+		where i.issue_id = h.issue_id
+		and i.project_id = #{projectId}
+		<include refid="workhistoryIssueWhere" />
+		)
+		<include refid="workhistoryHistoryFilters" />
+		order by h.changed_at desc, h.history_id desc
+		) page_source
+		where rownum &lt;= #{endRow}
+		)
+		where row_no &gt;= #{startRow}
+		order by row_no asc
+	</select>
 
-		목적:
-		- 현재 페이지에 표시할 상세 row 조회
+	<!-- 현재 페이지 작업내역 목록 row 표시정보 조회. -->
+	<select id="selectWorkhistoryRowsByIds" resultType="WorkhistoryVO">
+		select
+		/*+ leading(h) use_nl(i u it) */
+		h.history_id,
+		nvl(h.history_group_id, h.history_id) as history_group_id,
+		h.changed_at,
+		h.changed_by,
+		u.user_name as changed_by_name,
+		h.change_type_code,
+		<include refid="historyChangeTypeLabel" /> as change_type_name,
+		<include refid="historyChangeTypeLabel" /> as change_type_display_name,
+		h.field_code,
+		<include refid="historyFieldLabel" /> as field_name,
+		h.before_value,
+		h.after_value,
+		h.reason,
+		i.issue_id,
+		i.issue_no,
+		'#' || lpad(to_char(i.issue_no), 4, '0') as display_issue_no,
+		i.title as issue_title,
+		i.issue_type_id,
+		it.issue_type_name,
+		i.issue_status_id,
+		i.setting_code_id
+		from (
+		select
+		h.history_id,
+		h.history_group_id,
+		h.changed_at,
+		h.changed_by,
+		h.change_type_code,
+		h.field_code,
+		h.field_name,
+		h.before_value,
+		h.after_value,
+		h.reason,
+		h.issue_id
+		from issue_history h
+		where h.history_id in
+		<foreach collection="historyIdList" item="historyId" open="(" separator="," close=")">
+			#{historyId}
+		</foreach>
+		) h
+		join issue i
+		on h.issue_id = i.issue_id
+		and i.project_id = #{projectId}
+		left join users u
+		on h.changed_by = u.user_id
+		left join issue_type it
+		on i.issue_type_id = it.issue_type_id
+		order by h.changed_at desc, h.history_id desc
+	</select>
 
-		필요 컬럼:
-		- h.history_id
-		- h.history_group_id
-		- h.changed_at
-		- h.changed_by
-		- changed_by_name
-		- h.change_type_code
-		- change_type_display_name
-		- h.field_code
-		- h.field_name
-		- h.before_value
-		- h.after_value
-		- h.reason
-		- i.issue_id
-		- i.issue_no
-		- display_issue_no
-		- i.title as issue_title
-		- i.issue_type_id
-		- issue_type_name
-		- i.issue_status_id
-		- issue_status_name
-		- i.setting_code_id
-		- setting_name
+	<!-- 검색 후 선택된 필터 표시명 조회. -->
+	<select id="selectSelectedFilterRows" parameterType="WorkhistoryVO" resultType="WorkhistoryVO">
+		select *
+		from (
+		select
+		'CHANGE_TYPE' as option_group,
+		change_type_code as option_value,
+		change_type_name as option_label,
+		1 as option_sort,
+		row_sort
+		from (
+		select 'M001' as change_type_code, '일감 생성' as change_type_name, 1 as row_sort from dual
+		union all select 'M002', '일감 수정', 2 from dual
+		union all select 'M003', '일감 삭제', 3 from dual
+		union all select 'M004', '파일 추가', 4 from dual
+		union all select 'M005', '파일 삭제', 5 from dual
+		)
+		<choose>
+			<when test="changeTypeCodeList != null and changeTypeCodeList.size() &gt; 0">
+				where change_type_code in
+				<foreach collection="changeTypeCodeList" item="changeTypeCode" open="(" separator="," close=")">
+					#{changeTypeCode}
+				</foreach>
+			</when>
+			<otherwise>
+				where 1 = 0
+			</otherwise>
+		</choose>
 
-		조건:
-		- i.project_id = #{projectId}
-		- h.history_id in historyIdList
+		union all
 
-		성능 기준:
-		- historyIdList에 해당하는 10건 내외만 상세 join
-		- 화면에 없는 컬럼은 select하지 않기
-	-->
+		select distinct
+		'FIELD' as option_group,
+		h.field_code as option_value,
+		<include refid="historyFieldLabel" /> as option_label,
+		2 as option_sort,
+		1 as row_sort
+		from issue_history h
+		join issue i
+		on h.issue_id = i.issue_id
+		where i.project_id = #{projectId}
+		<choose>
+			<when test="fieldCodeList != null and fieldCodeList.size() &gt; 0">
+				and h.field_code in
+				<foreach collection="fieldCodeList" item="fieldCode" open="(" separator="," close=")">
+					#{fieldCode}
+				</foreach>
+			</when>
+			<otherwise>
+				and 1 = 0
+			</otherwise>
+		</choose>
 
-	<!--
-		selectSelectedFilterRows
+		union all
 
-		목적:
-		- 검색 후 필터 summary에 표시할 선택값 이름 조회
+		select
+		'CHANGED_BY' as option_group,
+		u.user_id as option_value,
+		u.user_name as option_label,
+		3 as option_sort,
+		1 as row_sort
+		from users u
+		where exists (
+		select 1
+		from issue_history h
+		join issue i
+		on h.issue_id = i.issue_id
+		where i.project_id = #{projectId}
+		and h.changed_by = u.user_id
+		)
+		<choose>
+			<when test="changedByList != null and changedByList.size() &gt; 0">
+				and u.user_id in
+				<foreach collection="changedByList" item="changedBy" open="(" separator="," close=")">
+					#{changedBy}
+				</foreach>
+			</when>
+			<otherwise>
+				and 1 = 0
+			</otherwise>
+		</choose>
 
-		반환 형태:
-		- option_group
-		- option_value
-		- option_label
+		union all
 
-		option_group 예:
-		- CHANGE_TYPE
-		- FIELD
-		- CHANGED_BY
-		- ISSUE_TYPE
-		- STATUS
-		- PRIORITY
+		select
+		'ISSUE_TYPE' as option_group,
+		it.issue_type_id as option_value,
+		it.issue_type_name as option_label,
+		4 as option_sort,
+		1 as row_sort
+		from issue_type it
+		where exists (
+		select 1
+		from issue_history h
+		join issue i
+		on h.issue_id = i.issue_id
+		where i.project_id = #{projectId}
+		and i.issue_type_id = it.issue_type_id
+		)
+		<choose>
+			<when test="issueTypeIdList != null and issueTypeIdList.size() &gt; 0">
+				and it.issue_type_id in
+				<foreach collection="issueTypeIdList" item="issueTypeId" open="(" separator="," close=")">
+					#{issueTypeId}
+				</foreach>
+			</when>
+			<otherwise>
+				and 1 = 0
+			</otherwise>
+		</choose>
 
-		주의:
-		- 선택된 필터가 있을 때만 실행
-		- 전체 옵션 조회와 분리
-	-->
+		union all
 
-	<!--
-		selectFilterOptionRows
+		select
+		'STATUS' as option_group,
+		ist.issue_status_id as option_value,
+		ist.status_name as option_label,
+		5 as option_sort,
+		1 as row_sort
+		from issue_status ist
+		where exists (
+		select 1
+		from issue_history h
+		join issue i
+		on h.issue_id = i.issue_id
+		where i.project_id = #{projectId}
+		and i.issue_status_id = ist.issue_status_id
+		)
+		<choose>
+			<when test="issueStatusIdList != null and issueStatusIdList.size() &gt; 0">
+				and ist.issue_status_id in
+				<foreach collection="issueStatusIdList" item="issueStatusId" open="(" separator="," close=")">
+					#{issueStatusId}
+				</foreach>
+			</when>
+			<otherwise>
+				and 1 = 0
+			</otherwise>
+		</choose>
 
-		목적:
-		- /project/{projectId}/workhistory/filter-options Ajax용 전체 필터 옵션 조회
+		union all
 
-		반환 형태:
-		- option_group
-		- option_value
-		- option_label
-		- option_sort
-		- row_sort
+		select
+		'PRIORITY' as option_group,
+		sc.setting_code_id as option_value,
+		sc.setting_name as option_label,
+		6 as option_sort,
+		1 as row_sort
+		from setting_code sc
+		where exists (
+		select 1
+		from issue_history h
+		join issue i
+		on h.issue_id = i.issue_id
+		where i.project_id = #{projectId}
+		and i.setting_code_id = sc.setting_code_id
+		)
+		<choose>
+			<when test="settingCodeIdList != null and settingCodeIdList.size() &gt; 0">
+				and sc.setting_code_id in
+				<foreach collection="settingCodeIdList" item="settingCodeId" open="(" separator="," close=")">
+					#{settingCodeId}
+				</foreach>
+			</when>
+			<otherwise>
+				and 1 = 0
+			</otherwise>
+		</choose>
+		)
+		order by option_sort, option_label
+	</select>
 
-		option_group별 내용:
-		- CHANGE_TYPE: 작업내역 변경유형
-		- FIELD: 변경항목
-		- CHANGED_BY: 프로젝트 내 작업자
-		- ISSUE_TYPE: 프로젝트에 연결된 일감 유형
-		- STATUS: 일감 상태
-		- PRIORITY: 우선순위 setting_code
+	<!-- 작업내역 필터 옵션 Ajax 조회. -->
+	<select id="selectFilterOptionRows" resultType="WorkhistoryVO">
+		with project_history as (
+		select /*+ materialize leading(i) use_nl(h) index(i IDX_ISSUE_PROJECT_ID) index(h IDX_ISSUE_HISTORY_ISSUE_RECENT) */
+		h.change_type_code,
+		h.field_code,
+		h.field_name,
+		h.changed_by,
+		i.issue_type_id,
+		i.issue_status_id,
+		i.setting_code_id
+		from issue i
+		join issue_history h
+		on h.issue_id = i.issue_id
+		where i.project_id = #{projectId}
+		),
+		change_type_options as (
+		select 'M001' as change_type_code, '일감 생성' as change_type_name, 1 as row_sort from dual
+		union all select 'M002', '일감 수정', 2 from dual
+		union all select 'M003', '일감 삭제', 3 from dual
+		union all select 'M004', '파일 추가', 4 from dual
+		union all select 'M005', '파일 삭제', 5 from dual
+		)
+		select *
+		from (
+		select
+		'CHANGE_TYPE' as option_group,
+		ct.change_type_code as option_value,
+		ct.change_type_name as option_label,
+		1 as option_sort,
+		ct.row_sort
+		from change_type_options ct
+		where exists (
+		select 1
+		from project_history ph
+		where ph.change_type_code = ct.change_type_code
+		)
 
-		주의:
-		- 최초 HTML 렌더링 때 호출하지 않기
-		- 드롭다운 열 때 Ajax로만 호출
-		- 느리면 프로젝트 단위 캐싱 후보
-	-->
+		union all
+
+		select
+		'FIELD' as option_group,
+		field_code as option_value,
+		field_name as option_label,
+		2 as option_sort,
+		row_number() over (order by field_name, field_code) as row_sort
+		from (
+		select distinct
+		ph.field_code,
+		nvl(ph.field_name,
+		case ph.field_code
+		when 'ISSUE' then '일감'
+		when 'TITLE' then '제목'
+		when 'DESCRIPTION' then '설명'
+		when 'STATUS' then '상태'
+		when 'PRIORITY' then '우선순위'
+		when 'ASSIGNEE' then '담당자'
+		when 'PROGRESS_RATE' then '진척도'
+		when 'ESTIMATED_HOURS' then '추정시간'
+		when 'START_DATE' then '시작일'
+		when 'DUE_DATE' then '완료기한'
+		when 'MILESTONE' then '마일스톤'
+		when 'PARENT_ISSUE' then '상위일감'
+		when 'ATTACH_FILE' then '첨부파일'
+		else ph.field_code
+		end) as field_name
+		from project_history ph
+		where ph.field_code is not null
+		)
+
+		union all
+
+		select
+		'CHANGED_BY' as option_group,
+		changed_by as option_value,
+		changed_by_name as option_label,
+		3 as option_sort,
+		row_number() over (order by changed_by_name, changed_by) as row_sort
+		from (
+		select distinct
+		ph.changed_by,
+		nvl(u.user_name, ph.changed_by) as changed_by_name
+		from project_history ph
+		left join users u
+		on ph.changed_by = u.user_id
+		where ph.changed_by is not null
+		)
+
+		union all
+
+		select
+		'ISSUE_TYPE' as option_group,
+		it.issue_type_id as option_value,
+		it.issue_type_name as option_label,
+		4 as option_sort,
+		row_number() over (order by it.issue_type_name, it.issue_type_id) as row_sort
+		from (
+		select distinct issue_type_id
+		from project_history
+		where issue_type_id is not null
+		) ph
+		join issue_type it
+		on ph.issue_type_id = it.issue_type_id
+
+		union all
+
+		select
+		'STATUS' as option_group,
+		ist.issue_status_id as option_value,
+		ist.status_name as option_label,
+		5 as option_sort,
+		row_number() over (order by ist.issue_status_id) as row_sort
+		from (
+		select distinct issue_status_id
+		from project_history
+		where issue_status_id is not null
+		) ph
+		join issue_status ist
+		on ph.issue_status_id = ist.issue_status_id
+
+		union all
+
+		select
+		'PRIORITY' as option_group,
+		sc.setting_code_id as option_value,
+		sc.setting_name as option_label,
+		6 as option_sort,
+		row_number() over (order by sc.default_yn desc, sc.setting_code_id) as row_sort
+		from (
+		select distinct setting_code_id
+		from project_history
+		where setting_code_id is not null
+		) ph
+		join setting_code sc
+		on ph.setting_code_id = sc.setting_code_id
+		)
+		order by option_sort, row_sort
+	</select>
 
 </mapper>

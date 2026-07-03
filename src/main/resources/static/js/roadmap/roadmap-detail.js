@@ -26,6 +26,7 @@ document.addEventListener("DOMContentLoaded", function() {
     roadmapData.milestoneList.forEach(milestone => {
         if(milestone.issueList) {
             milestone.issueList.forEach(issue => {
+                if (!issue.issueId) return; // 빈 일감 객체 필터링
                 totalIssues++; // 일감 갯수 +1
                 totalProgressSum += (issue.progressRate || 0); // 진행률 누적
                 totalEstimateSum += (issue.estimatedHours || 0); // 예상시간 누적
@@ -65,18 +66,26 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     }
     
-    // 📝 완료 버튼 클릭 시 확인 알림창 작동 및 폼 서브밋 연동
+    // 📝 완료 버튼 클릭 시 확인 알림창 작동 및 폼 서브밋 연동 (PFDialog.confirm 적용 및 중복클릭 방지)
     if (btnComplete) {
         btnComplete.addEventListener("click", function() {
-            if (confirm("완료를 누르시면 더 이상 수정이 안됩니다. 계속하시겠습니까?")) {
-                const completeForm = document.getElementById('completeRoadmapForm');
-                if (completeForm) {
-                    completeForm.submit();
+            window.PFDialog.confirm({
+                title: '로드맵 완료',
+                message: '완료를 누르시면 더 이상 수정이 안됩니다. 계속하시겠습니까?',
+                confirmText: '완료',
+                icon: 'warning'
+            }).then(function(confirmed) {
+                if (confirmed) {
+                    btnComplete.disabled = true;
+                    
+                    const completeForm = document.getElementById('completeRoadmapForm');
+                    if (completeForm) {
+                        completeForm.submit();
+                    }
                 }
-            }
+            });
         });
     }
-
     // --- [3] 우측 차트 텍스트 업데이트 ---
     document.getElementById('mainProgressText').innerText = avgProgress + '%';
     document.getElementById('progressBreakdownText').innerHTML = 
@@ -159,6 +168,7 @@ document.addEventListener("DOMContentLoaded", function() {
 	        roadmapData.milestoneList.forEach(milestone => {
 	            if(milestone.issueList) {
 	                milestone.issueList.forEach(issue => {
+	                    if (!issue.issueId) return; // 📝 수정: 빈 일감 객체 필터링
 	                    const statusName = issue.issueStatusName || '';
 	                    
 	                    // 완료 상태거나 진척도가 100%면 제외, 목표일자가 없으면 제외

@@ -86,7 +86,6 @@
 				    value="Y"
 				    class="form-checkbox"
 				    th:checked="${roadmap.defaultYn == 'Y'}"
-				    th:onclick="${roadmap.defaultYn == 'Y'} ? 'alert(&quot;기본(Default) 버전은 여기서 직접 해제할 수 없습니다.\n다른 버전을 기본으로 설정하면 자동으로 해제됩니다.&quot;); return false;' : ''"
 				    th:style="${roadmap.defaultYn == 'Y'} ? 'cursor: not-allowed; opacity: 0.6;' : ''"
 				  />
 				  <label for="defaultYn">
@@ -138,7 +137,11 @@
         </div>
       </div>
 
+      <!-- SweetAlert2 및 공통 다이얼로그 추가 -->
+      <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+      <script th:src="@{/js/common/pf-confirm.js}"></script>
       <script th:src="@{/js/roadmap/setting-update.js}"></script>
+      
     </div>
   </body>
 </html>

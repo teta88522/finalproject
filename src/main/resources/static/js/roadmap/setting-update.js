@@ -66,10 +66,18 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
-        // 1-5. 최종 확인 후 폼 전송
-        if(confirm('수정된 내용을 저장하시겠습니까?')) {
-            updateForm.submit();
-        }
+        // 1-5. 최종 확인 후 폼 전송 (PFDialog.confirm 사용 및 더블클릭 방지만 유지)
+        window.PFDialog.confirm({
+            title: '수정 확인',
+            message: '수정된 내용을 저장하시겠습니까?',
+            confirmText: '저장',
+            icon: 'question'
+        }).then(function(confirmed) {
+            if (confirmed) {
+                btnSubmit.disabled = true; 
+                updateForm.submit();
+            }
+        });
     });
 
     // 2. [삭제] 버튼 클릭 시 2단계 사전 예방 차단기 구동 및 폼 전송
@@ -81,20 +89,34 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // 🛡️ 1차 차단: 기본(Default) 버전 삭제 차단
             if (defaultYn === 'Y') {
-                alert("기본(Default) 버전으로 설정된 로드맵은 삭제할 수 없습니다.\n삭제하시려면 다른 로드맵을 기본 버전으로 먼저 변경해 주세요.");
+                window.PFDialog.alert("기본(Default) 버전으로 설정된 로드맵은 삭제할 수 없습니다.\n삭제하시려면 다른 로드맵을 기본 버전으로 먼저 변경해 주세요.", {
+                    title: '삭제 불가',
+                    icon: 'error'
+                });
                 return;
             }
 
             // 🛡️ 2차 차단: 하위 항목(일감 또는 마일스톤) 잔존 시 삭제 차단
             if (issueCount > 0 || milestoneCount > 0) {
-                alert("하위 항목(일감 또는 마일스톤)이 존재하는 로드맵은 삭제할 수 없습니다.\n(현재 연결된 일감: " + issueCount + "개, 마일스톤: " + milestoneCount + "개)");
+                window.PFDialog.alert("하위 항목(일감 또는 마일스톤)이 존재하는 로드맵은 삭제할 수 없습니다.\n(현재 연결된 일감: " + issueCount + "개, 마일스톤: " + milestoneCount + "개)", {
+                    title: '삭제 불가',
+                    icon: 'error'
+                });
                 return;
             }
 
-            // 안전 검사 모두 통과 시에만 최종 확인 후 삭제 진행
-            if(confirm('정말 이 로드맵을 삭제하시겠습니까?')) {
-                deleteForm.submit();
-            }
+            // 안전 검사 모두 통과 시에만 최종 확인 후 삭제 진행 (PFDialog.confirm 사용 및 더블클릭 방지)
+            window.PFDialog.confirm({
+                title: '삭제 확인',
+                message: '정말 이 로드맵을 삭제하시겠습니까?',
+                confirmText: '삭제',
+                icon: 'warning'
+            }).then(function(confirmed) {
+                if (confirmed) {
+                    btnDelete.disabled = true;
+                    deleteForm.submit();
+                }
+            });
         });
     }
 
@@ -108,4 +130,20 @@ document.addEventListener('DOMContentLoaded', function() {
         this.classList.remove("border-red");
         if (descriptionErrorDiv) descriptionErrorDiv.style.display = "none";
     });
+
+    // 4. 기본(Default) 버전 체크박스 수동 해제 차단 (PFDialog.alert 사용)
+    if (checkbox && btnDelete) {
+        const defaultYn = btnDelete.getAttribute('data-default-yn') || 'N';
+        if (defaultYn === 'Y') {
+            checkbox.addEventListener('click', function(e) {
+                // 클릭에 의한 체크 해제 동작을 취소합니다.
+                e.preventDefault();
+                
+                window.PFDialog.alert("기본(Default) 버전은 여기서 직접 해제할 수 없습니다.\n다른 버전을 기본으로 설정하면 자동으로 해제됩니다.", {
+                    title: '알림',
+                    icon: 'warning'
+                });
+            });
+        }
+    }
 });

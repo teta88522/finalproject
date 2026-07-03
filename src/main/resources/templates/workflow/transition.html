@@ -12,7 +12,9 @@
 
 <body>
 	<div layout:fragment="Content">
-
+	<div class="container-fluid" style="height:calc(100vh - 130px); display:flex; flex-direction:column; padding-bottom:24px;">
+   <div style="background:#fff; border-radius:12px; box-shadow:0 2px 12px rgba(0,0,0,0.08); padding:24px; flex:1; display:flex; flex-direction:column; overflow:hidden;">
+	
 		<div class="workflow-transition-page">
 			<div class="container-fluid">
 
@@ -28,7 +30,7 @@
 					============================== -->
 					<div class="workflow-header-actions">
 						<a th:href="@{/workflow/list}"
-							class="btn btn-custon-rounded-four btn-default"> 목록 </a>
+							class="btn btn-custon-rounded-four btn-primary custom-white-btn"> 목록 </a>
 					</div>
 				</div>
 
@@ -123,7 +125,7 @@
 								초기화 </a>
 
 							<button type="submit"
-								class="btn btn-custon-rounded-four btn-primary filter-btn">
+								class="btn btn-custon-rounded-four btn-primary custom-default-btn">
 								검색</button>
 						</div>
 					</form>
@@ -323,7 +325,7 @@
 								data-workflow-clear-draft="current"> 초기화 </a>
 
 							<button type="submit"
-								class="btn btn-custon-rounded-four btn-primary"
+								class="btn btn-custon-rounded-four btn-primary custom-default-btn"
 								th:disabled="${#lists.isEmpty(issueTypeList)
 									or #lists.isEmpty(roleList)
 									or #lists.isEmpty(fromStatusList)
@@ -343,6 +345,8 @@
 				</div>
 
 			</div>
+		</div>
+		</div>
 		</div>
 
 		<!-- ==============================

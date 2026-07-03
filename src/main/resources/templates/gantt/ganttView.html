@@ -17,6 +17,7 @@
 			<div class="kiaalap-panel main-box">
 			    <div class="main-header">
 			        <h2>간트차트</h2>
+			        <p>프로젝트 내의 마일스톤과 일감을 간트차트로 확인할 수 있습니다.</p>
 			    </div>
 			</div>
 			
@@ -28,25 +29,25 @@
 			    
 			    <div class="js-filter-row">
 			        <div class="js-filter-group">
-			            <label><i class="fas fa-cube"></i> 마일스톤</label>
+			            <label> 마일스톤</label>
 			            <select id="f_milestone">
 			                <option value="all">전체 마일스톤</option>
 			            </select>
 			        </div>
 			        <div class="js-filter-group">
-			            <label><i class="fas fa-info-circle"></i> 상태</label>
+			            <label> 상태</label>
 			            <select id="f_status">
 			                <option value="all">전체 상태</option>
 			            </select>
 			        </div>
 			        <div class="js-filter-group">
-			            <label><i class="fas fa-user"></i> 담당자</label>
+			            <label> 담당자</label>
 			            <select id="f_assignee">
 			                <option value="all">전체 담당자</option>
 			            </select>
 			        </div>
 			        <div class="js-filter-group search-group">
-			            <label><i class="fas fa-search"></i> 일감 검색</label>
+			            <label> 일감 검색</label>
 			            <input type="text" id="f_text" placeholder="일감 제목 입력..." autocomplete="off" />
 			        </div>
 			        <div class="js-filter-group date-group">
@@ -68,8 +69,8 @@
 			
 			<!-- [수정]: 필터 아래, 간트차트 위에 우측 정렬로 깔끔하게 배치되는 ➕/➖ 버튼 -->
 			<div class="gantt-toolbar">
-				<button type="button" id="btnZoomIn" class="btn btn-default btn-sm">➕ 미래 +15일</button>
-				<button type="button" id="btnZoomOut" class="btn btn-default btn-sm">➖ 과거 -15일</button>
+				<button type="button" id="btnZoomIn" class="btn btn-default btn-sm">➕ 15일</button>
+				<button type="button" id="btnZoomOut" class="btn btn-default btn-sm">➖ 15일</button>
 			</div>
 			
 			<!-- 간트차트 컨테이너 -->

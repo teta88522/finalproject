@@ -12,7 +12,9 @@
 
 <body>
 	<div layout:fragment="Content">
-
+	<div class="container-fluid" style="height:calc(100vh - 130px); display:flex; flex-direction:column; padding-bottom:24px;">
+   <div style="background:#fff; border-radius:12px; box-shadow:0 2px 12px rgba(0,0,0,0.08); padding:24px; flex:1; display:flex; flex-direction:column; overflow:auto;">
+	
 		<div class="issue-status-page issue-status-list-page">
 			<div class="container-fluid">
 
@@ -21,15 +23,15 @@
 						<h3>일감 상태</h3>
 						<p>일감에서 사용할 상태를 관리합니다.</p>
 					</div>
+						<a th:href="@{/issuestatus/create}"
+							class="btn btn-custon-rounded-four custom-default-btn">
+							상태 추가 </a>
 				</div>
 
 				<div class="search-section issuestatus-search">
 					<div class="search-header">
 						<div class="search-title">검색조건</div>
 
-						<a th:href="@{/issuestatus/create}"
-							class="btn btn-custon-rounded-four btn-primary search-action-btn">
-							상태 추가 </a>
 					</div>
 
 					<form th:action="@{/issuestatus/list}" method="get">
@@ -65,11 +67,11 @@
 
 						<div class="search-btn-area">
 							<a th:href="@{/issuestatus/list}"
-								class="btn btn-custon-rounded-four btn-default filter-btn">
+								class="btn btn-custon-rounded-four btn-primary custom-white-btn">
 								초기화 </a>
 
 							<button type="submit"
-								class="btn btn-custon-rounded-four btn-primary filter-btn">
+								class="btn btn-custon-rounded-four btn-primary custom-default-btn">
 								검색</button>
 						</div>
 					</form>
@@ -131,7 +133,7 @@
 
 									<td>
 										<div class="table-actions">
-											<a class="btn btn-custon-rounded-four btn-default"
+											<a class="btn btn-custon-rounded-four btn-primary custom-white-btn"
 												th:href="@{/issuestatus/update(issueStatusId=${status.issueStatusId})}">
 												수정 </a>
 
@@ -145,7 +147,7 @@
 													th:value="${status.issueStatusId}">
 
 												<button type="submit"
-													class="btn btn-custon-rounded-four btn-danger">삭제
+													class="btn btn-custon-rounded-four btn-danger custom-btn">삭제
 												</button>
 											</form>
 										</div>
@@ -158,6 +160,8 @@
 
 			</div>
 		</div>
+	</div>
+</div>
 
 	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 	<script th:src="@{/js/common/pf-confirm.js}"></script>

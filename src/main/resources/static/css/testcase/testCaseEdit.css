@@ -1,6 +1,5 @@
 .testcase-create-page {
     padding: 20px;
-    background-color: #fff;
     min-height: calc(100vh - 80px);
     box-sizing: border-box;
 }

@@ -37,7 +37,7 @@
     background-color: #fcfcfc; 
     padding: 20px; 
     border-radius: 4px; 
-    border: 1px solid #e5e6e7; 
+    border: 0px solid #e5e6e7; 
     align-items: end; /* 📝 아래 밑선을 칼각으로 일치 */
 }
 

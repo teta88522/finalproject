@@ -1,333 +1,317 @@
 <!doctype html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{common/layouts/default_layout}">
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{common/layouts/default_layout}">
 <head>
 <meta charset="UTF-8">
 <title>역할 및 권한</title>
 
 <link rel="stylesheet" th:href="@{/css/roles/rolesList.css}">
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script th:src="@{/js/common/pf-confirm.js}"></script>
 </head>
 
 <body>
-<div layout:fragment="Content">
+	<div layout:fragment="Content">
 
-    <div class="role-list-page">
+		<div class="role-list-page">
 
-        <h1 class="role-page-title">역할</h1>
+			<h1 class="role-page-title">역할</h1>
 
-        <!-- 검색 영역 : 기능은 나중에 연결 -->
-        <div class="search-section">
-            <div class="search-header">
-                <div class="search-title">검색조건</div>
+			<!-- 검색 영역 -->
+			<form class="search-section" th:action="@{/roles}" method="get"
+				th:object="${roleSearchVO}">
 
-                <button type="button"
-                        class="add-role-btn"
-                        onclick="location.href='/roles/new'">
-                    역할 추가
-                </button>
-            </div>
+				<div class="search-header">
+					<div class="search-title">검색조건</div>
 
-            <div class="search-form-row">
-                <label for="roleName">역할 명</label>
-                <input type="text"
-                       id="roleName"
-                       name="roleName"
-                       placeholder="input">
+					<button type="button" class="add-role-btn"
+						onclick="location.href='/roles/new'">역할 추가</button>
+				</div>
 
-                <label for="userName">이름</label>
-                <input type="text"
-                       id="userName"
-                       name="userName"
-                       placeholder="input">
+				<div class="search-form-row">
+					<div class="search-item">
+						<label for="roleName">역할 명</label>
+						<input type="text" id="roleName"
+							th:field="*{roleName}" placeholder="역할명을 입력하세요">
+					</div>
 
-                <select>
-                    <option>선택</option>
-                </select>
-            </div>
+					<div class="search-item">
+						<label for="userName">이름</label>
+						<input type="text" id="userName"
+							th:field="*{userName}" placeholder="구성원 이름을 입력하세요">
+					</div>
+				</div>
 
-            <div class="search-btn-area">
-                <button type="button" class="btn-basic">clean</button>
-                <button type="button" class="btn-basic btn-primary">apply</button>
-            </div>
-        </div>
+				<div class="search-btn-area">
+					<button type="button" class="btn-basic"
+						onclick="location.href='/roles'">초기화</button>
 
-        <!-- 목록/구성원 영역 -->
-        <div class="content-grid">
+					<button type="submit" class="btn-basic btn-primary">검색</button>
+				</div>
+			</form>
 
-            <!-- 역할 목록 -->
-            <div class="content-panel">
-                <div class="panel-header">
-                    <div class="panel-title">역할 목록</div>
-                    <div class="panel-sub-text">역할 선택 시 우측에 담당 현황 표시</div>
-                </div>
+			<!-- 목록/구성원 영역 -->
+			<div class="content-grid">
 
-                <div class="panel-body">
+				<!-- 역할 목록 -->
+				<div class="content-panel">
+					<div class="panel-header">
+						<div class="panel-title">역할 목록</div>
+						<div class="panel-sub-text">역할 선택 시 우측에 담당 현황 표시</div>
+					</div>
 
-                    <div class="summary-box-wrap">
-                        <div class="summary-box">
-                            <div class="summary-label">전체 역할 수</div>
-                            <div class="summary-value"
-                                 th:text="${roleList == null ? 0 : #lists.size(roleList)}">
-                                0
-                            </div>
-                        </div>
+					<div class="panel-body">
 
-                        <div class="summary-box">
-                            <div class="summary-label">선택 역할</div>
-                            <div class="summary-value" id="selectedRoleLabel">
-                                없음
-                            </div>
-                        </div>
-                    </div>
+						<div class="summary-box-wrap">
+							<div class="summary-box">
+								<div class="summary-label">전체 역할 수</div>
+								<div class="summary-value"
+									th:text="${roleList == null ? 0 : #lists.size(roleList)}">
+									0
+								</div>
+							</div>
 
-                    <table class="role-table">
-                        <thead>
-                            <tr>
-                                <th>역할명</th>
-                                <th>인원 수</th>
-                                <th>관리</th>
-                            </tr>
-                        </thead>
+							<div class="summary-box">
+								<div class="summary-label">선택 역할</div>
+								<div class="summary-value" id="selectedRoleLabel">없음</div>
+							</div>
+						</div>
 
-                        <tbody>
-                            <!-- 역할이 없을 때 -->
-                            <tr th:if="${roleList == null or #lists.isEmpty(roleList)}">
-                                <td colspan="3" style="text-align:center;">
-                                    등록된 역할이 없습니다.
-                                </td>
-                            </tr>
+						<table class="role-table">
+							<thead>
+								<tr>
+									<th>역할명</th>
+									<th>인원 수</th>
+									<th>관리</th>
+								</tr>
+							</thead>
 
-                            <!-- 역할 목록 -->
-                            <tr th:each="role : ${roleList}"
-                                th:data-role-id="${role.roleId}"
-                                th:data-role-name="${role.roleName}">
+							<tbody>
+								<tr th:if="${roleList == null or #lists.isEmpty(roleList)}">
+									<td colspan="3" style="text-align: center;">등록된 역할이 없습니다.</td>
+								</tr>
 
-                                <td>
-                                    <a href="javascript:void(0);"
-                                       class="role-name-link"
-                                       th:text="${role.roleName}"
-                                       th:data-role-id="${role.roleId}"
-                                       th:data-role-name="${role.roleName}"
-                                       onclick="selectRole(this)">
-                                        역할명
-                                    </a>
-                                </td>
+								<tr th:each="role : ${roleList}"
+									th:data-role-id="${role.roleId}"
+									th:data-role-name="${role.roleName}">
 
-                                <td th:text="${role.memberCount}">
-                                    0
-                                </td>
+									<td>
+										<a href="javascript:void(0);" class="role-name-link"
+											th:text="${role.roleName}"
+											th:data-role-id="${role.roleId}"
+											th:data-role-name="${role.roleName}"
+											onclick="selectRole(this)">역할명</a>
+									</td>
 
-                                <td class="role-btn-group">
-                                    <!-- 복사 생성 : 역할 추가 화면으로 이동 -->
-                                    <button type="button"
-                                            class="mini-btn"
-                                            th:data-role-id="${role.roleId}"
-                                            onclick="copyRole(this)">
-                                        복사 생성
-                                    </button>
+									<td th:text="${role.memberCount}">0</td>
 
-                                    <!-- 삭제 : 담당 인원 있으면 프론트에서 1차 차단 -->
-                                    <button type="button"
-                                            class="mini-btn delete"
-                                            th:data-role-id="${role.roleId}"
-                                            th:data-role-name="${role.roleName}"
-                                            th:data-member-count="${role.memberCount}"
-                                            onclick="deleteRole(this)">
-                                        삭제
-                                    </button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+									<td class="role-btn-group">
+										<button type="button" class="mini-btn"
+											th:data-role-id="${role.roleId}"
+											onclick="copyRole(this)">복사 생성</button>
 
-                    <!-- 페이징은 나중에 -->
-                    <div class="pagination">
-                        <button type="button" class="page-btn">&lt;</button>
-                        <button type="button" class="page-btn active">1</button>
-                        <button type="button" class="page-btn">&gt;</button>
-                    </div>
-                </div>
-            </div>
+										<button type="button" class="mini-btn delete"
+											th:data-role-id="${role.roleId}"
+											th:data-role-name="${role.roleName}"
+											th:data-member-count="${role.memberCount}"
+											onclick="deleteRole(this)">삭제</button>
+									</td>
+								</tr>
+							</tbody>
+						</table>
 
-            <!-- 역할 구성원 -->
-            <div class="content-panel">
-                <div class="panel-header">
-                    <div class="panel-title">역할 구성원</div>
-                    <div class="panel-sub-text">선택된 역할의 구성원 목록</div>
-                </div>
+						<div class="pagination">
+							<button type="button" class="page-btn">&lt;</button>
+							<button type="button" class="page-btn active">1</button>
+							<button type="button" class="page-btn">&gt;</button>
+						</div>
+					</div>
+				</div>
 
-                <div class="panel-body">
-                    <div id="memberPlaceholder" class="member-placeholder">
-                        역할 목록을 선택하지 않은 경우 역할 구성원은 표시되지 않습니다.
-                    </div>
+				<!-- 역할 구성원 -->
+				<div class="content-panel">
+					<div class="panel-header">
+						<div class="panel-title">역할 구성원</div>
+						<div class="panel-sub-text">선택된 역할의 구성원 목록</div>
+					</div>
 
-                    <div id="memberContent" class="hidden">
-                        <div class="selected-role-text">
-                            선택된 역할 :
-                            <span id="selectedRoleText">-</span>
-                        </div>
+					<div class="panel-body">
+						<div id="memberPlaceholder" class="member-placeholder">
+							역할 목록을 선택하지 않은 경우 역할 구성원은 표시되지 않습니다.
+						</div>
 
-                        <table class="member-table">
-                            <thead>
-                                <tr>
-                                    <th>프로젝트</th>
-                                    <th>이름</th>
-                                    <th>소속팀</th>
-                                    <th>ID</th>
-                                    <th>Email</th>
-                                </tr>
-                            </thead>
+						<div id="memberContent" class="hidden">
+							<div class="selected-role-text">
+								선택된 역할 : <span id="selectedRoleText">-</span>
+							</div>
 
-                            <tbody id="memberTableBody">
-                                <!-- AJAX로 채움 -->
-                            </tbody>
-                        </table>
+							<table class="member-table">
+								<thead>
+									<tr>
+										<th>프로젝트</th>
+										<th>이름</th>
+										<th>소속팀</th>
+										<th>ID</th>
+										<th>Email</th>
+									</tr>
+								</thead>
 
-                        <!-- 페이징은 나중에 -->
-                        <div class="pagination">
-                            <button type="button" class="page-btn">&lt;</button>
-                            <button type="button" class="page-btn active">1</button>
-                            <button type="button" class="page-btn">&gt;</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
+								<tbody id="memberTableBody">
+									<!-- AJAX로 채움 -->
+								</tbody>
+							</table>
 
-        </div>
+							<div class="pagination">
+								<button type="button" class="page-btn">&lt;</button>
+								<button type="button" class="page-btn active">1</button>
+								<button type="button" class="page-btn">&gt;</button>
+							</div>
+						</div>
+					</div>
+				</div>
 
-    </div>
+			</div>
 
-    <script>
-    function selectRole(element) {
-        const roleId = element.dataset.roleId;
-        const roleName = element.dataset.roleName;
+		</div>
 
-        console.log("클릭한 roleId =", roleId);
-        console.log("클릭한 roleName =", roleName);
+		<script>
+			function pfAlert(message, title, icon) {
+				return window.PFDialog.alert(message, {
+					title: title || "알림",
+					icon: icon || "info"
+				});
+			}
 
-        document.getElementById("selectedRoleLabel").innerText = roleName;
-        document.getElementById("selectedRoleText").innerText = roleName;
+			function selectRole(element) {
+				const roleId = element.dataset.roleId;
+				const roleName = element.dataset.roleName;
 
-        const rows = document.querySelectorAll(".role-table tbody tr");
+				document.getElementById("selectedRoleLabel").innerText = roleName;
+				document.getElementById("selectedRoleText").innerText = roleName;
 
-        rows.forEach(row => {
-            row.classList.remove("active");
+				const rows = document.querySelectorAll(".role-table tbody tr");
 
-            if (row.getAttribute("data-role-id") === roleId) {
-                row.classList.add("active");
-            }
-        });
+				rows.forEach(row => {
+					row.classList.remove("active");
 
-        const memberPlaceholder = document.getElementById("memberPlaceholder");
-        const memberContent = document.getElementById("memberContent");
-        const memberTableBody = document.getElementById("memberTableBody");
+					if (row.getAttribute("data-role-id") === roleId) {
+						row.classList.add("active");
+					}
+				});
 
-        console.log("memberPlaceholder =", memberPlaceholder);
-        console.log("memberContent =", memberContent);
-        console.log("memberTableBody =", memberTableBody);
+				const memberPlaceholder = document.getElementById("memberPlaceholder");
+				const memberContent = document.getElementById("memberContent");
+				const memberTableBody = document.getElementById("memberTableBody");
 
-        memberPlaceholder.classList.add("hidden");
-        memberContent.classList.remove("hidden");
+				memberPlaceholder.classList.add("hidden");
+				memberContent.classList.remove("hidden");
 
-        memberTableBody.innerHTML = "";
+				memberTableBody.innerHTML = "";
 
-        fetch("/roles/member?roleId=" + encodeURIComponent(roleId))
-            .then(response => response.json())
-            .then(memberList => {
-                console.log("받아온 memberList =", memberList);
-                console.log("받아온 memberList length =", memberList.length);
+				fetch("/roles/member?roleId=" + encodeURIComponent(roleId))
+					.then(response => response.json())
+					.then(memberList => {
+						if (!memberList || memberList.length === 0) {
+							const row = document.createElement("tr");
 
-                if (!memberList || memberList.length === 0) {
-                    const row = document.createElement("tr");
+							row.innerHTML =
+								"<td colspan='5' style='text-align:center;'>" +
+								"해당 역할을 담당하는 구성원이 없습니다." +
+								"</td>";
 
-                    row.innerHTML =
-                        "<td colspan='5' style='text-align:center;'>" +
-                        "해당 역할을 담당하는 구성원이 없습니다." +
-                        "</td>";
+							memberTableBody.appendChild(row);
+							return;
+						}
 
-                    memberTableBody.appendChild(row);
-                    return;
-                }
+						memberList.forEach(member => {
+							const row = document.createElement("tr");
 
-                memberList.forEach(member => {
-                    const row = document.createElement("tr");
+							row.innerHTML =
+								"<td>" + nullToDash(member.projectName) + "</td>" +
+								"<td>" + nullToDash(member.userName) + "</td>" +
+								"<td>" + nullToDash(member.teamName) + "</td>" +
+								"<td>" + nullToDash(member.loginId) + "</td>" +
+								"<td>" + nullToDash(member.email) + "</td>";
 
-                    row.innerHTML =
-                        "<td>" + nullToDash(member.projectName) + "</td>" +
-                        "<td>" + nullToDash(member.userName) + "</td>" +
-                        "<td>" + nullToDash(member.teamName) + "</td>" +
-                        "<td>" + nullToDash(member.loginId) + "</td>" +
-                        "<td>" + nullToDash(member.email) + "</td>";
+							memberTableBody.appendChild(row);
+						});
+					})
+					.catch(error => {
+						console.log("역할 구성원 조회 오류 =", error);
 
-                    memberTableBody.appendChild(row);
-                });
-            })
-            .catch(error => {
-                console.log("역할 구성원 조회 오류 =", error);
+						const row = document.createElement("tr");
 
-                const row = document.createElement("tr");
+						row.innerHTML =
+							"<td colspan='5' style='text-align:center; color:red;'>" +
+							"역할 구성원 조회 중 오류가 발생했습니다." +
+							"</td>";
 
-                row.innerHTML =
-                    "<td colspan='5' style='text-align:center; color:red;'>" +
-                    "역할 구성원 조회 중 오류가 발생했습니다." +
-                    "</td>";
+						memberTableBody.appendChild(row);
+					});
+			}
 
-                memberTableBody.appendChild(row);
-            });
-    }
+			function copyRole(element) {
+				const roleId = element.dataset.roleId;
 
-    function copyRole(element) {
-        const roleId = element.dataset.roleId;
+				location.href = "/roles/new?copyRoleId=" + encodeURIComponent(roleId);
+			}
 
-        location.href = "/roles/new?copyRoleId=" + encodeURIComponent(roleId);
-    }
+			function deleteRole(element) {
+				const roleId = element.dataset.roleId;
+				const roleName = element.dataset.roleName;
+				const memberCount = Number(element.dataset.memberCount);
 
-    function deleteRole(element) {
-        const roleId = element.dataset.roleId;
-        const roleName = element.dataset.roleName;
-        const memberCount = Number(element.dataset.memberCount);
+				if (memberCount > 0) {
+					pfAlert("해당 역할을 담당 중인 구성원이 있어 삭제할 수 없습니다.", "삭제 불가", "warning");
+					return;
+				}
 
-        if (memberCount > 0) {
-            alert("해당 역할을 담당 중인 구성원이 있어 삭제할 수 없습니다.");
-            return;
-        }
+				window.PFDialog.confirm({
+					title: "역할 삭제 확인",
+					message: "'" + roleName + "' 역할을 삭제하시겠습니까?",
+					confirmText: "삭제",
+					icon: "warning"
+				}).then(function (confirmed) {
+					if (!confirmed) {
+						return;
+					}
 
-        if (!confirm("'" + roleName + "' 역할을 삭제하시겠습니까?")) {
-            return;
-        }
+					fetch("/roles/delete", {
+						method: "POST",
+						headers: {
+							"Content-Type": "application/x-www-form-urlencoded"
+						},
+						body: "roleId=" + encodeURIComponent(roleId)
+					})
+					.then(response => response.json())
+					.then(data => {
+						if (data.result) {
+							pfAlert("역할이 삭제되었습니다.", "삭제 완료", "success")
+								.then(function () {
+									location.reload();
+								});
+						} else {
+							pfAlert(data.message || "역할 삭제에 실패했습니다.", "삭제 실패", "error");
+						}
+					})
+					.catch(error => {
+						console.log(error);
+						pfAlert("역할 삭제 중 오류가 발생했습니다.", "삭제 오류", "error");
+					});
+				});
+			}
 
-        fetch("/roles/delete", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/x-www-form-urlencoded"
-            },
-            body: "roleId=" + encodeURIComponent(roleId)
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.result) {
-                alert("역할이 삭제되었습니다.");
-                location.reload();
-            } else {
-                alert(data.message || "역할 삭제에 실패했습니다.");
-            }
-        })
-        .catch(error => {
-            console.log(error);
-            alert("역할 삭제 중 오류가 발생했습니다.");
-        });
-    }
+			function nullToDash(value) {
+				if (value === null || value === undefined || value === "") {
+					return "-";
+				}
 
-    function nullToDash(value) {
-        if (value === null || value === undefined || value === "") {
-            return "-";
-        }
+				return value;
+			}
+		</script>
 
-        return value;
-    }
-</script>
-
-</div>
+	</div>
 </body>
 </html>

@@ -7,4 +7,5 @@ public interface TestExecutionService {
 	public List<TestExecutionVO> selectExecutionCaseList(String testId);
 	public int insertTestExecution(TestExecutionVO testExecutionVO);
 	public int insertTestExecutionList(TestExecutionVO testExecutionVO);
+	public int selectCurrentRetryNo(String mappingId);
 }

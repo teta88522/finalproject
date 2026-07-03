@@ -74,6 +74,15 @@ document.addEventListener('DOMContentLoaded', function() {
         const valStart = inputStartDate.value;
         const valEnd = inputEndDate.value;
 
+        // 날짜 유효성 검사
+        if (valStart && valEnd && valEnd < valStart) {
+            window.PFDialog.alert('완료기한은 시작일보다 빠를 수 없습니다.', {
+                title: '검색 조건 확인',
+                icon: 'warning'
+            });
+            return;
+        }
+
         milestoneItems.forEach(item => {
             const itemVersion = item.getAttribute('data-version-name');
             const itemTitle = item.getAttribute('data-milestone-title');

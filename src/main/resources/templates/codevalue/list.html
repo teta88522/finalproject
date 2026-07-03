@@ -7,14 +7,15 @@
     <meta charset="UTF-8">
     <title>코드값 관리</title>
 
-    <link rel="stylesheet" th:href="@{/css/common-ui.css}">
-    <link rel="stylesheet" th:href="@{/css/common-filter.css}">
+    
     <link rel="stylesheet" th:href="@{/css/codevalue/codevalue.css}">
 </head>
 
 <body>
-<div layout:fragment="Content">
 
+<div layout:fragment="Content">
+	<div class="container-fluid" style="height:calc(100vh - 130px); display:flex; flex-direction:column; padding-bottom:24px;">
+    <div style="background:#fff; border-radius:12px; box-shadow:0 2px 12px rgba(0,0,0,0.08); padding:24px; flex:1; display:flex; flex-direction:column; overflow:hidden;">
     <div class="codevalue-page">
         <div class="container-fluid">
 
@@ -97,7 +98,7 @@
                         </a>
 
                         <button type="submit"
-                                class="btn btn-custon-rounded-four btn-primary filter-btn">
+                                class="btn btn-custon-rounded-four btn-primary custom-default-btn">
                             검색
                         </button>
                     </div>
@@ -131,7 +132,7 @@
                         </div>
 
                         <a th:href="@{/codevalue/create(settingGroupName=${entry.key})}"
-                           class="btn btn-custon-rounded-four btn-primary codevalue-add-btn">
+                           class="btn btn-custon-rounded-four btn-primary custom-default-btn">
                             + 새 코드값
                         </a>
                     </div>
@@ -188,7 +189,7 @@
                                                    th:value="${codeValue.settingCodeId}">
 
                                             <button type="submit"
-                                                    class="btn btn-custon-rounded-four btn-default">
+                                                    class="btn btn-custon-rounded-four btn-primary custom-white-btn">
                                                 기본
                                             </button>
                                         </form>
@@ -201,7 +202,7 @@
                                                    th:value="${codeValue.settingCodeId}">
 
                                             <button type="submit"
-                                                    class="btn btn-custon-rounded-four btn-default">
+                                                    class="btn btn-custon-rounded-four btn-primary custom-white-btn">
                                                 취소
                                             </button>
                                         </form>
@@ -218,7 +219,7 @@
                                                    th:value="${codeValue.settingCodeId}">
 
                                             <button type="submit"
-                                                    class="btn btn-custon-rounded-four btn-danger">
+                                                    class="btn btn-custon-rounded-four btn-danger custom-btn">
                                                 삭제
                                             </button>
                                         </form>
@@ -233,10 +234,10 @@
                 </div>
 
             </div>
-
+            </div>
         </div>
     </div>
-
+</div>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script th:src="@{/js/common/pf-confirm.js}"></script>
 <script>

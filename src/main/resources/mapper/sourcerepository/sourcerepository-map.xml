@@ -51,22 +51,24 @@
 	</insert>
 
 	<!-- INSERT 배치 (여러 Commit 한번에 저장) -->
+	<!-- ✅ MySQL 문법(VALUES (a,b),(c,d),...)은 Oracle에서 지원 안 해서 원래 못 쓰던 쿼리였음.
+	     Oracle의 INSERT ALL 문법으로 교체 - 커밋이 몇 개든 한 번의 왕복(round-trip)으로 다 저장됨. -->
 	<insert id="insertSourcerepositoryCommits"
 		parameterType="java.util.List">
-		INSERT INTO commit_log (
-		commit_id,
-		project_id,
-		issue_id,
-		branch_name,
-		commit_hash,
-		commit_message,
-		author_name,
-		author_email,
-		committed_at,
-		created_at
-		) VALUES
-		<foreach collection="commits" item="item" separator=",">
-			(
+		INSERT ALL
+		<foreach collection="commits" item="item">
+			INTO commit_log (
+			commit_id,
+			project_id,
+			issue_id,
+			branch_name,
+			commit_hash,
+			commit_message,
+			author_name,
+			author_email,
+			committed_at,
+			created_at
+			) VALUES (
 			#{item.commitId},
 			#{item.projectId},
 			#{item.issueId},
@@ -79,6 +81,7 @@
 			#{item.createdAt}
 			)
 		</foreach>
+		SELECT 1 FROM DUAL
 	</insert>
 
 	<!-- SELECT 프로젝트+브랜치별 Commit (페이지네이션 + LEFT JOIN) - ✅ Oracle 문법 수정됨 -->
@@ -178,6 +181,15 @@
 		commit_hash = #{commitHash}
 		AND project_id =
 		#{projectId}
+		AND branch_name = #{branchName}
+	</select>
+
+	<!-- ✅ 동기화 시 커밋마다 개별 SELECT 하던 걸 1번의 쿼리로 줄이기 위한 배치 조회 -->
+	<select id="selectExistingCommitHashesByProjectAndBranch"
+		resultType="String">
+		SELECT commit_hash
+		FROM commit_log
+		WHERE project_id = #{projectId}
 		AND branch_name = #{branchName}
 	</select>
 

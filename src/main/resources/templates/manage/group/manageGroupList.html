@@ -10,11 +10,16 @@
 <link rel="stylesheet" th:href="@{/css/common-fliter.css}">
 <link rel="stylesheet"
 	th:href="@{/css/manage/group/manageGroupList.css}">
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script th:src="@{/js/common/pf-confirm.js}"></script>
 </head>
 
 <body>
 	<div layout:fragment="Content">
-
+	<div class="container-fluid" style="height:calc(100vh - 130px); display:flex; flex-direction:column; padding-bottom:24px;">
+   <div style="background:#fff; border-radius:12px; box-shadow:0 2px 12px rgba(0,0,0,0.08); padding:24px; flex:1; display:flex; flex-direction:column; overflow:auto;">
+	
 		<div class="manage-group-page">
 
 			<div class="manage-page-header">
@@ -34,7 +39,6 @@
 				<span th:text="${message}">메시지</span>
 			</div>
 
-			<!-- 검색 조건 -->
 			<div class="search-section manage-group-search">
 				<div class="search-header">
 					<div class="search-title">검색조건</div>
@@ -47,8 +51,6 @@
 				<form th:action="@{/manage/groups}" method="get">
 					<div class="search-form-row">
 
-						<!-- 프로젝트 다중 선택 필터 -->
-
 						<div class="search-field filter-group">
 							<label>프로젝트</label>
 
@@ -58,7 +60,8 @@
 
 								<div class="filter-check-list filter-dropdown-panel">
 									<label class="filter-check-item"
-										th:each="project : ${myProjectList}"> <input
+										th:each="project : ${myProjectList}">
+										<input
 										type="checkbox" name="projectIdList"
 										th:value="${project.projectId}"
 										th:checked="${projectIdList != null and #lists.contains(projectIdList, project.projectId)}">
@@ -73,13 +76,15 @@
 						</div>
 
 						<div class="search-field">
-							<label for="groupName">그룹명</label> <input type="text"
+							<label for="groupName">그룹명</label>
+							<input type="text"
 								id="groupName" name="groupName" th:value="${groupName}"
 								placeholder="그룹명 입력">
 						</div>
 
 						<div class="search-field">
-							<label for="roleName">적용 역할</label> <input type="text"
+							<label for="roleName">적용 역할</label>
+							<input type="text"
 								id="roleName" name="roleName" th:value="${roleName}"
 								placeholder="역할명 입력">
 						</div>
@@ -98,7 +103,6 @@
 				</form>
 			</div>
 
-			<!-- 프로젝트 목록 요약 -->
 			<div class="project-summary-section">
 				<div class="section-title">내 프로젝트 목록</div>
 				<div class="section-sub-text">본인이 생성한 프로젝트 목록입니다. 그룹 생성 시 아래
@@ -114,7 +118,6 @@
 				</div>
 			</div>
 
-			<!-- 그룹 목록 -->
 			<div class="group-list-section">
 
 				<div class="list-header">
@@ -152,33 +155,40 @@
 							<tr th:each="group : ${manageGroupList}">
 								<td th:text="${group.projectName}">프로젝트명</td>
 
-								<td class="group-name-cell"><a
+								<td class="group-name-cell">
+									<a
 									th:href="@{/manage/groups/{projectGroupId}(projectGroupId=${group.projectGroupId})}"
-									th:text="${group.groupName}"> 그룹명 </a></td>
+									th:text="${group.groupName}"> 그룹명 </a>
+								</td>
 
 								<td th:text="${group.memberCount}">0</td>
 
-								<td><span class="role-badge"
+								<td>
+									<span class="role-badge"
 									th:text="${group.roleName != null ? group.roleName : '-'}">
-										역할명 </span></td>
+										역할명 </span>
+								</td>
 
 								<td class="desc-cell"
 									th:text="${group.groupAnswer != null ? group.groupAnswer : '-'}">
 									설명</td>
 
 								<td class="group-action-cell">
-									<button type="button" class="mini-btn"
+									<button type="button" class="btn btn-custon-rounded-four btn-primary custom-white-btn"
 										th:data-project-group-id="${group.projectGroupId}"
 										onclick="goGroupDetail(this)">상세</button>
 
 									<form th:action="@{/manage/groups/delete}" method="post"
-										class="inline-delete-form"
-										onsubmit="return confirm('그룹을 삭제하시겠습니까?');">
+										class="inline-delete-form js-pf-confirm-submit"
+										data-confirm-title="그룹 삭제 확인"
+										data-confirm-message="그룹을 삭제하시겠습니까?"
+										data-confirm-confirm-text="삭제"
+										data-confirm-icon="warning">
 
 										<input type="hidden" name="projectGroupId"
 											th:value="${group.projectGroupId}">
 
-										<button type="submit" class="mini-btn delete">삭제</button>
+										<button type="submit" class="btn btn-custon-rounded-four btn-danger custom-btn">삭제</button>
 									</form>
 								</td>
 							</tr>
@@ -189,8 +199,28 @@
 			</div>
 
 		</div>
+	</div>
+</div>
+</div>
 
-<script>
+<script th:inline="javascript">
+    const message = /*[[${message}]]*/ null;
+    const alertMessage = /*[[${alertMessage}]]*/ null;
+
+    if (message != null) {
+        window.PFDialog.alert(message, {
+            title: '알림',
+            icon: 'info'
+        });
+    }
+
+    if (alertMessage != null && alertMessage !== '') {
+        window.PFDialog.alert(alertMessage, {
+            title: '알림',
+            icon: 'info'
+        });
+    }
+
     function goGroupDetail(button) {
         const projectGroupId = button.dataset.projectGroupId;
 
@@ -230,11 +260,7 @@
         });
     });
 </script>
-<script th:if="${alertMessage != null}" th:inline="javascript">
-    const alertMessage = /*[[${alertMessage}]]*/ '';
-    alert(alertMessage);
-    
-</script>
 
+</div>
 </body>
 </html>

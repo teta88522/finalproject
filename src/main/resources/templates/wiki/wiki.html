@@ -17,14 +17,16 @@
           <!-- 헤더 -->
           <div class="wiki-header">
             <h4 style="margin:0; font-size:16px; color:#888;">📄 위키</h4>
-            <button onclick="toggleVersionPanel()"
-                    style="padding:6px 14px; border:1px solid #ddd; border-radius:6px; background:#fff; cursor:pointer; font-size:13px;">
-              버전 히스토리
-            </button>
-            <button onclick="saveAndView()"
-            	style="padding:6px 18px; border:none; border-radius:6px; background:#3d6ef5; color:#fff; cursor:pointer; font-size:13px; font-weight:600;">
-      			💾 저장
-   			 </button>
+            <div style="display:flex; gap:8px;">
+              <button onclick="toggleVersionPanel()"
+                      style="padding:6px 14px; border:1px solid #ddd; border-radius:6px; background:#fff; cursor:pointer; font-size:13px;">
+                버전 히스토리
+              </button>
+              <button onclick="saveAndView()"
+                      style="padding:6px 18px; border:none; border-radius:6px; background:#3d6ef5; color:#fff; cursor:pointer; font-size:13px; font-weight:600;">
+                💾 저장
+              </button>
+            </div>
           </div>
 
           <!-- 제목 -->
@@ -58,14 +60,16 @@
                 <button class="toolbar-btn" onclick="insertTable()">⊞ 표</button>
                 <button class="toolbar-btn" onclick="insertLine('---')">— 구분선</button>
                 <button class="toolbar-btn" onclick="insertLink()">🔗 링크</button>
+                <button class="toolbar-btn" onclick="insertWikiLink()">📄 위키링크</button>
                 <button class="toolbar-btn" onclick="triggerImageUpload()">🖼️ 이미지</button>
               </div>
               <input type="file" id="wikiImageInput" accept="image/*" style="display:none">
+
               <!-- 편집 탭 -->
               <textarea id="markdownInput"
                         th:data-wiki-id="${wikiId}"
                         th:data-project-id="${projectId}"
-                        placeholder="마크다운으로 입력하세요..."></textarea>
+                        placeholder="마크다운으로 입력하세요...&#10;&#10;위키 링크: [[위키제목]]"></textarea>
 
               <!-- 미리보기 탭 -->
               <div id="wikiPreview" class="wiki-preview"></div>
@@ -90,6 +94,7 @@
   const wikiId = document.getElementById('markdownInput').dataset.wikiId
   const projectId = document.getElementById('markdownInput').dataset.projectId
 
+  // 탭 전환
   function switchTab(tab) {
     const tabs = document.querySelectorAll('.wiki-tab')
     const textarea = document.getElementById('markdownInput')
@@ -108,12 +113,18 @@
       textarea.style.display = 'none'
       toolbar.style.display = 'none'
       previewEl.classList.add('active')
+
       const md = textarea.value
-      const html = window.marked.parse(md)
-      previewEl.innerHTML = generateToc(html) + html
+      let html = window.marked.parse(md)
+
+      // [[위키제목]] 변환
+      convertWikiLinks(html).then(convertedHtml => {
+        previewEl.innerHTML = generateToc(convertedHtml) + convertedHtml
+      })
     }
   }
 
+  // 목차 생성
   function generateToc(html) {
     const parser = new DOMParser()
     const doc = parser.parseFromString(html, 'text/html')
@@ -130,6 +141,52 @@
     return toc
   }
 
+  // [[위키제목]] → 링크 변환
+  async function convertWikiLinks(html) {
+    const matches = [...html.matchAll(/\[\[(.+?)\]\]/g)]
+    if (matches.length === 0) return html
+
+    for (const match of matches) {
+      const title = match[1]
+      try {
+        const res = await fetch(`/project/${projectId}/wiki/find?title=${encodeURIComponent(title)}`)
+        const page = await res.json()
+        if (page && page.wikiId) {
+          html = html.replace(
+            match[0],
+            `<a href="/project/${projectId}/wiki/${page.wikiId}"
+                style="color:#3d6ef5; text-decoration:none; border-bottom:1px solid #3d6ef5;">${title}</a>`
+          )
+        } else {
+          html = html.replace(
+            match[0],
+            `<a href="javascript:createWiki('${title}')"
+                style="color:#e53e3e; text-decoration:none; border-bottom:1px solid #e53e3e;">${title}</a>`
+          )
+        }
+      } catch(e) {
+        html = html.replace(match[0], title)
+      }
+    }
+    return html
+  }
+
+  // 없는 위키 생성
+  function createWiki(title) {
+    if (!confirm(`"${title}" 위키를 새로 만드시겠습니까?`)) return
+    fetch(`/project/${projectId}/wiki/create`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title: title, projectId: projectId })
+    })
+    .then(res => res.json())
+    .then(data => {
+      location.href = `/project/${projectId}/wiki/${data.wikiId}/edit`
+    })
+    .catch(err => console.error('위키 생성 실패:', err))
+  }
+
+  // 툴바 함수들
   function insertMd(before, after) {
     const ta = document.getElementById('markdownInput')
     const start = ta.selectionStart
@@ -181,6 +238,23 @@
     ta.dispatchEvent(new Event('input'))
   }
 
+  // 위키링크 삽입 버튼
+  function insertWikiLink() {
+    const title = prompt('연결할 위키 제목을 입력하세요')
+    if (!title) return
+    const ta = document.getElementById('markdownInput')
+    const start = ta.selectionStart
+    const insert = `[[${title}]]`
+    ta.value = ta.value.substring(0, start) + insert + ta.value.substring(start)
+    ta.focus()
+    ta.dispatchEvent(new Event('input'))
+  }
+
+  function triggerImageUpload() {
+    document.getElementById('wikiImageInput').click()
+  }
+
+  // 버전 히스토리
   function toggleVersionPanel() {
     const panel = document.getElementById('versionPanel')
     panel.classList.toggle('open')
@@ -227,25 +301,27 @@
       })
       .catch(err => console.error('복원 실패:', err))
   }
-  function saveAndView() {
-	  const textarea = document.getElementById('markdownInput')
-	  const title = document.getElementById('wikiTitle')?.value || '제목없음'
-	  const content = JSON.stringify({ markdown: textarea.value })
 
-	  fetch(`/project/${projectId}/wiki/save`, {
-	    method: 'POST',
-	    headers: { 'Content-Type': 'application/json' },
-	    body: JSON.stringify({ wikiId, title, content })
-	  })
-	  .then(res => res.text())
-	  .then(() => {
-	    location.href = `/project/${projectId}/wiki/${wikiId}`
-	  })
-	  .catch(err => {
-	    console.error('저장 실패:', err)
-	    alert('저장에 실패했습니다.')
-	  })
-	}
+  // 저장 후 뷰로 이동
+  function saveAndView() {
+    const textarea = document.getElementById('markdownInput')
+    const title = document.getElementById('wikiTitle')?.value || '제목없음'
+    const content = JSON.stringify({ markdown: textarea.value })
+
+    fetch(`/project/${projectId}/wiki/save`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ wikiId, title, content })
+    })
+    .then(res => res.text())
+    .then(() => {
+      location.href = `/project/${projectId}/wiki/${wikiId}`
+    })
+    .catch(err => {
+      console.error('저장 실패:', err)
+      alert('저장에 실패했습니다.')
+    })
+  }
 </script>
 </div>
 </body>

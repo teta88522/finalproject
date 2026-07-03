@@ -19,13 +19,16 @@
         <div class="kiaalap-panel main-box">
             
             <div class="main-header">
-                <h2>로드맵</h2>
+                <div class="main-header-title-area">
+                    <h2>로드맵</h2>
+                    <p class="main-header-desc">프로젝트 내의 모든 로드맵을 확인할 수 있습니다.</p>
+                </div>
 				<button 
 				    type="button" 
 				    class="btn btn-default" 
 				    id="btnSettings"
 				    th:data-url="@{/project/{projectId}/roadmap/setting_create(projectId=${projectId})}">
-				    <i class="far fa-plus-square"></i> 버전 생성
+				     버전 생성
 				</button>
             </div>
 
@@ -38,19 +41,19 @@
                 </div>
                 <div class="js-filter-row">
                     <div class="js-filter-group">
-                        <label><i class="fas fa-code-branch"></i> 로드맵</label>
+                        <label> 로드맵</label>
                         <select id="roadmapFilter">
                             <option value="">전체 로드맵</option>
                         </select>
                     </div>
                     <div class="js-filter-group">
-                        <label><i class="fas fa-cube"></i> 마일스톤</label>
+                        <label> 마일스톤</label>
                         <select id="milestoneFilter">
                             <option value="">전체 마일스톤</option>
                         </select>
                     </div>
                     <div class="js-filter-group search-group">
-                        <label><i class="fas fa-search"></i> 일감 검색</label>
+                        <label> 일감 검색</label>
                         <input type="text" id="issueSearch" placeholder="일감 제목 입력..." autocomplete="off" />
                     </div>
                 </div>

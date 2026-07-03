@@ -14,6 +14,19 @@
 }
 .main-header h2 { margin: 0; font-size: 24px; font-weight: 600; color: #333; }
 
+/* 로드맵/마일스톤 타이틀 및 설명글 세로 정렬 영역 */
+.main-header-title-area {
+    display: flex;
+    flex-direction: column;
+}
+
+/* 설명문구 스타일 */
+.main-header-desc {
+    margin: 6px 0 0 0;
+    color: #777;
+    font-size: 13.5px;
+}
+
 .section-divider { border: 0; border-top: 1px solid #eee; margin: 25px 0; }
 
 .filter-section h3, .list-section h3 {
@@ -31,7 +44,7 @@
     background-color: #fcfcfc; 
     padding: 20px; 
     border-radius: 4px; 
-    border: 1px solid #e5e6e7; 
+    border: 0px solid #e5e6e7; 
     align-items: end; /* 📝 밑선 칼각 일치 */
 }
 .js-filter-group { 

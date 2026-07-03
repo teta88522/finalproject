@@ -7,11 +7,16 @@
 <title>테스트 케이스 수정</title>
 
 <link rel="stylesheet" th:href="@{/css/testcase/testCaseEdit.css}">
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script th:src="@{/js/common/pf-confirm.js}"></script>
 </head>
 
 <body>
 <div layout:fragment="Content">
-
+<div class="container-fluid" style="height:calc(100vh - 130px); display:flex; flex-direction:column; padding-bottom:24px;">
+   <div style="background:#fff; border-radius:12px; box-shadow:0 2px 12px rgba(0,0,0,0.08); padding:24px; flex:1; display:flex; flex-direction:column; overflow:auto;">
+	
     <div class="testcase-create-page">
 
         <div class="page-header">
@@ -261,18 +266,18 @@
 
             <div class="button-area">
                 <a th:href="@{/project/{projectId}/testcases(projectId=${projectId})}"
-                   class="btn-basic">
+                   class="btn btn-custon-rounded-four custom-white-btn">
                     취소
                 </a>
 
                 <button type="button"
-                        class="btn-reset"
+                        class="btn btn-custon-rounded-four custom-default-btn"
                         onclick="location.reload();">
                     원래대로
                 </button>
 
                 <button type="submit"
-                        class="btn-primary">
+                        class="btn btn-custon-rounded-four custom-default-btn">
                     수정
                 </button>
             </div>
@@ -282,6 +287,17 @@
     </div>
 
     <script>
+        function pfAlert(message, title, icon, focusTarget) {
+            window.PFDialog.alert(message, {
+                title: title || "입력 확인",
+                icon: icon || "warning"
+            }).then(function () {
+                if (focusTarget) {
+                    focusTarget.focus();
+                }
+            });
+        }
+
         function addStepRow() {
             const stepBody = document.getElementById("stepBody");
             const row = document.createElement("tr");
@@ -315,7 +331,7 @@
             const stepBody = document.getElementById("stepBody");
 
             if (stepBody.children.length <= 1) {
-                alert("테스트 절차는 최소 1개 이상 필요합니다.");
+                pfAlert("테스트 절차는 최소 1개 이상 필요합니다.", "테스트 절차 확인", "warning");
                 return;
             }
 
@@ -332,44 +348,45 @@
         }
 
         document.getElementById("testCaseEditForm").addEventListener("submit", function (event) {
-            const title = document.getElementById("title").value.trim();
-            const testTypeCode = document.getElementById("testTypeCode").value;
-            const statusCode = document.getElementById("statusCode").value;
-            const versionId = document.getElementById("versionId").value;
-            const priorityCode = document.getElementById("priorityCode").value;
+            const titleInput = document.getElementById("title");
+            const testTypeCodeInput = document.getElementById("testTypeCode");
+            const statusCodeInput = document.getElementById("statusCode");
+            const versionIdInput = document.getElementById("versionId");
+            const priorityCodeInput = document.getElementById("priorityCode");
+
+            const title = titleInput.value.trim();
+            const testTypeCode = testTypeCodeInput.value;
+            const statusCode = statusCodeInput.value;
+            const versionId = versionIdInput.value;
+            const priorityCode = priorityCodeInput.value;
 
             if (title === "") {
-                alert("제목을 입력하세요.");
-                document.getElementById("title").focus();
                 event.preventDefault();
+                pfAlert("제목을 입력하세요.", "테스트 케이스 수정 확인", "warning", titleInput);
                 return false;
             }
 
             if (testTypeCode === "") {
-                alert("유형을 선택하세요.");
-                document.getElementById("testTypeCode").focus();
                 event.preventDefault();
+                pfAlert("유형을 선택하세요.", "테스트 케이스 수정 확인", "warning", testTypeCodeInput);
                 return false;
             }
 
             if (statusCode === "") {
-                alert("상태를 선택하세요.");
-                document.getElementById("statusCode").focus();
                 event.preventDefault();
+                pfAlert("상태를 선택하세요.", "테스트 케이스 수정 확인", "warning", statusCodeInput);
                 return false;
             }
 
             if (versionId === "") {
-                alert("버전을 선택하세요.");
-                document.getElementById("versionId").focus();
                 event.preventDefault();
+                pfAlert("버전을 선택하세요.", "테스트 케이스 수정 확인", "warning", versionIdInput);
                 return false;
             }
 
             if (priorityCode === "") {
-                alert("우선순위를 선택하세요.");
-                document.getElementById("priorityCode").focus();
                 event.preventDefault();
+                pfAlert("우선순위를 선택하세요.", "테스트 케이스 수정 확인", "warning", priorityCodeInput);
                 return false;
             }
 
@@ -383,8 +400,8 @@
             });
 
             if (!hasStep) {
-                alert("테스트 절차를 최소 1개 이상 입력하세요.");
                 event.preventDefault();
+                pfAlert("테스트 절차를 최소 1개 이상 입력하세요.", "테스트 절차 확인", "warning");
                 return false;
             }
         });

@@ -14,15 +14,22 @@
 			<div class="detail-breadcrumb">
 				<a th:href="@{/project/{projectId}/sourcerepository(projectId=${projectId})}">저장소 관리</a>
 				/ <a th:href="@{/project/{projectId}/sourcerepository/files(projectId=${projectId}, branch=${branch})}">파일 목록</a>
-				/ <span th:text="${fileName}">README.md</span>
+				<!-- ✅ 경로 전체를 breadcrumb로 표시. 마지막 조각(파일명)은 링크 없이 텍스트로만 -->
+				<th:block th:each="crumb, iter : ${breadcrumbs}">
+					/ <a th:if="${!iter.last}"
+						th:href="@{/project/{projectId}/sourcerepository/files(projectId=${projectId}, path=${crumb.path}, branch=${branch})}"
+						th:text="${crumb.name}">folder</a>
+					<span th:if="${iter.last}" th:text="${crumb.name}">README.md</span>
+				</th:block>
 			</div>
  
 			<!-- Header -->
 			<div class="detail-header">
 				<div class="detail-header-top">
 					<h1 th:text="${fileName}">README.md</h1>
+					<!-- ✅ 브랜치 전체 이력이 아니라 "이 파일 경로"의 커밋 이력으로 이동 (GitHub commits?path= 활용) -->
 					<a
-						th:href="@{/project/{projectId}/sourcerepository/commits(projectId=${projectId}, branch=${branch})}"
+						th:href="@{/project/{projectId}/sourcerepository/file-history(projectId=${projectId}, path=${filePath}, branch=${branch})}"
 						class="detail-history-btn"
 						style="text-decoration: none;">
 						📜 History
@@ -92,14 +99,16 @@
 		<!-- ✅✅ layout:fragment="Content" 안쪽으로 이동: fragment 밖에 있으면 Thymeleaf Layout
 		     Dialect가 최종 렌더링에서 제외시켜서, 복사/다운로드 버튼의 onclick이
 		     "함수가 정의되지 않음" 에러로 조용히 실패하던 문제가 있었음 -->
+		<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+		<script th:src="@{/js/common/pf-confirm.js}"></script>
 		<script>
 			// 파일명 복사
 			function copyFileName() {
 				const fileName = document.querySelector('.detail-file-name').textContent;
 				navigator.clipboard.writeText(fileName).then(() => {
-					alert('파일명이 복사되었습니다: ' + fileName);
+					window.PFDialog.alert('파일명이 복사되었습니다: ' + fileName, { title: '복사 완료', icon: 'success' });
 				}).catch(() => {
-					alert('복사에 실패했습니다');
+					window.PFDialog.alert('복사에 실패했습니다', { title: '복사 실패', icon: 'error' });
 				});
 			}
  
@@ -107,9 +116,9 @@
 			function copyCode() {
 				const fileContent = document.getElementById('fileContent').textContent;
 				navigator.clipboard.writeText(fileContent).then(() => {
-					alert('코드가 복사되었습니다');
+					window.PFDialog.alert('코드가 복사되었습니다', { title: '복사 완료', icon: 'success' });
 				}).catch(() => {
-					alert('복사에 실패했습니다');
+					window.PFDialog.alert('복사에 실패했습니다', { title: '복사 실패', icon: 'error' });
 				});
 			}
 
