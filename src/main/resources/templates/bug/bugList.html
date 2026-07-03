@@ -9,7 +9,9 @@
 </head>
 <body>
 <div layout:fragment="Content">
-
+<div class="container-fluid" style="height:calc(100vh - 130px); display:flex; flex-direction:column; padding-bottom:24px;">
+   <div style="background:#fff; border-radius:12px; box-shadow:0 2px 12px rgba(0,0,0,0.08); padding:24px; flex:1; display:flex; flex-direction:column; overflow:auto;">
+	
     <div class="bug-page">
 
         <div class="page-header">
@@ -179,9 +181,9 @@
             </div>
 
             <div class="search-actions">
-                <button type="submit" class="btn primary">검색</button>
+                <button type="submit" class="btn btn-custon-rounded-four custom-default-btn">검색</button>
 
-                <a class="btn"
+                <a class="btn btn-custon-rounded-four custom-white-btn"
                    th:href="@{/project/{projectId}/bugs(projectId=${projectId})}">
                     초기화
                 </a>
@@ -279,7 +281,7 @@
                         <td>
                             <div class="row-actions">
 
-                                <a class="btn small"
+                                <a class="btn btn-custon-rounded-four custom-white-btn"
                                    th:if="${isAdmin or bug.reporterId == loginUserId}"
                                    th:href="@{/project/{projectId}/bugs/{bugId}(projectId=${projectId}, bugId=${bug.bugId})}">
                                     수정
@@ -295,7 +297,7 @@
                                            th:value="${bug.bugId}">
 
                                     <button type="submit"
-                                            class="btn small danger">
+                                            class="btn btn-custon-rounded-four btn-danger custom-btn">
                                         삭제
                                     </button>
                                 </form>
@@ -393,7 +395,8 @@
         </div>
 
     </div>
-
+</div>
+</div>
     <script>
     const rows = document.querySelectorAll(".bug-table tbody tr[data-bug-id]");
     const contentGrid = document.getElementById("contentGrid");

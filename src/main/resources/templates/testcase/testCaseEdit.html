@@ -11,7 +11,9 @@
 
 <body>
 <div layout:fragment="Content">
-
+<div class="container-fluid" style="height:calc(100vh - 130px); display:flex; flex-direction:column; padding-bottom:24px;">
+   <div style="background:#fff; border-radius:12px; box-shadow:0 2px 12px rgba(0,0,0,0.08); padding:24px; flex:1; display:flex; flex-direction:column; overflow:auto;">
+	
     <div class="testcase-create-page">
 
         <div class="page-header">
@@ -261,18 +263,18 @@
 
             <div class="button-area">
                 <a th:href="@{/project/{projectId}/testcases(projectId=${projectId})}"
-                   class="btn-basic">
+                   class="btn btn-custon-rounded-four custom-white-btn">
                     취소
                 </a>
 
                 <button type="button"
-                        class="btn-reset"
+                        class="btn btn-custon-rounded-four custom-default-btn"
                         onclick="location.reload();">
                     원래대로
                 </button>
 
                 <button type="submit"
-                        class="btn-primary">
+                        class="btn btn-custon-rounded-four custom-default-btn">
                     수정
                 </button>
             </div>

@@ -11,7 +11,9 @@
 
 <body>
 <div layout:fragment="Content">
-
+<div class="container-fluid" style="height:calc(100vh - 130px); display:flex; flex-direction:column; padding-bottom:24px;">
+   <div style="background:#fff; border-radius:12px; box-shadow:0 2px 12px rgba(0,0,0,0.08); padding:24px; flex:1; display:flex; flex-direction:column; overflow:auto;">
+	
     <div class="test-create-wrap">
 
         <div class="page-title-area">
@@ -146,7 +148,7 @@
                                placeholder="테스트 케이스 명으로 검색">
 
                         <button type="button"
-                                class="case-search-btn"
+                                class="btn btn-custon-rounded-four custom-default-btn"
                                 id="caseSearchBtn">
                             검색
                         </button>
@@ -311,11 +313,11 @@
 
                     <div class="btn-area">
                         <a th:href="@{/project/{projectId}/tests(projectId=${projectId})}"
-                           class="btn-cancel">
+                           class="btn btn-custon-rounded-four custom-white-btn">
                             취소
                         </a>
 
-                        <button type="submit" class="btn-save">
+                        <button type="submit" class="btn btn-custon-rounded-four custom-default-btn">
                             수정
                         </button>
                     </div>
@@ -341,7 +343,8 @@
         </div>
 
     </div>
-
+</div>
+</div>
     <script th:inline="javascript">
     document.addEventListener('DOMContentLoaded', function () {
 

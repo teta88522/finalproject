@@ -9,7 +9,9 @@
 </head>
 <body>
 	<div layout:fragment="Content">
-
+<div class="container-fluid" style="height:calc(100vh - 130px); display:flex; flex-direction:column; padding-bottom:24px;">
+   <div style="background:#fff; border-radius:12px; box-shadow:0 2px 12px rgba(0,0,0,0.08); padding:24px; flex:1; display:flex; flex-direction:column; overflow:auto;">
+	
 		<div class="bug-add-page">
 
 			<div class="page-header">
@@ -18,7 +20,7 @@
 					<p>실패한 테스트 수행 결과를 기준으로 버그를 등록합니다.</p>
 				</div>
 
-				<a class="btn"
+				<a class="btn btn-custon-rounded-four custom-default-btn"
 					th:href="@{/project/{projectId}/bugs(projectId=${projectId})}">
 					목록 </a>
 			</div>
@@ -164,11 +166,11 @@
 				</section>
 
 				<div class="form-actions">
-					<a class="btn"
+					<a class="btn btn-custon-rounded-four custom-white-btn"
 						th:href="@{/project/{projectId}/bugs(projectId=${projectId})}">
 						취소 </a>
 
-					<button type="submit" class="btn primary">저장</button>
+					<button type="submit" class="btn btn-custon-rounded-four custom-default-btn">저장</button>
 				</div>
 
 			</form>
@@ -176,5 +178,7 @@
 		</div>
 
 	</div>
+</div>
+</div>
 </body>
 </html>
