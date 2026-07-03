@@ -14,8 +14,32 @@ document.addEventListener("DOMContentLoaded", function () {
   // [상태 관리 변수]
   let selectedIssueIds = new Set();
   let addedHistoryIds = new Set();  
-  let lockedVersionId = null;       
+  let lockedVersionId = versionIdInput ? versionIdInput.value : null;       
   let searchTimeout = null;
+
+  // 📝 연결할 버전(로드맵) 수동 선택 변경 시 필터 갱신 및 무결성 제어 리스너
+  if (versionIdInput) {
+      versionIdInput.addEventListener('change', function() {
+          if (selectedIssueIds.size > 0) {
+              if (confirm("버전을 변경하시면 기존에 선택해 둔 일감 목록이 모두 초기화됩니다. 변경하시겠습니까?")) {
+                  // 일감 목록 테이블 비우기
+                  issueListBody.innerHTML = `<tr><td class="empty-row" style="text-align: center; color: #999; padding: 30px 10px;">상단 검색창을 통해 연결할 일감을 찾아보세요.</td></tr>`;
+                  selectedIssueIds.clear();
+                  addedHistoryIds.clear();
+                  updateHiddenInput();
+              } else {
+                  // 취소 시 이전 버전으로 select 값 원복
+                  versionIdInput.value = lockedVersionId || "";
+                  return;
+              }
+          }
+          lockedVersionId = this.value;
+          
+          // 검색창에 내용이 적혀있었다면 즉각 리프레시 검색 호출
+          const keyword = issueSearchInput.value.trim();
+          fetchAndShowIssues(keyword);
+      });
+  }
 
   // --- [날짜 선후 관계 설정] ---
   if (startDateInput && endDateInput) {
@@ -38,8 +62,9 @@ document.addEventListener("DOMContentLoaded", function () {
   function fetchAndShowIssues(keyword) {
     let apiUrl = `/project/${projectId}/milestones/api/issues/search?keyword=${keyword}`;
 
-    if (lockedVersionId !== null && lockedVersionId !== "") {
-      apiUrl += `&versionId=${lockedVersionId}`;
+    const currentVersion = versionIdInput ? versionIdInput.value : "";
+    if (currentVersion !== null && currentVersion !== "") {
+      apiUrl += `&versionId=${currentVersion}`;
     }
 
     fetch(apiUrl)
@@ -108,7 +133,7 @@ document.addEventListener("DOMContentLoaded", function () {
     searchDropdown.style.display = searchDropdown.children.length > 0 ? "block" : "none";
   }
 
-  // [표에 일감 추가 및 버전 고정 함수]
+  // [표에 일감 추가 함수]
   function addIssueToTable(issue) {
     const emptyRow = document.querySelector("#issueListBody .empty-row");
     if (emptyRow) emptyRow.closest("tr").remove();
@@ -131,34 +156,19 @@ document.addEventListener("DOMContentLoaded", function () {
     selectedIssueIds.add(issue.issueId);
     addedHistoryIds.add(issue.issueId);
 
-    if (!lockedVersionId) {
-      lockedVersionId = issue.versionId;
-      if (versionIdInput) versionIdInput.value = lockedVersionId;
-    }
-
     newCheckbox.addEventListener("change", handleCheckboxChange);
     updateHiddenInput();
-	updateCheckboxUI();
+    updateCheckboxUI();
   }
 
   // [체크박스 해제 및 선택 시 로직 함수]
   function handleCheckboxChange() {
     const clickedIssueId = this.value;
-    const clickedVersionId = this.getAttribute("data-version-id");
 
     if (this.checked) {
       selectedIssueIds.add(clickedIssueId);
-      if (!lockedVersionId) {
-        lockedVersionId = clickedVersionId;
-        if (versionIdInput) versionIdInput.value = lockedVersionId;
-      }
     } else {
       selectedIssueIds.delete(clickedIssueId);
-      
-      if (selectedIssueIds.size === 0) {
-        lockedVersionId = null;
-        if (versionIdInput) versionIdInput.value = "";
-      }
     }
     
     updateHiddenInput();
@@ -168,16 +178,17 @@ document.addEventListener("DOMContentLoaded", function () {
   // 표에 있는 모든 체크박스의 활성/비활성 상태를 갱신하는 함수
   function updateCheckboxUI() {
     const allCheckboxes = document.querySelectorAll(".issue-checkbox");
+    const currentVersion = versionIdInput ? versionIdInput.value : "";
     
     allCheckboxes.forEach(cb => {
       const cbVersionId = cb.getAttribute("data-version-id");
       const tr = cb.closest("tr"); 
       
-      if (lockedVersionId !== null && cbVersionId !== lockedVersionId) {
+      if (currentVersion !== "" && String(cbVersionId) !== String(currentVersion)) {
         cb.disabled = true;                
         tr.style.color = "#ccc";           
         tr.style.backgroundColor = "#f9f9f9"; 
-        tr.title = "현재 선택된 일감들과 버전이 달라 추가할 수 없습니다."; 
+        tr.title = "현재 마일스톤에 선택된 버전과 일치하지 않는 일감입니다."; 
       } else {
         cb.disabled = false;
         tr.style.color = "";

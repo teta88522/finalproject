@@ -92,7 +92,7 @@ public class RoadmapController {
         
         roadmapService.updateRoadmap(roadmapVO);
         
-        return "redirect:/project/" + projectId + "/roadmap/setting_list";
+        return "redirect:/project/" + projectId + "/roadmap/roadmap_detail?versionId=" + versionId;
     }
 
     @PostMapping("/setting_delete")
@@ -102,15 +102,16 @@ public class RoadmapController {
         try {
             roadmapService.deleteRoadmap(versionId, projectId);
             rttr.addFlashAttribute("message", "로드맵이 정상적으로 삭제되었습니다.");
+            return "redirect:/project/" + projectId + "/roadmap/roadmap_list";
             
         } catch (DataIntegrityViolationException e) {
             rttr.addFlashAttribute("errorMessage", "해당 버전에 연결된 하위 항목이 남아있어 삭제할 수 없습니다.");
+            return "redirect:/project/" + projectId + "/roadmap/roadmap_detail?versionId=" + versionId;
             
         } catch (Exception e) {
             rttr.addFlashAttribute("errorMessage", "로드맵 삭제 중 알 수 없는 오류가 발생했습니다.");
+            return "redirect:/project/" + projectId + "/roadmap/roadmap_detail?versionId=" + versionId;
         }
-        
-        return "redirect:/project/" + projectId + "/roadmap/setting_list";
     }
     
     @GetMapping("/roadmap_list")
@@ -149,6 +150,6 @@ public class RoadmapController {
             rttr.addFlashAttribute("errorMessage", "완료 처리 중 오류가 발생했습니다.");
         }
         
-        return "redirect:/project/" + projectId + "/roadmap/roadmap_detail";
+        return "redirect:/project/" + projectId + "/roadmap/roadmap_detail?versionId=" + versionId;
     }
 }

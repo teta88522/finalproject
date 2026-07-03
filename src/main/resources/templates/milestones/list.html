@@ -28,8 +28,11 @@
 
                 <hr class="section-divider" />
 
-                <div class="filter-section">
-                    <h3>마일스톤 필터</h3>
+                <!-- 📝 일감 목록과 100% 동일한 검색조건 테두리 박스로 개량 -->
+                <div class="search-section" style="margin-bottom: 20px; padding: 20px; background: #fff; border: 1px solid #e5e7eb; border-radius: 4px; clear: both;">
+                    <div class="search-header" style="margin-bottom: 15px; border-bottom: 1px solid #f3f4f6; padding-bottom: 10px;">
+                        <div class="search-title" style="font-size: 14px; font-weight: bold; color: #1f2937;">검색조건</div>
+                    </div>
                     
 					<div class="js-filter-row">
 					    <div class="js-filter-group">
@@ -60,8 +63,13 @@
 					        </div>
 					    </div>
 					</div>
-
-                <hr class="section-divider" />
+					
+					<!-- 📝 버튼 영역 추가 (일감/로드맵 디자인 이식) -->
+					<div class="filter-actions-row" style="margin-top: 15px; display: flex; gap: 8px; justify-content: flex-start;">
+					    <button type="button" id="btnFilterReset" class="btn btn-default" style="padding: 6px 16px; font-size: 13px; border-radius: 4px; cursor: pointer;">초기화</button>
+					    <button type="button" id="btnFilterSearch" class="btn btn-primary" style="padding: 6px 16px; font-size: 13px; border-radius: 4px; cursor: pointer; background-color: #006df0; border-color: #006df0; color: #fff;">검색</button>
+					</div>
+                </div>
 
                 <div class="list-section">
                     <h3>마일스톤 목록</h3>
@@ -117,11 +125,13 @@
                                     <div class="issue-item" th:each="issue : ${milestone.issueList}">
                                         <div class="issue-main">
                                             <span class="dynamic-badge" th:data-status="${issue.issueStatusName ?: '상태미상'}" th:text="${issue.issueStatusName ?: '상태미상'}">상태</span>
-                                            <a href="#" class="issue-title hover-primary js-issue-title" th:text="${issue.title}">일감 제목</a>
+                                            <a th:href="@{/project/{projectId}/issues/{id}(projectId=${projectId},id=${issue.issueId})}" 
+                                               class="issue-title hover-primary js-issue-title" 
+                                               th:text="${issue.title}">일감 제목</a>
                                         </div>
                                         <div class="issue-meta">
                                             <span class="meta-item"><i class="fas fa-user"></i> [[${issue.assigneeName ?: '미정'}]]</span>
-                                            <span class="meta-item"><i class="far fa-calendar-alt"></i> [[${issue.dueDate ?: '미정'}]]</span>
+                                            <span class="meta-item"><i class="far fa-calendar-alt"></i> [[${issue.startDate ?: '미정'}]] ~ [[${issue.dueDate ?: '미정'}]]</span>
                                             <span class="meta-item"><i class="fas fa-tasks"></i> [[${issue.progressRate}]]%</span>
                                         </div>
                                     </div>

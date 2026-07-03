@@ -3,6 +3,7 @@
 <mapper namespace="com.pixcel.app.milestones.mapper.MilestonesMapper">
 	    <!-- 팀 ID를 조건으로 해당 팀의 멤버 목록을 조회합니다 -->
     <select id="getManagerList" resultType="MilestonesMemberDTO">
+    <!--  
 	SELECT 
          p.PROJECT_ID       
         ,u.USER_ID             
@@ -11,7 +12,27 @@
     FROM PROJECT_MEMBER p
     INNER JOIN TEAM_MEMBER t ON p.TEAM_MEMBER_ID = t.TEAM_MEMBER_ID
     INNER JOIN USERS u ON t.USER_ID = u.USER_ID  
-    WHERE p.PROJECT_ID = #{projectId}                
+    WHERE p.PROJECT_ID = #{projectId}
+    -->
+    SELECT 
+     	pr.OWNER_ID AS USER_ID
+    	,owner.USER_NAME AS USER_NAME
+	FROM PROJECT pr
+	LEFT JOIN USERS owner
+       	ON pr.OWNER_ID = owner.USER_ID
+	WHERE pr.PROJECT_ID = #{projectId}
+
+	UNION
+
+	SELECT 
+    	 u.USER_ID AS USER_ID
+    	,u.USER_NAME AS USER_NAME
+	FROM PROJECT_MEMBER p
+	INNER JOIN TEAM_MEMBER t 
+    	    ON p.TEAM_MEMBER_ID = t.TEAM_MEMBER_ID
+	INNER JOIN USERS u 
+    	    ON t.USER_ID = u.USER_ID
+	WHERE p.PROJECT_ID = #{projectId}                
     </select>
         <!-- 키워드 검색과 버전 필터링을 동시에 수행하는 동적 쿼리입니다 -->
 <select id="getIssueList" resultType="IssuesVO">
@@ -120,6 +141,7 @@
             <result property="title" column="ISSUE_TITLE"/>
             <result property="issueStatusName" column="ISSUE_STATUS_NAME"/> 
             <result property="assigneeName" column="ASSIGNEE_NAME"/> 
+            <result property="startDate" column="ISSUE_START_DATE"/>
             <result property="dueDate" column="DUE_DATE"/>
             <result property="progressRate" column="ISSUE_PROGRESS_RATE"/>
         </collection>
@@ -144,6 +166,7 @@
             I.ISSUE_ID,
             I.TITLE AS ISSUE_TITLE,
             I.PROGRESS_RATE AS ISSUE_PROGRESS_RATE,
+            I.START_DATE AS ISSUE_START_DATE,
             I.DUE_DATE,
             G.STATUS_NAME AS ISSUE_STATUS_NAME, 
             U2.USER_NAME AS ASSIGNEE_NAME       

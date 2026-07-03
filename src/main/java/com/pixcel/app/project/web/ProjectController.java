@@ -138,9 +138,6 @@ public class ProjectController {
 			@CookieValue(value = "userId", required = false) String userId,
 			@CookieValue(value = "subscribeYn", required = false) String subscribeYn, Model model) {
 
-		// ⏱️ 임시 시간 측정 (원인 파악 후 삭제할 것)
-		long t0 = System.currentTimeMillis();
-
 		// ✅ 1. 로그인 확인
 		if (userId == null || userId.isEmpty()) {
 			return "redirect:/login";
@@ -148,18 +145,15 @@ public class ProjectController {
 
 		// ✅ 2. 프로젝트 존재 확인
 		ProjectVO project = projectService.selectProjectDetail(projectId);
-		long t1 = System.currentTimeMillis();
-		System.out.println("[TIMING] selectProjectDetail: " + (t1 - t0) + "ms");
 
 		if (project == null) {
 			return "redirect:/myproject/list";
 		}
 
 		// ✅ 3. 접근 권한 확인 (소유자 또는 구성원)
+		// ⚡ 소유자인 경우 구성원 여부 조회(countProjectMember)를 생략해 왕복 1회 절약
 		boolean isOwner = project.getOwnerId().equals(userId);
-		boolean isMember = projectService.isProjectMember(projectId, userId);
-		long t2 = System.currentTimeMillis();
-		System.out.println("[TIMING] isProjectMember: " + (t2 - t1) + "ms");
+		boolean isMember = isOwner || projectService.isProjectMember(projectId, userId);
 
 		if (!isOwner && !isMember) {
 			return "redirect:/myproject/list";
@@ -176,20 +170,13 @@ public class ProjectController {
 						.supplyAsync(() -> projectService.selectIssueStatByProjectId(projectId));
 
 		List<ProjectMemberVO> projectMemberList = memberListFuture.join();
-		long t3 = System.currentTimeMillis();
-		System.out.println("[TIMING] selectProjectMemberList (병렬): " + (t3 - t2) + "ms");
-
 		List<IssueStatVO> issueStatList = issueStatFuture.join();
-		long t4 = System.currentTimeMillis();
-		System.out.println("[TIMING] selectIssueStatByProjectId (병렬 완료 시점): " + (t4 - t2) + "ms");
 
 		model.addAttribute("project", project);
 		model.addAttribute("projectId", projectId);
 		model.addAttribute("subscribeYn", subscribeYn);
 		model.addAttribute("projectMemberList", projectMemberList);
 		model.addAttribute("issueStatList", issueStatList);
-
-		System.out.println("[TIMING] ===== TOTAL controller time: " + (t4 - t0) + "ms =====");
 
 		return "project/projectDetail";
 	}
@@ -387,23 +374,32 @@ public class ProjectController {
 
 		List<ProjectModulesVO> projectModuleList = projectService.selectAllModuleProjects(projectId);
 
-		// ✅ 전체 모듈 코드-이름 매핑 (프로젝트 생성 화면과 동일한 목록)
+		// ✅ 전체 모듈 코드-이름 매핑 (common_code 테이블 CODE_ID2='프로젝트 모듈' 기준과 반드시 동일해야 함)
 		java.util.LinkedHashMap<String, String> moduleMap = new java.util.LinkedHashMap<>();
 		moduleMap.put("h001", "일감관리");
-		moduleMap.put("h002", "자료실");
-		moduleMap.put("h003", "저장소");
-		moduleMap.put("h004", "문서");
-		moduleMap.put("h005", "위키");
-		moduleMap.put("h006", "게시판");
-		moduleMap.put("h007", "간트차트");
-		moduleMap.put("h008", "칸반");
-		moduleMap.put("h009", "로드맵");
-		moduleMap.put("h010", "마일스톤");
-		moduleMap.put("h011", "달력");
+		moduleMap.put("h002", "시간추적");
+		moduleMap.put("h003", "파일");
+		moduleMap.put("h004", "저장소");
+		moduleMap.put("h005", "문서");
+		moduleMap.put("h006", "위키");
+		moduleMap.put("h007", "게시판");
+		moduleMap.put("h008", "간트차트");
+		moduleMap.put("h009", "칸반");
+		moduleMap.put("h010", "로드맵");
+		moduleMap.put("h011", "마일스톤");
+		moduleMap.put("h012", "달력");
 
 		java.util.Set<String> usedModuleCodes = new java.util.HashSet<>();
 		for (ProjectModulesVO pm : projectModuleList) {
 			usedModuleCodes.add(pm.getModuleCode());
+		}
+
+		// ✅ 아직 추가하지 않은(선택 가능한) 모듈 목록 (뷰에서의 복잡한 연산 방지)
+		java.util.LinkedHashMap<String, String> availableModules = new java.util.LinkedHashMap<>();
+		for (java.util.Map.Entry<String, String> entry : moduleMap.entrySet()) {
+			if (!usedModuleCodes.contains(entry.getKey())) {
+				availableModules.put(entry.getKey(), entry.getValue());
+			}
 		}
 
 		model.addAttribute("project", project);
@@ -412,12 +408,13 @@ public class ProjectController {
 		model.addAttribute("projectModuleList", projectModuleList);
 		model.addAttribute("moduleMap", moduleMap);
 		model.addAttribute("usedModuleCodes", usedModuleCodes);
+		model.addAttribute("availableModules", availableModules);
 
 		return "settings/projectModuleSetting";
 	}
 
 	/* ✅ 요청하신 경로 별칭: /myproject/module?projectId=xxx 로도 같은 화면에 접근 가능 */
-	@GetMapping("/myproject/module")
+	@GetMapping("/myproject/update")
 	public String projectModuleSettingAlias(@RequestParam String projectId,
 			@CookieValue(value = "userId", required = false) String userId,
 			@CookieValue(value = "subscribeYn", required = false) String subscribeYn, Model model) {

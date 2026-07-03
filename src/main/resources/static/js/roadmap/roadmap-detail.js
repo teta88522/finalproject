@@ -59,7 +59,22 @@ document.addEventListener("DOMContentLoaded", function() {
     
     const btnComplete = document.getElementById('btnCompleteRoadmap');
     if (btnComplete && avgProgress === 100) {
-        btnComplete.disabled = false; // 100% 달성 시 완료 버튼 활성화
+        // 이미 완료(k003) 상태라면 disabled 해제하지 않음 (서버 타임리프 바인딩에 의한 th:disabled 조건 보호)
+        if (roadmapData.statusCode !== 'k003') {
+            btnComplete.disabled = false; // 100% 달성 시 완료 버튼 활성화
+        }
+    }
+    
+    // 📝 완료 버튼 클릭 시 확인 알림창 작동 및 폼 서브밋 연동
+    if (btnComplete) {
+        btnComplete.addEventListener("click", function() {
+            if (confirm("완료를 누르시면 더 이상 수정이 안됩니다. 계속하시겠습니까?")) {
+                const completeForm = document.getElementById('completeRoadmapForm');
+                if (completeForm) {
+                    completeForm.submit();
+                }
+            }
+        });
     }
 
     // --- [3] 우측 차트 텍스트 업데이트 ---

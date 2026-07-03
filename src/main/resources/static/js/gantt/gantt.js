@@ -8,7 +8,7 @@ let filterValues = {
     end: ''
 };
 
-// 2. 필터 적용 함수 (HTML에서 onchange / onkeyup 시 호출됨)
+// 2. 필터 적용 함수
 function filterGantt() {
     filterValues.milestone = document.getElementById('f_milestone').value;
     filterValues.status = document.getElementById('f_status').value;
@@ -16,6 +16,19 @@ function filterGantt() {
     filterValues.text = document.getElementById('f_text').value.toLowerCase();
     filterValues.start = document.getElementById('f_start').value;
     filterValues.end = document.getElementById('f_end').value;
+
+    // 📅 입력창의 날짜에 맞추어 간트차트 가로 타임라인 범위를 칼각 동기화
+    if (filterValues.start) {
+        gantt.config.start_date = new Date(filterValues.start);
+    } else {
+        gantt.config.start_date = null;
+    }
+    
+    if (filterValues.end) {
+        gantt.config.end_date = new Date(filterValues.end);
+    } else {
+        gantt.config.end_date = null;
+    }
 
     gantt.render(); // 필터 적용 후 간트차트 다시 그리기
 }
@@ -70,48 +83,34 @@ document.addEventListener("DOMContentLoaded", function () {
     // 항상 누락 없이 100% 노출되도록 데이터 기간에 맞춤 자동 확장을 활성화합니다.
     gantt.config.fit_tasks = true;
 
-    // [기술적 이유]: DHTMLX Gantt의 내장 줌 플러그인을 활성화하여, 하루(Day) / 1주일(Week) / 1개월(Month) 단위 스케일 뷰를 구축합니다.
-    gantt.ext.zoom.init({
-        levels: [
-            {
-                name: "day",
-                scale_height: 50,
-                min_column_width: 80,
-                scales: [
-                    { unit: "month", step: 1, format: "%Y년 %m월" },
-                    { 
-                        unit: "day", 
-                        step: 1, 
-                        format: function(date) {
-                            const days = ["일", "월", "화", "수", "목", "금", "토"];
-                            return gantt.date.date_to_str("%d")(date) + "일 (" + days[date.getDay()] + ")";
-                        }
-                    }
-                ]
-            },
-            {
-                name: "week",
-                scale_height: 50,
-                min_column_width: 60,
-                scales: [
-                    { unit: "month", step: 1, format: "%Y년 %m월" },
-                    { unit: "week", step: 1, format: "%W주차" }
-                ]
-            },
-            {
-                name: "month",
-                scale_height: 50,
-                min_column_width: 120,
-                scales: [
-                    { unit: "year", step: 1, format: "%Y년" },
-                    { unit: "month", step: 1, format: "%m월" }
-                ]
-            }
-        ]
-    });
+    // 📅 [초기 default 세팅]: 오늘날짜와 오늘+15일 날짜 계산
+    const today = new Date();
+    const future = new Date(today);
+    future.setDate(today.getDate() + 15);
     
-    // 초기 기본 줌 레벨은 가장 상세한 '하루(day)' 단위로 강제합니다.
-    gantt.ext.zoom.setLevel("day");
+    // YYYY-MM-DD 규격 변환기 (오라클/인풋 바인딩용)
+    const formatDate = (date) => {
+        const yyyy = date.getFullYear();
+        const mm = String(date.getMonth() + 1).padStart(2, '0');
+        const dd = String(date.getDate()).padStart(2, '0');
+        return `${yyyy}-${mm}-${dd}`;
+    };
+
+    const inputStart = document.getElementById('f_start');
+    const inputEnd = document.getElementById('f_end');
+    
+    if (inputStart && inputEnd) {
+        inputStart.value = formatDate(today);
+        inputEnd.value = formatDate(future);
+        
+        // 필터 상태값에도 즉시 꽂아넣기
+        filterValues.start = inputStart.value;
+        filterValues.end = inputEnd.value;
+    }
+
+    // 기본 축 지정 후 간트차트 기동
+    if (filterValues.start) gantt.config.start_date = new Date(filterValues.start);
+    if (filterValues.end) gantt.config.end_date = new Date(filterValues.end);
 
     gantt.init("gantt_container");
 
@@ -126,6 +125,12 @@ document.addEventListener("DOMContentLoaded", function () {
     gantt.attachEvent("onLoadEnd", function() {
         const todayX = gantt.posFromDate(new Date());
         gantt.scrollTo(todayX, null);
+        
+        // 🌟 [추가]: 데이터 로딩과 차트 그리기가 완벽히 다 끝났으므로 필터와 차트를 짠! 하고 동시에 노출합니다.
+        const allWrapper = document.getElementById('ganttAllWrapper');
+        if (allWrapper) {
+            allWrapper.style.opacity = '1';
+        }
     });
 
     // 화면에 태스크를 그리기 전 필터링 로직 적용
@@ -176,19 +181,61 @@ document.addEventListener("DOMContentLoaded", function () {
 
     gantt.load(`/project/${projectId}/gantt/api/data`);
 
-    // ➕/➖ 버튼 클릭 시 줌 인/아웃(Day/Week/Month 배율 전환) 이벤트 연결
-    const btnZoomIn = document.getElementById("btnZoomIn");   // 줌 인 버튼
-    const btnZoomOut = document.getElementById("btnZoomOut"); // 줌 아웃 버튼
+    // ➕/➖ 버튼 클릭 시 기간 검색창의 날짜를 15일씩 가변 연산 연동
+    const btnZoomIn = document.getElementById("btnZoomIn");   // 미래 +15일 버튼
+    const btnZoomOut = document.getElementById("btnZoomOut"); // 과거 -15일 버튼
 
     if (btnZoomIn && btnZoomOut) {
-        // ➕ 버튼 클릭 시: 디테일하게 돋보기(확대) ➡️ Day 방향으로 줌 인
+        // ➕ 버튼 클릭 시: [종료일] 입력창의 날짜를 미래로 +15일 연장 후 자동 검색
         btnZoomIn.addEventListener("click", function() {
-            gantt.ext.zoom.zoomIn();
+            const inputEnd = document.getElementById('f_end');
+            if (inputEnd && inputEnd.value) {
+                let currEnd = new Date(inputEnd.value);
+                currEnd.setDate(currEnd.getDate() + 15);
+                inputEnd.value = formatDate(currEnd);
+                filterGantt(); // 동기화 및 렌더링 호출
+            }
         });
 
-        // ➖ 버튼 클릭 시: 넓게 조망(축소) ➡️ Week/Month 방향으로 줌 아웃
+        // ➖ 버튼 클릭 시: [시작일] 입력창의 날짜를 과거로 -15일 연장 후 자동 검색
         btnZoomOut.addEventListener("click", function() {
-            gantt.ext.zoom.zoomOut();
+            const inputStart = document.getElementById('f_start');
+            if (inputStart && inputStart.value) {
+                let currStart = new Date(inputStart.value);
+                currStart.setDate(currStart.getDate() - 15);
+                inputStart.value = formatDate(currStart);
+                filterGantt(); // 동기화 및 렌더링 호출
+            }
+        });
+    }
+
+    // 📝 [검색] 버튼을 누를 때만 필터링 기능이 동작하도록 리스너 바인딩
+    const btnFilterSearch = document.getElementById('btnFilterSearch');
+    const btnFilterReset = document.getElementById('btnFilterReset');
+
+    if (btnFilterSearch) {
+        btnFilterSearch.addEventListener('click', filterGantt);
+    }
+
+    // 📝 [초기화] 버튼 누를 시 모든 값을 공백화하되, 시작/종료일은 기본 [오늘 / 오늘+15일]로 세팅 원복
+    if (btnFilterReset) {
+        btnFilterReset.addEventListener('click', function() {
+            const msSelect = document.getElementById('f_milestone');
+            const stSelect = document.getElementById('f_status');
+            const asSelect = document.getElementById('f_assignee');
+            const inputTxt = document.getElementById('f_text');
+
+            if (msSelect) msSelect.value = "all";
+            if (stSelect) stSelect.value = "all";
+            if (asSelect) asSelect.value = "all";
+            if (inputTxt) inputTxt.value = "";
+
+            // 날짜는 다시 오늘 / 오늘+15일 초기 기본 세팅으로 리셋
+            if (inputStart && inputEnd) {
+                inputStart.value = formatDate(today);
+                inputEnd.value = formatDate(future);
+            }
+            filterGantt(); // 리셋 상태 렌더링 호출
         });
     }
 });

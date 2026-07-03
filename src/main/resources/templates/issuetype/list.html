@@ -143,8 +143,11 @@
 												복사 </a>
 
 											<form th:action="@{/issuetype/delete}" method="post"
-												class="inline-form"
-												onsubmit="return confirm('선택한 일감유형을 삭제하시겠습니까?');">
+												class="inline-form js-pf-confirm-submit"
+												data-confirm-title="삭제 확인"
+												data-confirm-message="선택한 일감유형을 삭제하시겠습니까?"
+												data-confirm-confirm-text="삭제"
+												data-confirm-icon="warning">
 												<input type="hidden" name="issueTypeId"
 													th:value="${issueType.issueTypeId}">
 
@@ -163,6 +166,8 @@
 			</div>
 		</div>
 
+	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+	<script th:src="@{/js/common/pf-confirm.js}"></script>
 	<script>
 		(function() {
 			function updateFilterSummary(dropdown) {

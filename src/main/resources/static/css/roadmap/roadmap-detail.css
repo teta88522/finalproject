@@ -339,6 +339,30 @@
     background-color: #f5f5f5;
 }
 
+/* 관리 버튼 스타일 */
+.btn-manage {
+    display: inline-block;
+    padding: 8px 16px;
+    background-color: #fff;
+    border: 1px solid #d9d9d9;
+    border-radius: 4px;
+    color: #333;
+    font-size: 14px;
+    text-decoration: none;
+    transition: all 0.2s;
+    cursor: pointer;
+}
+.btn-manage:hover {
+    background-color: #f5f5f5;
+}
+.btn-manage.btn-disabled {
+    background-color: #cccccc !important;
+    border-color: #cccccc !important;
+    color: #fff !important;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
 /* 완료 버튼 (기본 파란색) */
 .btn-complete {
     display: inline-block;

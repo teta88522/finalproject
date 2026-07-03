@@ -139,8 +139,21 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // 이벤트 리스너 등록
-    selRoadmap.addEventListener('change', applyFilters);
-    selMilestone.addEventListener('change', applyFilters);
-    inputIssue.addEventListener('input', applyFilters); // 타이핑 즉시 필터링
+    // 📝 실시간 리스너 차단 ➡️ 버튼 이벤트로 변경
+    const btnFilterSearch = document.getElementById('btnFilterSearch');
+    const btnFilterReset = document.getElementById('btnFilterReset');
+
+    if (btnFilterSearch) {
+        btnFilterSearch.addEventListener('click', applyFilters);
+    }
+
+    // 📝 [초기화] 버튼 누를 시 모든 값을 공백화하고 화면을 깨끗이 원복
+    if (btnFilterReset) {
+        btnFilterReset.addEventListener('click', function() {
+            if (selRoadmap) selRoadmap.value = "";
+            if (selMilestone) selMilestone.value = "";
+            if (inputIssue) inputIssue.value = "";
+            applyFilters(); // 필터 리셋 결과 렌더링
+        });
+    }
 });

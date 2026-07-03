@@ -22,7 +22,6 @@
           th:action="@{/project/{projectId}/milestones/create(projectId=${projectId})}"
           method="post"
         >
-          <input type="hidden" id="versionId" name="versionId" value="" />
 		  <input type="hidden" id="projectId" th:value="${projectId}">
           <input
             type="hidden"
@@ -108,6 +107,18 @@
                       th:value="${manager.userId}"
                       th:text="${manager.userName}"
                     ></option>
+                  </select>
+                </div>
+
+                <!-- 📝 버전(로드맵) 선택 필드 신설 (담당자 하단 위치) -->
+                <div class="form-group">
+                  <label>연결할 버전 (로드맵) <span class="required">*</span></label>
+                  <select id="versionId" name="versionId" class="form-control required-input">
+                    <option value="">버전 선택</option>
+                    <option th:each="roadmap : ${roadmapList}"
+                            th:if="${roadmap.statusCode != 'k003'}"
+                            th:value="${roadmap.versionId}"
+                            th:text="${roadmap.versionName}"></option>
                   </select>
                 </div>
 

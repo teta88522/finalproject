@@ -19,6 +19,13 @@
 	        <h2>로드맵 상세보기</h2>
 	        <div class="header-actions">
 	            <a th:href="@{/project/{id}/roadmap/roadmap_list(id=${projectId})}" class="btn-list">목록으로</a>
+	            <a th:href="@{/project/{projectId}/roadmap/setting_update(projectId=${projectId}, versionId=${roadmap.versionId})}"
+	               class="btn-manage"
+	               th:classappend="${roadmap.statusCode == 'k003'} ? 'btn-disabled' : ''"
+	               th:attr="onclick=${roadmap.statusCode == 'k003'} ? 'return false;' : ''"
+	               th:style="${roadmap.statusCode == 'k003'} ? 'pointer-events: none;' : ''">
+	                ⚙️ 관리
+	            </a>
 	            <button type="button" id="btnCompleteRoadmap" class="btn-complete" disabled>완료</button>
 	        </div>
 	    </div>
@@ -117,7 +124,13 @@
                   </thead>
                   <tbody>
                     <tr th:each="issue : ${milestone.issueList}">
-                      <td th:text="${issue.title}">일감명</td>
+                      <td>
+                          <a th:href="@{/project/{projectId}/issues/{id}(projectId=${projectId}, id=${issue.issueId})}"
+                             style="text-decoration: none; color: #006df0; font-weight: 500;"
+                             th:text="${issue.title}">
+                              일감명
+                          </a>
+                      </td>
                       <td th:text="${issue.assigneeName != null ? issue.assigneeName : '미정'}">담당자명</td>
                       <td>
 						<span class="issue-status dynamic-badge" 
@@ -186,6 +199,11 @@
 	    </div>
 	</div>
 </div>
+
+<!-- 📝 로드맵 완료 처리를 위한 hidden form 연동 -->
+<form id="completeRoadmapForm" th:action="@{/project/{projectId}/roadmap/roadmap_detail(projectId=${projectId})}" method="POST" style="display:none;">
+    <input type="hidden" name="versionId" th:value="${roadmap.versionId}">
+</form>
 
 </div>
       <script th:inline="javascript">

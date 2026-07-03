@@ -72,11 +72,27 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // 2. [삭제] 버튼 클릭 시 확인 창 띄우고 삭제 폼 전송
+    // 2. [삭제] 버튼 클릭 시 2단계 사전 예방 차단기 구동 및 폼 전송
     if(btnDelete) {
         btnDelete.addEventListener('click', function() {
-            // 삭제 전 한 번 더 묻기 (안전장치)
-            if(confirm('정말 이 로드맵을 삭제하시겠습니까?\n※ 연결된 일감이나 문서가 있을 경우 삭제할 수 없습니다.')) {
+            const issueCount = parseInt(btnDelete.getAttribute('data-issue-count') || '0', 10);
+            const milestoneCount = parseInt(btnDelete.getAttribute('data-milestone-count') || '0', 10);
+            const defaultYn = btnDelete.getAttribute('data-default-yn') || 'N';
+
+            // 🛡️ 1차 차단: 기본(Default) 버전 삭제 차단
+            if (defaultYn === 'Y') {
+                alert("기본(Default) 버전으로 설정된 로드맵은 삭제할 수 없습니다.\n삭제하시려면 다른 로드맵을 기본 버전으로 먼저 변경해 주세요.");
+                return;
+            }
+
+            // 🛡️ 2차 차단: 하위 항목(일감 또는 마일스톤) 잔존 시 삭제 차단
+            if (issueCount > 0 || milestoneCount > 0) {
+                alert("하위 항목(일감 또는 마일스톤)이 존재하는 로드맵은 삭제할 수 없습니다.\n(현재 연결된 일감: " + issueCount + "개, 마일스톤: " + milestoneCount + "개)");
+                return;
+            }
+
+            // 안전 검사 모두 통과 시에만 최종 확인 후 삭제 진행
+            if(confirm('정말 이 로드맵을 삭제하시겠습니까?')) {
                 deleteForm.submit();
             }
         });

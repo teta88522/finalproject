@@ -121,10 +121,23 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // 필터 이벤트 리스너
-    selVersion.addEventListener('change', applyFilters);
-    selMilestone.addEventListener('change', applyFilters);
-    inputIssue.addEventListener('input', applyFilters); 
-    inputStartDate.addEventListener('change', applyFilters);
-    inputEndDate.addEventListener('change', applyFilters);
+    // 📝 [검색] 버튼을 누를 때만 필터링 기능이 동작하도록 수정
+    const btnFilterSearch = document.getElementById('btnFilterSearch');
+    const btnFilterReset = document.getElementById('btnFilterReset');
+
+    if (btnFilterSearch) {
+        btnFilterSearch.addEventListener('click', applyFilters);
+    }
+
+    // 📝 [초기화] 버튼 누를 시 모든 값을 공백화하고 화면을 깨끗이 원복
+    if (btnFilterReset) {
+        btnFilterReset.addEventListener('click', function() {
+            if (selVersion) selVersion.value = "";
+            if (selMilestone) selMilestone.value = "";
+            if (inputIssue) inputIssue.value = "";
+            if (inputStartDate) inputStartDate.value = "";
+            if (inputEndDate) inputEndDate.value = "";
+            applyFilters(); // 필터 리셋 결과 렌더링
+        });
+    }
 });

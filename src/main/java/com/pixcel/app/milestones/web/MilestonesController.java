@@ -2,6 +2,8 @@ package com.pixcel.app.milestones.web;
 
 import com.pixcel.app.milestones.service.MilestonesService;
 import com.pixcel.app.milestones.service.MilestonesVO;
+import com.pixcel.app.roadmap.service.RoadmapService;
+import com.pixcel.app.roadmap.service.RoadmapVO;
 import com.pixcel.app.user.security.CustomUserDetails;
 import com.pixcel.app.web.AllProjectController;
 
@@ -34,6 +36,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class MilestonesController {
 
     private final MilestonesService milestonesService; //서비스를 받아 mybatis와 연결
+    private final RoadmapService roadmapService; // 📝 로드맵 서비스 주입 추가
     
     //마일스톤 생성화면
     @GetMapping("/create")
@@ -44,7 +47,14 @@ public class MilestonesController {
    
     
     List<MilestonesMemberDTO> managerList = milestonesService.getManagerList(projectId); //멤버 담당자 조회 테스트 향후 수정필요
+    
+    // 📝 RoadmapVO 객체에 projectId를 주입해 목록 조회하도록 버그 교정
+    RoadmapVO roadmapVO = new RoadmapVO();
+    roadmapVO.setProjectId(projectId);
+    List<RoadmapVO> roadmapList = roadmapService.getSettingList(roadmapVO);
+    
     model.addAttribute("managerList", managerList); //화면에 팀원 목록을 넘겨줌
+    model.addAttribute("roadmapList", roadmapList); // 📝 로드맵 버전 목록을 화면에 넘겨줌
     model.addAttribute("projectId", projectId);
     return "milestones/create";
     }
@@ -110,9 +120,16 @@ public class MilestonesController {
     	
         List<MilestonesMemberDTO> managerList = milestonesService.getManagerList(projectId);
         List<IssuesVO> connectedIssues = milestonesService.selectConnectedIssues(milestoneId);
+        
+        // 📝 RoadmapVO 객체에 projectId를 주입해 목록 조회하도록 버그 교정
+        RoadmapVO roadmapVO = new RoadmapVO();
+        roadmapVO.setProjectId(projectId);
+        List<RoadmapVO> roadmapList = roadmapService.getSettingList(roadmapVO);
+        
         // 3. 뷰(HTML)로 데이터 전달
         model.addAttribute("milestone", milestone);      // 수정 폼에 채워질 기존 데이터
         model.addAttribute("managerList", managerList);  // 담당자 선택 콤보박스 목록
+        model.addAttribute("roadmapList", roadmapList);  // 📝 로드맵 버전 목록 전달
         model.addAttribute("connectedIssues", connectedIssues);
         model.addAttribute("projectId", projectId);
         return "milestones/update"; // update.html 렌더링

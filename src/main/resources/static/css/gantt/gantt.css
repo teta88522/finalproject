@@ -11,56 +11,155 @@
 }
 
 /* ==========================================================================
-   2. 상단 필터 영역 (로드맵 스타일 적용)
+   2. 상단 필터 영역 (마일스톤 스타일 통합 및 리팩토링)
    ========================================================================== */
-/* 필터 박스 전체 프레임 */
-.js-filter-row { 
-    display: grid; 
-    /* 화면 크기에 맞춰 5등분, 좁아지면 자동으로 줄바꿈 */
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); 
-    gap: 20px; 
-    padding: 20px 25px;
-    margin-bottom: 25px !important; 
-    background: #ffffff; /* 로드맵 스타일의 완전 흰색 배경 */
-    border: 1px solid #ebebeb; /* 로드맵 스타일의 연한 테두리 */
-    border-radius: 6px; 
-    box-shadow: 0 1px 3px rgba(0,0,0,0.02); /* 미세한 입체감 */
+#ganttAllWrapper {
+    opacity: 0;
+    transition: opacity 0.25s ease-in-out;
 }
 
-/* 개별 필터 그룹 (라벨 + 입력창) */
+.kiaalap-panel.main-box {
+    margin-bottom: 20px;
+}
+
+.main-header {
+    margin-bottom: 25px;
+}
+
+.main-header h2 {
+    font-size: 25px;
+    font-weight: bold;
+    margin: 0;
+    color: #2c3e50;
+}
+
+.search-section {
+    margin-bottom: 20px;
+    padding: 20px;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 4px;
+    clear: both;
+}
+
+.search-header {
+    margin-bottom: 15px;
+    border-bottom: 1px solid #f3f4f6;
+    padding-bottom: 10px;
+}
+
+.search-title {
+    font-size: 14px;
+    font-weight: bold;
+    color: #1f2937;
+}
+
+.js-filter-row { 
+    display: grid; 
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
+    gap: 20px; 
+    background-color: #fcfcfc; 
+    padding: 20px; 
+    border-radius: 4px; 
+    border: 1px solid #e5e6e7; 
+    align-items: end; /* 📝 밑선 칼각 일치 */
+}
+
 .js-filter-group { 
     display: flex; 
     flex-direction: column; 
-    gap: 8px; /* 라벨과 인풋 사이 간격 약간 넓힘 */
+    gap: 8px; 
+    width: 100%;
 }
 
-/* 필터 라벨 텍스트 */
 .js-filter-group label { 
     font-size: 13px; 
-    font-weight: 700; 
+    font-weight: 600; 
     color: #555; 
     display: flex;
     align-items: center;
-    gap: 5px; /* 아이콘과 텍스트 사이 간격 */
+    gap: 5px;
 }
 
-/* 셀렉트 박스 및 입력창 디자인 */
 .js-filter-group select, 
-.js-filter-group input { 
-    padding: 9px 12px; 
-    border: 1px solid #dcdcdc; /* 깔끔하고 얇은 테두리 */
-    border-radius: 4px; 
-    font-size: 13px;
-    color: #333;
+.js-filter-group input[type="text"] { 
+    width: 100%; 
+    height: 38px; /* 📝 세로 높이 고정 */
+    padding: 0 12px; 
+    border: 1px solid #ccc; 
+    border-radius: 3px; 
+    font-size: 13px; 
+    outline: none; 
     background-color: #fff;
-    outline: none;
     transition: border-color 0.2s;
 }
 
-/* 입력창 클릭(포커스) 시 효과 */
 .js-filter-group select:focus, 
-.js-filter-group input:focus { 
-    border-color: #a29bfe; /* 클릭 시 연보라색 테두리 하이라이트 */
+.js-filter-group input[type="text"]:focus, 
+.date-inputs input:focus { 
+    border-color: #006df0; 
+}
+
+.date-inputs { 
+    display: flex; 
+    align-items: center; 
+    gap: 10px; 
+    width: 100%; 
+    height: 38px; /* 📝 부모 높이 동기화 */
+}
+
+.date-inputs input[type="date"] { 
+    flex: 1; 
+    min-width: 110px; 
+    height: 38px; /* 📝 세로 높이 고정 */
+    padding: 0 10px;
+    border: 1px solid #ccc; 
+    border-radius: 3px;
+    font-size: 13px; 
+    outline: none; 
+    background-color: #fff;
+    transition: border-color 0.2s;
+}
+
+.date-inputs span { 
+    color: #888; 
+    font-weight: bold; 
+    line-height: 38px; 
+}
+
+/* 필터 하단 액션 버튼 영역 */
+.filter-actions-row {
+    margin-top: 15px;
+    display: flex;
+    gap: 8px;
+    justify-content: flex-start;
+}
+
+.filter-actions-row button {
+    padding: 6px 16px;
+    font-size: 13px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.filter-actions-row .btn-primary {
+    background-color: #006df0;
+    border-color: #006df0;
+    color: #fff;
+}
+
+/* 간트 ➕/➖ 확대축소 툴바 */
+.gantt-toolbar {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.gantt-toolbar button {
+    font-weight: bold;
+    border-radius: 4px;
+    padding: 5px 12px;
 }
 
 /* ==========================================================================

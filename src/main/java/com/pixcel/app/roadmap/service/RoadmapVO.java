@@ -31,4 +31,8 @@ public class RoadmapVO {
 	private int progressRate;
 	private String projectName;
 	private String projectOwnerName;
+	
+	// 📝 통계용 필드 신설 (설정 수정 화면 삭제 제약 검증용)
+	private int issueCount;
+	private int milestoneCount;
 }
