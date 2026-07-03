@@ -177,7 +177,10 @@ public class sourcerepositoryServiceImpl implements sourcerepositoryService {
 
 			// 5. content가 base64 인코딩되어 있으면 디코딩
 			String encodedContent = fileObj.get("content").getAsString();
-			String decodedContent = new String(Base64.getDecoder().decode(encodedContent), StandardCharsets.UTF_8);
+			// ✅ GitHub API가 base64를 60자마다 줄바꿈(\n) 넣어서 반환하는데,
+			//    Base64.getDecoder()(strict)는 줄바꿈이 섞이면 "Illegal base64 character 0xa"로 실패함.
+			//    줄바꿈을 허용하는 MIME 디코더로 교체 (짧은 파일은 줄바꿈이 없어서 우연히 안 걸렸던 것)
+			String decodedContent = new String(Base64.getMimeDecoder().decode(encodedContent), StandardCharsets.UTF_8);
 
 			return decodedContent;
 
@@ -374,6 +377,12 @@ public class sourcerepositoryServiceImpl implements sourcerepositoryService {
 	}
 
 	private List<sourcerepositoryVO> fetchCommitsFromGitHub(String gitUrl, String branch) {
+		return fetchCommitsFromGitHub(gitUrl, branch, null);
+	}
+
+	// ✅ path 파라미터 추가 버전. path가 있으면 GitHub Commits API의 "path" 쿼리로 필터링해서
+	//    "이 파일 경로를 건드린 커밋들만" 조회함 (GitHub REST API 공식 문서: /rest/commits/commits)
+	private List<sourcerepositoryVO> fetchCommitsFromGitHub(String gitUrl, String branch, String path) {
 		try {
 			String owner = parseGitHubOwner(gitUrl);
 			String repo = parseGitHubRepo(gitUrl);
@@ -383,6 +392,9 @@ public class sourcerepositoryServiceImpl implements sourcerepositoryService {
 			}
 
 			String apiUrl = githubApiUrl + "/repos/" + owner + "/" + repo + "/commits?sha=" + branch + "&per_page=30";
+			if (path != null && !path.isEmpty()) {
+				apiUrl += "&path=" + java.net.URLEncoder.encode(path, StandardCharsets.UTF_8);
+			}
 
 			// ✅ 인증 헤더 적용
 			HttpEntity<String> entity = new HttpEntity<>(buildGitHubHeaders());
@@ -439,6 +451,24 @@ public class sourcerepositoryServiceImpl implements sourcerepositoryService {
 
 		} catch (Exception e) {
 			throw new RuntimeException("GitHub Commit 조회 실패: " + e.getMessage(), e);
+		}
+	}
+
+	/**
+	 * ✅ 파일 경로 기준 Commit 이력 조회 (DB 저장 없이 GitHub에서 실시간 조회)
+	 *    commit_log 테이블은 브랜치 단위로만 커밋을 저장하고 "어떤 파일이 바뀌었는지"는 안 갖고 있어서,
+	 *    파일별 이력은 DB로 못 찾고 GitHub Commits API의 path 파라미터로 매번 직접 조회해야 함.
+	 */
+	@Override
+	public List<sourcerepositoryVO> getFileCommitHistory(String projectId, String filePath, String branch) {
+		try {
+			ProjectVO project = projectService.selectProjectDetail(projectId);
+			if (project == null || project.getGitUrl() == null || project.getGitUrl().isEmpty()) {
+				throw new RuntimeException("GitHub URL이 설정되지 않았습니다.");
+			}
+			return fetchCommitsFromGitHub(project.getGitUrl(), branch, filePath);
+		} catch (Exception e) {
+			throw new RuntimeException("파일별 Commit 이력 조회 실패: " + e.getMessage(), e);
 		}
 	}
 

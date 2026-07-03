@@ -111,28 +111,27 @@
 			</div>
 		</div>
 
-	</div>
+		<script th:inline="javascript">
+			/**
+			 * 일감 목록 페이지로 이동
+			 * 해당 유형의 일감을 필터링하여 표시
+			 */
+			function goToIssueList(row) {
+				const projectId = row.dataset.projectId;
+				const issueTypeCode = row.dataset.issueTypeCode;
 
-	<script th:inline="javascript">
-		/**
-		 * 일감 목록 페이지로 이동
-		 * 해당 유형의 일감을 필터링하여 표시
-		 */
-		function goToIssueList(row) {
-			const projectId = row.dataset.projectId;
-			const issueTypeCode = row.dataset.issueTypeCode;
+				if (!projectId || !issueTypeCode) {
+					console.error('필수 데이터가 없습니다.');
+					return;
+				}
 
-			if (!projectId || !issueTypeCode) {
-				console.error('필수 데이터가 없습니다.');
-				return;
+				// 일감 목록 페이지로 이동 (유형별 필터링)
+				// 실제 경로는 프로젝트의 일감 페이지 URL에 맞게 수정하세요
+				location.href = '/project/' + encodeURIComponent(projectId)
+						+ '/issue?typeCode=' + encodeURIComponent(issueTypeCode);
 			}
+		</script>
 
-			// 일감 목록 페이지로 이동 (유형별 필터링)
-			// 실제 경로는 프로젝트의 일감 페이지 URL에 맞게 수정하세요
-			location.href = '/project/' + encodeURIComponent(projectId)
-					+ '/issue?typeCode=' + encodeURIComponent(issueTypeCode);
-		}
-	</script>
-
+	</div>
 </body>
 </html>

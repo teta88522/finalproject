@@ -510,7 +510,7 @@
 		FROM
 		project_member pm
 		INNER JOIN team_member tm ON pm.team_member_id =
-		tm.user_id
+		tm.team_member_id
 		WHERE pm.project_id = #{projectId}
 		AND tm.user_id = #{userId}
 	</select>
