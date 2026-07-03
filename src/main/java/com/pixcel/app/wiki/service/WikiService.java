@@ -10,4 +10,5 @@ public interface WikiService {
     void insertWikiPage(WikiPageVO vo);
     List<WikiVersionVO> getVersionList(String wikiId);
     WikiVersionVO getVersionDetail(String versionId);
+    WikiPageVO getWikiByTitle(String title, String projectId);
 }

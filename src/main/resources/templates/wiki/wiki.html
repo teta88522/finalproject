@@ -58,8 +58,9 @@
                 <button class="toolbar-btn" onclick="insertTable()">⊞ 표</button>
                 <button class="toolbar-btn" onclick="insertLine('---')">— 구분선</button>
                 <button class="toolbar-btn" onclick="insertLink()">🔗 링크</button>
+                <button class="toolbar-btn" onclick="triggerImageUpload()">🖼️ 이미지</button>
               </div>
-
+              <input type="file" id="wikiImageInput" accept="image/*" style="display:none">
               <!-- 편집 탭 -->
               <textarea id="markdownInput"
                         th:data-wiki-id="${wikiId}"

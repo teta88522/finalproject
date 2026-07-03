@@ -230,6 +230,15 @@ body {
   padding-top: 126px; /* 헤더 두 줄 합산 높이 */
   transition: all 0.3s;
 }
+/* 사이드바 없을 때 사이드바 공간 제거 */
+body.no-sidebar .left-sidebar-pro {
+    display: none;
+}
+
+body.no-sidebar .all-content-wrapper {
+    margin-left: 0;  /* 기존 사이드바 너비만큼 margin 제거 */
+    width: 100%;
+}
 .left-sidebar-pro {
   position: fixed;
   z-index: 9999;
@@ -240,14 +249,16 @@ body {
   overflow-y: auto;
   transition: all 0.3s;
 }
-#sidebar{
-	min-width: 200px;
+#sidebar {
     width: 200px;
-    position:fixed;
-    background:#07172e;
-    overflow:hidden;
+    position: fixed;
+    top: 106px; 
+    left: 0;
+    bottom: 0;
+    height: 80%;
+    overflow-y: auto;
+    background: #07172e;
 }
-
 .sidebar-pattern{
     position:absolute;
     left:0;
@@ -4350,29 +4361,30 @@ div#sparklinehome canvas {
   background: #006df0;
 }
 .sidebar-nav .metismenu {
-  background-image: url("/img/sidebar-pattern.png") !important;
-  background-color: transparent !important;
+  background-color: #031225;
 }
-.sidebar-nav {
-  background: #fff;
-}
-.sidebar-nav ul {
-  background: #fff;
-}
+
 #sidebar .submenu-angle{
     background: #031225;
 }
-#sidebar.active .sidebar-nav ul.metismenu li ul.submenu-angle {
-  position: absolute;
-  right: -180px;
-  top: 0px;
-  text-align: left;
-  width: 80px;
-  background-image: url("/img/sidebar-pattern.png") !important;
-  background-color:#031225;
-  -webkit-box-shadow: 0 1px 4px rgba(0, 0, 0, 0.175);
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.175);
+#sidebar.active .submenu-angle {
+    position: relative !important;
+    right: auto !important;
+    left: auto !important;
+    top: auto !important;
+
+    width: 100%;
+    background-color: #031225;
 }
+.metismenu li ul {
+    display: none;
+    padding-left: 15px;
+}
+
+.metismenu li.active ul {
+    display: block;
+}
+
 #sidebar.active .sidebar-nav .metismenu a:hover,
 #sidebar.active .sidebar-nav .metismenu a:focus,
 #sidebar.active .sidebar-nav .metismenu a:active {
@@ -4384,26 +4396,9 @@ div#sparklinehome canvas {
 
     color: #fff;
 }
-.left-custom-menu-adp-wrap,
-.mCustomScrollBox,
-.mCSB_container{
 
-    background:#07172e url("/img/sidebar-pattern.png")
-               no-repeat left bottom;
 
-    background-size:240px;
-}
 
-.metismenu {
-    height: 100%;
-
-    background-image:url("/img/sidebar-pattern.png");
-    background-repeat:no-repeat;
-    background-position:left bottom;
-    background-size:150px;
-
-    background-size: 180px;
-}
 #sidebar.active .mCustomScrollBox {
   overflow: unset;
 }
@@ -4459,17 +4454,17 @@ div#sparklinehome canvas {
 }
 #sidebar::after {
     content: "";
-    position: absolute;
+    position: fixed;
     left: 0;
     bottom: 0;
-    width: 240px;
-    height: 990px;
+    width: 200px;
+    height: 100%; 
 
     background: url("/img/sidebar-pattern.png") no-repeat left bottom;
     background-size: 240px auto;
 
     pointer-events: none;
-    position: absolute;
+
 }
 
 #sidebar.active .sidebar-header {

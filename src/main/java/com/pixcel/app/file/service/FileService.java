@@ -16,4 +16,7 @@ public interface FileService {
 	public List<FileVO> selectByDocumentVersion(int documentVersionId);
 	void copyOldFiles(int oldDocumentVersionId, int newDocumentVersionId, List<MultipartFile> uploadFiles);
 	public List<FileDownloadHistoryVO> selectDownloadHistory(@Param("connectAddress") String connectAddress,@Param("documentVersionId") int documentVersionId);
+	// FileService 인터페이스에 추가
+	public List<FileVO> uploadFileAndReturn(List<MultipartFile> files, FileDTO req);
+	public FileVO getFileById(String fileId);
 }

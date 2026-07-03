@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.zip.ZipEntry;
@@ -216,6 +217,64 @@ public class FileServiceImpl implements FileService{
 	public List<FileDownloadHistoryVO> selectDownloadHistory(@Param("connectAddress") String connectAddress,@Param("documentVersionId") int documentVersionId) {
 
 		return fileMapper.selectDownloadHistory(connectAddress, documentVersionId);
+	}
+
+
+	@Override
+	@Transactional
+	public List<FileVO> uploadFileAndReturn(List<MultipartFile> files, FileDTO req) {
+	    List<FileVO> result = new ArrayList<>();
+	    if (files == null || files.isEmpty() || req == null) {
+	        return result;
+	    }
+
+	    File uploadDir = new File(fileDir);
+	    if (!uploadDir.exists()) {
+	        uploadDir.mkdirs();
+	    }
+
+	    for (MultipartFile file : files) {
+	        if (file == null || file.isEmpty()) continue;
+	        try {
+	            String originName = file.getOriginalFilename();
+	            if (!StringUtils.hasText(originName)) continue;
+
+	            int nextVersion = fileMapper.selectNextFileVersion(
+	                    req.getProjectId(), req.getConnectAddress(), originName);
+
+	            String uuid = UUID.randomUUID().toString();
+	            String saveName = uuid + "_" + originName;
+	            File dest = new File(fileDir, saveName);
+	            file.transferTo(dest);
+	            String saveFileDir = fileDir + saveName;
+
+	            FileVO vo = new FileVO();
+	            vo.setProjectId(req.getProjectId());
+	            vo.setVersionId(req.getVersionId());
+	            vo.setFileCode(req.getFileCode());
+	            vo.setOriginalName(originName);
+	            vo.setStoredName(saveName);
+	            vo.setFilePath(saveFileDir);
+	            vo.setFileSize(String.valueOf(file.getSize()));
+	            vo.setUploadUserId(req.getUploadUserId());
+	            vo.setFileVersion(nextVersion);
+	            vo.setConnectAddress(req.getConnectAddress());
+	            vo.setDocumentVersionId(req.getDocumentVersionId());
+
+	            fileMapper.insertFile(vo); // selectKey가 BEFORE라 vo.fileId 채워짐
+
+	            result.add(vo);
+	        } catch (Exception e) {
+	            e.printStackTrace();
+	        }
+	    }
+	    return result;
+	}
+
+
+	@Override
+	public FileVO getFileById(String fileId) {
+		return fileMapper.downloadOne(fileId);
 	}
 	
 }

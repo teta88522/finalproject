@@ -5,16 +5,14 @@
 	<nav id="sidebar" class="sidebar">
 		<div class="left-custom-menu-adp-wrap comment-scrollbar">
 			<nav class="sidebar-nav left-sidebar-menu-pro">
-			<img class="sidebar-pattern"
-         src="/img/sidebar-pattern.png"
-         alt="">
+			
 				<!-- Sidebar Button -->
 				<div class="sidebar-header"
      style="display:flex;
             justify-content:space-between;
             align-items:center;
             padding:5px 15px;
-            border-bottom:1px solid #eee; background-color: #0b2447;">
+            border-bottom:1px solid #eee; background-color: #07172e;">
    				<span class="sidebar-title" style="font-weight:bold; font-size:15px; color:#fff;">프로젝트 메뉴</span>
     			<button type="button" id="sidebarCollapse"
         			style="background:none; border:none; cursor:pointer; padding:0; font-size:18px; color:#fff;">
@@ -22,17 +20,9 @@
     			</button>
 				</div>
 				<ul class="metismenu" id="menu1">
-					<!-- 대시보드 -->
-					<li>
-					<a th:href="@{/dashboard}"> <span
-							class="educate-icon educate-event icon-wrap"></span> <span
-							class="mini-click-non">대시보드</span>
-					</a>
-					</li>
-
 					<!-- 작업내역 -->
 					<li>
-					<a th:href="@{/workhistory}"> <span
+					<a th:href="@{/project/{projectId}/workhistory(projectId=${projectId})}"> <span
 							class="educate-icon educate-event icon-wrap"></span> <span
 							class="mini-click-non">작업내역</span>
 					</a>
@@ -59,14 +49,6 @@
 					<a th:href="@{/project/{projectId}/issues(projectId=${projectId})}"><span
 							class="educate-icon educate-event icon-wrap"></span> <span
 							class="mini-click-non">일감</span>
-					</a>
-					</li>
-
-					<!-- 칸반 -->
-					<li th:if="${moduleCodes.contains('h009')}">
-					<a th:href="@{/kanban}"> <span
-							class="educate-icon educate-event icon-wrap"></span> <span
-							class="mini-click-non">칸반</span>
 					</a>
 					</li>
 
