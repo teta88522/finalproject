@@ -241,8 +241,8 @@ body {
   transition: all 0.3s;
 }
 #sidebar{
-	min-width: 220px;
-    width: 220px;
+	min-width: 200px;
+    width: 200px;
     position:fixed;
     background:#07172e;
     overflow:hidden;

@@ -136,8 +136,11 @@
 												수정 </a>
 
 											<form th:action="@{/issuestatus/delete}" method="post"
-												class="inline-form"
-												onsubmit="return confirm('이 일감 상태를 삭제하시겠습니까?');">
+												class="inline-form js-pf-confirm-submit"
+												data-confirm-title="삭제 확인"
+												data-confirm-message="이 일감 상태를 삭제하시겠습니까?"
+												data-confirm-confirm-text="삭제"
+												data-confirm-icon="warning">
 												<input type="hidden" name="issueStatusId"
 													th:value="${status.issueStatusId}">
 
@@ -156,6 +159,8 @@
 			</div>
 		</div>
 
+	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+	<script th:src="@{/js/common/pf-confirm.js}"></script>
 	<script>
 		(function() {
 			function updateFilterSummary(dropdown) {

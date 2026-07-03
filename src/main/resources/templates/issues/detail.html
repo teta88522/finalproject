@@ -37,10 +37,13 @@
 						<button th:if="${canUpdateIssue}" type="submit" form="issueUpdateForm"
 							class="btn btn-custon-rounded-four btn-primary">수정</button>
 
-						<form th:if="${canDeleteIssue}" class="issues-inline-delete-form"
+						<form th:if="${canDeleteIssue}" class="issues-inline-delete-form js-pf-confirm-submit"
 							th:action="@{/project/{projectId}/issues/{issueId}/delete(projectId=${selectedProjectId}, issueId=${issue.issueId})}"
 							method="post"
-							data-confirm-message="삭제하면 일감이 삭제됩니다. 작업내역은 보존됩니다. 삭제하시겠습니까?">
+							data-confirm-title="삭제 확인"
+							data-confirm-confirm-text="삭제"
+							data-confirm-icon="warning"
+							data-confirm-message="일감을 삭제하시겠습니까?">
 							<input type="hidden" name="redirectTo" value="detail">
 							<button type="submit" class="btn btn-custon-rounded-four btn-danger">삭제</button>
 						</form>
@@ -416,6 +419,8 @@
 			</div>
 		</div>
 
+		<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+		<script th:src="@{/js/common/pf-confirm.js}"></script>
 		<script th:inline="javascript">
 			(function() {
 				document.body.classList.add('issues-detail-body');
@@ -465,14 +470,7 @@
 				}
 
 				if (deleteForm) {
-					deleteForm.addEventListener('submit', function(event) {
-						var message = deleteForm.getAttribute('data-confirm-message');
-
-						if (message && !confirm(message)) {
-							event.preventDefault();
-							return;
-						}
-
+					deleteForm.addEventListener('pf:confirmed-submit', function() {
 						showLoading('삭제중');
 					});
 				}
