@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.pixcel.app.roles.service.permissionServiceVO;
 import com.pixcel.app.roles.service.roleMemberVO;
+import com.pixcel.app.roles.service.roleSearchVO;
 import com.pixcel.app.roles.service.roleService;
 import com.pixcel.app.roles.service.roleServiceVO;
 
@@ -26,11 +27,21 @@ public class RolesController {
 	
 	//역할 목록 화면
 	@GetMapping("/roles")
-	public String rolesListForm(Model model, @CookieValue(value = "userId", required = false) String userId) {
-		List<roleServiceVO> roleList = roleService.selectRoleList(userId);
+	public String rolesListForm(Model model,
+								roleSearchVO roleSearchVO,
+								@CookieValue(value = "userId", required = false) String userId) {
 
-		model.addAttribute("roleList",roleList);
-		
+		if (userId == null || userId.equals("")) {
+			return "redirect:/login";
+		}
+
+		roleSearchVO.setCreatedBy(userId);
+
+		List<roleServiceVO> roleList = roleService.selectRoleList(roleSearchVO);
+
+		model.addAttribute("roleList", roleList);
+		model.addAttribute("roleSearchVO", roleSearchVO);
+
 		return "roles/rolesList";
 	}
 	

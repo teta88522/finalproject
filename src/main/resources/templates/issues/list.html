@@ -14,7 +14,9 @@
 
 <body>
 	<div layout:fragment="Content">
-
+	<div class="container-fluid" style="height:calc(100vh - 130px); display:flex; flex-direction:column; padding-bottom:24px;">
+    <div style="background:#fff; border-radius:12px; box-shadow:0 2px 12px rgba(0,0,0,0.08); padding:24px; flex:1; display:flex; flex-direction:column; overflow:hidden;">
+	
 		<div class="issues-list-page">
 			<div class="container-fluid">
 
@@ -30,19 +32,19 @@
 					<div class="issues-list-actions">
 						<a
 							th:href="@{/project/{projectId}/issues/timelog/create(projectId=${selectedProjectId})}"
-							class="btn btn-custon-rounded-four btn-default"> 소요시간 등록 </a>
+							class="btn btn-custon-rounded-four btn-primary custom-white-btn"> 소요시간 등록 </a>
 
 						<a
 							th:href="@{/project/{projectId}/issues/report(projectId=${selectedProjectId})}"
-							class="btn btn-custon-rounded-four btn-default"> 보고서 </a>
+							class="btn btn-custon-rounded-four btn-primary custom-white-btn"> 보고서 </a>
 
 						<a th:if="${canCreateMilestone}"
 							th:href="@{/project/{projectId}/milestones/create(projectId=${selectedProjectId})}"
-							class="btn btn-custon-rounded-four btn-default"> 마일스톤 생성 </a>
+							class="btn btn-custon-rounded-four btn-primary custom-white-btn"> 마일스톤 생성 </a>
 
 						<a th:if="${canCreateIssue}"
 							th:href="@{/project/{projectId}/issues/create(projectId=${selectedProjectId})}"
-							class="btn btn-custon-rounded-four btn-primary"> 일감 생성 </a>
+							class="btn btn-custon-rounded-four btn-primary custom-default-btn"> 일감 생성 </a>
 					</div>
 				</div>
 
@@ -243,11 +245,11 @@
 						<div class="search-btn-area">
 							<a
 								th:href="@{/project/{projectId}/issues(projectId=${selectedProjectId})}"
-								class="btn btn-custon-rounded-four btn-default filter-btn">
+								class="btn btn-custon-rounded-four btn-primary custom-white-btn">
 								초기화 </a>
 
 							<button type="submit"
-								class="btn btn-custon-rounded-four btn-primary filter-btn">
+								class="btn btn-custon-rounded-four btn-primary custom-default-btn">
 								검색</button>
 						</div>
 					</form>

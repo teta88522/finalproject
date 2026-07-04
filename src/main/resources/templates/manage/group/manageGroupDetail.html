@@ -7,14 +7,18 @@
 <title>관리 - 그룹 상세</title>
 
 <link rel="stylesheet" th:href="@{/css/manage/group/manageGroupDetail.css}">
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script th:src="@{/js/common/pf-confirm.js}"></script>
 </head>
 
 <body>
 <div layout:fragment="Content">
-
+<div class="container-fluid" style="height:calc(100vh - 130px); display:flex; flex-direction:column; padding-bottom:24px;">
+   <div style="background:#fff; border-radius:12px; box-shadow:0 2px 12px rgba(0,0,0,0.08); padding:24px; flex:1; display:flex; flex-direction:column; overflow:auto;">
+	
     <div class="manage-group-detail-page">
 
-        <!-- 상단 영역 -->
         <div class="detail-page-header">
             <div>
                 <h1 class="detail-page-title">관리 &gt; 그룹 상세</h1>
@@ -29,12 +33,10 @@
             </div>
         </div>
 
-        <!-- 메시지 -->
         <div th:if="${message != null}" class="message-box">
             <span th:text="${message}">메시지</span>
         </div>
 
-        <!-- 그룹 기본정보 수정 -->
         <form th:action="@{/manage/groups/update}"
               method="post"
               onsubmit="return validateGroupUpdateForm();">
@@ -112,17 +114,16 @@
             </div>
 
             <div class="form-btn-area">
-                <a th:href="@{/manage/groups}" class="btn-basic">
+                <a th:href="@{/manage/groups}" class="btn btn-custon-rounded-four btn-primary custom-white-btn">
                     목록
                 </a>
 
-                <button type="submit" class="btn-basic btn-primary">
+                <button type="submit" class="btn btn-custon-rounded-four btn-primary custom-default-btn">
                     그룹 정보 저장
                 </button>
             </div>
         </form>
 
-        <!-- 그룹 구성원 목록 -->
         <div class="detail-section member-section">
             <div class="member-section-top">
                 <div>
@@ -133,7 +134,7 @@
                 </div>
 
                 <a th:href="@{/manage/groups/{projectGroupId}/members(projectGroupId=${manageGroup.projectGroupId})}"
-                   class="btn-basic btn-primary">
+                   class="btn btn-custon-rounded-four btn-primary custom-default-btn">
                     구성원 배정
                 </a>
             </div>
@@ -183,14 +184,17 @@
                             <td>
                                 <form th:action="@{/manage/groups/{projectGroupId}/members/remove(projectGroupId=${manageGroup.projectGroupId})}"
                                       method="post"
-                                      class="inline-form"
-                                      onsubmit="return confirm('해당 구성원을 그룹에서 제외하시겠습니까?');">
+                                      class="inline-form js-pf-confirm-submit"
+                                      data-confirm-title="구성원 제외 확인"
+                                      data-confirm-message="해당 구성원을 그룹에서 제외하시겠습니까?"
+                                      data-confirm-confirm-text="제외"
+                                      data-confirm-icon="warning">
 
                                     <input type="hidden"
                                            name="projectMemberId"
                                            th:value="${member.projectMemberId}">
 
-                                    <button type="submit" class="mini-btn delete">
+                                    <button type="submit" class="btn btn-custon-rounded-four btn-danger custom-btn">
                                         제외
                                     </button>
                                 </form>
@@ -200,38 +204,64 @@
                 </table>
             </div>
         </div>
-
         <!-- 그룹 삭제 -->
+
         <form th:action="@{/manage/groups/delete}"
               method="post"
-              class="delete-form"
-              onsubmit="return confirm('그룹을 삭제하시겠습니까?');">
+              class="delete-form js-pf-confirm-submit"
+              data-confirm-title="그룹 삭제 확인"
+              data-confirm-message="그룹을 삭제하시겠습니까?"
+              data-confirm-confirm-text="삭제"
+              data-confirm-icon="warning">
 
             <input type="hidden"
                    name="projectGroupId"
                    th:value="${manageGroup.projectGroupId}">
 
-            <button type="submit" class="btn-delete">
+            <button type="submit" class="btn btn-custon-rounded-four btn-danger custom-btn">
                 그룹 삭제
             </button>
         </form>
+    </div>
+</div>
 
     </div>
 
-    <script>
+    <script th:inline="javascript">
+        const message = /*[[${message}]]*/ null;
+
+        if (message != null) {
+            window.PFDialog.alert(message, {
+                title: '알림',
+                icon: 'info'
+            });
+        }
+
+        function pfAlert(message, focusTarget) {
+            window.PFDialog.alert(message, {
+                title: '그룹 수정 확인',
+                icon: 'warning'
+            }).then(function () {
+                if (focusTarget) {
+                    focusTarget.focus();
+                }
+            });
+        }
+
         function validateGroupUpdateForm() {
-            const roleId = document.getElementById("roleId").value;
-            const groupName = document.getElementById("groupName").value.trim();
+            const roleIdInput = document.getElementById("roleId");
+            const groupNameInput = document.getElementById("groupName");
+
+            const roleId = roleIdInput.value;
+            const groupName = groupNameInput.value.trim();
 
             if (!roleId) {
-                alert("그룹 역할을 선택하세요.");
-                document.getElementById("roleId").focus();
+                pfAlert("그룹 역할을 선택하세요.", roleIdInput);
                 return false;
             }
 
             if (!groupName) {
-                alert("그룹명을 입력하세요.");
-                document.getElementById("groupName").focus();
+                pfAlert("그룹명을 입력하세요.", groupNameInput);
                 return false;
             }
 

@@ -11,7 +11,9 @@
 
 <body>
 	<div layout:fragment="Content">
-
+	<div class="container-fluid" style="height:calc(100vh - 130px); display:flex; flex-direction:column; padding-bottom:24px;">
+   <div style="background:#fff; border-radius:12px; box-shadow:0 2px 12px rgba(0,0,0,0.08); padding:24px; flex:1; display:flex; flex-direction:column; overflow:hidden;">
+	
 		<div class="issuetype-summary-page">
 			<div class="container-fluid">
 
@@ -22,7 +24,7 @@
 					</div>
 
 					<a th:href="@{/issuetype/list}"
-						class="btn btn-custon-rounded-four btn-default"> 돌아가기 </a>
+						class="btn btn-custon-rounded-four btn-primary custom-white-btn"> 돌아가기 </a>
 				</div>
 
 				<div th:if="${errorMessage}" class="page-message page-message-error"
@@ -69,10 +71,10 @@
 
 						<div class="issuetype-summary-actions">
 							<a th:href="@{/issuetype/summary}"
-								class="btn btn-custon-rounded-four btn-default"> 초기화 </a>
+								class="btn btn-custon-rounded-four btn-primary custom-white-btn"> 초기화 </a>
 
 							<button type="submit"
-								class="btn btn-custon-rounded-four btn-primary">검색</button>
+								class="btn btn-custon-rounded-four btn-primary custom-default-btn">검색</button>
 						</div>
 					</form>
 
@@ -174,7 +176,8 @@
 
 			</div>
 		</div>
-
+	</div>
+</div>
 		<script>
 			document
 					.addEventListener(

@@ -14,6 +14,11 @@
       <div class="col-lg-12">
         <div class="wiki-view-wrap">
 
+          <!-- hidden 값 -->
+          <input type="hidden" id="hiddenContent" th:value="${version != null ? version.content : '{}'}"/>
+          <input type="hidden" id="hiddenProjectId" th:value="${projectId}"/>
+          <input type="hidden" id="hiddenWikiId" th:value="${wikiId}"/>
+
           <!-- 헤더 -->
           <div class="wiki-view-header">
             <div>
@@ -36,6 +41,13 @@
 
             <!-- 본문 -->
             <div class="wiki-main">
+              <div id="versionNotice"
+                   style="display:none; background:#fff3cd; border:1px solid #ffc107;
+                          border-radius:6px; padding:10px 16px; margin-bottom:16px; font-size:13px;">
+                ⚠️ 이전 버전을 보고 있습니다. 복원하려면
+                <a th:href="@{/project/{pid}/wiki/{wid}/edit(pid=${projectId}, wid=${wikiId})}"
+                   style="color:#3d6ef5;">편집 페이지</a>에서 버전 히스토리를 이용하세요.
+              </div>
               <div id="wikiContent" class="wiki-content"></div>
             </div>
 
@@ -45,15 +57,14 @@
               <div class="history-list" id="historyList">
                 <p style="padding:16px; color:#aaa; font-size:13px;">불러오는 중...</p>
               </div>
-              <!-- 복원 버튼 제거 -->
-<div style="padding:12px;">
-  <button id="backToCurrentBtn" 
-          class="btn-restore" 
-          onclick="backToCurrent()"
-          style="background:#888;">
-    ← 현재 버전으로
-  </button>
-</div>
+              <div style="padding:12px;">
+                <button id="backToCurrentBtn"
+                        onclick="backToCurrent()"
+                        style="display:none; width:100%; padding:8px; background:#888;
+                               color:#fff; border:none; border-radius:6px; cursor:pointer; font-size:13px;">
+                  ← 현재 버전으로
+                </button>
+              </div>
             </div>
 
           </div>
@@ -65,14 +76,16 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-<script th:inline="javascript">
-  const content = [[${version != null ? version.content : '{}'}]]
-  const projectId = [[${projectId}]]
-  const wikiId = [[${wikiId}]]
+<script>
+  const content = document.getElementById('hiddenContent').value
+  const projectId = document.getElementById('hiddenProjectId').value
+  const wikiId = document.getElementById('hiddenWikiId').value
 
   let selectedVersionId = null
 
-  // 마크다운 렌더링
+  marked.setOptions({ breaks: true, gfm: true })
+
+  // 마크다운 파싱
   function renderMarkdown(raw) {
     try {
       const parsed = JSON.parse(raw)
@@ -82,9 +95,57 @@
     }
   }
 
-  function displayContent(markdown) {
-    marked.setOptions({ breaks: true, gfm: true })
-    const html = marked.parse(markdown)
+  // [[위키제목]] → 링크 변환
+  async function convertWikiLinks(html) {
+    const matches = [...html.matchAll(/\[\[(.+?)\]\]/g)]
+    if (matches.length === 0) return html
+
+    for (const match of matches) {
+      const title = match[1]
+      try {
+        const res = await fetch(`/project/${projectId}/wiki/find?title=${encodeURIComponent(title)}`)
+        const page = await res.json()
+        if (page && page.wikiId) {
+          html = html.replace(
+            match[0],
+            `<a href="/project/${projectId}/wiki/${page.wikiId}"
+                style="color:#3d6ef5; text-decoration:none; border-bottom:1px solid #3d6ef5;">${title}</a>`
+          )
+        } else {
+          html = html.replace(
+            match[0],
+            `<a href="javascript:createWiki('${title}')"
+                style="color:#e53e3e; text-decoration:none; border-bottom:1px solid #e53e3e;">${title}</a>`
+          )
+        }
+      } catch(e) {
+        html = html.replace(match[0], title)
+      }
+    }
+    return html
+  }
+
+  // 없는 위키 생성
+  function createWiki(title) {
+    if (!confirm(`"${title}" 위키를 새로 만드시겠습니까?`)) return
+    fetch(`/project/${projectId}/wiki/create`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title: title, projectId: projectId })
+    })
+    .then(res => res.json())
+    .then(data => {
+      location.href = `/project/${projectId}/wiki/${data.wikiId}/edit`
+    })
+    .catch(err => console.error('위키 생성 실패:', err))
+  }
+
+  // 본문 렌더링
+  async function displayContent(markdown, isOldVersion) {
+    let html = marked.parse(markdown)
+
+    // [[위키제목]] 변환
+    html = await convertWikiLinks(html)
 
     // 목차 생성
     const parser = new DOMParser()
@@ -109,12 +170,13 @@
     })
 
     document.getElementById('wikiContent').innerHTML = tocHtml + finalHtml
+    document.getElementById('versionNotice').style.display = isOldVersion ? 'block' : 'none'
   }
 
   // 초기 렌더링
   const markdown = renderMarkdown(content)
   if (markdown) {
-    displayContent(markdown)
+    displayContent(markdown, false)
   } else {
     document.getElementById('wikiContent').innerHTML = '<p style="color:#aaa;">내용이 없습니다.</p>'
   }
@@ -123,9 +185,7 @@
   function toggleHistory() {
     const panel = document.getElementById('historyPanel')
     panel.classList.toggle('open')
-    if (panel.classList.contains('open')) {
-      loadHistory()
-    }
+    if (panel.classList.contains('open')) loadHistory()
   }
 
   // 히스토리 로드
@@ -155,28 +215,19 @@
       .catch(err => console.error('히스토리 로드 실패:', err))
   }
 
-//버전 미리보기
+  // 버전 미리보기 (보기만)
   function previewVersion(versionId, el) {
     document.querySelectorAll('.history-item').forEach(e => e.classList.remove('active'))
     el.classList.add('active')
     selectedVersionId = versionId
-
-    // 현재버전으로 버튼 표시
-    document.getElementById('backToCurrentBtn').classList.add('visible')
+    document.getElementById('backToCurrentBtn').style.display = 'block'
 
     fetch(`/project/${projectId}/wiki/version/${versionId}`)
       .then(res => res.json())
       .then(data => {
         if (data && data.content) {
           const md = renderMarkdown(data.content)
-          displayContent(md)
-          // 이전 버전 보는 중 표시
-          document.getElementById('wikiContent').insertAdjacentHTML(
-            'afterbegin',
-            `<div style="background:#fff3cd; border:1px solid #ffc107; border-radius:6px; padding:10px 16px; margin-bottom:16px; font-size:13px;">
-              ⚠️ 이전 버전을 보고 있습니다. 복원하려면 <a href="/project/${projectId}/wiki/${wikiId}/edit" style="color:#3d6ef5;">편집 페이지</a>에서 버전 히스토리를 이용하세요.
-            </div>`
-          )
+          displayContent(md, true)
         }
       })
       .catch(err => console.error('버전 로드 실패:', err))
@@ -185,10 +236,13 @@
   // 현재 버전으로 돌아가기
   function backToCurrent() {
     selectedVersionId = null
-    document.getElementById('backToCurrentBtn').classList.remove('visible')
-    document.querySelectorAll('.history-item').forEach(e => e.classList.remove('active'))
+    document.getElementById('backToCurrentBtn').style.display = 'none'
+    document.querySelectorAll('.history-item').forEach((e, i) => {
+      if (i === 0) e.classList.add('active')
+      else e.classList.remove('active')
+    })
     const md = renderMarkdown(content)
-    displayContent(md)
+    displayContent(md, false)
   }
 </script>
 </div>

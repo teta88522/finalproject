@@ -8,6 +8,7 @@ import org.apache.ibatis.annotations.Param;
 import com.pixcel.app.roles.service.permissionServiceVO;
 import com.pixcel.app.roles.service.roleMemberVO;
 import com.pixcel.app.roles.service.rolePermissionVO;
+import com.pixcel.app.roles.service.roleSearchVO;
 import com.pixcel.app.roles.service.roleServiceVO;
 
 @Mapper
@@ -30,7 +31,7 @@ public interface roleMapper {
     
     
     // 현재 로그인 사용자가 생성한 역할 목록 조회
-    public List<roleServiceVO> selectRoleList(String createdBy);
+    public List<roleServiceVO> selectRoleList(roleSearchVO roleSearchVO);
 
     // 선택한 역할을 담당하는 구성원 목록 조회
     public List<roleMemberVO> selectRoleMemberList(@Param("roleId") String roleId);

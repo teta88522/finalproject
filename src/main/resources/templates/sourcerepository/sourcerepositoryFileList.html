@@ -20,7 +20,19 @@
 			<div class="file-breadcrumb">
 				<a
 					th:href="@{/project/{projectId}/sourcerepository(projectId=${projectId})}">저장소
-					관리</a> / <span>파일 목록</span>
+					관리</a> /
+				<!-- ✅ 현재 폴더 경로 전체를 breadcrumb로 표시. 각 조각은 그 폴더로 바로 이동 -->
+				<a th:if="${breadcrumbs == null or breadcrumbs.isEmpty()}"
+					th:href="@{/project/{projectId}/sourcerepository/files(projectId=${projectId}, branch=${branch})}">파일 목록</a>
+				<th:block th:unless="${breadcrumbs == null or breadcrumbs.isEmpty()}">
+					<a th:href="@{/project/{projectId}/sourcerepository/files(projectId=${projectId}, branch=${branch})}">파일 목록</a>
+					<th:block th:each="crumb, iter : ${breadcrumbs}">
+						/ <a th:if="${!iter.last}"
+							th:href="@{/project/{projectId}/sourcerepository/files(projectId=${projectId}, path=${crumb.path}, branch=${branch})}"
+							th:text="${crumb.name}">folder</a>
+						<span th:if="${iter.last}" th:text="${crumb.name}">folder</span>
+					</th:block>
+				</th:block>
 			</div>
  
 			<!-- Header with Branch Selector -->
@@ -39,8 +51,10 @@
 						</form>
 					</div>
 				</div>
+				<!-- ✅ 현재 보고 있는 경로(폴더)가 있으면 그 경로 기준으로 필터링된 이력으로,
+				     루트(경로 없음)면 브랜치 전체 이력으로 이동 -->
 				<a
-					th:href="@{/project/{projectId}/sourcerepository/commits(projectId=${projectId}, branch=${branch})}"
+					th:href="${currentPath != null and !currentPath.isEmpty()} ? @{/project/{projectId}/sourcerepository/file-history(projectId=${projectId}, path=${currentPath}, branch=${branch})} : @{/project/{projectId}/sourcerepository/commits(projectId=${projectId}, branch=${branch})}"
 					class="file-history-btn"
 					style="text-decoration: none; display: inline-block;"> 📜
 					History </a>

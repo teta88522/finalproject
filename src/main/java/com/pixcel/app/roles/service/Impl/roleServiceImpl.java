@@ -11,6 +11,7 @@ import com.pixcel.app.roles.mapper.roleMapper;
 import com.pixcel.app.roles.service.permissionServiceVO;
 import com.pixcel.app.roles.service.roleMemberVO;
 import com.pixcel.app.roles.service.rolePermissionVO;
+import com.pixcel.app.roles.service.roleSearchVO;
 import com.pixcel.app.roles.service.roleService;
 import com.pixcel.app.roles.service.roleServiceVO;
 
@@ -81,9 +82,9 @@ public class roleServiceImpl implements roleService {
 
 	//현재 로그인한 사용자가 생성한 역할 목록 조회
 	@Override
-	public List<roleServiceVO> selectRoleList(String createdBy) {
+	public List<roleServiceVO> selectRoleList(roleSearchVO roleSearchVO) {
 		
-		 return roleMapper.selectRoleList(createdBy);
+		 return roleMapper.selectRoleList(roleSearchVO);
 	}
 
 	@Override

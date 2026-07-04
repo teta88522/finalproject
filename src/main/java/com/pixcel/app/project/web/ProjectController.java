@@ -377,7 +377,6 @@ public class ProjectController {
 		// ✅ 전체 모듈 코드-이름 매핑 (common_code 테이블 CODE_ID2='프로젝트 모듈' 기준과 반드시 동일해야 함)
 		java.util.LinkedHashMap<String, String> moduleMap = new java.util.LinkedHashMap<>();
 		moduleMap.put("h001", "일감관리");
-		moduleMap.put("h002", "시간추적");
 		moduleMap.put("h003", "파일");
 		moduleMap.put("h004", "저장소");
 		moduleMap.put("h005", "문서");

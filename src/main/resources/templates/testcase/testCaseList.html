@@ -7,11 +7,16 @@
 <title>테스트 케이스 목록</title>
 
 <link rel="stylesheet" th:href="@{/css/testcase/testCaseList.css}">
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script th:src="@{/js/common/pf-confirm.js}"></script>
 </head>
 
 <body>
 <div layout:fragment="Content">
-
+<div class="container-fluid" style="height:calc(100vh - 130px); display:flex; flex-direction:column; padding-bottom:24px;">
+   <div style="background:#fff; border-radius:12px; box-shadow:0 2px 12px rgba(0,0,0,0.08); padding:24px; flex:1; display:flex; flex-direction:column; overflow:auto;">
+	
     <div class="testcase-list-page">
 
         <!-- 상단 -->
@@ -24,7 +29,7 @@
             </div>
 
             <button type="button"
-                    class="add-btn"
+                    class="btn btn-custon-rounded-four custom-default-btn"
                     th:onclick="|location.href='@{/project/{projectId}/testcases/new(projectId=${projectId})}'|">
                 테스트 케이스 생성
             </button>
@@ -205,13 +210,13 @@
 
                 <div class="search-btn-area">
                     <button type="button"
-                            class="btn-basic"
+                            class="btn btn-custon-rounded-four custom-white-btn"
                             th:onclick="|location.href='@{/project/{projectId}/testcases(projectId=${projectId})}'|">
                         초기화
                     </button>
 
                     <button type="submit"
-                            class="btn-primary">
+                            class="btn btn-custon-rounded-four custom-default-btn">
                         검색
                     </button>
                 </div>
@@ -450,14 +455,22 @@
         </div>
 
     </div>
-
+</div>
+</div>
     <script th:inline="javascript">
         const message = /*[[${message}]]*/ null;
         const projectId = /*[[${projectId}]]*/ "";
         let currentDetailTestCaseId = "";
 
+        function pfAlert(message, title, icon) {
+            window.PFDialog.alert(message, {
+                title: title || "알림",
+                icon: icon || "info"
+            });
+        }
+
         if (message != null) {
-            alert(message);
+            pfAlert(message, "알림", "info");
         }
 
         document.addEventListener("DOMContentLoaded", function () {
@@ -531,7 +544,7 @@
                 .then(function (data) {
 
                     if (data == null || data.testCaseId == null) {
-                        alert("테스트 케이스 정보를 조회할 수 없습니다.");
+                        pfAlert("테스트 케이스 정보를 조회할 수 없습니다.", "조회 실패", "warning");
                         hideDetail();
                         return;
                     }
@@ -539,7 +552,7 @@
                     showDetail(data);
                 })
                 .catch(function () {
-                    alert("테스트 케이스 상세 조회 중 오류가 발생했습니다.");
+                    pfAlert("테스트 케이스 상세 조회 중 오류가 발생했습니다.", "조회 오류", "error");
                     hideDetail();
                 });
         }

@@ -147,7 +147,7 @@ public class WikiController {
 
         FileDTO uploadDTO = new FileDTO();
         uploadDTO.setProjectId(projectId);
-		uploadDTO.setFileCode("f001");
+		uploadDTO.setFileCode("f002");
 		uploadDTO.setUploadUserId(userId);
 		uploadDTO.setConnectAddress(wikiId);
 

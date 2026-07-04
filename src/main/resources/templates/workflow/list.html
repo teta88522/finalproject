@@ -11,6 +11,8 @@
 
 <body>
 	<div layout:fragment="Content">
+<div class="container-fluid" style="height:calc(100vh - 130px); display:flex; flex-direction:column; padding-bottom:24px;">
+   <div style="background:#fff; border-radius:12px; box-shadow:0 2px 12px rgba(0,0,0,0.08); padding:24px; flex:1; display:flex; flex-direction:column; overflow:hidden;">
 
 		<!-- ==============================
 		     업무흐름 전체조회 추가/수정
@@ -29,9 +31,9 @@
 
 					<div class="workflow-header-actions">
 						<a th:href="@{/workflow/transition}"
-							class="btn btn-custon-rounded-four btn-primary"> 상태전환 설정 </a> <a
+							class="btn btn-custon-rounded-four btn-primary custom-default-btn"> 상태전환 설정 </a> <a
 							th:href="@{/workflow/copy}"
-							class="btn btn-custon-rounded-four btn-default"> 업무흐름 복사 </a>
+							class="btn btn-custon-rounded-four btn-primary custom-white-btn"> 업무흐름 복사 </a>
 					</div>
 				</div>
 
@@ -114,7 +116,8 @@
 			</div>
 		</div>
 		<!-- 업무흐름 전체조회 추가/수정 끝 -->
-
+		</div>
+		</div>
 	</div>
 </body>
 </html>

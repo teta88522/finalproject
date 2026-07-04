@@ -15,6 +15,8 @@ public interface TestExecutionMapper {
 	
 	public int selectNextRetryNo(String mappingId);
 	
+	public int selectCurrentRetryNo(String mappingId);
+	
 	public int insertTestExecution(TestExecutionVO testExecutionVO);
 	
 	public int insertTestExecutionList(TestExecutionVO testExecutionVO);

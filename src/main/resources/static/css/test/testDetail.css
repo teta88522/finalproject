@@ -1,6 +1,5 @@
 .test-detail-wrap {
     padding: 20px;
-    background-color: #f7f8fb;
     min-height: calc(100vh - 80px);
     box-sizing: border-box;
 }
@@ -27,7 +26,14 @@
     font-size: 13px;
     color: #667085;
 }
+
 .btn-save-row:disabled {
+    background-color: #94a3b8;
+    border-color: #94a3b8;
+    cursor: not-allowed;
+}
+
+.btn-save-all:disabled {
     background-color: #94a3b8;
     border-color: #94a3b8;
     cursor: not-allowed;
@@ -38,39 +44,7 @@
     gap: 8px;
 }
 
-.btn-basic,
-.btn-primary {
-    height: 34px;
-    padding: 0 14px;
-    border-radius: 6px;
-    font-size: 12px;
-    font-weight: 700;
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    box-sizing: border-box;
-}
 
-.btn-basic {
-    border: 1px solid #d0d5dd;
-    background-color: #fff;
-    color: #344054;
-}
-
-.btn-basic:hover {
-    background-color: #f2f4f7;
-}
-
-.btn-primary {
-    border: 1px solid #2563eb;
-    background-color: #2563eb;
-    color: #fff;
-}
-
-.btn-primary:hover {
-    background-color: #1d4ed8;
-}
 
 /* ==============================
    공통 박스
@@ -164,7 +138,7 @@
 
 .table-box {
     margin: 16px;
-    overflow-x: auto;
+    overflow-x: hidden;
     border: 1px solid #e5e7eb;
     border-radius: 8px;
     box-sizing: border-box;
@@ -172,7 +146,7 @@
 
 .execution-table {
     width: 100%;
-    min-width: 1500px;
+    min-width: 0;
     border-collapse: collapse;
     table-layout: fixed;
     background-color: #fff;
@@ -180,11 +154,11 @@
 
 .execution-table thead th {
     height: 38px;
-    padding: 0 8px;
+    padding: 0 5px;
     border-bottom: 1px solid #dfe3ea;
     background-color: #f9fafb;
     color: #344054;
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 700;
     text-align: center;
     white-space: nowrap;
@@ -192,10 +166,10 @@
 
 .execution-table tbody td {
     height: 48px;
-    padding: 6px 8px;
+    padding: 6px 5px;
     border-bottom: 1px solid #eef1f5;
     color: #344054;
-    font-size: 12px;
+    font-size: 11px;
     text-align: center;
     vertical-align: middle;
     box-sizing: border-box;
@@ -212,70 +186,105 @@
     border-bottom: none;
 }
 
-/* 컬럼 너비 */
+/* ==============================
+   컬럼 너비
+   체크박스 추가 기준 총 14컬럼
+   가로 스크롤 제거용 %
+============================== */
+
+/* 1. 체크박스 */
 .execution-table th:nth-child(1),
 .execution-table td:nth-child(1) {
-    width: 50px;
+    width: 2.5%;
 }
 
+/* 2. No */
 .execution-table th:nth-child(2),
 .execution-table td:nth-child(2) {
-    width: 220px;
+    width: 3%;
 }
 
+/* 3. 테스트 케이스 */
 .execution-table th:nth-child(3),
 .execution-table td:nth-child(3) {
-    width: 80px;
+    width: 16%;
 }
 
+/* 4. 유형 */
 .execution-table th:nth-child(4),
 .execution-table td:nth-child(4) {
-    width: 90px;
+    width: 5%;
 }
 
+/* 5. 우선순위 */
 .execution-table th:nth-child(5),
 .execution-table td:nth-child(5) {
-    width: 220px;
+    width: 5.5%;
 }
 
+/* 6. 기대결과 */
 .execution-table th:nth-child(6),
 .execution-table td:nth-child(6) {
-    width: 90px;
+    width: 15%;
 }
 
+/* 7. 현재 결과 */
 .execution-table th:nth-child(7),
 .execution-table td:nth-child(7) {
-    width: 100px;
+    width: 6%;
 }
 
+/* 8. 수행 상태 */
 .execution-table th:nth-child(8),
 .execution-table td:nth-child(8) {
-    width: 180px;
+    width: 6.5%;
 }
 
+/* 9. 코멘트 */
 .execution-table th:nth-child(9),
 .execution-table td:nth-child(9) {
-    width: 70px;
+    width: 14%;
 }
 
+/* 10. 재수행 */
 .execution-table th:nth-child(10),
 .execution-table td:nth-child(10) {
-    width: 90px;
+    width: 4%;
 }
 
+/* 11. 수행자 */
 .execution-table th:nth-child(11),
 .execution-table td:nth-child(11) {
-    width: 120px;
+    width: 5%;
 }
 
+/* 12. 수행일시 */
 .execution-table th:nth-child(12),
 .execution-table td:nth-child(12) {
-    width: 80px;
+    width: 8%;
 }
 
+/* 13. 개별저장 */
 .execution-table th:nth-child(13),
 .execution-table td:nth-child(13) {
-    width: 70px;
+    width: 5%;
+}
+
+/* 14. 버그 */
+.execution-table th:nth-child(14),
+.execution-table td:nth-child(14) {
+    width: 4.5%;
+}
+
+/* ==============================
+   체크박스
+============================== */
+.execution-check,
+#allExecutionCheck {
+    width: 13px;
+    height: 13px;
+    cursor: pointer;
+    vertical-align: middle;
 }
 
 /* ==============================
@@ -287,7 +296,7 @@
 
 .case-title {
     color: #222;
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 700;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -297,7 +306,7 @@
 .case-sub {
     margin-top: 3px;
     color: #667085;
-    font-size: 11px;
+    font-size: 10px;
     font-family: Consolas, monospace;
 }
 
@@ -310,11 +319,11 @@
 ============================== */
 .priority-badge,
 .result-badge {
-    min-width: 54px;
-    height: 24px;
-    padding: 0 8px;
+    min-width: 44px;
+    height: 22px;
+    padding: 0 5px;
     border-radius: 999px;
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 700;
     display: inline-flex;
     align-items: center;
@@ -368,23 +377,23 @@
    입력 요소
 ============================== */
 .result-select {
-    width: 88px;
-    height: 30px;
-    padding: 0 8px;
+    width: 100%;
+    height: 28px;
+    padding: 0 4px;
     border: 1px solid #d0d5dd;
     border-radius: 6px;
     background-color: #fff;
-    font-size: 12px;
+    font-size: 11px;
     box-sizing: border-box;
 }
 
 .comment-input {
     width: 100%;
-    height: 30px;
-    padding: 0 8px;
+    height: 28px;
+    padding: 0 6px;
     border: 1px solid #d0d5dd;
     border-radius: 6px;
-    font-size: 12px;
+    font-size: 11px;
     box-sizing: border-box;
 }
 
@@ -399,13 +408,13 @@
    버튼
 ============================== */
 .btn-save-row {
-    height: 26px;
-    padding: 0 10px;
+    height: 24px;
+    padding: 0 7px;
     border: 1px solid #2563eb;
     border-radius: 5px;
     background-color: #2563eb;
     color: #fff;
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 700;
     cursor: pointer;
     text-decoration: none;
@@ -421,13 +430,13 @@
 }
 
 .btn-bug {
-    height: 26px;
-    padding: 0 10px;
+    height: 24px;
+    padding: 0 6px;
     border: 1px solid #dc2626;
     border-radius: 5px;
     background-color: #fff;
     color: #dc2626;
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 700;
     cursor: pointer;
     text-decoration: none;
@@ -489,6 +498,45 @@
     .info-grid {
         grid-template-columns: repeat(3, 1fr);
     }
+
+    .execution-table thead th {
+        font-size: 10px;
+        padding: 0 4px;
+    }
+
+    .execution-table tbody td {
+        font-size: 10px;
+        padding: 5px 4px;
+    }
+
+    .case-title {
+        font-size: 10px;
+    }
+
+    .case-sub {
+        font-size: 9px;
+    }
+
+    .priority-badge,
+    .result-badge {
+        min-width: 40px;
+        height: 21px;
+        font-size: 9px;
+        padding: 0 4px;
+    }
+
+    .result-select,
+    .comment-input {
+        height: 27px;
+        font-size: 10px;
+    }
+
+    .btn-save-row,
+    .btn-bug {
+        height: 23px;
+        font-size: 9px;
+        padding: 0 5px;
+    }
 }
 
 @media (max-width: 900px) {
@@ -500,5 +548,13 @@
 
     .info-grid {
         grid-template-columns: repeat(1, 1fr);
+    }
+
+    .table-box {
+        overflow-x: auto;
+    }
+
+    .execution-table {
+        min-width: 1200px;
     }
 }

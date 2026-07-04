@@ -14,6 +14,9 @@
 
 <body>
 	<div layout:fragment="Content">
+	<div class="container-fluid" style="height:calc(100vh - 130px); display:flex; flex-direction:column; padding-bottom:24px;">
+   <div style="background:#fff; border-radius:12px; box-shadow:0 2px 12px rgba(0,0,0,0.08); padding:24px; flex:1; display:flex; flex-direction:column; overflow:auto;">
+	
 		<div class="workhistory-page">
 			<div class="container-fluid">
 				<div class="workhistory-header">
@@ -27,7 +30,7 @@
 
 					<div class="workhistory-actions">
 						<a th:href="@{/project/{projectId}/issues(projectId=${selectedProjectId})}"
-							class="btn btn-custon-rounded-four btn-default">일감 전체조회</a>
+							class="btn btn-custon-rounded-four btn-primary custom-white-btn">일감 전체조회</a>
 					</div>
 				</div>
 
@@ -183,9 +186,9 @@
 
 						<div class="search-btn-area">
 							<a th:href="@{/project/{projectId}/workhistory(projectId=${selectedProjectId})}"
-								class="btn btn-custon-rounded-four btn-default filter-btn">초기화</a>
+								class="btn btn-custon-rounded-four btn-primary custom-white-btn">초기화</a>
 							<button type="submit"
-								class="btn btn-custon-rounded-four btn-primary filter-btn">검색</button>
+								class="btn btn-custon-rounded-four btn-primary custom-default-btn">검색</button>
 						</div>
 					</form>
 				</section>
@@ -332,6 +335,8 @@
 				</section>
 			</div>
 		</div>
+	</div>
+</div>
 
 		<script th:inline="javascript">
 			(function() {

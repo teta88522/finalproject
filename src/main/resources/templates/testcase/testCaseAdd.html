@@ -7,11 +7,16 @@
 <title>테스트 케이스 생성</title>
 
 <link rel="stylesheet" th:href="@{/css/testcase/testCaseAdd.css}">
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script th:src="@{/js/common/pf-confirm.js}"></script>
 </head>
 
 <body>
 <div layout:fragment="Content">
-
+<div class="container-fluid" style="height:calc(100vh - 130px); display:flex; flex-direction:column; padding-bottom:24px;">
+   <div style="background:#fff; border-radius:12px; box-shadow:0 2px 12px rgba(0,0,0,0.08); padding:24px; flex:1; display:flex; flex-direction:column; overflow:auto;">
+	
     <div class="testcase-add-page">
 
         <div class="page-title-area">
@@ -91,15 +96,15 @@
                                 <option value="c003">하</option>
                             </select>
                         </div>
-                        
+
                         <div class="form-row">
-    					<label for="exeEnviroment">실행환경</label>
-    					<input type="text"
-           					   id="exeEnviroment"
-           					   th:field="*{exeEnviroment}"
-           					   placeholder="예: Chrome, Windows"
-           					   required>
-						</div>
+                            <label for="exeEnviroment">실행환경</label>
+                            <input type="text"
+                                   id="exeEnviroment"
+                                   th:field="*{exeEnviroment}"
+                                   placeholder="예: Chrome, Windows"
+                                   required>
+                        </div>
 
                         <div class="form-row file-row">
                             <label for="attachFiles">첨부파일</label>
@@ -197,18 +202,18 @@
             <!-- 하단 버튼 -->
             <div class="bottom-btn-area">
                 <a th:href="@{/project/{projectId}/tests(projectId=${projectId})}"
-                   class="btn-basic">
+                   class="btn btn-custon-rounded-four custom-white-btn">
                     취소
                 </a>
 
                 <button type="reset"
-                        class="btn-reset"
+                        class="btn btn-custon-rounded-four custom-default-btn"
                         onclick="resetStepTable();">
                     초기화
                 </button>
 
                 <button type="submit"
-                        class="btn-primary">
+                        class="btn btn-custon-rounded-four custom-default-btn">
                     저장
                 </button>
             </div>
@@ -218,6 +223,17 @@
     </div>
 
     <script>
+        function pfAlert(message, title, icon, focusTarget) {
+            window.PFDialog.alert(message, {
+                title: title || "입력 확인",
+                icon: icon || "warning"
+            }).then(function () {
+                if (focusTarget) {
+                    focusTarget.focus();
+                }
+            });
+        }
+
         function addStepRow() {
             const tbody = document.getElementById("stepTableBody");
             const row = document.createElement("tr");
@@ -239,7 +255,7 @@
             const rows = tbody.querySelectorAll("tr");
 
             if (rows.length === 1) {
-                alert("테스트 절차는 최소 1개 이상 필요합니다.");
+                pfAlert("테스트 절차는 최소 1개 이상 필요합니다.", "테스트 절차 확인", "warning");
                 return;
             }
 
@@ -272,61 +288,62 @@
         }
 
         document.getElementById("testCaseAddForm").addEventListener("submit", function(event) {
-            const title = document.getElementById("title").value.trim();
-            const testTypeCode = document.getElementById("testTypeCode").value;
-            const statusCode = document.getElementById("statusCode").value;
-            const versionId = document.getElementById("versionId").value;
-            const priorityCode = document.getElementById("priorityCode").value;
-            const exeEnviroment = document.getElementById("exeEnviroment").value.trim();
+            const titleInput = document.getElementById("title");
+            const testTypeCodeInput = document.getElementById("testTypeCode");
+            const statusCodeInput = document.getElementById("statusCode");
+            const versionIdInput = document.getElementById("versionId");
+            const priorityCodeInput = document.getElementById("priorityCode");
+            const exeEnviromentInput = document.getElementById("exeEnviroment");
+
+            const title = titleInput.value.trim();
+            const testTypeCode = testTypeCodeInput.value;
+            const statusCode = statusCodeInput.value;
+            const versionId = versionIdInput.value;
+            const priorityCode = priorityCodeInput.value;
+            const exeEnviroment = exeEnviromentInput.value.trim();
 
             if (title === "") {
-                alert("제목을 입력하세요.");
-                document.getElementById("title").focus();
                 event.preventDefault();
+                pfAlert("제목을 입력하세요.", "테스트 케이스 생성 확인", "warning", titleInput);
                 return false;
             }
 
             if (!testTypeCode) {
-                alert("유형을 선택하세요.");
-                document.getElementById("testTypeCode").focus();
                 event.preventDefault();
+                pfAlert("유형을 선택하세요.", "테스트 케이스 생성 확인", "warning", testTypeCodeInput);
                 return false;
             }
 
             if (!statusCode) {
-                alert("상태를 선택하세요.");
-                document.getElementById("statusCode").focus();
                 event.preventDefault();
+                pfAlert("상태를 선택하세요.", "테스트 케이스 생성 확인", "warning", statusCodeInput);
                 return false;
             }
 
             if (!versionId) {
-                alert("버전을 선택하세요.");
-                document.getElementById("versionId").focus();
                 event.preventDefault();
+                pfAlert("버전을 선택하세요.", "테스트 케이스 생성 확인", "warning", versionIdInput);
                 return false;
             }
 
             if (!priorityCode) {
-                alert("우선순위를 선택하세요.");
-                document.getElementById("priorityCode").focus();
                 event.preventDefault();
+                pfAlert("우선순위를 선택하세요.", "테스트 케이스 생성 확인", "warning", priorityCodeInput);
                 return false;
             }
-            
+
             if (exeEnviroment === "") {
-                alert("실행환경을 입력하세요.");
-                document.getElementById("exeEnviroment").focus();
                 event.preventDefault();
+                pfAlert("실행환경을 입력하세요.", "테스트 케이스 생성 확인", "warning", exeEnviromentInput);
                 return false;
             }
 
             const stepInputs = document.querySelectorAll("input[name='stepDescriptionList']");
+
             for (let i = 0; i < stepInputs.length; i++) {
                 if (stepInputs[i].value.trim() === "") {
-                    alert("테스트 절차의 단계 설명을 입력하세요.");
-                    stepInputs[i].focus();
                     event.preventDefault();
+                    pfAlert("테스트 절차의 단계 설명을 입력하세요.", "테스트 절차 확인", "warning", stepInputs[i]);
                     return false;
                 }
             }

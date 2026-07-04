@@ -11,8 +11,11 @@
 </head>
 
 <body>
-	<div layout:fragment="Content">
 
+	<div layout:fragment="Content">
+	<div class="container-fluid" style="height:calc(100vh - 130px); display:flex; flex-direction:column; padding-bottom:24px;">
+   <div style="background:#fff; border-radius:12px; box-shadow:0 2px 12px rgba(0,0,0,0.08); padding:24px; flex:1; display:flex; flex-direction:column; overflow:hidden;">
+	
 		<!-- ==============================
 		     업무흐름 복사 추가
 		     원본 일감유형+역할의 상태전환 설정을 대상 조건으로 복사
@@ -28,7 +31,7 @@
 
 					<div class="workflow-header-actions">
 						<a th:href="@{/workflow/list}"
-							class="btn btn-custon-rounded-four btn-default"> 목록 </a>
+							class="btn btn-custon-rounded-four btn-primary custom-white-btn"> 목록 </a>
 					</div>
 				</div>
 
@@ -147,10 +150,10 @@
 
 						<div class="workflow-form-actions">
 							<a th:href="@{/workflow/list}"
-								class="btn btn-custon-rounded-four btn-default"> 취소 </a>
+								class="btn btn-custon-rounded-four btn-primary custom-white-btn"> 취소 </a>
 
 							<button type="submit"
-								class="btn btn-custon-rounded-four btn-primary"
+								class="btn btn-custon-rounded-four btn-primary custom-default-btn"
 								th:disabled="${#lists.isEmpty(issueTypeList) or #lists.isEmpty(roleList)}">
 								복사</button>
 						</div>
@@ -168,6 +171,8 @@
 
 			</div>
 		</div>
+	</div>
+</div>
 		<!-- 업무흐름 복사 추가 끝 -->
 
 		<script th:inline="javascript">

@@ -35,6 +35,10 @@ public interface sourcerepositoryMapper {
 	public int existsSourcerepositoryCommitByShaAndBranch(@Param("commitHash") String commitHash,
 			@Param("projectId") String projectId, @Param("branchName") String branchName);
 
+	// ✅ 6-2. 동기화 전 "이미 저장된 SHA 목록"을 한 번에 조회 (commit마다 개별 SELECT 하던 걸 1번으로 줄이기 위함)
+	public List<String> selectExistingCommitHashesByProjectAndBranch(@Param("projectId") String projectId,
+			@Param("branchName") String branchName);
+
 	// 7. 단일 Commit 삭제
 	public int deleteSourcerepositoryCommit(@Param("commitId") String commitId);
 

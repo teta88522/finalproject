@@ -13,7 +13,9 @@
 
 <body>
 	<div layout:fragment="Content">
-
+	<div class="container-fluid" style="height:calc(100vh - 130px); display:flex; flex-direction:column; padding-bottom:24px;">
+   <div style="background:#fff; border-radius:12px; box-shadow:0 2px 12px rgba(0,0,0,0.08); padding:24px; flex:1; display:flex; flex-direction:column; overflow:auto;">
+	
 		<div class="issues-detail-page">
 			<div class="container-fluid">
 
@@ -31,11 +33,14 @@
 					</div>
 
 					<div class="issues-list-actions">
+					<a class="btn btn-custon-rounded-four btn-primary custom-white-btn"
+										th:href="@{/project/{projectId}/issues/timelog/create(projectId=${selectedProjectId}, issueId=${issue.issueId})}">소요시간 등록</a>
+								
 						<a th:href="@{/project/{projectId}/issues(projectId=${selectedProjectId})}"
-							class="btn btn-custon-rounded-four btn-default">목록</a>
+							class="btn btn-custon-rounded-four btn-primary custom-white-btn">목록</a>
 
 						<button th:if="${canUpdateIssue}" type="submit" form="issueUpdateForm"
-							class="btn btn-custon-rounded-four btn-primary">수정</button>
+							class="btn btn-custon-rounded-four btn-primary custom-default-btn">수정</button>
 
 						<form th:if="${canDeleteIssue}" class="issues-inline-delete-form js-pf-confirm-submit"
 							th:action="@{/project/{projectId}/issues/{issueId}/delete(projectId=${selectedProjectId}, issueId=${issue.issueId})}"
@@ -45,7 +50,7 @@
 							data-confirm-icon="warning"
 							data-confirm-message="일감을 삭제하시겠습니까?">
 							<input type="hidden" name="redirectTo" value="detail">
-							<button type="submit" class="btn btn-custon-rounded-four btn-danger">삭제</button>
+							<button type="submit" class="btn btn-custon-rounded-four btn-danger custom-btn">삭제</button>
 						</form>
 					</div>
 				</div>
@@ -234,7 +239,7 @@
 								</div>
 
 								<a id="issueFileDownloadAll"
-									class="btn btn-info btn-custon-rounded-four issues-download-all"
+									class="btn btn-custon-rounded-four btn-primary custom-default-btn"
 									style="display: none;"
 									th:href="@{/project/{projectId}/issues/{issueId}/files/download(projectId=${selectedProjectId}, issueId=${issue.issueId})}">전체 다운로드</a>
 							</div>
@@ -251,9 +256,8 @@
 										소요시간
 										<strong id="issueTimelogTabCount" th:text="${timeLogTotalCount}">0</strong>
 									</button>
-									<a class="btn btn-custon-rounded-four btn-primary btn-xs issues-timelog-top-action"
-										th:href="@{/project/{projectId}/issues/timelog/create(projectId=${selectedProjectId}, issueId=${issue.issueId})}">소요시간 등록</a>
-								</div>
+									
+									</div>
 
 								<div class="issues-activity-panel is-active"
 									data-activity-panel="history" role="tabpanel">
@@ -311,9 +315,7 @@
 													<span id="issueTimelogTotalCount" th:text="| / ${timeLogTotalCount}건|"> / 0건</span>
 												</p>
 											</div>
-											<a class="btn btn-custon-rounded-four btn-primary btn-xs"
-												th:href="@{/project/{projectId}/issues/timelog/create(projectId=${selectedProjectId}, issueId=${issue.issueId})}">등록</a>
-										</div>
+											</div>
 
 										<div id="issueTimelogList" class="issues-timelog-list"></div>
 
@@ -410,7 +412,8 @@
 				</details>
 			</div>
 		</div>
-
+	</div>
+</div>
 		<div id="issueLoadingOverlay" class="issues-loading-overlay" hidden
 			aria-live="polite" aria-busy="true">
 			<div class="issues-loading-box">

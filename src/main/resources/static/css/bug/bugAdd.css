@@ -6,7 +6,6 @@
     width: 100%;
     min-height: calc(100vh - 80px);
     padding: 24px;
-    background: #f5f7fb;
     color: #222;
     font-family: Arial, "Noto Sans KR", sans-serif;
 }
@@ -139,37 +138,9 @@
     gap: 8px;
 }
 
-.btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 84px;
-    height: 38px;
-    padding: 0 16px;
-    border: 1px solid #c8d0df;
-    border-radius: 8px;
-    background: #fff;
-    color: #222;
-    text-decoration: none;
-    font-size: 14px;
-    line-height: 1;
-    cursor: pointer;
-    white-space: nowrap;
-}
 
-.btn:hover {
-    background: #f3f6fb;
-}
 
-.btn.primary {
-    background: #2f6fed;
-    border-color: #2f6fed;
-    color: #fff;
-}
 
-.btn.primary:hover {
-    background: #245fd3;
-}
 
 .file-row {
     align-items: flex-start;

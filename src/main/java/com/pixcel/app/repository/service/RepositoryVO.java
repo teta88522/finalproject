@@ -77,4 +77,7 @@ public class RepositoryVO {
 	
 	private String startDate;
 	private String endDate;
+	
+	private Date searchStartDate; // 검색 시작일
+	private Date searchEndDate;   // 검색 종료일
 }

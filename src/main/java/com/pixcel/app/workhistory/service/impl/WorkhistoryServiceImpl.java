@@ -44,61 +44,27 @@ public class WorkhistoryServiceImpl implements WorkhistoryService {
 		validateDateRange(searchVO);
 		preparePageProbeRange(searchVO);
 
-		/*
-		 * TODO 1. 프로젝트 접근 확인 + projectInfo 조회
-		 *
-		 * XML 작성 후 연결할 코드:
-		 * WorkhistoryVO projectInfo = workhistoryMapper.selectProjectAccess(projectId, userId);
-		 * if (projectInfo == null) {
-		 *     throw new IllegalArgumentException("접근 권한이 없는 프로젝트입니다.");
-		 * }
-		 */
-		WorkhistoryVO projectInfo = buildTemporaryProjectInfo(projectId);
+		/* 프로젝트 접근 확인과 화면 상단 프로젝트 정보 조회. */
+		WorkhistoryVO projectInfo = workhistoryMapper.selectProjectAccess(projectId, userId);
+		if (projectInfo == null) {
+			throw new IllegalArgumentException("프로젝트 접근 권한이 없습니다.");
+		}
 
-		/*
-		 * TODO 2. 작업내역 ID 선조회
-		 *
-		 * XML 작성 후 연결할 코드:
-		 * List<WorkhistoryVO> pageIdList = safeList(workhistoryMapper.selectWorkhistoryPageIds(searchVO));
-		 *
-		 * 조회 기준:
-		 * - history_id, row_no만 조회
-		 * - 전체 COUNT(*) 금지
-		 * - startRow ~ endRow까지만 조회
-		 * - order by changed_at desc, history_id desc
-		 */
-		List<WorkhistoryVO> pageIdList = Collections.emptyList();
+		/* 작업내역 페이징용 ID 선조회. */
+		List<WorkhistoryVO> pageIdList = safeList(workhistoryMapper.selectWorkhistoryPageIds(searchVO));
 
 		applyPagination(searchVO, pageIdList);
 		List<String> currentPageHistoryIdList = getCurrentPageHistoryIdList(searchVO, pageIdList);
 
-		/*
-		 * TODO 3. 현재 페이지 상세 row 조회
-		 *
-		 * XML 작성 후 연결할 코드:
-		 * List<WorkhistoryVO> workHistoryList = currentPageHistoryIdList.isEmpty()
-		 *     ? Collections.emptyList()
-		 *     : safeList(workhistoryMapper.selectWorkhistoryRowsByIds(projectId, currentPageHistoryIdList));
-		 *
-		 * 조회 기준:
-		 * - currentPageHistoryIdList에 있는 history_id만 상세 조회
-		 * - issue, users, issue_type, issue_status, setting_code는 필요한 컬럼만 join
-		 */
-		List<WorkhistoryVO> workHistoryList = Collections.emptyList();
+		/* 현재 페이지 작업내역 목록 row 표시정보 조회. */
+		List<WorkhistoryVO> workHistoryList = currentPageHistoryIdList.isEmpty()
+				? Collections.emptyList()
+				: safeList(workhistoryMapper.selectWorkhistoryRowsByIds(projectId, currentPageHistoryIdList));
 
-		/*
-		 * TODO 4. 선택된 필터 표시명 조회
-		 *
-		 * XML 작성 후 연결할 코드:
-		 * List<WorkhistoryVO> selectedFilterRows = hasSelectedFilter(searchVO)
-		 *     ? safeList(workhistoryMapper.selectSelectedFilterRows(searchVO))
-		 *     : Collections.emptyList();
-		 *
-		 * 주의:
-		 * - 선택된 필터가 없으면 실행하지 않는다.
-		 * - 필터 전체 옵션 조회와 분리한다.
-		 */
-		List<WorkhistoryVO> selectedFilterRows = Collections.emptyList();
+		/* 선택된 필터 값의 표시명 조회. */
+		List<WorkhistoryVO> selectedFilterRows = hasSelectedFilter(searchVO)
+				? safeList(workhistoryMapper.selectSelectedFilterRows(searchVO))
+				: Collections.emptyList();
 		Map<String, String> selectedTextMap = toSelectedTextMap(selectedFilterRows);
 
 		Map<String, Object> pageData = new HashMap<>();
@@ -111,10 +77,7 @@ public class WorkhistoryServiceImpl implements WorkhistoryService {
 		pageData.put("selectedIssueStatusText", selectedTextMap.getOrDefault(OPTION_STATUS, "전체"));
 		pageData.put("selectedPriorityText", selectedTextMap.getOrDefault(OPTION_PRIORITY, "전체"));
 
-		/*
-		 * 최초 HTML에서는 필터 옵션 전체를 싣지 않는다.
-		 * 화면에서 드롭다운을 열 때 /workhistory/filter-options Ajax로 조회한다.
-		 */
+		/* 최초 HTML용 빈 필터 옵션 목록 설정. */
 		pageData.put("changeTypeList", Collections.emptyList());
 		pageData.put("fieldList", Collections.emptyList());
 		pageData.put("changedByList", Collections.emptyList());
@@ -130,28 +93,13 @@ public class WorkhistoryServiceImpl implements WorkhistoryService {
 		validateUserId(userId);
 		validateProjectId(projectId);
 
-		/*
-		 * TODO 1. 프로젝트 접근 확인
-		 *
-		 * XML 작성 후 연결할 코드:
-		 * WorkhistoryVO projectInfo = workhistoryMapper.selectProjectAccess(projectId, userId);
-		 * if (projectInfo == null) {
-		 *     throw new IllegalArgumentException("접근 권한이 없는 프로젝트입니다.");
-		 * }
-		 */
+		/* 프로젝트 접근 확인 후 필터 옵션 조회. */
+		WorkhistoryVO projectInfo = workhistoryMapper.selectProjectAccess(projectId, userId);
+		if (projectInfo == null) {
+			throw new IllegalArgumentException("프로젝트 접근 권한이 없습니다.");
+		}
 
-		/*
-		 * TODO 2. 필터 옵션 Ajax 조회
-		 *
-		 * XML 작성 후 연결할 코드:
-		 * List<WorkhistoryVO> optionRows = safeList(workhistoryMapper.selectFilterOptionRows(projectId, userId));
-		 *
-		 * 조회 기준:
-		 * - optionGroup, optionValue, optionLabel 형태로 통일
-		 * - 최초 화면 진입이 아니라 Ajax에서만 실행
-		 * - 느리면 프로젝트 단위 캐싱 후보
-		 */
-		List<WorkhistoryVO> optionRows = Collections.emptyList();
+		List<WorkhistoryVO> optionRows = safeList(workhistoryMapper.selectFilterOptionRows(projectId, userId));
 
 		Map<String, List<WorkhistoryVO>> optionMap = groupOptionRows(optionRows);
 
@@ -301,13 +249,6 @@ public class WorkhistoryServiceImpl implements WorkhistoryService {
 
 	private List<WorkhistoryVO> safeList(List<WorkhistoryVO> rows) {
 		return rows == null ? Collections.emptyList() : rows;
-	}
-
-	private WorkhistoryVO buildTemporaryProjectInfo(String projectId) {
-		WorkhistoryVO projectInfo = new WorkhistoryVO();
-		projectInfo.setProjectId(projectId);
-		projectInfo.setProjectName("프로젝트");
-		return projectInfo;
 	}
 
 	private void validateUserId(String userId) {

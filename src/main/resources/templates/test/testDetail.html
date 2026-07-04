@@ -7,11 +7,16 @@
 <title>테스트 수행</title>
 
 <link rel="stylesheet" th:href="@{/css/test/testDetail.css}">
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script th:src="@{/js/common/pf-confirm.js}"></script>
 </head>
 
 <body>
 	<div layout:fragment="Content">
-
+	<div class="container-fluid" style="height:calc(100vh - 130px); display:flex; flex-direction:column; padding-bottom:24px;">
+   <div style="background:#fff; border-radius:12px; box-shadow:0 2px 12px rgba(0,0,0,0.08); padding:24px; flex:1; display:flex; flex-direction:column; overflow:auto;">
+	
 		<div class="test-detail-wrap">
 
 			<div class="page-title-area">
@@ -22,12 +27,12 @@
 
 				<div class="top-btn-area">
 					<a th:href="@{/project/{projectId}/tests(projectId=${projectId})}"
-						class="btn-basic"> 목록 </a> <a
+						class="btn btn-custon-rounded-four custom-white-btn"> 목록 </a> <a
 						th:href="@{/project/{projectId}/tests/{testId}/edit(
                         projectId=${projectId},
                         testId=${testId}
                    )}"
-						class="btn-primary"> 테스트 수정 </a>
+						class="btn btn-custon-rounded-four custom-default-btn"> 테스트 수정 </a>
 				</div>
 			</div>
 
@@ -37,44 +42,54 @@
 
 				<div class="info-grid">
 					<div class="info-item">
-						<span>테스트 ID</span> <strong th:text="${testInfo.testId}">TEST_ID</strong>
+						<span>테스트 ID</span>
+						<strong th:text="${testInfo.testId}">TEST_ID</strong>
 					</div>
 
 					<div class="info-item">
-						<span>테스트명</span> <strong th:text="${testInfo.testTitle}">테스트명</strong>
+						<span>테스트명</span>
+						<strong th:text="${testInfo.testTitle}">테스트명</strong>
 					</div>
 
 					<div class="info-item">
-						<span>버전</span> <strong th:text="${testInfo.versionName}">버전</strong>
+						<span>버전</span>
+						<strong th:text="${testInfo.versionName}">버전</strong>
 					</div>
 
 					<div class="info-item">
-						<span>그룹</span> <strong th:text="${testInfo.teamName}">그룹</strong>
+						<span>그룹</span>
+						<strong th:text="${testInfo.teamName}">그룹</strong>
 					</div>
 
 					<div class="info-item">
-						<span>상태</span> <strong th:text="${testInfo.statusName}">상태</strong>
+						<span>상태</span>
+						<strong th:text="${testInfo.statusName}">상태</strong>
 					</div>
 
 					<div class="info-item">
-						<span>우선순위</span> <strong th:text="${testInfo.priorityName}">우선순위</strong>
+						<span>우선순위</span>
+						<strong th:text="${testInfo.priorityName}">우선순위</strong>
 					</div>
 
 					<div class="info-item">
-						<span>유형</span> <strong th:text="${testInfo.testTypeName}">유형</strong>
+						<span>유형</span>
+						<strong th:text="${testInfo.testTypeName}">유형</strong>
 					</div>
 
 					<div class="info-item">
-						<span>담당자</span> <strong
+						<span>담당자</span>
+						<strong
 							th:text="${testInfo.assigneeName != null ? testInfo.assigneeName : '-'}">담당자</strong>
 					</div>
 
 					<div class="info-item">
-						<span>시작일</span> <strong th:text="${testInfo.startDate}">시작일</strong>
+						<span>시작일</span>
+						<strong th:text="${testInfo.startDate}">시작일</strong>
 					</div>
 
 					<div class="info-item">
-						<span>종료일</span> <strong th:text="${testInfo.endDate}">종료일</strong>
+						<span>종료일</span>
+						<strong th:text="${testInfo.endDate}">종료일</strong>
 					</div>
 				</div>
 
@@ -89,122 +104,157 @@
 			<section class="box-section execution-section">
 				<div class="box-title">테스트 케이스 수행 결과</div>
 
-				<!-- 전체 저장 form -->
-				<form
-					th:action="@{/project/{projectId}/tests/{testId}/executions/save-all(
-                        projectId=${projectId},
-                        testId=${testId}
-                  )}"
-					method="post" id="executionSaveAllForm">
+				<div class="table-box">
+					<table class="execution-table">
+						<thead>
+							<tr>
+								<th>
+									<input type="checkbox" id="allExecutionCheck">
+								</th>
+								<th>No</th>
+								<th>테스트 케이스</th>
+								<th>유형</th>
+								<th>우선순위</th>
+								<th>기대결과</th>
+								<th>현재 결과</th>
+								<th>수행 상태</th>
+								<th>코멘트</th>
+								<th>재수행</th>
+								<th>수행자</th>
+								<th>수행일시</th>
+								<th>개별저장</th>
+								<th>버그</th>
+							</tr>
+						</thead>
 
-					<div class="table-box">
-						<table class="execution-table">
-							<thead>
-								<tr>
-									<th>No</th>
-									<th>테스트 케이스</th>
-									<th>유형</th>
-									<th>우선순위</th>
-									<th>기대결과</th>
-									<th>현재 결과</th>
-									<th>수행 상태</th>
-									<th>코멘트</th>
-									<th>재수행</th>
-									<th>수행자</th>
-									<th>수행일시</th>
-									<th>개별저장</th>
-									<th>버그</th>
-								</tr>
-							</thead>
+						<tbody>
+							<tr
+								th:if="${executionCaseList == null or #lists.isEmpty(executionCaseList)}">
+								<td colspan="14" class="empty-row">매핑된 테스트 케이스가 없습니다.</td>
+							</tr>
 
-							<tbody>
-								<tr
-									th:if="${executionCaseList == null or #lists.isEmpty(executionCaseList)}">
-									<td colspan="13" class="empty-row">매핑된 테스트 케이스가 없습니다.</td>
-								</tr>
+							<tr th:each="item : ${executionCaseList}"
+								th:data-mapping-id="${item.mappingId}">
 
-								<tr th:each="item : ${executionCaseList}"
-									th:data-mapping-id="${item.mappingId}">
+								<td>
+									<input type="checkbox"
+										   class="execution-check"
+										   th:value="${item.mappingId}">
+								</td>
 
-									<td th:text="${item.sortOrder}">1</td>
+								<td th:text="${item.sortOrder}">1</td>
 
-									<td class="case-title-cell"><input type="hidden"
-										name="mappingIdList" th:value="${item.mappingId}">
+								<td class="case-title-cell">
+									<div class="case-title" th:text="${item.testCaseTitle}">
+										테스트 케이스명
+									</div>
 
-										<div class="case-title" th:text="${item.testCaseTitle}">
-											테스트 케이스명</div>
+									<div class="case-sub" th:text="${item.testCaseId}">
+										TC_ID
+									</div>
+								</td>
 
-										<div class="case-sub" th:text="${item.testCaseId}">
-											TC_ID</div></td>
+								<td th:text="${item.testCaseTypeName}">기능</td>
 
-									<td th:text="${item.testCaseTypeName}">기능</td>
-
-									<td><span class="priority-badge"
+								<td>
+									<span class="priority-badge"
 										th:classappend="${item.testCasePriorityCode == 'c001' ? ' high' : (item.testCasePriorityCode == 'c003' ? ' low' : ' middle')}"
-										th:text="${item.testCasePriorityName}"> 중 </span></td>
+										th:text="${item.testCasePriorityName}">
+										중
+									</span>
+								</td>
 
-									<td class="expected-cell" th:title="${item.expectedResult}"
-										th:text="${item.expectedResult != null ? item.expectedResult : '-'}">
-										기대결과</td>
+								<td class="expected-cell"
+									th:title="${item.expectedResult}"
+									th:text="${item.expectedResult != null ? item.expectedResult : '-'}">
+									기대결과
+								</td>
 
-									<td><span class="result-badge"
+								<td>
+									<span class="result-badge"
 										th:classappend="${item.resultStatusCode == 'o001' ? ' not-run' : (item.resultStatusCode == 'o002' ? ' progress' : (item.resultStatusCode == 'o003' ? ' success' : ' fail'))}"
-										th:text="${item.resultStatusName}"> 미수행 </span></td>
+										th:text="${item.resultStatusName}">
+										미수행
+									</span>
+								</td>
 
-									<td><select name="resultStatusCodeList"
-										class="result-select">
-											<option value="o001"
-												th:selected="${item.resultStatusCode == 'o001'}">
-												미수행</option>
-											<option value="o002"
-												th:selected="${item.resultStatusCode == 'o002'}">
-												진행중</option>
-											<option value="o003"
-												th:selected="${item.resultStatusCode == 'o003'}">
-												성공</option>
-											<option value="o004"
-												th:selected="${item.resultStatusCode == 'o004'}">
-												실패</option>
-									</select></td>
+								<td>
+									<select class="result-select">
+										<option value="o001"
+											th:selected="${item.resultStatusCode == 'o001'}">
+											미수행
+										</option>
+										<option value="o002"
+											th:selected="${item.resultStatusCode == 'o002'}">
+											진행중
+										</option>
+										<option value="o003"
+											th:selected="${item.resultStatusCode == 'o003'}">
+											성공
+										</option>
+										<option value="o004"
+											th:selected="${item.resultStatusCode == 'o004'}">
+											실패
+										</option>
+									</select>
+								</td>
 
-									<td><input type="text" name="executionCommentList"
-										class="comment-input" th:value="${item.executionComment}"
-										maxlength="255" placeholder="수행 코멘트"></td>
+								<td>
+									<input type="text"
+										class="comment-input"
+										th:value="${item.executionComment}"
+										maxlength="255"
+										placeholder="수행 코멘트">
+								</td>
 
-									<td th:text="${item.nextRetryNo}">0</td>
+								<td class="retry-no" th:text="${item.nextRetryNo}">0</td>
 
-									<td
-										th:text="${item.executorName != null ? item.executorName : '-'}">
-										수행자</td>
+								<td class="executor-name"
+									th:text="${item.executorName != null ? item.executorName : '-'}">
+									수행자
+								</td>
 
-									<td
-										th:text="${item.executedAt != null ? item.executedAt : '-'}">
-										수행일시</td>
+								<td class="executed-at"
+									th:text="${item.executedAt != null ? item.executedAt : '-'}">
+									수행일시
+								</td>
 
-									<td>
-										<button type="button" class="btn-save-row"
-											th:data-mapping-id="${item.mappingId}">저장</button>
-									</td>
+								<td>
+									<button type="button" class="btn-save-row"
+										th:data-mapping-id="${item.mappingId}">
+										저장
+									</button>
+								</td>
 
-									<td class="bug-cell"><a
-										th:if="${item.executionId != null and item.resultStatusCode == 'o004'}"
+								<td class="bug-cell">
+									<a th:if="${item.executionId != null and item.resultStatusCode == 'o004'}"
 										th:href="@{/project/{projectId}/bugs/new(projectId=${projectId},executionId=${item.executionId})}"
-										class="btn-bug"> 등록 </a> <span
-										th:unless="${item.executionId != null and item.resultStatusCode == 'o004'}"
-										class="text-muted"> - </span></td>
-								</tr>
-							</tbody>
-						</table>
-					</div>
+										class="btn-bug">
+										등록
+									</a>
 
-					<div class="execution-btn-area">
-						<button type="submit" class="btn-save-all">실행결과 전체 저장</button>
-					</div>
+									<span th:unless="${item.executionId != null and item.resultStatusCode == 'o004'}"
+										class="text-muted">
+										-
+									</span>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
 
-				</form>
+				<div class="execution-btn-area">
+					<button type="button"
+							class="btn-save-all"
+							id="saveCheckedExecutionBtn">
+						체크한 실행결과 저장
+					</button>
+				</div>
 			</section>
 
 		</div>
+	</div>
+</div>
 
 <script th:inline="javascript">
     const message = /*[[${message}]]*/ null;
@@ -212,12 +262,40 @@
     const testId = /*[[${testId}]]*/ '';
 
     if (message != null) {
-        alert(message);
+        window.PFDialog.alert(message, {
+            title: '알림',
+            icon: 'info'
+        });
     }
 
     document.addEventListener('DOMContentLoaded', function () {
         const rowSaveButtons = document.querySelectorAll('.btn-save-row');
+        const allExecutionCheck = document.getElementById('allExecutionCheck');
+        const saveCheckedExecutionBtn = document.getElementById('saveCheckedExecutionBtn');
 
+        /*
+         * 전체 체크박스
+         */
+        if (allExecutionCheck) {
+            allExecutionCheck.addEventListener('change', function () {
+                const checks = document.querySelectorAll('.execution-check');
+
+                checks.forEach(function (check) {
+                    check.checked = allExecutionCheck.checked;
+                });
+            });
+        }
+
+        /*
+         * 개별 체크박스 변경 시 전체 체크 상태 동기화
+         */
+        document.querySelectorAll('.execution-check').forEach(function (check) {
+            check.addEventListener('change', syncAllExecutionCheck);
+        });
+
+        /*
+         * 개별 저장 버튼
+         */
         rowSaveButtons.forEach(function (button) {
             button.addEventListener('click', function () {
                 const row = button.closest('tr');
@@ -226,139 +304,301 @@
                     return;
                 }
 
-                const mappingId = button.dataset.mappingId;
-                const resultSelect = row.querySelector('.result-select');
-                const commentInput = row.querySelector('.comment-input');
+                saveExecutionRow(row, button);
+            });
+        });
 
-                const resultStatusCode = resultSelect == null ? 'o001' : resultSelect.value;
-                const executionComment = commentInput == null ? '' : commentInput.value;
+        /*
+         * 체크한 실행결과 저장 버튼
+         */
+        if (saveCheckedExecutionBtn) {
+            saveCheckedExecutionBtn.addEventListener('click', function () {
+                const checkedRows = [];
 
-                const formData = new URLSearchParams();
-                formData.append('mappingId', mappingId);
-                formData.append('resultStatusCode', resultStatusCode);
-                formData.append('executionComment', executionComment);
+                document.querySelectorAll('.execution-check:checked').forEach(function (check) {
+                    const row = check.closest('tr');
 
+                    if (row != null) {
+                        checkedRows.push(row);
+                    }
+                });
+
+                if (checkedRows.length === 0) {
+                    window.PFDialog.alert('저장할 테스트 케이스를 선택하세요.', {
+                        title: '선택 확인',
+                        icon: 'warning'
+                    });
+                    return;
+                }
+
+                saveCheckedExecutionBtn.disabled = true;
+                saveCheckedExecutionBtn.textContent = '저장중';
+
+                let successCount = 0;
+                let failCount = 0;
+
+                const savePromises = checkedRows.map(function (row) {
+                    const rowButton = row.querySelector('.btn-save-row');
+
+                    return saveExecutionRow(row, rowButton, true)
+                        .then(function () {
+                            successCount++;
+
+                            const check = row.querySelector('.execution-check');
+
+                            if (check != null) {
+                                check.checked = false;
+                            }
+                        })
+                        .catch(function () {
+                            failCount++;
+                        });
+                });
+
+                Promise.all(savePromises).then(function () {
+                    syncAllExecutionCheck();
+
+                    saveCheckedExecutionBtn.disabled = false;
+                    saveCheckedExecutionBtn.textContent = '체크한 실행결과 저장';
+
+                    if (failCount > 0) {
+                        window.PFDialog.alert(
+                            '선택한 실행결과 저장이 완료되었습니다.\n성공: ' + successCount + '건 / 실패: ' + failCount + '건',
+                            {
+                                title: '일부 저장 실패',
+                                icon: 'warning'
+                            }
+                        );
+                        return;
+                    }
+
+                    window.PFDialog.alert(
+                        '선택한 실행결과가 저장되었습니다.\n저장 건수: ' + successCount + '건',
+                        {
+                            title: '저장 완료',
+                            icon: 'success'
+                        }
+                    );
+                });
+            });
+        }
+    });
+
+    function syncAllExecutionCheck() {
+        const allExecutionCheck = document.getElementById('allExecutionCheck');
+        const checks = document.querySelectorAll('.execution-check');
+
+        if (!allExecutionCheck) {
+            return;
+        }
+
+        if (checks.length === 0) {
+            allExecutionCheck.checked = false;
+            return;
+        }
+
+        let checkedCount = 0;
+
+        checks.forEach(function (check) {
+            if (check.checked) {
+                checkedCount++;
+            }
+        });
+
+        allExecutionCheck.checked = checkedCount === checks.length;
+    }
+
+    function saveExecutionRow(row, button, silent) {
+        return new Promise(function (resolve, reject) {
+            if (row == null) {
+                reject();
+                return;
+            }
+
+            const mappingId = row.dataset.mappingId;
+            const resultSelect = row.querySelector('.result-select');
+            const commentInput = row.querySelector('.comment-input');
+
+            const resultStatusCode = resultSelect == null ? 'o001' : resultSelect.value;
+            const executionComment = commentInput == null ? '' : commentInput.value;
+
+            const formData = new URLSearchParams();
+            formData.append('mappingId', mappingId);
+            formData.append('resultStatusCode', resultStatusCode);
+            formData.append('executionComment', executionComment);
+
+            if (button != null) {
                 button.disabled = true;
                 button.textContent = '저장중';
+            }
 
-                fetch('/project/' + projectId + '/tests/' + testId + '/executions/save-ajax', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
-                    },
-                    body: formData.toString()
-                })
-                .then(function (response) {
-                    if (!response.ok) {
-                        throw new Error('저장 실패');
-                    }
+            fetch('/project/' + projectId + '/tests/' + testId + '/executions/save-ajax', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+                },
+                body: formData.toString()
+            })
+            .then(function (response) {
+                if (!response.ok) {
+                    throw new Error('저장 실패');
+                }
 
-                    return response.json();
-                })
-                .then(function (data) {
-                    if (data.resultStatusCode === 'LOGIN_REQUIRED') {
-                        alert(data.resultStatusName);
+                return response.json();
+            })
+            .then(function (data) {
+                if (data.resultStatusCode === 'LOGIN_REQUIRED') {
+                    window.PFDialog.alert(data.resultStatusName, {
+                        title: '로그인 필요',
+                        icon: 'warning'
+                    }).then(function () {
                         location.href = '/login';
-                        return;
+                    });
+
+                    reject();
+                    return;
+                }
+
+                if (data.resultStatusCode === 'ERROR') {
+                    if (!silent) {
+                        window.PFDialog.alert(data.resultStatusName, {
+                            title: '저장 실패',
+                            icon: 'error'
+                        });
                     }
 
-                    if (data.resultStatusCode === 'ERROR') {
-                        alert(data.resultStatusName);
+                    if (button != null) {
                         button.textContent = '저장';
                         button.disabled = false;
-                        return;
                     }
 
-                    /*
-                     * 1. 현재 결과 뱃지 갱신
-                     */
-                    const badge = row.querySelector('.result-badge');
+                    reject();
+                    return;
+                }
 
-                    if (badge != null) {
-                        badge.className = 'result-badge';
-                        badge.textContent = data.resultStatusName;
+                updateExecutionRow(row, data);
 
-                        if (data.resultStatusCode === 'o001') {
-                            badge.classList.add('not-run');
-                        } else if (data.resultStatusCode === 'o002') {
-                            badge.classList.add('progress');
-                        } else if (data.resultStatusCode === 'o003') {
-                            badge.classList.add('success');
-                        } else if (data.resultStatusCode === 'o004') {
-                            badge.classList.add('fail');
-                        }
-                    }
-
-                    /*
-                     * 2. 버그 등록 칸 갱신
-                     *    실패(o004) + executionId 존재 시 버튼 생성
-                     *    실패가 아니면 '-' 표시
-                     */
-                    const bugCell = row.querySelector('.bug-cell');
-
-                    if (bugCell != null) {
-                        bugCell.innerHTML = '';
-
-                        if (data.resultStatusCode === 'o004'
-                            && data.executionId != null
-                            && data.executionId !== '') {
-
-                            const bugLink = document.createElement('a');
-
-                            bugLink.href = '/project/'
-                                + encodeURIComponent(projectId)
-                                + '/bugs/new?executionId='
-                                + encodeURIComponent(data.executionId);
-
-                            bugLink.className = 'btn-bug';
-                            bugLink.textContent = '등록';
-
-                            bugCell.appendChild(bugLink);
-                        } else {
-                            const span = document.createElement('span');
-
-                            span.className = 'text-muted';
-                            span.textContent = '-';
-
-                            bugCell.appendChild(span);
-                        }
-                    }
-
-                    /*
-                     * 3. 수행자 갱신이 필요하면 class 추가 후 사용 가능
-                     *    예: <td class="executor-name">...</td>
-                     */
-                    const executorNameCell = row.querySelector('.executor-name');
-
-                    if (executorNameCell != null && data.executorName != null) {
-                        executorNameCell.textContent = data.executorName;
-                    }
-
-                    /*
-                     * 4. 수행일시 갱신이 필요하면 class 추가 후 사용 가능
-                     *    예: <td class="executed-at">...</td>
-                     */
-                    const executedAtCell = row.querySelector('.executed-at');
-
-                    if (executedAtCell != null && data.executedAt != null) {
-                        executedAtCell.textContent = data.executedAt;
-                    }
-
+                if (button != null) {
                     button.textContent = '저장됨';
 
                     setTimeout(function () {
                         button.textContent = '저장';
                         button.disabled = false;
                     }, 700);
-                })
-                .catch(function () {
-                    alert('저장 중 오류가 발생했습니다.');
+                }
+
+                resolve(data);
+            })
+            .catch(function () {
+                if (!silent) {
+                    window.PFDialog.alert('저장 중 오류가 발생했습니다.', {
+                        title: '저장 오류',
+                        icon: 'error'
+                    });
+                }
+
+                if (button != null) {
                     button.textContent = '저장';
                     button.disabled = false;
-                });
+                }
+
+                reject();
             });
         });
-    });
+    }
+
+    function updateExecutionRow(row, data) {
+        /*
+         * 1. 현재 결과 뱃지 갱신
+         */
+        const badge = row.querySelector('.result-badge');
+
+        if (badge != null) {
+            badge.className = 'result-badge';
+            badge.textContent = data.resultStatusName;
+
+            if (data.resultStatusCode === 'o001') {
+                badge.classList.add('not-run');
+            } else if (data.resultStatusCode === 'o002') {
+                badge.classList.add('progress');
+            } else if (data.resultStatusCode === 'o003') {
+                badge.classList.add('success');
+            } else if (data.resultStatusCode === 'o004') {
+                badge.classList.add('fail');
+            }
+        }
+
+        /*
+         * 2. 버그 등록 칸 갱신
+         *    실패(o004) + executionId 존재 시 버튼 생성
+         *    실패가 아니면 '-' 표시
+         */
+        const bugCell = row.querySelector('.bug-cell');
+
+        if (bugCell != null) {
+            bugCell.innerHTML = '';
+
+            if (data.resultStatusCode === 'o004'
+                && data.executionId != null
+                && data.executionId !== '') {
+
+                const bugLink = document.createElement('a');
+
+                bugLink.href = '/project/'
+                    + encodeURIComponent(projectId)
+                    + '/bugs/new?executionId='
+                    + encodeURIComponent(data.executionId);
+
+                bugLink.className = 'btn-bug';
+                bugLink.textContent = '등록';
+
+                bugCell.appendChild(bugLink);
+            } else {
+                const span = document.createElement('span');
+
+                span.className = 'text-muted';
+                span.textContent = '-';
+
+                bugCell.appendChild(span);
+            }
+        }
+
+        /*
+         * 3. 재수행 차수 갱신
+         */
+        const retryNoCell = row.querySelector('.retry-no');
+
+        if (retryNoCell != null) {
+            retryNoCell.textContent =
+                data.retryNo != null && data.retryNo !== ''
+                    ? data.retryNo
+                    : '0';
+        }
+
+        /*
+         * 4. 수행자 갱신
+         */
+        const executorNameCell = row.querySelector('.executor-name');
+
+        if (executorNameCell != null) {
+            executorNameCell.textContent =
+                data.executorName != null && data.executorName !== ''
+                    ? data.executorName
+                    : '-';
+        }
+
+        /*
+         * 5. 수행일시 갱신
+         */
+        const executedAtCell = row.querySelector('.executed-at');
+
+        if (executedAtCell != null) {
+            executedAtCell.textContent =
+                data.executedAt != null && data.executedAt !== ''
+                    ? data.executedAt
+                    : '-';
+        }
+    }
 </script>
 
 	</div>

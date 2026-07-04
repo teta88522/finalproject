@@ -274,15 +274,16 @@ public class sourcerepositoryServiceImpl implements sourcerepositoryService {
 			// GitHub에서 Commit 목록 조회
 			List<sourcerepositoryVO> commits = fetchCommitsFromGitHub(project.getGitUrl(), branch);
 
+			// ✅ 커밋마다 개별 SELECT를 날리던 걸 "이미 있는 SHA 목록"을 한 번에 조회해서
+			//    메모리(HashSet)에서 비교하는 방식으로 변경. 동기화가 느렸던 주된 원인이 이 부분이었음
+			//    (커밋 30개 = SELECT 30번 → 이제는 SELECT 1번).
+			List<String> existingHashes = mapper.selectExistingCommitHashesByProjectAndBranch(projectId, branch);
+			java.util.Set<String> existingHashSet = new java.util.HashSet<>(existingHashes);
+
 			// ✨ 신규 Commit 필터링
 			List<sourcerepositoryVO> newCommits = new ArrayList<>();
 			for (sourcerepositoryVO commit : commits) {
-				// ✅ SHA만으로 체크하면 다른 브랜치에서 이미 동기화된 커밋을 스킵해버려서
-				//    새 브랜치를 동기화할 때 대부분의 커밋이 누락되는 버그가 있었음.
-				//    프로젝트+브랜치까지 함께 체크하도록 변경.
-				int existsCount = mapper.existsSourcerepositoryCommitByShaAndBranch(
-						commit.getCommitHash(), projectId, branch);
-				boolean exists = existsCount > 0;
+				boolean exists = existingHashSet.contains(commit.getCommitHash());
 				if (!exists) {
 					commit.setProjectId(projectId);
 					commit.setBranchName(branch);
@@ -292,29 +293,42 @@ public class sourcerepositoryServiceImpl implements sourcerepositoryService {
 				}
 			}
 
-			// ✨ 신규 Commit 개별 저장
+			// ✨ 신규 Commit 저장
 			int successCount = 0;
 			int failCount = 0;
 			List<String> failedShas = new ArrayList<>();
 
 			if (!newCommits.isEmpty()) {
+				// ✅ DB 컬럼(commit_message VARCHAR2(255))보다 긴 메시지가 들어오면
+				//    ORA-12899로 INSERT 자체가 실패해서 해당 커밋이 통째로 누락되는 문제가 있었음.
+				//    컬럼을 늘리는 게 근본 해결이지만, 늘리기 전까지 방어적으로 잘라서 저장.
 				for (sourcerepositoryVO commit : newCommits) {
-					try {
-						// ✅ DB 컬럼(commit_message VARCHAR2(255))보다 긴 메시지가 들어오면
-						//    ORA-12899로 INSERT 자체가 실패해서 해당 커밋이 통째로 누락되는 문제가 있었음.
-						//    컬럼을 늘리는 게 근본 해결이지만, 늘리기 전까지 방어적으로 잘라서 저장.
-						String message = commit.getCommitMessage();
-						if (message != null && message.length() > 255) {
-							commit.setCommitMessage(message.substring(0, 252) + "...");
-						}
+					String message = commit.getCommitMessage();
+					if (message != null && message.length() > 255) {
+						commit.setCommitMessage(message.substring(0, 252) + "...");
+					}
+				}
 
-						mapper.insertSourcerepositoryCommit(commit);
-						successCount++;
-						System.out.println("✅ Commit 저장: " + commit.getCommitHash());
-					} catch (Exception e) {
-						failCount++;
-						failedShas.add(commit.getCommitHash());
-						System.err.println("❌ Commit 저장 실패: " + commit.getCommitHash() + " - " + e.getMessage());
+				// ✅ 빠른 경로: 한 번의 배치 INSERT로 전부 저장 시도 (DB 왕복 1번).
+				//    커밋 개별 INSERT가 동기화가 느렸던 주된 원인이었음.
+				try {
+					mapper.insertSourcerepositoryCommits(newCommits);
+					successCount = newCommits.size();
+					System.out.println("✅ 배치 INSERT 성공: " + successCount + "건");
+				} catch (Exception batchEx) {
+					// ✅ 느린 경로(폴백): 배치 전체가 실패한 경우에만 한 건씩 다시 시도해서
+					//    문제가 되는 커밋만 정확히 걸러내고 나머지는 살림
+					System.err.println("⚠️ 배치 INSERT 실패, 개별 저장으로 재시도: " + batchEx.getMessage());
+					for (sourcerepositoryVO commit : newCommits) {
+						try {
+							mapper.insertSourcerepositoryCommit(commit);
+							successCount++;
+							System.out.println("✅ Commit 저장: " + commit.getCommitHash());
+						} catch (Exception e) {
+							failCount++;
+							failedShas.add(commit.getCommitHash());
+							System.err.println("❌ Commit 저장 실패: " + commit.getCommitHash() + " - " + e.getMessage());
+						}
 					}
 				}
 			}
@@ -354,19 +368,38 @@ public class sourcerepositoryServiceImpl implements sourcerepositoryService {
 		@SuppressWarnings("unchecked")
 		List<Map<String, String>> branches = (List<Map<String, String>>) branchInfo.get("branches");
 
-		List<String> succeeded = new ArrayList<>();
-		List<String> failed = new ArrayList<>();
+		// ✅ DB 왕복은 이미 줄였지만, 브랜치마다 필요한 GitHub API 호출(네트워크 왕복)이
+		//    순차 처리라 진짜 병목이었음(브랜치 7개 × ~1.5초 = 10초 이상).
+		//    브랜치끼리는 서로 독립적이라 동시에 처리해도 안전 → 스레드풀로 병렬 처리.
+		List<String> succeeded = java.util.Collections.synchronizedList(new ArrayList<>());
+		List<String> failed = java.util.Collections.synchronizedList(new ArrayList<>());
 
-		// 2. 브랜치 하나씩 순회하며 동기화 (한 브랜치 실패해도 나머지는 계속)
-		for (Map<String, String> b : branches) {
-			String branchName = b.get("name");
-			try {
-				syncSourcerepositoryFromGitHub(projectId, branchName);
-				succeeded.add(branchName);
-			} catch (Exception e) {
-				failed.add(branchName + "(" + e.getMessage() + ")");
-				System.err.println("⚠️ 브랜치 동기화 실패: " + branchName + " - " + e.getMessage());
+		// ⚠️ 20개로 올렸더니 GitHub API의 "동시 요청 남용 탐지(secondary rate limit)"에 걸려서
+		//    순차 처리(10초)보다도 훨씬 느린 30초+로 나왔음. GitHub은 같은 저장소에 대한
+		//    과도한 동시 요청 자체를 이상 트래픽으로 보고 고의로 응답을 지연시킴.
+		//    (공식 문서: "avoid making concurrent requests" 권고)
+		//    5도 애매해서 더 보수적으로 3까지 낮춤 - 필요하면 여기 숫자만 조절해서 재실험 가능.
+		int poolSize = Math.min(branches.size(), 5);
+		java.util.concurrent.ExecutorService executor = java.util.concurrent.Executors.newFixedThreadPool(poolSize);
+		try {
+			List<java.util.concurrent.CompletableFuture<Void>> futures = new ArrayList<>();
+			for (Map<String, String> b : branches) {
+				String branchName = b.get("name");
+				futures.add(java.util.concurrent.CompletableFuture.runAsync(() -> {
+					try {
+						syncSourcerepositoryFromGitHub(projectId, branchName);
+						succeeded.add(branchName);
+					} catch (Exception e) {
+						failed.add(branchName + "(" + e.getMessage() + ")");
+						System.err.println("⚠️ 브랜치 동기화 실패: " + branchName + " - " + e.getMessage());
+					}
+				}, executor));
 			}
+			// 모든 브랜치 작업이 끝날 때까지 대기 (한 브랜치 실패해도 나머지는 계속 진행됨)
+			java.util.concurrent.CompletableFuture
+					.allOf(futures.toArray(new java.util.concurrent.CompletableFuture[0])).join();
+		} finally {
+			executor.shutdown();
 		}
 
 		Map<String, Object> result = new HashMap<>();
@@ -588,21 +621,30 @@ public class sourcerepositoryServiceImpl implements sourcerepositoryService {
 	@Override
 	public String getFirstBranchByProjectId(String projectId) {
 		try {
-			String branch = mapper.selectFirstBranchNameByProjectId(projectId);
+			ProjectVO project = projectService.selectProjectDetail(projectId);
+			String gitUrl = project != null ? project.getGitUrl() : null;
 
-			// DB에 branch가 없으면 GitHub에서 조회
-			if (branch == null || branch.isEmpty()) {
-				ProjectVO project = projectService.selectProjectDetail(projectId);
-				String gitUrl = project.getGitUrl();
-
-				if (gitUrl == null || gitUrl.isEmpty()) {
-					throw new RuntimeException("GitHub URL이 설정되지 않았습니다");
+			// ✅ "DB에 동기화된 아무 브랜치나 하나"가 아니라, GitHub이 실제로 알려주는 기본 브랜치를 우선 사용.
+			//    기존엔 selectFirstBranchNameByProjectId가 ORDER BY 없이 조회해서
+			//    (Oracle은 정렬 기준이 없으면 순서를 보장하지 않음) 한 번 동기화된 브랜치(예: dev)가
+			//    실제 기본 브랜치(main)와 무관하게 계속 고정되어 나오는 문제가 있었음.
+			if (gitUrl != null && !gitUrl.isEmpty()) {
+				try {
+					Map<String, Object> branchInfo = getGitHubBranches(gitUrl);
+					String defaultBranch = (String) branchInfo.get("defaultBranch");
+					if (defaultBranch != null && !defaultBranch.isEmpty()) {
+						return defaultBranch;
+					}
+				} catch (Exception githubEx) {
+					System.err.println("⚠️ GitHub 기본 브랜치 조회 실패, DB 값으로 폴백: " + githubEx.getMessage());
 				}
-
-				Map<String, Object> branchInfo = getGitHubBranches(gitUrl);
-				branch = (String) branchInfo.get("defaultBranch");
 			}
 
+			// ✅ 폴백: GitHub URL이 없거나 GitHub 호출이 실패한 경우에만 DB에 동기화된 브랜치라도 사용
+			String branch = mapper.selectFirstBranchNameByProjectId(projectId);
+			if (branch == null || branch.isEmpty()) {
+				throw new RuntimeException("동기화된 브랜치가 없고 GitHub 조회도 실패했습니다");
+			}
 			return branch;
 
 		} catch (Exception e) {

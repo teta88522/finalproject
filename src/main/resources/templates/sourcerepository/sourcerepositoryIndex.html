@@ -49,28 +49,22 @@
 				<a
 					th:href="@{/project/{projectId}/sourcerepository/files(projectId=${projectId})}"
 					class="index-btn index-btn-primary"> 📁 파일 목록 보기 </a>
+				<!-- ✅ "전체 브랜치 동기화" 버튼 제거: 모달 안의 "모든 브랜치 동기화" 체크박스로 이미 커버됨 -->
 				<button type="button" data-toggle="modal" data-target="#syncModal"
+					onclick="setSyncAllMode(false)"
 					class="index-btn index-btn-secondary">🔄 GitHub 동기화</button>
-
-				<!-- ✅ 저장된 GitHub URL이 있을 때만 노출: 저장소의 모든 브랜치를 한 번에 동기화 -->
-				<form th:if="${savedGitUrl != null and !savedGitUrl.isEmpty()}"
-					th:action="@{/project/{projectId}/sourcerepository/sync-all(projectId=${projectId})}"
-					method="post" style="display: inline;"
-					onsubmit="return confirm('저장소의 모든 브랜치를 동기화합니다. 브랜치 수에 따라 시간이 걸릴 수 있습니다. 계속할까요?');">
-					<button type="submit" class="index-btn index-btn-secondary">🔀 전체 브랜치 동기화</button>
-				</form>
 			</div>
 		</div>
 
-		<!-- GitHub 동기화 모달 -->
+		<!-- GitHub 동기화 모달 (단일 브랜치 / 전체 브랜치 공용) -->
 		<div class="modal fade" id="syncModal" tabindex="-1" role="dialog">
 			<div class="modal-dialog" role="document"
 				style="border-radius: 20px;">
 				<div class="modal-content"
 					style="border-radius: 20px; overflow: hidden; border: none;">
-					<form
+					<form id="syncForm"
 						th:action="@{/project/{projectId}/sourcerepository/sync-modal(projectId=${projectId})}"
-						method="post">
+						method="post" onsubmit="showSyncingModal();">
 						<!-- 헤더 -->
 						<div
 							style="background: #1a6fe8; padding: 18px 24px; display: flex; align-items: center; justify-content: space-between;">
@@ -103,7 +97,16 @@
 									<option value="develop">develop</option>
 									<option value="dev">dev</option>
 								</select> <small style="color: #999; margin-top: 4px; display: block;">
-									기본 Branch를 선택하세요 </small>
+									기본 Branch를 선택하세요 (전체 브랜치 동기화 시에도 기본 브랜치로 저장됩니다) </small>
+							</div>
+							<!-- ✅ 전체 브랜치 동기화 여부 -->
+							<div class="form-group" style="margin-top: 16px;">
+								<label style="font-size: 13px; color: #555; display: flex; align-items: center; gap: 8px;">
+									<input type="checkbox" id="syncAllBranchesCheckbox" name="syncAllBranches" value="true">
+									이 저장소의 모든 브랜치를 동기화
+								</label>
+								<small style="color: #999; margin-top: 4px; display: block;">
+									체크하지 않으면 위에서 선택한 브랜치만 동기화됩니다 </small>
 							</div>
 						</div>
 						<!-- 푸터 -->
@@ -116,11 +119,22 @@
 								class="btn btn-primary btn-custon-three btn-custon-rounded-three">
 								저장</button>
 						</div>
-					</form>
+						</form>
 				</div>
 			</div>
 		</div>
 
+		<!-- ✅ 동기화 중 로딩 오버레이 - issues 화면과 동일한 프로젝트 표준 패턴 -->
+		<div id="syncLoadingOverlay" class="issues-loading-overlay" hidden
+			aria-live="polite" aria-busy="true">
+			<div class="issues-loading-box">
+				<span class="issues-loading-spinner"></span>
+				<strong>동기화 중</strong>
+			</div>
+		</div>
+
+		<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+		<script th:src="@{/js/common/pf-confirm.js}"></script>
 		<script>
     const gitHubUrlInput = document.querySelector('input[name="gitHubUrl"]');
     const branchSelect = document.querySelector('select[name="branch"]');
@@ -153,13 +167,19 @@
             } else {
                 // ✅ 실패 시 원인을 사용자에게 노출 (기존엔 조용히 무시되어 원인 파악이 불가능했음)
                 resetBranchSelectToDefault();
-                alert(data.error || 'GitHub 저장소 검증에 실패했습니다. 잠시 후 다시 시도해주세요.');
+                window.PFDialog.alert(data.error || 'GitHub 저장소 검증에 실패했습니다. 잠시 후 다시 시도해주세요.', {
+                    title: '저장소 검증 실패',
+                    icon: 'warning'
+                });
             }
         })
         .catch(error => {
             console.error('Error:', error);
             resetBranchSelectToDefault();
-            alert('GitHub 저장소 검증 요청 중 오류가 발생했습니다: ' + error.message);
+            window.PFDialog.alert('GitHub 저장소 검증 요청 중 오류가 발생했습니다: ' + error.message, {
+                title: '오류',
+                icon: 'error'
+            });
         });
     }
 
@@ -193,6 +213,23 @@
     function getProjectIdFromURL() {
         const match = window.location.pathname.match(/\/project\/([^/]+)\//);
         return match ? match[1] : '';
+    }
+
+    // ✅ "GitHub 동기화" / "전체 브랜치 동기화" 버튼 중 어떤 걸 눌렀는지에 따라 체크박스를 미리 세팅
+    function setSyncAllMode(allBranches) {
+        const checkbox = document.getElementById('syncAllBranchesCheckbox');
+        if (checkbox) checkbox.checked = allBranches;
+    }
+
+    // ✅ 동기화 폼 제출 시 "동기화 중" 로딩 모달로 전환.
+    //    실제 폼 submit(페이지 이동)은 그대로 진행되고, 응답이 올 때까지 이 로딩 화면이 보임.
+    function showSyncingModal() {
+        $('#syncModal').modal('hide');
+        // ✅ issues 상세화면과 동일한 프로젝트 표준 로딩 오버레이 패턴으로 통일
+        var overlay = document.getElementById('syncLoadingOverlay');
+        if (overlay) {
+            overlay.hidden = false;
+        }
     }
 </script>
 

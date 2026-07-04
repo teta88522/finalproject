@@ -84,16 +84,33 @@ public class SourcerepositoryController {
 	@PostMapping("/sync-modal")
 	@PreAuthorize("hasAuthority('저장소_관리')")
 	public String syncModal(@PathVariable String projectId, @RequestParam String gitHubUrl, @RequestParam String branch,
+			@RequestParam(required = false, defaultValue = "false") boolean syncAllBranches,
 			RedirectAttributes rttr) {
 
 		try {
 			// ✨ 1단계: GitHub URL을 DB에 저장
 			service.saveGitHubUrl(projectId, gitHubUrl);
 
-			// ✨ 2단계: Commit 동기화
-			service.syncSourcerepositoryFromGitHub(projectId, branch);
+			// ✅ "모든 브랜치 동기화" 체크박스에 따라 분기
+			if (syncAllBranches) {
+				Map<String, Object> result = service.syncAllBranchesFromGitHub(projectId);
+				@SuppressWarnings("unchecked")
+				List<String> succeeded = (List<String>) result.get("succeeded");
+				@SuppressWarnings("unchecked")
+				List<String> failed = (List<String>) result.get("failed");
 
-			rttr.addFlashAttribute("successMessage", "GitHub 저장소가 연동되고 Commit이 동기화되었습니다.");
+				StringBuilder msg = new StringBuilder("GitHub 저장소가 연동되었습니다. ");
+				msg.append(succeeded.size()).append("개 브랜치 동기화 완료");
+				if (!failed.isEmpty()) {
+					msg.append(" / 실패 ").append(failed.size()).append("개: ").append(String.join(", ", failed));
+				}
+				rttr.addFlashAttribute(failed.isEmpty() ? "successMessage" : "errorMessage", msg.toString());
+			} else {
+				// ✨ 2단계: 선택한 브랜치만 동기화
+				service.syncSourcerepositoryFromGitHub(projectId, branch);
+				rttr.addFlashAttribute("successMessage", "GitHub 저장소가 연동되고 Commit이 동기화되었습니다.");
+			}
+
 			return "redirect:/project/" + projectId + "/sourcerepository";
 
 		} catch (Exception e) {
@@ -175,6 +192,8 @@ public class SourcerepositoryController {
 			model.addAttribute("files", files);
 			model.addAttribute("branch", branch);
 			model.addAttribute("currentPath", path);
+			// ✅ 현재 보고 있는 폴더 경로를 breadcrumb로 표시
+			model.addAttribute("breadcrumbs", buildBreadcrumbs(path));
 
 			return "sourcerepository/sourcerepositoryFileList";
 
@@ -189,12 +208,19 @@ public class SourcerepositoryController {
 	// (경로 : localhost:8080/project/{projectId}/sourcerepository/file/{path})
 	// ==============================
 
-	@GetMapping("/file/{path:.*}")
+	// ✅ {path:.*}는 Spring 6 PathPatternParser에서 "/"를 못 넘고 한 구간만 매칭됨 → 깊은 경로(src/main/...) 파일은 404.
+	//    {*path}는 끝까지 전부(슬래시 포함) 캡처하는 신규 문법.
+	@GetMapping("/file/{*path}")
 	@PreAuthorize("hasAuthority('저장소_관리')")
 	public String fileDetail(@PathVariable String projectId, @PathVariable String path,
 			@RequestParam(required = false) String branch, RedirectAttributes rttr, Model model) {
 
 		try {
+			// ✅ {*path}로 캡처된 값은 맨 앞에 "/"가 붙어서 옴 → 제거
+			if (path != null && path.startsWith("/")) {
+				path = path.substring(1);
+			}
+
 			// ✅ branch가 없으면 DB에서 동적으로 조회
 			if (branch == null || branch.isEmpty()) {
 				branch = service.getFirstBranchByProjectId(projectId);
@@ -205,6 +231,8 @@ public class SourcerepositoryController {
 			model.addAttribute("projectId", projectId);
 			model.addAttribute("fileName", path.substring(path.lastIndexOf('/') + 1));
 			model.addAttribute("filePath", path);
+			// ✅ 파일 경로를 breadcrumb로 표시
+			model.addAttribute("breadcrumbs", buildBreadcrumbs(path));
 			model.addAttribute("fileContent", fileContent);
 			model.addAttribute("branch", branch);
 			model.addAttribute("fileSize", "N/A");
@@ -216,6 +244,61 @@ public class SourcerepositoryController {
 			rttr.addFlashAttribute("errorMessage", "파일 상세 조회에 실패했습니다: " + e.getMessage());
 			return "redirect:/project/" + projectId + "/sourcerepository/files";
 		}
+	}
+
+	// ==============================
+	// ✅ 파일 경로 기준 Commit 이력 조회 (File 상세 화면의 "History" 버튼)
+	// GitHub REST API의 commits?path= 파라미터 활용 (DB 저장 없이 실시간 조회)
+	// (경로 : localhost:8080/project/{projectId}/sourcerepository/file-history?path=...&branch=...)
+	// ==============================
+
+	@GetMapping("/file-history")
+	@PreAuthorize("hasAuthority('저장소_관리')")
+	public String fileHistory(@PathVariable String projectId, @RequestParam String path,
+			@RequestParam(required = false) String branch, RedirectAttributes rttr, Model model) {
+
+		try {
+			if (branch == null || branch.isEmpty()) {
+				branch = service.getFirstBranchByProjectId(projectId);
+			}
+
+			List<sourcerepositoryVO> commits = service.getFileCommitHistory(projectId, path, branch);
+
+			model.addAttribute("projectId", projectId);
+			model.addAttribute("branch", branch);
+			model.addAttribute("filePath", path);
+			model.addAttribute("fileName", path.substring(path.lastIndexOf('/') + 1));
+			model.addAttribute("commits", commits);
+
+			return "sourcerepository/sourcerepositoryFileHistory";
+
+		} catch (Exception e) {
+			rttr.addFlashAttribute("errorMessage", "파일별 Commit 이력 조회에 실패했습니다: " + e.getMessage());
+			return "redirect:/project/" + projectId + "/sourcerepository/file/" + path + "?branch=" + branch;
+		}
+	}
+
+	// ✅ "src/main/App.js" → [{name:"src",path:"src"}, {name:"main",path:"src/main"}, {name:"App.js",path:"src/main/App.js"}]
+	private List<Map<String, String>> buildBreadcrumbs(String path) {
+		List<Map<String, String>> crumbs = new ArrayList<>();
+		if (path == null || path.isEmpty()) {
+			return crumbs;
+		}
+		StringBuilder cumulative = new StringBuilder();
+		for (String part : path.split("/")) {
+			if (part.isEmpty()) {
+				continue;
+			}
+			if (cumulative.length() > 0) {
+				cumulative.append("/");
+			}
+			cumulative.append(part);
+			Map<String, String> crumb = new java.util.HashMap<>();
+			crumb.put("name", part);
+			crumb.put("path", cumulative.toString());
+			crumbs.add(crumb);
+		}
+		return crumbs;
 	}
 
 	// ==============================

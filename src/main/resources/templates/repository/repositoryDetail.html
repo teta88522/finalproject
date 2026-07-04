@@ -38,7 +38,7 @@
 
 					<div class="repo-sub-info">
 						* 파일 버전: <span th:text="${repository.fileVersion}"></span> | 파일
-						크기: <span th:text="${repository.fileSize}"></span> Bytes
+						크기: <span th:text="${repository.fileSizeText}"></span>
 					</div>
 
 					<div class="repo-preview"
@@ -105,7 +105,8 @@
 						<!-- 파일 다운로드 버튼 (projectId 포함) -->
 						<a id="downloadBtn"
 							th:href="@{/project/{projectId}/repository/download(projectId=${projectId}, fileId=${repository.fileId})}"
-							th:attr="data-history-url=@{/project/{projectId}/repository/history(projectId=${projectId}, fileId=${repository.fileId})}"
+							th:attr="data-history-url=@{/project/{projectId}/repository/history(projectId=${projectId}, fileId=${repository.fileId})},
+								data-file-name=${repository.originalName}"
 							class="repo-btn repo-btn-download">파일 다운로드</a>
 
 						<th:block
@@ -115,16 +116,18 @@
 								th:href="@{/project/{projectId}/repository/edit(projectId=${projectId}, fileId=${repository.fileId})}"
 								class="repo-btn repo-btn-edit">수정</a>
 
-							<!-- ✅ 삭제 버튼 - confirm 팝업 추가 -->
-							<form
+							<!-- ✅ 삭제 - 프로젝트 표준 패턴(js-pf-confirm-submit)으로 통일 -->
+							<form id="deleteRepositoryForm"
 								th:action="@{/project/{projectId}/repository/delete(projectId=${projectId})}"
 								method="post" style="display: inline;"
-								class="deleteRepositoryForm">
+								class="inline-form js-pf-confirm-submit"
+								data-confirm-title="삭제 확인"
+								data-confirm-message="정말 이 파일을 삭제하시겠습니까? 삭제된 파일은 복구할 수 없습니다."
+								data-confirm-confirm-text="삭제"
+								data-confirm-icon="warning">
 								<input type="hidden" name="fileId"
 									th:value="${repository.fileId}">
-								<button type="submit" class="repo-btn repo-btn-delete"
-									onclick="return confirm('정말 이 파일을 삭제하시겠습니까?\n삭제된 파일은 복구할 수 없습니다.');">
-									삭제</button>
+								<button type="submit" class="repo-btn repo-btn-delete">삭제</button>
 							</form>
 						</th:block>
 					</div>
@@ -142,63 +145,59 @@
 			</div>
 		</div>
 
-	</div>
+		<!-- ✅✅ script를 layout:fragment 안쪽으로 이동 (fragment 밖에 있으면 Thymeleaf Layout Dialect가
+		     최종 렌더링에서 제외시켜서 다운로드 이력 새로고침이 동작 안 하고 있었음) -->
+		<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+		<script th:src="@{/js/common/pf-confirm.js}"></script>
+		<script th:inline="none">
+			// ✅ 다운로드 버튼 클릭 시: 다운로드는 그대로 진행시키고(preventDefault 안 함),
+			//    서버가 파일 응답 + 이력 insert를 마칠 정도의 짧은 지연 후 페이지를 새로고침해서
+			//    다운로드 이력 테이블이 즉시(서버 렌더링 기준으로) 반영되도록 함.
+			(function () {
+				var downloadBtn = document.getElementById('downloadBtn');
+				if (downloadBtn) {
+					downloadBtn.addEventListener('click', function (event) {
+						// ✅ 기존엔 성공/실패 상관없이 무조건 700ms 후 새로고침만 해서,
+						//    서버에 실제 파일이 없어 404가 나도(예: file.exists()==false) 사용자는
+						//    아무 반응이 없는 것처럼 느꼈음. fetch로 응답을 직접 확인해서 실패 시 명확히 알림.
+						event.preventDefault();
 
-	<script th:inline="none">
-		// ✅ 다운로드 버튼 클릭 시, 다운로드는 그대로 진행시키고
-		//    서버에 이력이 기록될 시간을 잠깐 준 다음 이력 표만 다시 그려준다.
-		(function () {
-			var downloadBtn = document.getElementById('downloadBtn');
-			var historyBody = document.getElementById('downloadHistoryBody');
-			if (!downloadBtn || !historyBody) return;
+						var url = downloadBtn.getAttribute('href');
+						var fileName = downloadBtn.getAttribute('data-file-name') || 'download';
 
-			downloadBtn.addEventListener('click', function () {
-				var historyUrl = downloadBtn.getAttribute('data-history-url');
+						fetch(url).then(function (res) {
+							if (!res.ok) {
+								throw new Error(res.status === 404
+									? '서버에 파일이 존재하지 않습니다. 관리자에게 문의해주세요.'
+									: '다운로드 중 오류가 발생했습니다. (status: ' + res.status + ')');
+							}
+							return res.blob();
+						}).then(function (blob) {
+							var blobUrl = URL.createObjectURL(blob);
+							var a = document.createElement('a');
+							a.href = blobUrl;
+							a.download = fileName;
+							document.body.appendChild(a);
+							a.click();
+							document.body.removeChild(a);
+							URL.revokeObjectURL(blobUrl);
 
-				// 서버가 파일 응답 + 이력 insert를 마칠 시간을 준 뒤 재조회 (여러 번 재시도)
-				var attempts = 0;
-				var maxAttempts = 3;
-				var poll = function () {
-					attempts++;
-					fetch(historyUrl)
-						.then(function (res) { return res.json(); })
-						.then(function (list) {
-							renderHistory(list);
-						})
-						.catch(function () { /* 무시: 다음 시도에서 재시도 */ });
-
-					if (attempts < maxAttempts) {
-						setTimeout(poll, 600);
-					}
-				};
-				setTimeout(poll, 500);
-			});
-
-			function renderHistory(list) {
-				if (!list || list.length === 0) {
-					historyBody.innerHTML =
-						'<tr><td colspan="2" style="padding: 10px; text-align: center; border: 1px solid #dee2e6; color: #868e96;">다운로드 이력이 없습니다.</td></tr>';
-					return;
+							// 다운로드 이력이 서버에 기록될 시간을 살짝 준 뒤 새로고침
+							setTimeout(function () {
+								location.reload();
+							}, 500);
+						}).catch(function (err) {
+							if (window.PFDialog) {
+								window.PFDialog.alert(err.message, { title: '다운로드 실패', icon: 'error' });
+							} else {
+								alert(err.message);
+							}
+						});
+					});
 				}
+			})();
+		</script>
 
-				var rows = list.map(function (h) {
-					var userName = h.userName ? escapeHtml(h.userName) : '알 수 없음';
-					var downloadDate = h.downloadDate ? escapeHtml(h.downloadDate) : '';
-					return '<tr>' +
-						'<td style="padding: 8px; border: 1px solid #dee2e6;">' + userName + '</td>' +
-						'<td style="padding: 8px; border: 1px solid #dee2e6;">' + downloadDate + '</td>' +
-						'</tr>';
-				}).join('');
-
-				historyBody.innerHTML = rows;
-			}
-
-			function escapeHtml(str) {
-				var div = document.createElement('div');
-				div.textContent = str;
-				return div.innerHTML;
-			}
-		})();
-	</script>
+	</div>
 </body>
 </html>

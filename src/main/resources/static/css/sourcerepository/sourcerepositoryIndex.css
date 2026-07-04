@@ -82,3 +82,60 @@
 .index-btn-secondary:hover {
 	background-color: #545b62;
 }
+
+/* ==============================
+   ✅ 프로젝트 표준 로딩 오버레이 패턴 (issues.css의 .issues-loading-overlay와 동일)
+   동기화 중 화면 전체를 흐리게 하고 중앙에 스피너+텍스트 박스를 띄움
+   ============================== */
+.issues-loading-overlay {
+	position: fixed;
+	inset: 0;
+	z-index: 2000;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 24px;
+	background: rgba(255, 255, 255, 0.72);
+	backdrop-filter: blur(2px);
+}
+
+.issues-loading-overlay[hidden] {
+	display: none;
+}
+
+.issues-loading-box {
+	min-width: 160px;
+	min-height: 112px;
+	padding: 22px 24px;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 14px;
+	border: 1px solid #dddddd;
+	border-radius: 8px;
+	background: #ffffff;
+	box-shadow: 0 12px 32px rgba(0, 0, 0, 0.14);
+	color: #333333;
+}
+
+.issues-loading-box strong {
+	font-size: 16px;
+	font-weight: 700;
+	line-height: 1.2;
+}
+
+.issues-loading-spinner {
+	width: 32px;
+	height: 32px;
+	border: 3px solid #e5e5e5;
+	border-top-color: #252ba3;
+	border-radius: 50%;
+	animation: issues-loading-spin 0.8s linear infinite;
+}
+
+@keyframes issues-loading-spin {
+	to {
+		transform: rotate(360deg);
+	}
+}

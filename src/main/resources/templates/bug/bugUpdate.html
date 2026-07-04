@@ -6,11 +6,16 @@
 <meta charset="UTF-8">
 <title>버그 수정</title>
 <link rel="stylesheet" th:href="@{/css/bug/bugUpdate.css}">
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script th:src="@{/js/common/pf-confirm.js}"></script>
 </head>
 
 <body>
 <div layout:fragment="Content">
-
+<div class="container-fluid" style="height:calc(100vh - 130px); display:flex; flex-direction:column; padding-bottom:24px;">
+   <div style="background:#fff; border-radius:12px; box-shadow:0 2px 12px rgba(0,0,0,0.08); padding:24px; flex:1; display:flex; flex-direction:column; overflow:auto;">
+	
     <div class="bug-update-page">
 
         <div class="page-header">
@@ -19,7 +24,7 @@
                 <p>등록된 버그 정보를 수정합니다.</p>
             </div>
 
-            <a class="btn"
+            <a class="btn btn-custon-rounded-four custom-default-btn"
                th:href="@{/project/{projectId}/bugs(projectId=${projectId})}">
                 목록
             </a>
@@ -30,20 +35,22 @@
             메시지
         </div>
 
-        <form class="bug-form"
+        <form class="bug-form js-pf-confirm-submit"
               th:action="@{/project/{projectId}/bugs/update(projectId=${projectId})}"
               method="post"
               enctype="multipart/form-data"
               th:object="${bugVO}"
-              onsubmit="return confirm('버그 정보를 수정하시겠습니까?');">
+              data-confirm-title="수정 확인"
+              data-confirm-message="버그 정보를 수정하시겠습니까?"
+              data-confirm-confirm-text="수정"
+              data-confirm-icon="question">
 
-            <!-- 수정 처리에 필요한 값 -->
             <input type="hidden" th:field="*{bugId}">
             <input type="hidden" th:field="*{executionId}">
             <input type="hidden" th:field="*{reporterId}">
             <input type="hidden" th:field="*{versionId}">
-			<input type="hidden" th:field="*{assigneeId}">
-			
+            <input type="hidden" th:field="*{assigneeId}">
+
             <section class="form-card">
                 <div class="card-title">
                     <h3>기본정보</h3>
@@ -192,7 +199,6 @@
                                   placeholder="정상적으로 동작했을 때의 기대 결과를 입력하세요."></textarea>
                     </div>
 
-                    <!-- 기존 첨부파일 -->
                     <div class="detail-row full file-row">
                         <label>기존 파일</label>
 
@@ -236,7 +242,6 @@
                         </div>
                     </div>
 
-                    <!-- 새 첨부파일 추가 -->
                     <div class="detail-row full file-row">
                         <label for="attachFiles">파일 추가</label>
 
@@ -256,12 +261,12 @@
             </section>
 
             <div class="form-actions">
-                <a class="btn"
+                <a class="btn btn-custon-rounded-four custom-white-btn"
                    th:href="@{/project/{projectId}/bugs(projectId=${projectId})}">
                     취소
                 </a>
 
-                <button type="submit" class="btn primary">
+                <button type="submit" class="btn btn-custon-rounded-four custom-default-btn">
                     수정
                 </button>
             </div>
@@ -269,6 +274,19 @@
         </form>
 
     </div>
+</div>
+</div>
+
+    <script th:inline="javascript">
+        const message = /*[[${message}]]*/ null;
+
+        if (message != null) {
+            window.PFDialog.alert(message, {
+                title: '알림',
+                icon: 'info'
+            });
+        }
+    </script>
 
 </div>
 </body>

@@ -37,10 +37,15 @@
 						<div class="module-name"
 							th:text="${moduleMap.get(pm.moduleCode)} ?: ${pm.moduleCode}">모듈명</div>
  
+						<!-- ✅ 프로젝트 표준 패턴(js-pf-confirm-submit)으로 통일 - 폼마다 자동으로 확인창이 붙음 -->
 						<form
 							th:action="@{/project/{projectId}/settings/modules/delete(projectId=${projectId})}"
 							method="post"
-							onsubmit="return confirm('이 모듈을 프로젝트에서 제거하시겠습니까?');">
+							class="inline-form js-pf-confirm-submit"
+							data-confirm-title="모듈 제거"
+							th:attr="data-confirm-message='&quot;' + (${moduleMap.get(pm.moduleCode)} ?: ${pm.moduleCode}) + '&quot; 모듈을 프로젝트에서 제거하시겠습니까?'"
+							data-confirm-confirm-text="제거"
+							data-confirm-icon="warning">
 							<input type="hidden" name="moduleCode" th:value="${pm.moduleCode}">
 							<button type="submit" class="btn btn-outline-secondary btn-sm">제거</button>
 						</form>
@@ -77,9 +82,12 @@
 				<a th:href="@{/projectdetail/{projectId}(projectId=${projectId})}"
 					class="btn btn-outline-secondary">돌아가기</a>
 			</div>
- 
+
+			<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+			<script th:src="@{/js/common/pf-confirm.js}"></script>
+
 		</div>
- 
+
 	</div>
 </body>
 </html>
