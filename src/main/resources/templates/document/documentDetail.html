@@ -4,6 +4,9 @@
       layout:decorate="~{common/layouts/default_layout}">
 <head>
 <meta charset="UTF-8">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script th:src="@{/js/common/pf-confirm.js}"></script>
+
 </head>
 <body>
 <div layout:fragment="Content">
@@ -58,11 +61,14 @@
                                     <span th:text="${file.originalName}" ></span>
                                     <span th:text="'v' + ${file.fileVersion}"></span>
                                 </span>
-                                <a class="btn btn-default btn-custon-three btn-custon-rounded-four btn-xs" th:href="@{/project/{projectId}/document/detail/{documentId}/{fileId}/download(projectId=${projectId},
-        									documentId=${docDetail.documentId},
-        									fileId=${file.fileId})}">
-                                    <i class="fa fa-download"></i>
-                                </a>
+                                <!-- 개별 다운로드: <a> → <button> 으로 교체 -->
+        <!-- 변경 후 (정상) -->
+<button type="button"
+        class="btn btn-default btn-custon-three btn-custon-rounded-four btn-xs"
+        th:data-file-id="${file.fileId}"
+        onclick="handleSingleDownload(this)">
+    <i class="fa fa-download"></i>
+</button>
                             </li>
                             <li th:if="${#lists.isEmpty(fileList)}"
                                 style="font-size:12px; color:#aaa; padding:4px 0;">
@@ -106,29 +112,36 @@
         		class="btn btn-custon-rounded-four custom-white-btn">
         		파일 다운로드 이력
     		</button>
-            <a class="btn btn-custon-rounded-four custom-white-btn"
-   					th:href="@{/project/{projectId}/document/detail/{documentId}/download(projectId=${projectId},documentId=${docDetail.documentId})}">
-    			<i class="fa fa-download" style="margin-right:5px;"></i>
-    			전체 파일 다운로드
-			</a>
+            <button type="button"
+        class="btn btn-custon-rounded-four custom-white-btn"
+        onclick="handleAllDownload()">
+    <i class="fa fa-download" style="margin-right:5px;"></i>
+    전체 파일 다운로드
+</button>
             <!-- ⑥ 목록 -->
             <div th:if="${userId == writer}">
             <!-- ⑦ 수정 -->
             <a th:href="@{/project/{projectId}/document/update/{id}(projectId=${projectId},id=${docDetail.documentId})}" class="btn btn-custon-rounded-four custom-default-btn">
                  수정
             </a>
-            <!-- ⑧ 삭제 -->
-            <form th:action="@{/project/{projectId}/document/deletedocument/{documentId}
+            <!-- ⑧ 삭제 -->		
+      		<form th:action="@{/project/{projectId}/document/deletedocument/{documentId}
 					(projectId=${projectId}, documentId=${docDetail.documentId})}"
       				method="post"
+      				class="inline-form js-pf-confirm-submit"
+      				data-confirm-title="삭제 확인"
+      				data-confirm-message="삭제하시겠습니까?"
+      				data-confirm-confirm-text="삭제"
+      				data-confirm-icon="warning"
       				style="display:inline;">
 
-    		<button type="submit"
-            		class="btn btn-custon-rounded-four btn-danger custom-btn">
-        			삭제
-    		</button>
 
+    			<button type="submit" class="btn btn-custon-rounded-four btn-danger">
+        				삭제
+    			</button>
 			</form>
+      		
+
 			</div>
         </div>
  
@@ -162,7 +175,7 @@
                     </tr>
                     </thead>
 
-                    <tbody>
+                    <tbody >
                     <tr th:each="history, stat : ${downloadHistoryList}">
                         <td class="text-center" th:text="${stat.count}">1</td>
                         <td th:text="${history.originalName}">sample.pdf</td>
@@ -198,6 +211,79 @@
     </div>
   </div>
 </div>
+
+
+<script th:inline="javascript">
+// Thymeleaf에서 JS 변수로 주입
+const projectId  = /*[[${projectId}]]*/ null;
+const documentId = /*[[${docDetail.documentId}]]*/ null;
+
+/* ── 공통: Fetch → Blob → 브라우저 다운로드 ── */
+async function downloadBlob(url) {
+    const response = await fetch(url);
+    if (!response.ok) throw new Error('다운로드 실패: ' + response.status);
+
+    // Content-Disposition에서 파일명 추출 (없으면 fallback)
+    const disposition = response.headers.get('Content-Disposition') ?? '';
+    const match = disposition.match(/filename\*?=(?:UTF-8'')?["']?([^"';\n]+)/i);
+    const filename = match ? decodeURIComponent(match[1]) : 'download';
+
+    const blob = await response.blob();
+    const blobUrl = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = blobUrl;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(blobUrl);
+}
+
+/* ── 전체 다운로드 ── */
+async function handleAllDownload() {
+    try {
+        await downloadBlob(`/project/${projectId}/document/detail/${documentId}/download`);
+        await refreshDownloadHistory(); // 이력 즉시 갱신
+    } catch (e) {
+        console.error('전체 다운로드 실패', e);
+        alert('다운로드 중 오류가 발생했습니다.');
+    }
+}
+
+/* ── 개별 다운로드 ── */
+async function handleSingleDownload(btn) {
+    const fileId = btn.dataset.fileId;  // data-file-id 값 읽기
+    try {
+        await downloadBlob(`/project/${projectId}/document/detail/${documentId}/${fileId}/download`);
+        await refreshDownloadHistory();
+    } catch (e) {
+        console.error('개별 다운로드 실패', e);
+        alert('다운로드 중 오류가 발생했습니다.');
+    }
+}
+/* ── 다운로드 이력 모달 갱신 ── */
+async function refreshDownloadHistory() {
+    try {
+        // 현재 페이지를 다시 fetch해서 tbody 내용만 추출
+        const res = await fetch(window.location.href);
+        const html = await res.text();
+        
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        
+        // 새로 받아온 페이지의 tbody 내용을 현재 모달에 반영
+        const newTbody = doc.querySelector('#downloadHistoryModal tbody');
+        const currentTbody = document.querySelector('#downloadHistoryModal tbody');
+        
+        if (newTbody && currentTbody) {
+            currentTbody.innerHTML = newTbody.innerHTML;
+        }
+    } catch (e) {
+        console.error('이력 갱신 실패', e);
+    }
+}
+</script>
+
 
 </div>
 </body>

@@ -32,7 +32,8 @@
     <!-- 스크롤 영역 -->
     <div style="flex:1; overflow-y:auto;">
       <div style="border:1px solid #eef0f3; border-radius:8px; overflow:hidden;">
-        <form id="documentEditForm" th:action="@{/project/{projectId}/document/update/{documentId}(projectId=${projectId},documentId=${docDetail.documentId})}" method="post" enctype="multipart/form-data">
+        <form id="documentEditForm" th:action="@{/project/{projectId}/document/update/{documentId}(projectId=${projectId},documentId=${docDetail.documentId})}" method="post" enctype="multipart/form-data" class="workflow-loading-form"
+      data-loading-message="저장하는 중입니다.">
 
           <input type="hidden" name="documentId" th:value="${docDetail.documentId}">
           <input type="hidden" name="documentVersionId" th:value="${documentVersionId}">
@@ -109,12 +110,45 @@
              </div>
 
         </form>
+        <div class="workflow-processing-overlay" aria-live="polite">
+  <div class="workflow-processing-box">
+    <div class="workflow-processing-spinner"></div>
+    <div class="workflow-processing-title">처리중</div>
+    <div class="workflow-processing-message">저장하는 중입니다.</div>
+  </div>
+</div>
       </div>
 
 
     </div>
   </div>
 </div>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+	  const loadingForm = document.querySelector('.workflow-loading-form');
+	  const loadingOverlay = document.querySelector('.workflow-processing-overlay');
+	  const loadingMessage = document.querySelector('.workflow-processing-message');
+
+	  if (!loadingForm || !loadingOverlay) {
+	    return;
+	  }
+
+	  loadingForm.addEventListener('submit', function () {
+	    const submitButton = loadingForm.querySelector('button[type="submit"]');
+
+	    if (submitButton) {
+	      submitButton.disabled = true;
+	      submitButton.textContent = '처리중';
+	    }
+
+	    if (loadingMessage && loadingForm.dataset.loadingMessage) {
+	      loadingMessage.textContent = loadingForm.dataset.loadingMessage;
+	    }
+
+	    loadingOverlay.classList.add('is-visible');
+	  });
+	});
+</script>
 </div>
 </body>
 
