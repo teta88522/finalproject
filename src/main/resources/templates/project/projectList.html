@@ -132,26 +132,26 @@
 								th:data-project-id="${project.projectId}"
 								onclick="goProjectDetail(this)">
 								<!-- ✅ 수정: subscribe_yn이 Y일 때만 식별자 표시 -->
-								<td th:if="${subscribeYn == 'Y'}"
+								<td class="text-center" th:if="${subscribeYn == 'Y'}"
 									th:text="${project.identifier}">identifier</td>
-								<td class="project-name-cell"><span
+								<td class="project-name-cell text-center"><span
 									th:text="${project.projectName}">프로젝트명</span></td>
-								<td class="desc-cell" th:text="${project.description}">프로젝트
+								<td class="desc-cell text-center" th:text="${project.description}">프로젝트
 									설명</td>
-								<td th:text="${project.ownerName}">생성자</td>
-								<td onclick="event.stopPropagation();"><a
+								<td class="text-center" th:text="${project.ownerName}">생성자</td>
+								<td class="text-left" onclick="event.stopPropagation();"><a
 									th:if="${project.projectUrl != null and project.projectUrl != ''}"
 									th:href="${project.projectUrl}" target="_blank"
 									th:text="${project.projectUrl}">홈페이지</a> <span
 									th:if="${project.projectUrl == null or project.projectUrl == ''}">-</span>
 								</td>
-								<td><span class="status-badge"
+								<td><span class="status-badge text-center"
 									th:text="${project.statusName != null ? project.statusName : project.statusCode}">진행중</span></td>
 								<td
-									th:text="${project.startDate != null ? #dates.format(project.startDate, 'yyyy/MM/dd') : '-'}">2026/06/01</td>
+									class="text-center" th:text="${project.startDate != null ? #dates.format(project.startDate, 'yyyy/MM/dd') : '-'}">2026/06/01</td>
 								<td
-									th:text="${project.endDate != null ? #dates.format(project.endDate, 'yyyy/MM/dd') : '-'}">2026/12/31</td>
-								<td th:if="${subscribeYn == 'Y'}" class="project-action-cell"
+									class="text-center" th:text="${project.endDate != null ? #dates.format(project.endDate, 'yyyy/MM/dd') : '-'}">2026/12/31</td>
+								<td th:if="${subscribeYn == 'Y'}" class="project-action-cell text-center"
 									onclick="event.stopPropagation();"><a class="btn btn-custon-rounded-four custom-white-btn"
 									th:href="@{/myproject/update(projectId=${project.projectId})}">수정</a>
 									<button type="button" class="btn btn-custon-rounded-four btn-danger custom-btn"
