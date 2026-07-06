@@ -106,13 +106,55 @@
 				window.PFDialog.alert(message, options);
 			}
 
+			// ✅ HTTPS(또는 localhost)가 아닌 환경에서는 navigator.clipboard 자체가
+			//    존재하지 않아 writeText 호출 시점에 즉시 예외가 발생, then/catch로
+			//    이어지지 못하고 조용히 실패(복사도 안 되고 모달도 안 뜸)하던 문제 수정.
+			//    → clipboard API 사용 가능 여부를 먼저 확인하고, 없으면 execCommand
+			//      기반의 폴백으로 복사를 시도한다.
+			function fallbackCopy(text) {
+				const textarea = document.createElement('textarea');
+				textarea.value = text;
+				textarea.style.position = 'fixed';
+				textarea.style.top = '-9999px';
+				textarea.style.left = '-9999px';
+				document.body.appendChild(textarea);
+				textarea.focus();
+				textarea.select();
+
+				let success = false;
+				try {
+					success = document.execCommand('copy');
+				} catch (err) {
+					success = false;
+				}
+
+				document.body.removeChild(textarea);
+				return success;
+			}
+
 			function copyCode() {
 				const fileContent = document.getElementById('fileContent').textContent;
-				navigator.clipboard.writeText(fileContent).then(() => {
+
+				if (navigator.clipboard && window.isSecureContext) {
+					navigator.clipboard.writeText(fileContent).then(() => {
+						showAlert('코드가 복사되었습니다', { title: '복사 완료', icon: 'success' });
+					}).catch(() => {
+						// clipboard API가 있어도 권한 문제 등으로 실패할 수 있으니 폴백 시도
+						if (fallbackCopy(fileContent)) {
+							showAlert('코드가 복사되었습니다', { title: '복사 완료', icon: 'success' });
+						} else {
+							showAlert('복사에 실패했습니다', { title: '복사 실패', icon: 'error' });
+						}
+					});
+					return;
+				}
+
+				// navigator.clipboard를 사용할 수 없는 환경(비HTTPS 등)
+				if (fallbackCopy(fileContent)) {
 					showAlert('코드가 복사되었습니다', { title: '복사 완료', icon: 'success' });
-				}).catch(() => {
+				} else {
 					showAlert('복사에 실패했습니다', { title: '복사 실패', icon: 'error' });
-				});
+				}
 			}
 
 			// ✅ 파일 다운로드 (기존엔 파일 내용을 그대로 URL로 써서 깨져 있었음 → Blob으로 다운로드)
