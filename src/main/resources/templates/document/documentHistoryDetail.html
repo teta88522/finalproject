@@ -8,7 +8,7 @@
 <body>
 <div layout:fragment="Content">
 <div class="container-fluid" style="height:calc(100vh - 130px); display:flex; flex-direction:column; padding-bottom:24px;">
-    <div style="background:#fff; border-radius:12px; box-shadow:0 2px 12px rgba(0,0,0,0.08); padding:24px; flex:1; display:flex; flex-direction:column; overflow:hidden;">
+    <div style="background:#fff; border-radius:12px; box-shadow:0 2px 12px rgba(0,0,0,0.08); padding:24px; flex:1; display:flex; flex-direction:column; overflow:auto;">
  
         <!-- 헤더 고정 -->
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-shrink:0;">
@@ -94,41 +94,39 @@
  
         <!-- 하단 버튼 바 -->
         <div style="display:flex; justify-content:flex-end; gap:6px; padding-top:16px; border-top:1px solid #f0f0f0; flex-shrink:0; margin-top:4px;">
+            <!-- ⑥ 목록 -->
+            <a th:href="@{/project/{projectId}/document/historylist/{documentId}(projectId=${projectId},documentId=${docDetail.documentId})}"  class="btn btn-custon-rounded-four custom-white-btn">
+                <i class="fa fa-list" style="margin-right:5px;"></i> 목록
+            </a>
             <!-- ④ 다운로드 이력 -->
             <button
         		type="button"
         		data-toggle="modal"
         		data-target="#downloadHistoryModal"
-        		style="display:flex; align-items:center; gap:6px; font-size:13px; padding:6px 14px; border:1px solid #ddd; border-radius:6px; background:#fff; color:#555; cursor:pointer;">
-        		<i class="fa fa-plus" style="font-size:11px;"></i>
+        		class="btn btn-custon-rounded-four custom-white-btn">
         		파일 다운로드 이력
     		</button>
             <!-- ⑤ 파일 다운로드 -
             <!-- ⑤ 파일 다운로드 -->
-            <a class="btn btn-info btn-custon-three btn-custon-rounded-four"
-   					style="font-size:13px; padding:6px 16px;"
+            <a class="btn btn-custon-rounded-four custom-white-btn"
    					th:href="@{/project/{projectId}/document/detail/{documentId}/download(projectId=${projectId},documentId=${docDetail.documentId})}">
 
     			<i class="fa fa-download" style="margin-right:5px;"></i>
     			전체 파일 다운로드
 			</a>
-            <!-- ⑥ 목록 -->
-            <a th:href="@{/project/{projectId}/document/list(projectId=${projectId})}" class="btn btn-default btn-custon-three btn-custon-rounded-four" style="font-size:13px; padding:6px 16px;">
-                <i class="fa fa-list" style="margin-right:5px;"></i> 목록
-            </a>
         </div>
  
     </div>
 </div>
 <div class="modal fade" id="downloadHistoryModal" tabindex="-1" role="dialog">
   <div class="modal-dialog" role="document" style="border-radius:20px;">
-    <div class="modal-content" style="border-radius:20px; overflow:hidden; border:none;">
+    <div class="modal-content" style="border-radius:5px; overflow:hidden; border:none;">
 
       <!-- form 추가 -->
       <div>
 
         <!-- 헤더 -->
-            <div style="background:#1a6fe8; padding:18px 24px; display:flex; align-items:center; justify-content:space-between;">
+            <div style="background:#031225; padding:18px 24px; display:flex; align-items:center; justify-content:space-between;">
                 <h4 style="color:#fff; margin:0; font-size:15px; font-weight:500;">
                     파일 다운로드 이력
                 </h4>
@@ -142,8 +140,8 @@
                     <thead style="background:#f8f9fa;">
                     <tr>
                         <th style="width:10%; text-align:center;">No</th>
-                        <th style="width:45%;">파일명</th>
-                        <th style="width:20%; text-align:center;">다운로드 사용자</th>
+                        <th style="width:40%; text-align:center;">파일명</th>
+                        <th style="width:25%; text-align:center;">다운로드 사용자</th>
                         <th style="width:25%; text-align:center;">다운로드 일시</th>
                     </tr>
                     </thead>
@@ -151,7 +149,7 @@
                     <tbody>
                     <tr th:each="history, stat : ${downloadHistoryList}">
                         <td class="text-center" th:text="${stat.count}">1</td>
-                        <td th:text="${history.originalName}">sample.pdf</td>
+                        <td class="text-center" th:text="${history.originalName}">sample.pdf</td>
                         <td class="text-center" th:text="${history.userName}">홍길동</td>
                         <td class="text-center" th:text="${history.downloadDate}">
                             2026-07-01 14:30
@@ -173,7 +171,7 @@
             <div class="modal-footer" style="border-top:1px solid #f0f0f0; padding:14px 24px 20px;">
                 <button
                         type="button"
-                        class="btn btn-default btn-custon-three btn-custon-rounded-three"
+                        class="btn btn-custon-rounded-four custom-white-btn"
                         data-dismiss="modal">
                     닫기
                 </button>

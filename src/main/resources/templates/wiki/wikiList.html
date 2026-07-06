@@ -16,14 +16,13 @@
 
                     <!-- 헤더 -->
                     <div class="wiki-header">
-                        <h4>📄 위키</h4>
+                        <h1>위키</h1>
                     <button
         					type="button"
         					data-toggle="modal"
         					data-target="#wikiModal"
-        					style="display:flex; align-items:center; gap:6px; font-size:13px; padding:6px 14px; border:1px solid #ddd; border-radius:6px; background:#fff; color:#555; cursor:pointer;">
-        					<i class="fa fa-plus" style="font-size:11px;"></i>
-        					새 위키
+        					class="btn btn-custon-rounded-four custom-white-btn">
+        					새 위키 생성
     					</button>
                        
                     </div>
@@ -56,13 +55,13 @@
 </div>
 <div class="modal fade" id="wikiModal" tabindex="-1" role="dialog">
   <div class="modal-dialog" role="wiki" style="border-radius:20px;">
-    <div class="modal-content" style="border-radius:20px; overflow:hidden; border:none;">
+    <div class="modal-content" style="border-radius:5px; overflow:hidden; border:none;">
 
       <!-- form 추가 -->
       <form th:action="@{/project/{projectId}/wiki/create(projectId=${projectId})}" method="post">
 
         <!-- 헤더 -->
-        <div style="background:#1a6fe8; padding:18px 24px; display:flex; align-items:center; justify-content:space-between;">
+        <div style="background:#031225; padding:18px 24px; display:flex; align-items:center; justify-content:space-between;">
           <h4 style="color:#fff; margin:0; font-size:15px; font-weight:500;">
             새 위키 만들기
           </h4>
@@ -90,14 +89,14 @@
         <div class="modal-footer" style="border-top:1px solid #f0f0f0; padding:14px 24px 20px;">
           <button
             type="button"
-            class="btn btn-default btn-custon-three btn-custon-rounded-three"
+            class="btn btn-custon-rounded-four custom-white-btn"
             data-dismiss="modal">
             취소
           </button>
 
           <button
             onclick="createWiki()"
-            class="btn btn-primary btn-custon-three btn-custon-rounded-three">
+            class="btn btn-custon-rounded-four custom-default-btn">
             생성
           </button>
         </div>

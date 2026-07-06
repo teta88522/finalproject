@@ -257,7 +257,7 @@ body.no-sidebar .all-content-wrapper {
   transition: all 0.3s;
 }
 #sidebar {
-    width: 200px;
+    width: 195px;
     position: fixed;
     top: 106px; 
     left: 0;
@@ -287,9 +287,10 @@ body.no-sidebar .all-content-wrapper {
 }
 
 #sidebar.active {
-  min-width: 80px;
-  max-width: 80px;
+  min-width: 50px;
+  max-width: 50px;
   text-align: center;
+  height: 100%;
 }
 #sidebar.active .sidebar-header h3,
 #sidebar.active .CTAs {
@@ -314,7 +315,7 @@ body.no-sidebar .all-content-wrapper {
     opacity: .5 !important;
 }
 /* 모달 전체 */
-#categoryModal {
+.modal{
     text-align: center;
 }
 
@@ -329,7 +330,7 @@ body.no-sidebar .all-content-wrapper {
     z-index: 100 !important;
 }
 /* 세로 중앙 정렬 */
-#categoryModal:before {
+.modal:before {
     content: '';
     display: inline-block;
     height: 100%;
@@ -337,7 +338,7 @@ body.no-sidebar .all-content-wrapper {
 }
 
 /* 모달 창 */
-#categoryModal .modal-dialog {
+.modal .modal-dialog {
     display: inline-block;
     vertical-align: middle;
     text-align: left;
@@ -349,7 +350,7 @@ body.no-sidebar .all-content-wrapper {
 }
 
 /* 모달 내용 */
-#categoryModal .modal-content {
+.modal .modal-content {
     border-radius: 20px;
     overflow: hidden;
     border: none;
@@ -4459,21 +4460,30 @@ div#sparklinehome canvas {
 .header-top-menu .navbar-nav > li > a:hover {
   color: #fff;
 }
+
+
 #sidebar::after {
     content: "";
-    position: fixed;
+    position: fixed;   /* fixed → absolute */
     left: 0;
     bottom: 0;
     width: 200px;
-    height: 100%; 
-
+    height: 100%;
     background: url("/img/sidebar-pattern.png") no-repeat left bottom;
     background-size: 240px auto;
-
     pointer-events: none;
-
 }
-
+body.no-sidebar #sidebar::after,
+.mini-navbar #sidebar::after {
+    display: none;
+}
+#sidebar {
+    -ms-overflow-style: none;  /* IE, Edge */
+    scrollbar-width: none;     /* Firefox */
+}
+#sidebar::-webkit-scrollbar {
+    display: none;             /* Chrome, Safari */
+}
 #sidebar.active .sidebar-header {
   padding-top: 10px;
   z-index: 9;
@@ -5737,5 +5747,59 @@ div#sparklinehome canvas {
     background-color: #02101f; /* 살짝 어둡게 */
     border-color: #02101f;
     color: #fff;
+}
+
+
+/* 저장중 로딩창 */
+.workflow-processing-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.workflow-processing-overlay.is-visible {
+  display: flex;
+}
+
+.workflow-processing-box {
+  width: 260px;
+  border: 1px solid #dfe3f0;
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 20px 18px;
+  box-shadow: 0 10px 28px rgba(20, 24, 44, 0.16);
+  text-align: center;
+}
+
+.workflow-processing-spinner {
+  width: 34px;
+  height: 34px;
+  margin: 0 auto 12px;
+  border: 3px solid #e6e8f2;
+  border-top-color: #252ba3;
+  border-radius: 50%;
+  animation: workflowSpin 0.8s linear infinite;
+}
+
+.workflow-processing-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #303030;
+  margin-bottom: 5px;
+}
+
+.workflow-processing-message {
+  font-size: 13px;
+  color: #666666;
+}
+
+@keyframes workflowSpin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 

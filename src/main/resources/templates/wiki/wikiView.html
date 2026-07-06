@@ -15,7 +15,6 @@
         <div class="wiki-view-wrap">
 
           <!-- hidden 값 -->
-          <input type="hidden" id="hiddenContent" th:value="${version != null ? version.content : '{}'}"/>
           <input type="hidden" id="hiddenProjectId" th:value="${projectId}"/>
           <input type="hidden" id="hiddenWikiId" th:value="${wikiId}"/>
 
@@ -24,15 +23,15 @@
             <div>
               <h1 class="wiki-view-title" th:text="${page != null ? page.title : '제목없음'}">제목</h1>
               <div class="wiki-view-meta">
-                <span th:text="${page != null ? page.createdBy : ''}">작성자</span>
+                <span th:text="${page != null ? '최초 작성자 : ' + page.userName : ' '}">작성자</span>
                 &nbsp;·&nbsp;
                 <span th:text="${page != null ? #dates.format(page.createdAt, 'yyyy-MM-dd') : ''}">날짜</span>
               </div>
             </div>
             <div style="display:flex; align-items:center; gap:8px;">
-              <a th:href="@{/project/{pid}/wiki/(pid=${projectId})}" class="btn-back">← 목록</a>
-              <button class="btn-history" onclick="toggleHistory()">🕐 히스토리</button>
-              <a th:href="@{/project/{pid}/wiki/{wid}/edit(pid=${projectId}, wid=${wikiId})}" class="btn-edit">✏️ 편집</a>
+              <a id="btnBack" class="btn btn-custon-rounded-four custom-white-btn">← 목록</a>
+              <button class="btn btn-custon-rounded-four custom-white-btn" onclick="toggleHistory()">🕐 히스토리</button>
+              <a id="btnEdit" class="btn btn-custon-rounded-four custom-default-btn">✏️ 편집</a>
             </div>
           </div>
 
@@ -45,10 +44,11 @@
                    style="display:none; background:#fff3cd; border:1px solid #ffc107;
                           border-radius:6px; padding:10px 16px; margin-bottom:16px; font-size:13px;">
                 ⚠️ 이전 버전을 보고 있습니다. 복원하려면
-                <a th:href="@{/project/{pid}/wiki/{wid}/edit(pid=${projectId}, wid=${wikiId})}"
-                   style="color:#3d6ef5;">편집 페이지</a>에서 버전 히스토리를 이용하세요.
+                <a id="editLink" style="color:#3d6ef5; cursor:pointer;">편집 페이지</a>에서 버전 히스토리를 이용하세요.
               </div>
-              <div id="wikiContent" class="wiki-content"></div>
+              <div id="wikiContent" class="wiki-content">
+                <p style="color:#aaa;">불러오는 중...</p>
+              </div>
             </div>
 
             <!-- 히스토리 패널 -->
@@ -76,175 +76,7 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-<script>
-  const content = document.getElementById('hiddenContent').value
-  const projectId = document.getElementById('hiddenProjectId').value
-  const wikiId = document.getElementById('hiddenWikiId').value
-
-  let selectedVersionId = null
-
-  marked.setOptions({ breaks: true, gfm: true })
-
-  // 마크다운 파싱
-  function renderMarkdown(raw) {
-    try {
-      const parsed = JSON.parse(raw)
-      return typeof parsed === 'string' ? parsed : (parsed.markdown || '')
-    } catch(e) {
-      return ''
-    }
-  }
-
-  // [[위키제목]] → 링크 변환
-  async function convertWikiLinks(html) {
-    const matches = [...html.matchAll(/\[\[(.+?)\]\]/g)]
-    if (matches.length === 0) return html
-
-    for (const match of matches) {
-      const title = match[1]
-      try {
-        const res = await fetch(`/project/${projectId}/wiki/find?title=${encodeURIComponent(title)}`)
-        const page = await res.json()
-        if (page && page.wikiId) {
-          html = html.replace(
-            match[0],
-            `<a href="/project/${projectId}/wiki/${page.wikiId}"
-                style="color:#3d6ef5; text-decoration:none; border-bottom:1px solid #3d6ef5;">${title}</a>`
-          )
-        } else {
-          html = html.replace(
-            match[0],
-            `<a href="javascript:createWiki('${title}')"
-                style="color:#e53e3e; text-decoration:none; border-bottom:1px solid #e53e3e;">${title}</a>`
-          )
-        }
-      } catch(e) {
-        html = html.replace(match[0], title)
-      }
-    }
-    return html
-  }
-
-  // 없는 위키 생성
-  function createWiki(title) {
-    if (!confirm(`"${title}" 위키를 새로 만드시겠습니까?`)) return
-    fetch(`/project/${projectId}/wiki/create`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title: title, projectId: projectId })
-    })
-    .then(res => res.json())
-    .then(data => {
-      location.href = `/project/${projectId}/wiki/${data.wikiId}/edit`
-    })
-    .catch(err => console.error('위키 생성 실패:', err))
-  }
-
-  // 본문 렌더링
-  async function displayContent(markdown, isOldVersion) {
-    let html = marked.parse(markdown)
-
-    // [[위키제목]] 변환
-    html = await convertWikiLinks(html)
-
-    // 목차 생성
-    const parser = new DOMParser()
-    const doc = parser.parseFromString(html, 'text/html')
-    const headings = doc.querySelectorAll('h2, h3, h4')
-
-    let tocHtml = ''
-    if (headings.length > 0) {
-      tocHtml = '<div class="wiki-toc"><div class="wiki-toc-title">목차</div><ol>'
-      headings.forEach((h, i) => {
-        const level = parseInt(h.tagName[1])
-        const text = h.textContent
-        const indent = (level - 2) * 16
-        tocHtml += `<li style="margin-left:${indent}px"><a href="#heading-${i}">${text}</a></li>`
-      })
-      tocHtml += '</ol></div>'
-    }
-
-    let idx = 0
-    const finalHtml = html.replace(/<h([234])>/g, (match, level) => {
-      return `<h${level} id="heading-${idx++}">`
-    })
-
-    document.getElementById('wikiContent').innerHTML = tocHtml + finalHtml
-    document.getElementById('versionNotice').style.display = isOldVersion ? 'block' : 'none'
-  }
-
-  // 초기 렌더링
-  const markdown = renderMarkdown(content)
-  if (markdown) {
-    displayContent(markdown, false)
-  } else {
-    document.getElementById('wikiContent').innerHTML = '<p style="color:#aaa;">내용이 없습니다.</p>'
-  }
-
-  // 히스토리 토글
-  function toggleHistory() {
-    const panel = document.getElementById('historyPanel')
-    panel.classList.toggle('open')
-    if (panel.classList.contains('open')) loadHistory()
-  }
-
-  // 히스토리 로드
-  function loadHistory() {
-    fetch(`/project/${projectId}/wiki/versions/${wikiId}`)
-      .then(res => res.json())
-      .then(list => {
-        const container = document.getElementById('historyList')
-        if (!Array.isArray(list) || list.length === 0) {
-          container.innerHTML = '<p style="padding:16px; color:#aaa; font-size:13px;">버전 없음</p>'
-          return
-        }
-        container.innerHTML = ''
-        list.forEach((v, i) => {
-          const div = document.createElement('div')
-          div.className = 'history-item' + (i === 0 ? ' active' : '')
-          div.innerHTML = `
-            <div style="font-size:13px; font-weight:500;">${v.title || '제목없음'}</div>
-            <div class="history-item-version">${v.versionNo}</div>
-            <div class="history-item-date">${v.createdAt}</div>
-            <div class="history-item-author">by ${v.createdBy || ''}</div>
-          `
-          div.onclick = () => previewVersion(v.versionId, div)
-          container.appendChild(div)
-        })
-      })
-      .catch(err => console.error('히스토리 로드 실패:', err))
-  }
-
-  // 버전 미리보기 (보기만)
-  function previewVersion(versionId, el) {
-    document.querySelectorAll('.history-item').forEach(e => e.classList.remove('active'))
-    el.classList.add('active')
-    selectedVersionId = versionId
-    document.getElementById('backToCurrentBtn').style.display = 'block'
-
-    fetch(`/project/${projectId}/wiki/version/${versionId}`)
-      .then(res => res.json())
-      .then(data => {
-        if (data && data.content) {
-          const md = renderMarkdown(data.content)
-          displayContent(md, true)
-        }
-      })
-      .catch(err => console.error('버전 로드 실패:', err))
-  }
-
-  // 현재 버전으로 돌아가기
-  function backToCurrent() {
-    selectedVersionId = null
-    document.getElementById('backToCurrentBtn').style.display = 'none'
-    document.querySelectorAll('.history-item').forEach((e, i) => {
-      if (i === 0) e.classList.add('active')
-      else e.classList.remove('active')
-    })
-    const md = renderMarkdown(content)
-    displayContent(md, false)
-  }
-</script>
+<script th:src="@{/js/wikiView.js}"></script>
 </div>
 </body>
 </html>

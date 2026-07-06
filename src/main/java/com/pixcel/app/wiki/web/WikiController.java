@@ -54,17 +54,15 @@ public class WikiController {
         return "wiki/wikiList";
     }
 
-    // 위키 읽기
     @GetMapping("/{wikiId}")
     public String wikiView(@PathVariable String projectId,
                            @PathVariable String wikiId,
                            Model model) {
         WikiPageVO page = wikiService.getWikiPage(wikiId);
-        WikiVersionVO version = wikiService.getLatestVersion(wikiId);
+        // version은 JS에서 API로 가져오므로 제거
         model.addAttribute("projectId", projectId);
         model.addAttribute("wikiId", wikiId);
         model.addAttribute("page", page);
-        model.addAttribute("version", version);
         return "wiki/wikiView";
     }
 

@@ -2,6 +2,7 @@ package com.pixcel.app.document.web;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,7 +27,6 @@ import com.pixcel.app.file.service.FileDTO;
 import com.pixcel.app.file.service.FileDownloadHistoryVO;
 import com.pixcel.app.file.service.FileService;
 import com.pixcel.app.file.service.FileVO;
-import com.pixcel.app.milestones.service.MilestoneSearchVO;
 import com.pixcel.app.milestones.service.MilestonesService;
 import com.pixcel.app.milestones.service.MilestonesVO;
 import com.pixcel.app.roadmap.service.RoadmapService;
@@ -86,34 +86,40 @@ public class DocumentController {
     }
 	
 	@GetMapping("/add")
-    public String documentAdd(Model model,@PathVariable("projectId") String projectId, @CookieValue(value="userId", required =false)String userId) {
-		MilestoneSearchVO vo = new MilestoneSearchVO();
-		vo.setProjectId(projectId);
-		List<MilestonesVO> milestoneList = milestonesService.getMilestoneList(vo.getProjectId());
-	    model.addAttribute("milestoneList", milestoneList);
+	public String documentAdd(Model model, @PathVariable("projectId") String projectId, 
+	                          @CookieValue(value="userId", required=false) String userId) {
+
+	    CompletableFuture<List<MilestonesVO>> milestoneFuture = 
+	        CompletableFuture.supplyAsync(() -> milestonesService.getMilestoneList(projectId));
 	    
-	    List<CodeValueVO> codeValueList = codeValueService.getCodeValueListByGroup(userId,"g003");
-	    model.addAttribute("codeValueList", codeValueList);
+	    CompletableFuture<List<CodeValueVO>> codeValueFuture = 
+	        CompletableFuture.supplyAsync(() -> codeValueService.getCodeValueListByGroup(userId, "g003"));
 	    
-	    List<RoadmapVO> roadmapList = roadmapService.getVersionId(projectId);
-	    model.addAttribute("roadmapList", roadmapList);
+	    CompletableFuture<List<RoadmapVO>> roadmapFuture = 
+	        CompletableFuture.supplyAsync(() -> roadmapService.getVersionId(projectId));
 	    
-	    List<DocumentCategoryVO> categoryList = documentService.selectCategoryAll(projectId);
-	    model.addAttribute("categoryList",categoryList);
-	    model.addAttribute("projectId",projectId);
-	    
-	    
-        return "document/documentAdd";
-    }
+	    CompletableFuture<List<DocumentCategoryVO>> categoryFuture = 
+	        CompletableFuture.supplyAsync(() -> documentService.selectCategoryAll(projectId));
+
+	    model.addAttribute("milestoneList", milestoneFuture.join());
+	    model.addAttribute("codeValueList", codeValueFuture.join());
+	    model.addAttribute("roadmapList", roadmapFuture.join());
+	    model.addAttribute("categoryList", categoryFuture.join());
+	    model.addAttribute("projectId", projectId);
+
+	    return "document/documentAdd";
+	}
 	
 	@PostMapping("/add")
 	@Transactional
     public String documentAddProc(@CookieValue(value="userId", required =false)String userId, DocumentVO documentVO, @PathVariable("projectId") String projectId, @RequestParam("files") List<MultipartFile> files) {
 		
+
 		int versionId = documentService.selectNextDocumentVersion(documentVO.getDocumentId());
 		logger.debug(documentVO.toString());
 		documentVO.setCreatedBy(userId);
 		documentService.addDocument(documentVO);
+
 		
 		DocumentHistoryVO documentHistoryVO = new DocumentHistoryVO();
 		documentHistoryVO.setDocumentId(documentVO.getDocumentId());
@@ -122,7 +128,8 @@ public class DocumentController {
 		documentHistoryVO.setDescription(documentVO.getDescription());
 		documentHistoryVO.setDocumentVersionId(versionId);
 		documentService.addDocumentHistory(documentHistoryVO);
-		
+
+
 		
 		FileDTO uploadDTO = new FileDTO();
 		uploadDTO.setProjectId(projectId);
@@ -131,9 +138,9 @@ public class DocumentController {
 		uploadDTO.setUploadUserId(userId);
 		uploadDTO.setConnectAddress(documentVO.getDocumentId());
 		uploadDTO.setDocumentVersionId(versionId);
-
-		fileService.uploadFile(files, uploadDTO);
 		
+		fileService.uploadFile(files, uploadDTO);
+
         return "redirect:/project/" + projectId +"/document/list";
     }
 	
@@ -275,8 +282,14 @@ public class DocumentController {
 	@PostMapping("/deletedocument/{documentId}")
 	public String deleteDocument(@PathVariable("documentId") String documentId, @PathVariable("projectId") String projectId, @CookieValue(value="userId", required =false)String userId) {
 		DocumentVO docHistoryId = documentService.selectHistoryLastDetail(documentId);
-		documentService.deleteDocumentHistory(docHistoryId.getDocumentHistoryId());
+		if(docHistoryId != null) {
+			
+			documentService.deleteDocumentHistory(docHistoryId.getDocumentHistoryId());
+		}
+		documentService.deleteDocument(documentId);
+		
 		DocumentVO docDetail = documentService.selectHistoryLastDetail(documentId);
+		
 		if (docDetail != null) {
 			documentService.updateDocument(docDetail);
 		}

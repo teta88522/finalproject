@@ -5,21 +5,24 @@
 <!-- 위키 페이지 조회 -->
 	<select id="selectWikiPage" resultType="WikiPageVO">
         SELECT
-        wiki_id,
-        project_id,
-        parent_wiki_id,
-        title,
-        summary,
-        current_version_no,
-        edit_availble_yn,
-        editing_user_id,
-        editing_start_at,
-        editing_expires_at,
-        created_by,
-        created_at,
-        updated_by,
-        updated_at
-    FROM wiki_page WHERE wiki_id = #{wikiId}
+        w.wiki_id,
+        w.project_id,
+        w.parent_wiki_id,
+        w.title,
+        w.summary,
+        w.current_version_no,
+        w.edit_availble_yn,
+        w.editing_user_id,
+        w.editing_start_at,
+        w.editing_expires_at,
+        w.created_by,
+        w.created_at,
+        w.updated_by,
+        u.user_name,
+        w.updated_at
+    FROM wiki_page w
+    LEFT JOIN users u ON w.created_by = u.user_id
+    WHERE w.wiki_id = #{wikiId}
     </select>
 
     <insert id="insertWikiPage" parameterType="WikiPageVO">
@@ -119,10 +122,18 @@
     </select>
     
     <select id="selectVersionList" parameterType="String" resultType="WikiVersionVO">
-    	SELECT version_id, wiki_id, version_no, title, change_summary, created_by, created_at
-    	FROM wiki_version
-    	WHERE wiki_id = #{wikiId}
-    ORDER BY created_at DESC
+    	SELECT w.version_id,
+    		w.wiki_id,
+    		w.version_no,
+    		w.title,
+    		w.change_summary,
+    		w.created_by,
+    		w.created_at,
+            u.user_name
+    	FROM wiki_version w
+    	LEFT JOIN users u ON w.created_by = u.user_id
+    	WHERE w.wiki_id = #{wikiId}
+    	ORDER BY w.created_at DESC
 	</select>
 
 	<select id="selectVersionDetail" parameterType="String" resultType="WikiVersionVO">

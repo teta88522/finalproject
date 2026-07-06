@@ -13,5 +13,6 @@ public class WikiVersionVO {
     private String content;
     private String changeSummary;
     private String createdBy;
+    private String userName;
     private Date createdAt;
 }
