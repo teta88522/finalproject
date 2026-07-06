@@ -311,7 +311,10 @@
 .project-table {
 	width: 100%;
 	border-collapse: collapse;
-	table-layout: fixed;
+	/* ✅ subscribeYn에 따라 컬럼 개수(식별자/관리)가 달라지는데,
+	   fixed 레이아웃 + nth-child 고정폭이 컬럼 개수 변화에 대응 못 해서
+	   컬럼이 줄면 표 전체 폭도 같이 줄어 오른쪽에 빈 공간이 남던 문제. auto로 변경. */
+	table-layout: auto;
 	background-color: #fff;
 }
 
@@ -355,37 +358,10 @@
 	border-bottom: none;
 }
 
-.project-table th:nth-child(1), .project-table td:nth-child(1) {
-	width: 100px;
-}
-
-.project-table th:nth-child(2), .project-table td:nth-child(2) {
-	width: 170px;
-}
-
-.project-table th:nth-child(3), .project-table td:nth-child(3) {
-	width: 260px;
-}
-
-.project-table th:nth-child(4), .project-table td:nth-child(4) {
-	width: 100px;
-}
-
-.project-table th:nth-child(5), .project-table td:nth-child(5) {
-	width: 180px;
-}
-
-.project-table th:nth-child(6), .project-table td:nth-child(6) {
-	width: 90px;
-}
-
-.project-table th:nth-child(7), .project-table td:nth-child(7),
-	.project-table th:nth-child(8), .project-table td:nth-child(8) {
-	width: 110px;
-}
-
-.project-table th:nth-child(9), .project-table td:nth-child(9) {
-	width: 130px;
+/* ✅ 컬럼 개수가 subscribeYn에 따라 달라져서(식별자/관리 유무) nth-child 위치 기반
+   고정폭은 위치가 밀리면서 오히려 잘못된 컬럼에 잘못된 폭이 적용되던 문제가 있었음.
+   auto 레이아웃으로 바꿨으니 내용 기준으로 자동 분배 + 항상 100% 채움. */
+.project-action-cell {
 	text-align: center;
 }
 

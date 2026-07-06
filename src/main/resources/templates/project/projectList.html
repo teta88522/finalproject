@@ -122,7 +122,7 @@
 						</thead>
 						<tbody>
 							<tr th:if="${projectList == null or #lists.isEmpty(projectList)}">
-								<td th:colspan="${subscribeYn == 'Y' ? 9 : 8}" class="empty-row">조회된
+								<td th:colspan="${subscribeYn == 'Y' ? 9 : 7}" class="empty-row">조회된
 									프로젝트가 없습니다.</td>
 							</tr>
 							<tr th:each="project : ${projectList}"
@@ -249,6 +249,10 @@
 				hiddenInput.value = statusValues;
 				form.appendChild(hiddenInput);
 			}
+
+			// ✅ 원본 체크박스가 같이 제출되면 searchStatusCode 값이 중복/뒤섞여서 전송되던 문제 수정.
+			//    콤마로 합친 hidden input만 보내지도록 원본 체크박스는 제출에서 제외.
+			checkedBoxes.forEach(cb => cb.disabled = true);
 			
 			let pageInput = form.querySelector('input[name="page"]');
 			if (!pageInput) {

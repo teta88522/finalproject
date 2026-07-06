@@ -474,14 +474,19 @@
 		COUNT(CASE WHEN ist.closed_yn = 'Y' THEN 1 END) as doneCount,
 		COUNT(i.issue_id) as totalCount
 		FROM
-		issue_type it
+		<!-- ✅ 기존엔 issue_type 테이블에서 시스템 전체의 일감유형을 다 가져와서,
+		     이 프로젝트에 배정 안 된 유형(다른 프로젝트/테스트용 "예제1", "테스트1" 등)까지
+		     0/0/0으로 전부 표시되던 문제가 있었음. issue_type_project로 이 프로젝트에
+		     실제 배정된 유형만 나오도록 수정. -->
+		issue_type_project itp
+		JOIN issue_type it ON itp.issue_type_id = it.issue_type_id
 		LEFT JOIN issue i ON
 		i.issue_type_id = it.issue_type_id
 		AND i.project_id = #{projectId}
 		LEFT
 		JOIN issue_status ist ON ist.issue_status_id = i.issue_status_id
 		WHERE
-		1 = 1
+		itp.project_id = #{projectId}
 		GROUP BY
 		it.issue_type_id,
 		it.issue_type_name
@@ -550,8 +555,14 @@
 		<if test="searchProjectName != null and searchProjectName != ''">
 			AND p.project_name LIKE '%' || #{searchProjectName} || '%'
 		</if>
+		<!-- ✅ 생성자 검색 필터가 아예 빠져있어서 입력해도 무시되던 문제 수정 -->
+		<if test="searchOwnerName != null and searchOwnerName != ''">
+			AND u.user_name LIKE '%' || #{searchOwnerName} || '%'
+		</if>
+		<!-- ✅ 체크박스 다중선택 시 "a001,a002"처럼 콤마로 합쳐서 넘어오는데
+		     기존엔 '=' 단순비교라 다중선택 시 절대 매칭이 안 됐음. 콤마 목록 매칭으로 교체. -->
 		<if test="searchStatusCode != null and searchStatusCode != ''">
-			AND p.status_code = #{searchStatusCode}
+			AND INSTR(',' || #{searchStatusCode} || ',', ',' || p.status_code || ',') > 0
 		</if>
 		ORDER BY p.created_at DESC, p.project_id DESC
 		) sq
@@ -575,8 +586,11 @@
 		<if test="searchProjectName != null and searchProjectName != ''">
 			AND p.project_name LIKE '%' || #{searchProjectName} || '%'
 		</if>
+		<if test="searchOwnerName != null and searchOwnerName != ''">
+			AND u.user_name LIKE '%' || #{searchOwnerName} || '%'
+		</if>
 		<if test="searchStatusCode != null and searchStatusCode != ''">
-			AND p.status_code = #{searchStatusCode}
+			AND INSTR(',' || #{searchStatusCode} || ',', ',' || p.status_code || ',') > 0
 		</if>
 	</select>
 
@@ -593,5 +607,4 @@
 		SET git_url = #{gitUrl}
 		WHERE project_id = #{projectId}
 	</update>
-
 </mapper>

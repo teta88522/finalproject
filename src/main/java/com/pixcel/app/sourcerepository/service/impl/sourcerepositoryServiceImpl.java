@@ -424,10 +424,16 @@ public class sourcerepositoryServiceImpl implements sourcerepositoryService {
 				throw new RuntimeException("GitHub URL 파싱 실패");
 			}
 
-			String apiUrl = githubApiUrl + "/repos/" + owner + "/" + repo + "/commits?sha=" + branch + "&per_page=30";
+			// ✅ URLEncoder는 "/"까지 %2F로 인코딩해서 GitHub이 path 값을 못 알아듣게 만들 수 있었음.
+			//    UriComponentsBuilder로 표준적인 쿼리 파라미터 인코딩을 사용하도록 변경.
+			org.springframework.web.util.UriComponentsBuilder uriBuilder = org.springframework.web.util.UriComponentsBuilder
+					.fromHttpUrl(githubApiUrl + "/repos/" + owner + "/" + repo + "/commits")
+					.queryParam("sha", branch)
+					.queryParam("per_page", 30);
 			if (path != null && !path.isEmpty()) {
-				apiUrl += "&path=" + java.net.URLEncoder.encode(path, StandardCharsets.UTF_8);
+				uriBuilder.queryParam("path", path);
 			}
+			String apiUrl = uriBuilder.build().encode().toUriString();
 
 			// ✅ 인증 헤더 적용
 			HttpEntity<String> entity = new HttpEntity<>(buildGitHubHeaders());

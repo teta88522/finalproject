@@ -32,7 +32,7 @@
 						th:href="@{/project/{projectId}/sourcerepository/file-history(projectId=${projectId}, path=${filePath}, branch=${branch})}"
 						class="detail-history-btn"
 						style="text-decoration: none;">
-						📜 History
+						History
 					</a>
 				</div>
 				<div class="detail-meta">
@@ -48,15 +48,8 @@
 			<!-- File Content Header (코드 복사, 다운로드, 파일명 복사) -->
 			<div class="detail-content-header">
 				<div class="detail-content-title">
-					<span class="detail-file-icon">📄</span>
+					<span class="detail-file-icon"></span>
 					<span class="detail-file-name" th:text="${fileName}">README.md</span>
-					<button
-						type="button"
-						class="detail-copy-btn"
-						onclick="copyFileName()"
-						title="파일명 복사">
-						📋 복사
-					</button>
 				</div>
 				<div class="detail-content-actions">
 					<button
@@ -64,7 +57,7 @@
 						class="detail-action-btn detail-action-copy"
 						onclick="copyCode()"
 						title="코드 전체 복사">
-						📋 코드 복사
+						코드 복사
 					</button>
 					<button
 						type="button"
@@ -91,7 +84,7 @@
 				<a
 					th:href="@{/project/{projectId}/sourcerepository(projectId=${projectId})}"
 					class="detail-btn detail-btn-secondary">
-					🏠 저장소 메인
+					저장소 메인
 				</a>
 			</div>
 		</div>
@@ -102,23 +95,23 @@
 		<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 		<script th:src="@{/js/common/pf-confirm.js}"></script>
 		<script>
-			// 파일명 복사
-			function copyFileName() {
-				const fileName = document.querySelector('.detail-file-name').textContent;
-				navigator.clipboard.writeText(fileName).then(() => {
-					window.PFDialog.alert('파일명이 복사되었습니다: ' + fileName, { title: '복사 완료', icon: 'success' });
-				}).catch(() => {
-					window.PFDialog.alert('복사에 실패했습니다', { title: '복사 실패', icon: 'error' });
-				});
-			}
- 
 			// 코드 전체 복사
+			// ✅ pf-confirm.js(공용 파일)는 건드리지 않고, 이 페이지 안에서만 방어 처리.
+			//    코드 복사 버튼을 연속으로 누르거나 다른 알림과 겹칠 때 SweetAlert2 모달이
+			//    2개 겹쳐 보이던 현상 방지: 새 알림을 띄우기 전에 기존 모달을 먼저 닫음.
+			function showAlert(message, options) {
+				if (window.Swal && window.Swal.isVisible()) {
+					window.Swal.close();
+				}
+				window.PFDialog.alert(message, options);
+			}
+
 			function copyCode() {
 				const fileContent = document.getElementById('fileContent').textContent;
 				navigator.clipboard.writeText(fileContent).then(() => {
-					window.PFDialog.alert('코드가 복사되었습니다', { title: '복사 완료', icon: 'success' });
+					showAlert('코드가 복사되었습니다', { title: '복사 완료', icon: 'success' });
 				}).catch(() => {
-					window.PFDialog.alert('복사에 실패했습니다', { title: '복사 실패', icon: 'error' });
+					showAlert('복사에 실패했습니다', { title: '복사 실패', icon: 'error' });
 				});
 			}
 
