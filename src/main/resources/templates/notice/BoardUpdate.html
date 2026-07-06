@@ -24,6 +24,7 @@
                     <form id="boardUpdateForm"
                           th:action="@{/project/{projectId}/notice/BoardUpdate(projectId=${projectId})}"
                           th:object="${board}"
+                          th:data-error-message="${errorMessage}"
                           method="POST"
                           novalidate>
 
@@ -63,11 +64,13 @@
                         <div class="board-page-footer">
                             <a th:href="@{/project/{projectId}/notice/BoardDelete(projectId=${projectId}, boardId=${board.boardId})}"
                                class="btn btn-custon-rounded-four btn-danger custom-btn"
-                               id="btnDeleteBoard">
+                               id="btnDeleteBoard"
+                               th:data-post-count="${board.postCount}">
                                 삭제
                             </a>
                             <a th:href="@{/project/{projectId}/notice/BoardList(projectId=${projectId})}" 
-                               class="btn btn-custon-rounded-four custom-white-btn">
+                               class="btn btn-custon-rounded-four custom-white-btn"
+                               id="btnCancelBoard">
                                 취소
                             </a>
                             <a href="javascript:void(0)" 
@@ -84,49 +87,6 @@
                 <!-- SweetAlert2 및 공통 다이얼로그 추가 -->
                 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
                 <script th:src="@{/js/common/pf-confirm.js}"></script>
-                
-                <script th:inline="javascript">
-                    /*<![CDATA[*/
-                    document.addEventListener('DOMContentLoaded', function() {
-                        // 📝 타임리프 주석식 문법을 적용하여 IDE의 자바스크립트 문법 에러 경고를 완전히 처단합니다.
-                        var errorMessage = /*[[${errorMessage}]]*/ null;
-                        if (errorMessage) {
-                            window.PFDialog.alert(errorMessage, {
-                                title: '에러',
-                                icon: 'error'
-                            });
-                        }
-
-                        // 게시판 삭제 전 글 개수 안전 차단기 및 SweetAlert 컨펌
-                        var btnDeleteBoard = document.getElementById('btnDeleteBoard');
-                        if (btnDeleteBoard) {
-                            btnDeleteBoard.addEventListener('click', function(e) {
-                                e.preventDefault();
-                                var postCount = [[${board.postCount}]];
-                                var deleteUrl = this.getAttribute('href');
-                                
-                                if (postCount > 0) {
-                                    window.PFDialog.alert("게시글이 존재하는 게시판은 삭제할 수 없습니다. (현재 등록된 글: " + postCount + "개)", {
-                                        title: '삭제 불가',
-                                        icon: 'warning'
-                                    });
-                                } else {
-                                    window.PFDialog.confirm({
-                                        title: '삭제 확인',
-                                        message: '정말로 이 게시판을 삭제하시겠습니까?\n삭제 시 복구할 수 없습니다.',
-                                        confirmText: '삭제',
-                                        icon: 'warning'
-                                    }).then(function(confirmed) {
-                                        if (confirmed) {
-                                            location.href = deleteUrl;
-                                        }
-                                    });
-                                }
-                            });
-                        }
-                    });
-                    /*]]>*/
-                </script>
             </div>
         </div>
         </div>

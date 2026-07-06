@@ -212,7 +212,7 @@ public class UsersController {
     public String unsubscribe(@AuthenticationPrincipal CustomUserDetails userDetails) {
         String userId = userDetails.getUserId();
         userService.unsubscribeUser(userId);
-        return "redirect:/mypage";
+        return "redirect:/usersMypage";
     }
    
 }

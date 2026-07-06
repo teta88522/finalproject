@@ -21,23 +21,34 @@ document.addEventListener("DOMContentLoaded", function () {
   if (versionIdInput) {
       versionIdInput.addEventListener('change', function() {
           if (selectedIssueIds.size > 0) {
-              if (confirm("버전을 변경하시면 기존에 선택해 둔 일감 목록이 모두 초기화됩니다. 변경하시겠습니까?")) {
-                  // 일감 목록 테이블 비우기
-                  issueListBody.innerHTML = `<tr><td class="empty-row" style="text-align: center; color: #999; padding: 30px 10px;">상단 검색창을 통해 연결할 일감을 찾아보세요.</td></tr>`;
-                  selectedIssueIds.clear();
-                  addedHistoryIds.clear();
-                  updateHiddenInput();
-              } else {
-                  // 취소 시 이전 버전으로 select 값 원복
-                  versionIdInput.value = lockedVersionId || "";
-                  return;
-              }
+              window.PFDialog.confirm({
+                  title: '버전 변경 확인',
+                  message: '버전을 변경하시면 기존에 선택해 둔 일감 목록이 모두 초기화됩니다. 계속하시겠습니까?',
+                  confirmText: '변경',
+                  icon: 'warning'
+              }).then((confirmed) => {
+                  if (confirmed) {
+                      // 일감 목록 테이블 비우기
+                      issueListBody.innerHTML = `<tr><td class="empty-row" style="text-align: center; color: #999; padding: 30px 10px;">상단 검색창을 통해 연결할 일감을 찾아보세요.</td></tr>`;
+                      selectedIssueIds.clear();
+                      addedHistoryIds.clear();
+                      updateHiddenInput();
+                      lockedVersionId = versionIdInput.value;
+                      
+                      // 검색창 내용이 적혀있었다면 즉각 리프레시 검색
+                      const keyword = issueSearchInput.value.trim();
+                      fetchAndShowIssues(keyword);
+                  } else {
+                      // 취소 시 이전 버전으로 select 값 원복
+                      versionIdInput.value = lockedVersionId || "";
+                  }
+              });
+          } else {
+              lockedVersionId = this.value;
+              // 검색창 내용이 적혀있었다면 즉각 리프레시 검색
+              const keyword = issueSearchInput.value.trim();
+              fetchAndShowIssues(keyword);
           }
-          lockedVersionId = this.value;
-          
-          // 검색창에 내용이 적혀있었다면 즉각 리프레시 검색 호출
-          const keyword = issueSearchInput.value.trim();
-          fetchAndShowIssues(keyword);
       });
   }
 

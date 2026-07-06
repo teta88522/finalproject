@@ -203,7 +203,7 @@ public class NoticeController {
             if (!uploadFiles.isEmpty()) {
                 FileDTO uploadDTO = new FileDTO();
                 uploadDTO.setProjectId(projectId);
-                uploadDTO.setFileCode("f008"); // 게시판도 공용 f008 업로드 코드 지정
+                uploadDTO.setFileCode("f007");
                 uploadDTO.setUploadUserId(userDetails.getUsername());
                 uploadDTO.setConnectAddress(postDTO.getPostId()); // 연동된 postId 지정
                 

@@ -71,17 +71,16 @@ textarea.form-control {
     display: flex;
     align-items: center;
     margin-top: 30px;
-    line-height: 1;
 }
 
 .form-checkbox {
-    width: 18px;
-    height: 18px;
-    margin: 0 10px 0 0;
+    width: 16px;
+    height: 16px;
+    margin: 0 8px 0 0 !important;
+    padding: 0 !important;
     cursor: pointer;
     flex-shrink: 0;
-    position: relative;
-    top: -1px; /* 수직 정렬 정밀 보정 */
+    margin-top: 1px !important; /* 미세 정렬 조정 */
 }
 
 .checkbox-group label {
@@ -89,9 +88,10 @@ textarea.form-control {
     color: #555;
     cursor: pointer;
     font-weight: normal;
-    line-height: 18px;
-    display: inline-flex;
-    align-items: center;
+    line-height: 1.2;
+    margin: 0 !important;
+    padding: 0 !important;
+    display: inline-block;
 }
 
 /* 취소 및 목록 흰색 버튼 테두리 선 명시화 */

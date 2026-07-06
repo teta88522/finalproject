@@ -142,7 +142,9 @@
                                     th:data-owner-name="${p.ownerName}"
                                     th:data-status-code="${p.statusCode}">
                                     
-                                    <td th:text="${p.projectName}"></td>
+                                    <td>
+                                        <a th:href="@{/projectdetail/{projectId}(projectId=${p.projectId})}" th:text="${p.projectName}"></a>
+                                    </td>
                                     <td th:text="${p.description}"></td>
                                     <td th:text="${p.ownerName}"></td>
                                     <td><a th:href="${p.projectUrl}" th:text="${p.projectUrl}" target="_blank"></a></td>

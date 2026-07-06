@@ -159,13 +159,14 @@ document.addEventListener("DOMContentLoaded", function() {
 	                  const avgProgress = getCheckedIssuesProgressAverage();
 	                  const checkedCount = document.querySelectorAll(".issue-checkbox:checked").length;
 	                  if (checkedCount === 0 || avgProgress < 100) {
-	                      Swal.fire({
-	                          title: '상태 변경 불가',
-	                          text: '연결된 일감이 없거나, 모든 일감의 평균 진행률이 100%가 아닌 마일스톤은 완료할 수 없습니다. (현재 평균 진행률: ' + avgProgress + '%)',
-	                          icon: 'warning',
-	                          confirmButtonColor: '#4f46e5',
-	                          confirmButtonText: '확인'
-	                      });
+	                      window.PFDialog.alert(
+	                          '연결된 일감이 없거나, 모든 일감의 평균 진행률이 100%가 아닌 마일스톤은 완료할 수 없습니다. (현재 평균 진행률: ' + avgProgress + '%)',
+	                          {
+	                              title: '상태 변경 불가',
+	                              icon: 'warning',
+	                              confirmText: '확인'
+	                          }
+	                      );
 	                      // 완료 불가시 진행 중(L002)으로 임시 복원
 	                      this.value = 'L002';
 	                  }
@@ -382,13 +383,15 @@ document.addEventListener("DOMContentLoaded", function() {
             const avgProgress = getCheckedIssuesProgressAverage();
             const checkedCount = document.querySelectorAll(".issue-checkbox:checked").length;
             if (checkedCount === 0 || avgProgress < 100) {
-                Swal.fire({
-                    title: '제출 불가능',
-                    text: '연결된 일감이 없거나, 모든 일감의 평균 진행률이 100%가 아닌 마일스톤은 완료할 수 없습니다. (현재 평균 진행률: ' + avgProgress + '%)',
-                    icon: 'warning',
-                    confirmButtonColor: '#4f46e5',
-                    confirmButtonText: '확인'
-                });
+                window.PFDialog.alert(
+                    '연결된 일감이 없거나, 모든 일감의 평균 진행률이 100%가 아닌 마일스톤은 완료할 수 없습니다. (현재 평균 진행률: ' + avgProgress + '%)',
+                    {
+                        title: '제출 불가능',
+                        icon: 'warning',
+                        confirmText: '확인',
+						iconColor: '#fc0303'
+                    }
+                );
                 isValid = false;
             }
         }
