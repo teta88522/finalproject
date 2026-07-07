@@ -29,9 +29,6 @@ public class IssueTypeVO {
 
     private String issueTypeName;
 
-    // 화면에서는 제외. DB 컬럼은 남아 있으므로 값은 null로 관리한다.
-    private String roadmapYn;
-
     private String description;
 
     private Date createdAt;

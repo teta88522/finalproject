@@ -185,7 +185,6 @@ public class IssueTypeServiceImpl implements IssueTypeService {
 		validateUserId(userId);
 
 		issueType.setUserId(userId);
-		issueType.setRoadmapYn(null);
 		issueType.setProjectIdList(normalizeProjectIdList(issueType.getProjectIdList()));
 
 		validateIssueType(issueType);
@@ -209,7 +208,6 @@ public class IssueTypeServiceImpl implements IssueTypeService {
 		}
 
 		issueType.setUserId(userId);
-		issueType.setRoadmapYn(null);
 		issueType.setIssueTypeId(trimToNull(issueType.getIssueTypeId()));
 		issueType.setProjectIdList(normalizeProjectIdList(issueType.getProjectIdList()));
 
@@ -237,7 +235,6 @@ public class IssueTypeServiceImpl implements IssueTypeService {
 
 		issueType.setUserId(userId);
 		issueType.setIssueTypeId(null);
-		issueType.setRoadmapYn(null);
 		issueType.setProjectIdList(normalizeProjectIdList(issueType.getProjectIdList()));
 
 		validateIssueType(issueType);
