@@ -29,27 +29,8 @@
     font-size: 14px;
 }
 
-.btn-create {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 94px;
-    height: 36px;
-    padding: 0 14px;
-    border: 1px solid #2f6fed;
-    border-radius: 8px;
-    background: #2f6fed;
-    color: #fff;
-    text-decoration: none;
-    font-size: 14px;
-    line-height: 1;
-    cursor: pointer;
-    white-space: nowrap;
-}
 
-.btn-create:hover {
-    background: #245fd3;
-}
+
 
 /*요약*/
 
@@ -177,41 +158,8 @@
     margin-top: 16px;
 }
 
-.btn-reset,
-.btn-search {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 74px;
-    height: 36px;
-    padding: 0 14px;
-    border-radius: 8px;
-    text-decoration: none;
-    font-size: 14px;
-    line-height: 1;
-    cursor: pointer;
-    white-space: nowrap;
-}
 
-.btn-reset {
-    border: 1px solid #c8d0df;
-    background: #fff;
-    color: #222;
-}
 
-.btn-reset:hover {
-    background: #f3f6fb;
-}
-
-.btn-search {
-    border: 1px solid #2f6fed;
-    background: #2f6fed;
-    color: #fff;
-}
-
-.btn-search:hover {
-    background: #245fd3;
-}
 
 /* 다중선택 드롭다운 */
 .filter-group {
@@ -556,10 +504,7 @@
         align-items: stretch;
     }
 
-    .btn-reset,
-    .btn-search {
-        width: 100%;
-    }
+
 
     .list-top {
         flex-direction: column;

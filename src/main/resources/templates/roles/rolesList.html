@@ -14,7 +14,9 @@
 
 <body>
 	<div layout:fragment="Content">
-
+	<div class="container-fluid" style="height:calc(100vh - 130px); display:flex; flex-direction:column; padding-bottom:24px;">
+   <div style="background:#fff; border-radius:12px; box-shadow:0 2px 12px rgba(0,0,0,0.08); padding:24px; flex:1; display:flex; flex-direction:column; overflow:auto;">
+	
 		<div class="role-list-page">
 
 			<h1 class="role-page-title">역할</h1>
@@ -26,7 +28,7 @@
 				<div class="search-header">
 					<div class="search-title">검색조건</div>
 
-					<button type="button" class="add-role-btn"
+					<button type="button" class="btn btn-custon-rounded-four custom-default-btn"
 						onclick="location.href='/roles/new'">역할 추가</button>
 				</div>
 
@@ -45,10 +47,10 @@
 				</div>
 
 				<div class="search-btn-area">
-					<button type="button" class="btn-basic"
+					<button type="button" class="btn btn-custon-rounded-four custom-white-btn"
 						onclick="location.href='/roles'">초기화</button>
 
-					<button type="submit" class="btn-basic btn-primary">검색</button>
+					<button type="submit" class="btn btn-custon-rounded-four custom-default-btn">검색</button>
 				</div>
 			</form>
 
@@ -108,11 +110,11 @@
 									<td th:text="${role.memberCount}">0</td>
 
 									<td class="role-btn-group">
-										<button type="button" class="mini-btn"
+										<button type="button" class="btn btn-custon-rounded-four custom-white-btn"
 											th:data-role-id="${role.roleId}"
 											onclick="copyRole(this)">복사 생성</button>
 
-										<button type="button" class="mini-btn delete"
+										<button type="button" class="btn btn-custon-rounded-four custom-default-btn"
 											th:data-role-id="${role.roleId}"
 											th:data-role-name="${role.roleName}"
 											th:data-member-count="${role.memberCount}"

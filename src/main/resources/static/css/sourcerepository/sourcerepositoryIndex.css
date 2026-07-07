@@ -30,7 +30,7 @@
 	background: #f9f9f9;
 	padding: 20px;
 	border-radius: 6px;
-	border-left: 4px solid #007bff;
+	border-left: 4px solid #031225;
 }
 
 .index-info-card .label {
@@ -53,17 +53,7 @@
 	flex-wrap: wrap;
 }
 
-.index-btn {
-	padding: 12px 24px;
-	border: none;
-	border-radius: 6px;
-	font-size: 14px;
-	font-weight: 600;
-	cursor: pointer;
-	text-decoration: none;
-	display: inline-block;
-	transition: all 0.3s ease;
-}
+
 
 .index-btn-primary {
 	background-color: #007bff;

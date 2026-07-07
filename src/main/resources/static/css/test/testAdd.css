@@ -293,8 +293,8 @@
 }
 
 .page-btn.active {
-    background: #2563eb;
-    border-color: #2563eb;
+    background: #031225;
+    border-color: #031225;
     color: #fff;
     font-weight: 700;
 }
@@ -359,22 +359,7 @@
     box-sizing: border-box;
 }
 
-.delete-selected-btn {
-    min-width: 50px;
-    height: 29px;
-    padding: 0 10px;
-    border: 0;
-    border-radius: 7px;
-    background: #fee2e2;
-    color: #b91c1c;
-    font-size: 12px;
-    font-weight: 700;
-    cursor: pointer;
-}
 
-.delete-selected-btn:hover {
-    background: #fecaca;
-}
 
 .btn-area {
     display: flex;
@@ -383,50 +368,6 @@
     gap: 10px;
 }
 
-.btn,
-.custom-default-btn,
-.custom-white-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    text-decoration: none;
-    cursor: pointer;
-    white-space: nowrap;
-    transition: all 0.15s ease;
-}
-
-.custom-default-btn {
-    min-width: 86px;
-    height: 38px;
-    padding: 0 16px;
-    border: 1px solid #2563eb !important;
-    border-radius: 8px;
-    background: #2563eb !important;
-    color: #fff !important;
-    font-size: 14px;
-    font-weight: 700;
-}
-
-.custom-default-btn:hover {
-    background: #1d4ed8 !important;
-    border-color: #1d4ed8 !important;
-}
-
-.custom-white-btn {
-    min-width: 86px;
-    height: 38px;
-    padding: 0 16px;
-    border: 1px solid #d1d5db !important;
-    border-radius: 8px;
-    background: #fff !important;
-    color: #374151 !important;
-    font-size: 14px;
-    font-weight: 700;
-}
-
-.custom-white-btn:hover {
-    background: #f3f4f6 !important;
-}
 
 button:disabled {
     opacity: 0.65;

@@ -269,14 +269,14 @@
 }
 
 .btn-reset {
-    border: 1px solid #2f3fae;
-    background: #2f3fae;
-    color: #fff;
+    border: 1px solid #fff;
+    background: #fff;
+    color: #000;
 }
 
 .btn-primary {
-    border: 1px solid #2f3fae;
-    background: #2f3fae;
+    border: 1px solid #031225;
+    background: #031225;
     color: #fff;
 }
 
@@ -286,7 +286,7 @@
 
 .btn-reset:hover,
 .btn-primary:hover {
-    background: #243496;
+    background: #031225;
 }
 
 /* 반응형 */
