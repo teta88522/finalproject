@@ -243,9 +243,9 @@ body {
 }
 
 .pagination a.active {
-	background-color: #007bff;
+	background-color: #031225;
 	color: white;
-	border-color: #007bff;
+	border-color: #031225;
 }
 
 .pagination li.disabled a {
