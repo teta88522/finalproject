@@ -6,6 +6,7 @@
 <head>
     <meta charset="UTF-8">
     <title>게시글 수정</title>
+    <link rel="stylesheet" th:href="@{/css/milestones/common_layout_mile.css}" />
     <link rel="stylesheet" th:href="@{/css/common-ui.css}">
     <link rel="stylesheet" th:href="@{/css/issues/issues.css}">
     <link rel="stylesheet" th:href="@{/css/notice/post_create.css}">
@@ -13,8 +14,14 @@
 </head>
 <body>
 <div layout:fragment="Content">
-    <div class="post-create-card">
-        <h1>게시글 수정</h1>
+    <div class="container-fluid board-page-wrapper">
+        <div class="board-page-panel">
+            <div class="board-page-header">
+                <div>
+                    <h3 class="board-page-title">게시글 수정</h3>
+                </div>
+            </div>
+            <div class="board-page-body">
         <form id="documentEditForm" th:action="@{/project/{projectId}/notice/PostUpdate(projectId=${projectId})}" method="post" enctype="multipart/form-data">
             <input type="hidden" name="postId" th:value="${post.postId}">
             <input type="hidden" name="boardId" th:value="${post.boardId}">
@@ -50,7 +57,7 @@
                 <label class="form-label">신규 첨부파일</label>
                 <div class="issues-file-box">
                     <div>
-                        <label for="fileInput" class="btn btn-custon-rounded-four btn-default issues-file-select">
+                        <label for="fileInput" class="btn btn-custon-rounded-four custom-white-btn issues-file-select">
                             파일 선택
                         </label> 
                         <input type="file" id="fileInput" name="files" multiple class="issues-file-input"> 
@@ -60,28 +67,68 @@
                 </div>
             </div>
             
-            <div class="btn-area">
-                <a th:href="@{/project/{projectId}/notice/post_detail(projectId=${projectId}, boardId=${boardId}, postId=${post.postId})}" class="btn-cancel">취소</a>
-                <button type="submit" class="btn-submit">등록</button>
+            <div class="board-page-footer">
+                <a th:href="@{/project/{projectId}/notice/post_detail(projectId=${projectId}, boardId=${boardId}, postId=${post.postId})}" class="btn btn-custon-rounded-four custom-white-btn">취소</a>
+                <button type="submit" class="btn btn-custon-rounded-four custom-default-btn">수정 등록</button>
             </div>
         </form>
+            </div>
+        </div>
     </div>
     
+    <!-- SweetAlert2 및 공통 다이얼로그 추가 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script th:src="@{/js/common/pf-confirm.js}"></script>
+
     <!-- 기존 파일 삭제용 인라인 스크립트 -->
     <script th:inline="javascript">
+        /*<![CDATA[*/
         function removeExistingFile(fileId) {
-            if (confirm("이 첨부파일을 삭제 목록에 추가하시겠습니까? (수정 등록 시 실제 삭제됩니다)")) {
-                const item = document.getElementById('file-item-' + fileId);
-                if (item) item.remove();
-                
-                const container = document.getElementById('deleteFilesContainer');
-                const input = document.createElement('input');
-                input.type = 'hidden';
-                input.name = 'deleteFileIds';
-                input.value = fileId;
-                container.appendChild(input);
-            }
+            window.PFDialog.confirm({
+                title: '파일 삭제 확인',
+                message: '이 첨부파일을 삭제 목록에 추가하시겠습니까? (수정 등록 시 실제 삭제됩니다)',
+                confirmText: '추가',
+                icon: 'warning'
+            }).then(function(confirmed) {
+                if (confirmed) {
+                    const item = document.getElementById('file-item-' + fileId);
+                    if (item) item.remove();
+                    
+                    const container = document.getElementById('deleteFilesContainer');
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = 'deleteFileIds';
+                    input.value = fileId;
+                    container.appendChild(input);
+                }
+            });
         }
+
+        // 게시글 수정 완료 시 SweetAlert 수정 컨펌 적용
+        document.addEventListener("DOMContentLoaded", function() {
+            const editForm = document.getElementById('documentEditForm');
+            if (editForm) {
+                editForm.addEventListener('submit', function(e) {
+                    if (editForm.dataset.pfUpdateApproved !== 'true') {
+                        e.preventDefault();
+                        window.PFDialog.confirm({
+                            title: '수정 확인',
+                            message: '게시글 수정 내용을 저장하시겠습니까?',
+                            confirmText: '저장',
+                            icon: 'question'
+                        }).then(function(confirmed) {
+                            if (confirmed) {
+                                editForm.dataset.pfUpdateApproved = 'true';
+                                const submitBtn = editForm.querySelector('button[type="submit"]');
+                                if (submitBtn) submitBtn.disabled = true;
+                                editForm.submit();
+                            }
+                        });
+                    }
+                });
+            }
+        });
+        /*]]>*/
     </script>
 </div>
 </body>

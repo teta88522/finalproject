@@ -1,14 +1,14 @@
+/* mypage-container가 mypage-page-body 안에서 동작하도록 함 */
 .mypage-container {
-    max-width: 1200px;
-    margin: 40px auto;
-    padding: 0 15px;
+    width: 100%;
     font-family: 'Inter', 'Noto Sans KR', sans-serif;
 }
 
-h2 {
+/* mypage-page-header와 스타일 연동을 위해 개량 */
+.mypage-header-title {
     font-size: 24px;
     font-weight: bold;
-    margin-bottom: 24px;
+    margin: 0;
     color: #1e293b;
 }
 
@@ -133,80 +133,8 @@ h2 {
 }
 
 /* ========================================================== */
-/* 2. 프로젝트 필터 */
+/* 2. 프로젝트 필터 (common-filter.css로 대체) */
 /* ========================================================== */
-.project-filter-section {
-    background-color: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    padding: 24px;
-    margin-bottom: 24px;
-}
-
-.filter-wrap {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr); 
-    gap: 16px;
-    align-items: flex-end;
-}
-
-.filter-item {
-    display: flex;
-    flex-direction: column;
-}
-
-.filter-item label {
-    font-size: 12px;
-    font-weight: 500;
-    color: #64748b;
-    margin-bottom: 6px;
-}
-
-.project-search-wrap {
-    display: flex;
-    gap: 6px;
-}
-
-.project-search-wrap input,
-.project-search-wrap select {
-    flex: 1;
-    height: 38px !important;
-    border-radius: 6px !important;
-    border: 1px solid #cbd5e1 !important;
-    font-size: 13px !important;
-}
-
-.date-range-wrap {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-
-.date-range-wrap input {
-    flex: 1;
-    height: 38px !important;
-    border-radius: 6px !important;
-    border: 1px solid #cbd5e1 !important;
-    font-size: 13px !important;
-}
-
-.filter-item input,
-.filter-item select {
-    height: 38px !important;
-    border-radius: 6px !important;
-    border: 1px solid #cbd5e1 !important;
-    font-size: 13px !important;
-}
-
-/* [핵심 수정] 검색과 초기화 버튼을 가로로 나란히 정렬 */
-.filter-item:last-child {
-    grid-column: span 4;
-    display: flex;
-    flex-direction: row !important; /* 세로 정렬 무시하고 가로 정렬 강제 */
-    gap: 8px;                       /* 버튼 사이 간격 생성 */
-    align-items: center;
-    margin-top: 16px;
-}
 
 /* 검색, 초기화 버튼 스타일 및 크기 완벽 통일 */
 #btnSearch, #btnFilterReset {

@@ -205,7 +205,7 @@
     WHERE V.PROJECT_ID = #{projectId}
       AND V.VERSION_ID = #{versionId}
     
-    ORDER BY NVL(M.START_DATE, DATE '9999-12-31'), I.ISSUE_ID
+    ORDER BY NVL(M.START_DATE, DATE '9999-12-31'), I.START_DATE ASC, I.ISSUE_ID
 </select>
 
 

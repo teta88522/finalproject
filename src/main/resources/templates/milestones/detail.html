@@ -6,39 +6,40 @@
     <meta charset="UTF-8">
     <title>마일스톤 상세</title>
     
+<link rel="stylesheet" th:href="@{/css/milestones/common_layout_mile.css}">
 <link rel="stylesheet" th:href="@{/css/milestones/milestone-common.css}">
 <link rel="stylesheet" th:href="@{/css/milestones/milestone-detail.css}">
 </head>
 <body>
 
-<div layout:fragment="Content" class="kiaalap-wrapper">
-    
-    <div class="kiaalap-panel">
-	<div th:if="${errorMessage != null}" class="page-message page-message-error" th:text="${errorMessage}">
-        에러 메시지 출력 영역
-    </div>
-    
-    <div th:if="${message != null}" class="page-message page-message-success" th:text="${message}">
-        성공 메시지 출력 영역
-    </div>
-        
-        <!-- ==========================================
-             1. 상단 헤더: 제목 & 프로그레스 바
-        =========================================== -->
-        <div class="header-section">
-            <div class="header-title-row">
-                <h2 th:text="${milestone.title}">마일스톤 제목</h2>
-                <!-- 상태 뱃지 -->
-                <span class="status-badge" 
-				th:classappend="${'status-' + (milestone.statusCode == 'L001' ? 'todo' : (milestone.statusCode == 'L002' ? 'inpg' : 'done'))}"
-				th:switch="${milestone.statusCode}">
-    
-    			<th:block th:case="'L001'">진행 예정</th:block>
-   				<th:block th:case="'L002'">진행 중</th:block>
-    			<th:block th:case="'L003'">완료</th:block>
-    			<th:block th:case="*">[[${milestone.statusName}]]</th:block>
-				</span>
+<div layout:fragment="Content">
+    <div class="container-fluid milestone-page-wrapper">
+        <div class="milestone-page-panel">
+            
+            <div th:if="${errorMessage != null}" class="page-message page-message-error" th:text="${errorMessage}">
+                에러 메시지 출력 영역
             </div>
+            
+            <div th:if="${message != null}" class="page-message page-message-success" th:text="${message}">
+                성공 메시지 출력 영역
+            </div>
+
+            <div class="milestone-page-header">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <h3 th:text="${milestone.title}" class="milestone-page-title">마일스톤 제목</h3>
+                    <span class="status-badge badge-pill" 
+                    th:classappend="${'status-' + (milestone.statusCode == 'L001' ? 'todo' : (milestone.statusCode == 'L002' ? 'inpg' : 'done'))}"
+                    th:switch="${milestone.statusCode}">
+        
+                    <th:block th:case="'L001'">진행 예정</th:block>
+                       <th:block th:case="'L002'">진행 중</th:block>
+                    <th:block th:case="'L003'">완료</th:block>
+                    <th:block th:case="*">[[${milestone.statusName}]]</th:block>
+                    </span>
+                </div>
+                <a th:href="@{/project/{projectId}/milestones/list(projectId=${projectId})}" class="btn btn-custon-rounded-four custom-white-btn">목록</a>
+            </div>
+            <div class="milestone-page-body">
             
             <!-- 🌟 요청사항 반영: 진행률 바 (안전하게 0% 고정) -->
 <div class="progress-wrapper">
@@ -55,7 +56,6 @@
         </div>
     </div>
 </div>
-        </div>
 
         <!-- ==========================================
              2. 본문: 좌우 7:3 분할
@@ -70,37 +70,70 @@
                 </div>
 
                 <h3 class="section-title">연결된 일감</h3>
-                <table class="issue-table">
-                    <thead>
-                        <tr>
-                            <th>일감 번호</th>
-                            <th>일감 제목</th>
-                            <th>담당자</th>
-                            <th>상태</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- 🌟 에러 방지: 타임리프 전용 #lists.isEmpty() 사용 -->
-                        <tr th:if="${not #lists.isEmpty(issues)}" th:each="issue : ${issues}">
-                            <td th:text="${issue.issueId}">IS-001</td>
-                            <td th:text="${issue.title}">일감 제목</td>
-                            <td th:text="${issue.assigneeName}">담당자</td>
-                            <td th:text="${issue.issueStatusName}">상태</td>
-                        </tr>
-                        <tr th:unless="${not #lists.isEmpty(issues)}">
-                            <td colspan="4" class="empty-row">현재 이 마일스톤에 연결된 일감이 없습니다.</td>
-                        </tr>
-                    </tbody>
-                </table>
+                <div class="milestone-detail-issue-container">
+                    <table class="issue-table">
+                        <thead>
+                            <tr>
+                                <th>일감 번호</th>
+                                <th>일감 제목</th>
+                                <th>담당자</th>
+                                <th>상태</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- 🌟 에러 방지: 타임리프 전용 #lists.isEmpty() 사용 -->
+                            <tr th:if="${not #lists.isEmpty(issues)}" th:each="issue : ${issues}">
+                                <td>
+                                    <a th:href="@{/project/{projectId}/issues/{issueId}(projectId=${projectId}, issueId=${issue.issueId})}"
+                                       th:text="${issue.displayIssueNo != null ? issue.displayIssueNo : (issue.issueNo != null ? '#' + #numbers.formatInteger(issue.issueNo, 4) : '#' + issue.issueId)}"
+                                       class="issue-link">
+                                        #0001
+                                    </a>
+                                </td>
+                                <td th:text="${issue.title}">일감 제목</td>
+                                <td th:text="${issue.assigneeName}">담당자</td>
+                                <td th:text="${issue.issueStatusName}">상태</td>
+                            </tr>
+                            <tr th:unless="${not #lists.isEmpty(issues)}">
+                                <td colspan="4" class="empty-row">현재 이 마일스톤에 연결된 일감이 없습니다.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
 
                 <!-- 🌟 요청사항 반영: 작업 내역 박스를 왼쪽 일감 밑으로 이동 -->
-                <h3 class="section-title" style="margin-top: 40px;">작업 내역</h3>
-                <div class="history-box">
-                    <div>
-                        <p style="margin-bottom: 5px; color: #555; font-weight: 500;">작업 내역 (로그)</p>
-                        <span style="font-size: 12px; color: #999;">※ 추후 연동될 로그 데이터가 표출됩니다.</span>
+                <h3 class="section-title" style="margin-top: 40px;">관련 일감 작업 내역</h3>
+                <details class="milestone-history-card" open>
+                    <summary class="milestone-history-summary">
+                        작업 내역 (이력)
+                        <strong th:text="${historyList != null ? historyList.size() + ' 건' : '0 건'}">0 건</strong>
+                    </summary>
+                    
+                    <div th:if="${historyList == null or historyList.empty}" class="milestone-empty-box">
+                        기록된 작업 내역이 없습니다.
                     </div>
-                </div>
+                    
+                    <div th:if="${historyList != null and !historyList.empty}" class="milestone-history-list">
+                        <div th:each="hist : ${historyList}" class="milestone-history-item">
+                            <div class="milestone-history-meta">
+                                <strong th:text="${hist.changedByName}">홍길동</strong>
+                                <span>님이</span>
+                                <a th:href="@{/project/{projectId}/issues/{issueId}(projectId=${projectId}, issueId=${hist.issueId})}" class="milestone-history-issue-link" th:text="${hist.title}">일감 제목</a>
+                                <span>항목을 변경했습니다.</span>
+                                <span th:text="${#dates.format(hist.changedAt, 'yyyy-MM-dd HH:mm')}">2026-07-04 10:00</span>
+                            </div>
+                            <div class="milestone-history-change">
+                                <span class="milestone-history-field" th:text="${hist.fieldName}">상태</span>
+                                <span th:text="${hist.beforeValue != null ? hist.beforeValue : '(없음)'}">전</span>
+                                <span class="milestone-history-arrow">→</span>
+                                <span th:text="${hist.afterValue != null ? hist.afterValue : '(없음)'}">후</span>
+                            </div>
+                            <div th:if="${hist.reason != null and hist.reason != ''}" class="milestone-history-reason" th:text="'사유: ' + ${hist.reason}">
+                                사유: 상태 변경
+                            </div>
+                        </div>
+                    </div>
+                </details>
             </div>
 
             <!-- [우측] 정보 요약 -->
@@ -127,55 +160,68 @@
                 </div>
             </div>
 
-        </div>
+        </div><!-- end content-grid -->
 
-        <!-- ==========================================
-             3. 하단 버튼 영역
-        =========================================== -->
-		<div class="panel-footer">
-		    <button type="button" class="btn-k btn-default" id="btnList" 
-		            th:data-url="@{/project/{id}/milestones/list(id=${projectId})}">목록으로</button>
-		            
-		    <div class="btn-group-right">
-		        <button type="button" class="btn-k btn-primary" id="btnEdit" 
-		                th:data-id="${milestone.milestoneId}"
-		                th:data-url="@{/project/{id}/milestones/update(id=${projectId})}">수정</button>
-		        
-		        <!-- 가이드라인에 맞춘 자동 컨펌 폼 구조 적용 -->
-		        <form th:action="@{/project/{id}/milestones/delete(id=${projectId})}"
-		              method="post"
-		              class="inline-form js-pf-confirm-submit"
-		              data-confirm-title="삭제 확인"
-		              data-confirm-message="정말 이 마일스톤을 삭제하시겠습니까?"
-		              data-confirm-confirm-text="삭제"
-		              data-confirm-icon="warning"
-		              style="display: inline-block;">
-		            <input type="hidden" name="milestoneId" th:value="${milestone.milestoneId}">
-		            <button type="submit" class="btn-k btn-danger">
-		                삭제
-		            </button>
-		        </form>
-		    </div>
-		</div>
+            </div><!-- end of milestone-page-body -->
 
-    </div>
+            <!-- 하단 버튼 영역 -->
+            <div style="display: flex; justify-content: flex-end; gap: 10px; padding-top: 16px; margin-top: 20px;">
+                <!-- -- 권한 처리 -->
+                <a th:if="${!isRoadmapCompleted and canUpdate}" th:href="@{/project/{projectId}/milestones/update(projectId=${projectId}, id=${milestone.milestoneId})}" 
+                   class="btn btn-custon-rounded-four custom-default-btn">수정</a>
+                
+                <form th:if="${!isRoadmapCompleted and canDelete}" th:action="@{/project/{id}/milestones/delete(id=${projectId})}"
+                      method="post"
+                      id="deleteMilestoneForm"
+                      style="display: inline-block;">
+                    <input type="hidden" name="milestoneId" th:value="${milestone.milestoneId}">
+                    <button type="button" id="btnDeleteMilestone" class="btn btn-custon-rounded-four btn-danger custom-btn">
+                        삭제
+                    </button>
+                </form>
+                <!-- -- 권한 처리 끝 -->
+            </div>
+
+        </div><!-- end of milestone-page-panel -->
+    </div><!-- end of milestone-page-wrapper -->
 <!-- SweetAlert2 및 공통 다이얼로그 추가 -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script th:src="@{/js/common/pf-confirm.js}"></script>
 <script th:src="@{/js/milestones/milestone-detail.js}"></script>
-<script>
-    // 화면에 .page-message 클래스를 가진 요소가 있다면
-    const messages = document.querySelectorAll('.page-message');
-    if (messages.length > 0) {
-        // 3초(3000ms) 뒤에 실행
-        setTimeout(function() {
-            messages.forEach(msg => {
-                msg.style.transition = 'opacity 0.5s ease'; // 스르륵 효과
-                msg.style.opacity = '0'; // 투명하게 만듦
-                setTimeout(() => msg.remove(), 500); // 완전히 삭제
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    document.addEventListener('DOMContentLoaded', function() {
+        // 마일스톤 삭제 시 SweetAlert 컨펌 처리
+        var btnDeleteMilestone = document.getElementById('btnDeleteMilestone');
+        if (btnDeleteMilestone) {
+            btnDeleteMilestone.addEventListener('click', function() {
+                window.PFDialog.confirm({
+                    title: '삭제 확인',
+                    message: '정말 이 마일스톤을 삭제하시겠습니까?\n삭제 시 복구할 수 없습니다.',
+                    confirmText: '삭제',
+                    icon: 'warning'
+                }).then(function(confirmed) {
+                    if (confirmed) {
+                        btnDeleteMilestone.disabled = true;
+                        document.getElementById('deleteMilestoneForm').submit();
+                    }
+                });
             });
-        }, 3000);
-    }
+        }
+
+        // 화면에 .page-message 클래스를 가진 요소가 있다면
+        var messages = document.querySelectorAll('.page-message');
+        if (messages.length > 0) {
+            setTimeout(function() {
+                messages.forEach(function(msg) {
+                    msg.style.transition = 'opacity 0.5s ease';
+                    msg.style.opacity = '0';
+                    setTimeout(function() { msg.remove(); }, 500);
+                });
+            }, 3000);
+        }
+    });
+    /*]]>*/
 </script>
 </div>
 

@@ -117,7 +117,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // 데이터가 로드되고 파싱된 직후에 드롭다운 리스트 자동 생성 및 시작일 기준 정렬
     gantt.attachEvent("onParse", function() {
         populateFilterDropdowns();
-        gantt.sort("start_date", true); 
+        gantt.sort("start_date", false); 
     });
 
     // [기술적 이유] 최초 데이터 로드 시점에 '오늘' 날짜가 속한 가로 픽셀 좌표(x)를 역계산하여,
@@ -206,6 +206,113 @@ document.addEventListener("DOMContentLoaded", function () {
                 inputStart.value = formatDate(currStart);
                 filterGantt(); // 동기화 및 렌더링 호출
             }
+        });
+    }
+
+    // --- [일/주/월 스케일 동적 전환 로직 추가] ---
+    const btnScaleDay = document.getElementById("btnScaleDay");
+    const btnScaleWeek = document.getElementById("btnScaleWeek");
+    const btnScaleMonth = document.getElementById("btnScaleMonth");
+    const scaleButtons = [btnScaleDay, btnScaleWeek, btnScaleMonth];
+
+    function setScaleActive(activeBtn) {
+        scaleButtons.forEach(btn => {
+            if (btn) {
+                btn.classList.remove("active-scale");
+                btn.style.fontWeight = "normal";
+                btn.style.backgroundColor = "";
+                btn.style.color = "";
+                btn.style.borderColor = "";
+            }
+        });
+        if (activeBtn) {
+            activeBtn.classList.add("active-scale");
+            activeBtn.style.fontWeight = "bold";
+            activeBtn.style.backgroundColor = "#006DF0";
+            activeBtn.style.color = "#fff";
+            activeBtn.style.borderColor = "#006DF0";
+        }
+    }
+
+    if (btnScaleDay) {
+        btnScaleDay.addEventListener("click", function() {
+            setScaleActive(btnScaleDay);
+            
+            // 📅 날짜 검색 필터 자동 연동: 오늘 ~ 오늘 + 15일
+            const start = new Date();
+            const end = new Date();
+            end.setDate(end.getDate() + 15);
+            if (inputStart && inputEnd) {
+                inputStart.value = formatDate(start);
+                inputEnd.value = formatDate(end);
+            }
+            
+            gantt.config.scales = [
+                { unit: "month", step: 1, format: "%Y년 %m월" }, 
+                { 
+                    unit: "day", 
+                    step: 1, 
+                    format: function(date) {
+                        const days = ["일", "월", "화", "수", "목", "금", "토"];
+                        const dayName = days[date.getDay()];
+                        const dayNumber = gantt.date.date_to_str("%d")(date); 
+                        return dayNumber + " (" + dayName + ")"; 
+                    } 
+                }
+            ];
+            gantt.config.scale_height = 50;
+            filterGantt(); // 날짜 필터링 범위 동기화 및 렌더링 호출
+        });
+    }
+
+    if (btnScaleWeek) {
+        btnScaleWeek.addEventListener("click", function() {
+            setScaleActive(btnScaleWeek);
+            
+            // 📅 날짜 검색 필터 자동 연동: 오늘 ~ 오늘 + 45일 (1.5개월)
+            const start = new Date();
+            const end = new Date();
+            end.setDate(end.getDate() + 45);
+            if (inputStart && inputEnd) {
+                inputStart.value = formatDate(start);
+                inputEnd.value = formatDate(end);
+            }
+            
+            gantt.config.scales = [
+                { unit: "month", step: 1, format: "%Y년 %m월" }, 
+                { 
+                    unit: "week", 
+                    step: 1, 
+                    format: function(date) {
+                        const dateToStr = gantt.date.date_to_str("%W");
+                        return dateToStr(date) + "주차";
+                    } 
+                }
+            ];
+            gantt.config.scale_height = 50;
+            filterGantt(); // 날짜 필터링 범위 동기화 및 렌더링 호출
+        });
+    }
+
+    if (btnScaleMonth) {
+        btnScaleMonth.addEventListener("click", function() {
+            setScaleActive(btnScaleMonth);
+            
+            // 📅 날짜 검색 필터 자동 연동: 오늘 ~ 오늘 + 3개월
+            const start = new Date();
+            const end = new Date();
+            end.setMonth(end.getMonth() + 3);
+            if (inputStart && inputEnd) {
+                inputStart.value = formatDate(start);
+                inputEnd.value = formatDate(end);
+            }
+            
+            gantt.config.scales = [
+                { unit: "year", step: 1, format: "%Y년" }, 
+                { unit: "month", step: 1, format: "%m월" }
+            ];
+            gantt.config.scale_height = 50;
+            filterGantt(); // 날짜 필터링 범위 동기화 및 렌더링 호출
         });
     }
 

@@ -41,7 +41,7 @@
     display: grid; 
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
     gap: 20px; 
-    background-color: #fcfcfc; 
+    background-color: #ffffff; 
     padding: 20px; 
     border-radius: 4px; 
     border: 0px solid #e5e6e7; 
@@ -75,29 +75,30 @@
 }
 
 .roadmap-item { 
-    background-color: #ffffff; border: 1px solid #e5e6e7; 
-    border-radius: 4px; margin-bottom: 20px; overflow: hidden; 
+    background-color: #ffffff; border: 1px solid #e2e8f0; 
+    border-radius: 8px; margin-bottom: 20px; overflow: hidden; 
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .roadmap-item-header {
     display: flex; justify-content: space-between; align-items: center;
-    padding: 18px 25px; background-color: #fdfdfd; cursor: pointer;
+    padding: 18px 25px; background-color: #ffffff; cursor: pointer;
     border-bottom: 1px solid transparent; transition: background 0.2s;
 }
-.roadmap-item-header:hover { background-color: #f5f7f9; }
-.roadmap-item.open .roadmap-item-header { border-bottom: 1px solid #eee; background-color: #fff; }
+.roadmap-item-header:hover { background-color: #f8fafc; }
+.roadmap-item.open .roadmap-item-header { border-bottom: 1px solid #e2e8f0; background-color: #fff; }
 
 .title-area { display: flex; align-items: center; gap: 12px; }
 .toggle-icon { font-size: 14px; color: #888; transition: transform 0.3s; width: 15px; }
 .roadmap-item.open .toggle-icon { transform: rotate(-180deg); }
 
 .badge-default { 
-    background: #fff3cd; border: 1px solid #ffeeba; color: #856404; 
+    background: #fef3c7; border: 1px solid #fde68a; color: #92400e; 
     font-size: 12px; padding: 3px 8px; border-radius: 12px; font-weight: bold; 
 }
 
-.title-link { text-decoration: none; color: #222; }
-.title-link:hover, .hover-primary:hover { color: #006df0; text-decoration: underline; }
+.title-link { text-decoration: none; color: #1e293b; font-weight: 600; }
+.title-link:hover, .hover-primary:hover { color: #4f46e5; text-decoration: underline; }
 
 /* =========================================
    4. 마일스톤 블록 (2단)
@@ -106,36 +107,36 @@
 
 .milestone-block {
     margin-bottom: 25px;
-    border-left: 3px solid #006df0; 
+    border-left: 3px solid #6366f1; /* 남색 -> Indigo 테마 통일 */
     padding-left: 20px; /* 마일스톤 안쪽 여백 넓게 */
 }
 .milestone-block:last-child { margin-bottom: 0; }
 
 .milestone-sub-header {
     display: flex; justify-content: space-between; align-items: center;
-    background-color: #f9f9f9; padding: 15px 20px; border-radius: 4px;
-    border: 1px solid #eee;
+    background-color: #f8fafc; padding: 15px 20px; border-radius: 6px;
+    border: 1px solid #e2e8f0;
     margin-bottom: 15px;
 }
 .m-title-area { display: flex; align-items: center; font-size: 15px; font-weight: 600; gap: 8px;}
-.m-date-area { font-size: 13px; color: #666; }
+.m-date-area { font-size: 13px; color: #64748b; }
 
 /* =========================================
    5. 하위 일감 리스트 (3단: issue-info-wrap 기준)
 ========================================= */
 .issue-list { 
-    border: 1px solid #e5e6e7; 
-    border-radius: 4px; 
+    border: 1px solid #e2e8f0; 
+    border-radius: 6px; 
     background: #fff; 
 }
 
 .issue-item { 
     display: flex; justify-content: space-between; align-items: center; 
     padding: 15px 20px; /* 일감 위아래 여백 확보 */
-    border-bottom: 1px solid #f1f1f1; 
+    border-bottom: 1px solid #f1f5f9; 
 }
 .issue-item:last-child { border-bottom: none; }
-.issue-item:hover { background-color: #fcfcfc; }
+.issue-item:hover { background-color: #f8fafc; }
 
 /* 💡 작성하신 HTML 구조에 맞춘 좌측(뱃지+제목) 레이아웃 */
 .issue-info-wrap { 
@@ -144,7 +145,7 @@
     gap: 12px; /* 뱃지와 제목 사이 간격 */
 }
 .issue-title { 
-    font-size: 14px; color: #333; font-weight: 500; 
+    font-size: 14px; color: #334155; font-weight: 500; 
 }
 
 /* 💡 작성하신 HTML 구조에 맞춘 우측(담당자, 날짜, 진행률) 레이아웃 */
@@ -152,34 +153,43 @@
     display: flex; 
     align-items: center; 
     gap: 20px; /* 각 정보 사이의 넉넉한 간격 */
-    font-size: 13px; color: #666; 
+    font-size: 13px; color: #64748b; 
 }
-.meta-item i { margin-right: 5px; color: #aaa; }
-.progress-rate { font-weight: bold; color: #006df0; min-width: 35px; text-align: right; }
+.meta-item i { margin-right: 5px; color: #cbd5e1; }
+.progress-rate { font-weight: bold; color: #6366f1; min-width: 35px; text-align: right; }
 
 /* =========================================
    6. 상태 뱃지 공통 스타일 (둥근 알약 통일)
 ========================================= */
 /* 로드맵, 마일스톤, 일감 뱃지 모두 적용 */
 .status-badge, .dynamic-badge { 
-    padding: 4px 10px; 
-    border-radius: 12px !important; /* 강제 둥근 모서리 */
-    color: #fff; 
+    padding: 4px 12px; 
+    border-radius: 20px !important; /* 강제 둥근 모서리 */
     font-size: 12px; 
     font-weight: 600; 
     min-width: 75px; 
     text-align: center; 
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
 
 /* 마일스톤 고정 색상 */
-.status-l001 { background-color: #999999 !important; } /* 진행예정 (회색) */
-.status-l002 { background-color: #006DF0 !important; } /* 진행중 (파랑) */
-.status-l003 { background-color: #65b12d !important; } /* 완료 (빨강) */
-
-.status-k001 { background-color: #999999 !important; } /* 진행예정 - 회색 */
-.status-k002 { background-color: #006DF0 !important; } /* 진행중 - 파란색 */
-.status-k003 { background-color: #65b12d !important; } /* 완료 - 초록색 */
+.status-l001, .status-k001 {
+    background-color: #f1f5f9 !important;
+    color: #64748b !important;
+    border: 1px solid #cbd5e1;
+}
+.status-l002, .status-k002 {
+    background-color: #e0e7ff !important;
+    color: #4f46e5 !important;
+    border: 1px solid #c7d2fe;
+}
+.status-l003, .status-k003 {
+    background-color: #dcfce7 !important;
+    color: #166534 !important;
+    border: 1px solid #bbf7d0;
+}
 
 /* ㄴ 모양 스타일 */
 .tree-branch {

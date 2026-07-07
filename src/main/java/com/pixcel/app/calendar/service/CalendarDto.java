@@ -11,6 +11,8 @@ import lombok.Setter;
 @AllArgsConstructor
 public class CalendarDto {
 	
+	private String issueId;
+	
 	private String projectId;
 	
     private String title;

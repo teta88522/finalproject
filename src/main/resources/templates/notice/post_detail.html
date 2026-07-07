@@ -5,55 +5,90 @@
       layout:decorate="~{common/layouts/default_layout}">
 <head>
     <meta charset="UTF-8">
+    <title>글 상세</title>
+    <link rel="stylesheet" th:href="@{/css/milestones/common_layout_mile.css}" />
     <link rel="stylesheet" th:href="@{/css/notice/post_detail.css}">
+    <!-- SweetAlert2 및 공통 다이얼로그: head에서 먼저 로드하여 타이밍 문제 완전 해결 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script th:src="@{/js/common/pf-confirm.js}"></script>
 </head>
 <body>
 <div layout:fragment="Content">
-    <div class="post-detail-wrapper">
-        
-        <div class="post-card">
-            <!-- 1. 제목 및 메타 데이터 (작성자 줄에 게시글 제목 융합 정렬) -->
-            <div class="post-header">
-                <h1 class="post-board-title" th:text="${boardName}">00 게시판</h1>
-                <div class="post-meta-row">
-                    <span class="meta-item post-title-meta" th:text="${post.title}">게시글 제목</span>
-                    <div class="meta-info-group">
-                        <span class="meta-item">작성자: <strong th:text="${post.userName}">홍길동</strong></span>
-                        <span class="meta-item">등록일: <strong th:text="${#temporals.format(post.createdAt, 'yyyy-MM-dd')}">2026-07-01</strong></span>
-                    </div>
+    <div class="container-fluid board-page-wrapper post-detail-wrapper">
+        <div class="board-page-panel post-detail-panel">
+            <div class="board-page-header">
+                <div>
+                    <h3 class="board-page-title post-board-title" th:text="${boardName}">00 게시판</h3>
                 </div>
             </div>
-            
-            <!-- 2. 본문 내용 (가두는 회색 영역을 완전히 제거하고 여백 확장) -->
-            <div class="post-body" th:text="${post.content}">
-                본문 내용이 여기에 표시됩니다.
-            </div>
-            
-            <!-- 3. 첨부파일 영역 (파일명 클릭 다운로드 방식) -->
-            <div class="file-section" th:if="${files != null and not #lists.isEmpty(files)}">
-                <h3>첨부파일</h3>
-                <ul class="issues-detail-file-list">
-                    <li class="issues-file-item" th:each="file : ${files}">
-                        <div class="issues-file-name-wrapper">
-                            <span class="issues-file-icon">📎</span>
-                            <!-- 파일명 텍스트 자체를 다운로드 링크로 감싸기 -->
-                            <a th:href="@{/project/{projectId}/notice/files/{fileId}/download(projectId=${projectId}, fileId=${file.fileId})}" class="issues-file-download-link">
-                                <span class="issues-file-name-text" th:text="${file.originalName}">파일명.zip</span>
-                            </a>
-                            <span class="issues-file-version" th:text="|v${file.fileVersion}|">v1</span>
+            <div class="board-page-body">
+
+                <!-- 1. 제목 및 메타 데이터 -->
+                <div class="post-header">
+                    <div class="post-meta-row">
+                        <span class="meta-item post-title-meta" th:text="${post.title}">게시글 제목</span>
+                        <div class="meta-info-group">
+                            <span class="meta-item">작성자: <strong th:text="${post.userName}">홍길동</strong></span>
+                            <span class="meta-item">등록일: <strong th:text="${#temporals.format(post.createdAt, 'yyyy-MM-dd')}">2026-07-01</strong></span>
                         </div>
-                    </li>
-                </ul>
-            </div>
-        </div>
+                    </div>
+                </div>
+
+                <!-- 2. 본문 내용 -->
+                <div class="post-body" th:text="${post.content}">
+                    본문 내용이 여기에 표시됩니다.
+                </div>
+
+                <!-- 3. 첨부파일 영역 -->
+                <div class="file-section" th:if="${files != null and not #lists.isEmpty(files)}">
+                    <h3>첨부파일</h3>
+                    <ul class="issues-detail-file-list">
+                        <li class="issues-file-item" th:each="file : ${files}">
+                            <div class="issues-file-name-wrapper">
+                                <span class="issues-file-icon">📎</span>
+                                <a th:href="@{/project/{projectId}/notice/files/{fileId}/download(projectId=${projectId}, fileId=${file.fileId})}" class="issues-file-download-link">
+                                    <span class="issues-file-name-text" th:text="${file.originalName}">파일명.zip</span>
+                                </a>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+            </div><!-- board-page-body end -->
+        </div><!-- board-page-panel end -->
 
         <!-- 4. 버튼 영역 -->
-        <div class="button-area">
-            <a th:href="@{/project/{projectId}/notice/PostDelete(projectId=${projectId}, boardId=${boardId}, postId=${post.postId})}" class="btn-delete" onclick="return confirm('정말로 삭제하시겠습니까?')">삭제</a>
-            <a th:href="@{/project/{projectId}/notice/BoardDetail(projectId=${projectId}, boardId=${post.boardId})}" class="btn-list">목록</a>
-            <a th:href="@{/project/{projectId}/notice/PostUpdate(projectId=${projectId}, boardId=${post.boardId}, postId=${post.postId})}" class="btn-edit">수정</a>
+        <div class="board-page-footer">
+            <!-- -- 권한 처리 -->
+            <button th:if="${canDelete}" type="button"
+                    class="btn btn-custon-rounded-four btn-danger custom-btn"
+                    th:attr="onclick='deleteBoardPost(\'' + ${projectId} + '\',\'' + ${boardId} + '\',\'' + ${post.postId} + '\')'">삭제</button>
+            <!-- -- 권한 처리 끝 -->
+            <a th:href="@{/project/{projectId}/notice/BoardDetail(projectId=${projectId}, boardId=${post.boardId})}"
+               class="btn btn-custon-rounded-four custom-white-btn">목록</a>
+            <!-- -- 권한 처리 -->
+            <a th:if="${canEdit}" th:href="@{/project/{projectId}/notice/PostUpdate(projectId=${projectId}, boardId=${post.boardId}, postId=${post.postId})}"
+               class="btn btn-custon-rounded-four custom-default-btn">수정</a>
+            <!-- -- 권한 처리 끝 -->
         </div>
-    </div>
+    </div><!-- board-page-wrapper end -->
+
+    <script th:inline="javascript">
+    /*<![CDATA[*/
+    function deleteBoardPost(projectId, boardId, postId) {
+        window.PFDialog.confirm({
+            title: '삭제 확인',
+            message: '정말로 이 게시글을 삭제하시겠습니까?\n삭제 시 복구할 수 없습니다.',
+            confirmText: '삭제',
+            icon: 'warning'
+        }).then(function(confirmed) {
+            if (confirmed) {
+                location.href = '/project/' + projectId + '/notice/PostDelete?boardId=' + boardId + '&postId=' + postId;
+            }
+        });
+    }
+    /*]]>*/
+    </script>
 </div>
 </body>
 </html>

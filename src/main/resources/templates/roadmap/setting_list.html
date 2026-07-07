@@ -7,24 +7,32 @@
   <head>
     <meta charset="UTF-8" />
     <title>로드맵(버전) 목록</title>
+    <link rel="stylesheet" th:href="@{/css/milestones/common_layout_mile.css}" />
     <link rel="stylesheet" th:href="@{/css/milestones/milestone-common.css}" />
     <link rel="stylesheet" th:href="@{/css/roadmap/setting-list.css}" />
   </head>
   <body>
     <div layout:fragment="Content">
-      <div class="kiaalap-wrapper milestone-container">
-        <script th:if="${errorMessage}">
-          alert("[[${errorMessage}]]");
-        </script>
-        <div class="list-header-controls">
-          <a th:href="@{/project/{projectId}/roadmap/setting_create(projectId=${projectId})}" class="btn btn-primary">
-            ➕ 버전 추가
-          </a>
-
-          <button type="button" id="btnToggleCompleted" class="btn btn-default">
-            🔒 완료된 버전 닫기
-          </button>
-        </div>
+      <script th:if="${errorMessage}">
+        alert("[[${errorMessage}]]");
+      </script>
+      <div class="container-fluid roadmap-page-wrapper">
+        <div class="roadmap-page-panel">
+          <div class="roadmap-page-header">
+            <div>
+              <h3 class="roadmap-page-title">로드맵 설정</h3>
+              <p class="roadmap-page-subtitle">프로젝트 내의 로드맵(버전) 정보를 관리합니다.</p>
+            </div>
+            <div class="list-header-controls" style="display: flex; gap: 8px;">
+              <a th:href="@{/project/{projectId}/roadmap/setting_create(projectId=${projectId})}" class="btn btn-custon-rounded-four custom-default-btn">
+                ➕ 버전 추가
+              </a>
+              <button type="button" id="btnToggleCompleted" class="btn btn-custon-rounded-four custom-white-btn">
+                🔒 완료된 버전 닫기
+              </button>
+            </div>
+          </div>
+          <div class="roadmap-page-body">
 
         <div class="kiaalap-panel filter-panel">
           <div class="filter-group">
@@ -126,6 +134,7 @@
             </tbody>
           </table>
         </div>
+      </div>
       </div>
       <script th:src="@{/js/roadmap/setting-list.js}"></script>
     </div>

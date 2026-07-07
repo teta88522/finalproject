@@ -53,18 +53,23 @@ public class WikiController {
         model.addAttribute("wikiList", wikiService.getWikiList(projectId));
         return "wiki/wikiList";
     }
-
-    // 위키 읽기
+    
+ // 위키 목록 JSON API (셀렉트용)
+    @GetMapping("/listJson")
+    @ResponseBody
+    public ResponseEntity<?> getWikiListJson(@PathVariable String projectId) {
+        return ResponseEntity.ok(wikiService.getWikiList(projectId));
+    }
+    
     @GetMapping("/{wikiId}")
     public String wikiView(@PathVariable String projectId,
                            @PathVariable String wikiId,
                            Model model) {
         WikiPageVO page = wikiService.getWikiPage(wikiId);
-        WikiVersionVO version = wikiService.getLatestVersion(wikiId);
+        // version은 JS에서 API로 가져오므로 제거
         model.addAttribute("projectId", projectId);
         model.addAttribute("wikiId", wikiId);
         model.addAttribute("page", page);
-        model.addAttribute("version", version);
         return "wiki/wikiView";
     }
 
@@ -119,7 +124,24 @@ public class WikiController {
         wikiService.insertWikiPage(vo);
         return "redirect:/project/" + projectId +"/wiki/list";
     }
-
+    
+ // JS용 JSON API
+    @PostMapping("/createJson")
+    @ResponseBody
+    public ResponseEntity<?> createWikiJson(@RequestBody WikiPageVO vo,
+                                             @PathVariable String projectId,
+                                             @CookieValue(value="userId", required=false) String userId) {
+        String wikiId = "WIKI_PAGE_"
+                      + new java.text.SimpleDateFormat("yyMM").format(new java.util.Date())
+                      + "_" + String.format("%04d", (int)(Math.random() * 9999));
+        vo.setWikiId(wikiId);
+        vo.setProjectId(projectId);
+        vo.setCurrentVersionNo("v1");
+        vo.setCreatedBy(userId);
+        wikiService.insertWikiPage(vo);
+        return ResponseEntity.ok(vo);
+    }
+    
     // 버전 목록
     @GetMapping("/versions/{wikiId}")
     @ResponseBody
@@ -198,6 +220,11 @@ public class WikiController {
     public ResponseEntity<?> findByTitle(@RequestParam String title,
                                          @PathVariable String projectId) {
         WikiPageVO page = wikiService.getWikiByTitle(title, projectId);
+        if (page == null) {
+            return ResponseEntity.ok(new java.util.HashMap<>());
+        }
         return ResponseEntity.ok(page);
     }
+    
+    
 }

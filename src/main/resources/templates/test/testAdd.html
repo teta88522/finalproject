@@ -25,6 +25,7 @@
 
         <form th:action="@{/project/{projectId}/tests/add(projectId=${projectId})}"
               method="post"
+              enctype="multipart/form-data"
               th:object="${testVO}"
               id="testCreateForm">
 
@@ -37,7 +38,7 @@
                 <div class="basic-form">
 
                     <div class="form-row first-row">
-                        <label for="title">테스트 명</label>
+                        <label for="title">테스트 명 <span class="required-star">*</span></label>
                         <input type="text"
                                id="title"
                                th:field="*{title}"
@@ -48,7 +49,7 @@
 
                     <div class="form-row grid-row">
 
-                        <label for="assigneeId">담당자</label>
+                        <label for="assigneeId">담당자 <span class="required-star">*</span></label>
                         <select id="assigneeId"
                                 th:field="*{assigneeId}"
                                 required>
@@ -60,7 +61,7 @@
                             </option>
                         </select>
 
-                        <label for="priorityCode">우선순위</label>
+                        <label for="priorityCode">우선순위 <span class="required-star">*</span></label>
                         <select id="priorityCode"
                                 th:field="*{priorityCode}"
                                 required>
@@ -71,7 +72,7 @@
                     </div>
 
                     <div class="form-row grid-row">
-                        <label for="versionId">버전</label>
+                        <label for="versionId">버전 <span class="required-star">*</span></label>
                         <select id="versionId"
                                 th:field="*{versionId}"
                                 required>
@@ -83,7 +84,7 @@
                             </option>
                         </select>
 
-                        <label for="teamName">그룹</label>
+                        <label for="teamName">그룹 <span class="required-star">*</span></label>
                         <select id="teamName"
                                 th:field="*{teamName}"
                                 required>
@@ -94,6 +95,21 @@
                                 그룹명
                             </option>
                         </select>
+                    </div>
+
+                    <div class="form-row file-row">
+                        <label for="testFiles">첨부파일</label>
+
+                        <div class="file-upload-wrap">
+                            <input type="file"
+                                   id="testFiles"
+                                   name="testFiles"
+                                   multiple>
+
+                            <div id="fileInfoList" class="file-info-list">
+                                <div class="file-empty-text">선택된 파일이 없습니다.</div>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- TEST 테이블 NOT NULL 기본값 -->
@@ -371,12 +387,66 @@
         const summaryTeam = document.getElementById('summaryTeam');
         const summaryAssignee = document.getElementById('summaryAssignee');
 
+        const testFiles = document.getElementById('testFiles');
+        const fileInfoList = document.getElementById('fileInfoList');
+
         const testCreateForm = document.getElementById('testCreateForm');
 
         function showAlert(message, title, icon) {
             window.PFDialog.alert(message, {
                 title: title || '알림',
                 icon: icon || 'info'
+            });
+        }
+
+        function escapeHtml(value) {
+            if (value === null || value === undefined) {
+                return '';
+            }
+
+            return String(value)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        function formatFileSize(size) {
+            if (size === 0) {
+                return '0 B';
+            }
+
+            const unitList = ['B', 'KB', 'MB', 'GB'];
+            const unitIndex = Math.floor(Math.log(size) / Math.log(1024));
+            const fixedSize = size / Math.pow(1024, unitIndex);
+
+            return fixedSize.toFixed(unitIndex === 0 ? 0 : 1) + ' ' + unitList[unitIndex];
+        }
+
+        function renderSelectedFiles() {
+            if (!fileInfoList || !testFiles) {
+                return;
+            }
+
+            const files = testFiles.files;
+
+            fileInfoList.innerHTML = '';
+
+            if (files.length === 0) {
+                fileInfoList.innerHTML = '<div class="file-empty-text">선택된 파일이 없습니다.</div>';
+                return;
+            }
+
+            Array.from(files).forEach(function (file) {
+                const fileItem = document.createElement('div');
+                fileItem.className = 'file-info-item';
+
+                fileItem.innerHTML =
+                    '<span class="file-name">' + escapeHtml(file.name) + '</span>' +
+                    '<span class="file-size">' + formatFileSize(file.size) + '</span>';
+
+                fileInfoList.appendChild(fileItem);
             });
         }
 
@@ -518,11 +588,11 @@
                     const tr = document.createElement('tr');
 
                     tr.innerHTML =
-                        '<td title="' + title + '">' + title + '</td>' +
-                        '<td title="' + type + '">' + type + '</td>' +
-                        '<td class="' + getPriorityClass(priority) + '" title="' + priority + '">' + priority + '</td>' +
-                        '<td title="' + expected + '">' + expected + '</td>' +
-                        '<td><button type="button" class="delete-selected-btn" data-case-id="' + caseId + '">삭제</button></td>';
+                        '<td title="' + escapeHtml(title) + '">' + escapeHtml(title) + '</td>' +
+                        '<td title="' + escapeHtml(type) + '">' + escapeHtml(type) + '</td>' +
+                        '<td class="' + getPriorityClass(priority) + '" title="' + escapeHtml(priority) + '">' + escapeHtml(priority) + '</td>' +
+                        '<td title="' + escapeHtml(expected) + '">' + escapeHtml(expected) + '</td>' +
+                        '<td><button type="button" class="delete-selected-btn" data-case-id="' + escapeHtml(caseId) + '">삭제</button></td>';
 
                     selectedCaseBody.appendChild(tr);
                 });
@@ -594,6 +664,10 @@
             });
         }
 
+        if (testFiles) {
+            testFiles.addEventListener('change', renderSelectedFiles);
+        }
+
         caseChecks.forEach(function (checkbox) {
             checkbox.addEventListener('change', function () {
                 if (checkbox.checked) {
@@ -651,9 +725,12 @@
         syncCurrentPageCheckboxes();
         updateSelectedTable();
         updateSummaryText();
+        renderSelectedFiles();
     });
     </script>
 
+</div>
+</div>
 </div>
 </body>
 </html>

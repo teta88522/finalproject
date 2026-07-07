@@ -3,7 +3,9 @@ package com.pixcel.app.roadmap.service.impl;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.pixcel.app.issues.service.IssuesVO;
 import com.pixcel.app.milestones.service.MilestonesVO;
 import com.pixcel.app.roadmap.mapper.RoadmapMapper;
 import com.pixcel.app.roadmap.service.RoadmapService;
@@ -69,7 +71,43 @@ public class RoadmapServicelmpl implements RoadmapService {
 	}
 	
 	@Override
+	@Transactional
 	public int updateCompletion(String versionId, String projectId) {
+		// [안전장치] 연결된 일감이 없거나 모든 일감의 평균 진행률이 100%가 아닌 경우 로드맵 완료(k003)를 할 수 없게 차단
+		List<MilestonesVO> milestoneList = roadmapMapper.getRoadmapMilestones(projectId, versionId);
+		
+		int totalIssues = 0;
+		int totalProgressSum = 0;
+		
+		if (milestoneList != null) {
+			for (MilestonesVO milestone : milestoneList) {
+				// [안전장치] 완료되지 않은 마일스톤이 존재한다면 로드맵 완료를 차단
+				if (milestone.getMilestoneId() != null && !milestone.getMilestoneId().startsWith("UNASSIGNED_")) {
+					if (!"L003".equals(milestone.getStatusCode())) {
+						throw new IllegalArgumentException("완료되지 않은 마일스톤이 존재하여 로드맵을 완료할 수 없습니다. (미완료 마일스톤: " + milestone.getTitle() + ")");
+					}
+				}
+				
+				if (milestone.getIssueList() != null) {
+					for (IssuesVO issue : milestone.getIssueList()) {
+						if (issue.getIssueId() != null) { // 빈 객체 방지
+							totalIssues++;
+							totalProgressSum += (issue.getProgressRate() != null ? issue.getProgressRate() : 0);
+						}
+					}
+				}
+			}
+		}
+		
+		if (totalIssues == 0) {
+			throw new IllegalArgumentException("연결된 일감이 없는 로드맵은 완료할 수 없습니다.");
+		}
+		
+		int avgProgress = Math.round((float) totalProgressSum / totalIssues);
+		if (avgProgress < 100) {
+			throw new IllegalArgumentException("모든 일감의 평균 진행률이 100%여야 로드맵을 완료할 수 있습니다. (현재 평균 진행률: " + avgProgress + "%)");
+		}
+		
 		return roadmapMapper.updateCompletion(versionId, projectId);
 	}
 }

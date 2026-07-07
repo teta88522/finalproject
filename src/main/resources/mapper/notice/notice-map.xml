@@ -13,22 +13,34 @@
                 p.CREATED_AT AS createdAt,
                 p.CREATED_BY AS createdBy,
                 p.VIEW_COUNT AS viewCount,
-                u.USER_NAME AS userName  <!-- USERS 테이블에서 이름 가져오기 -->
+                u.USER_NAME AS userName
             FROM POST p
-            LEFT JOIN USERS u ON p.CREATED_BY = u.USER_ID <!-- 테이블 조인 -->
+            LEFT JOIN USERS u ON p.CREATED_BY = u.USER_ID
             WHERE p.BOARD_ID = #{boardId}
+            <if test="searchDTO.startDate != null and searchDTO.startDate != ''">
+                AND TRUNC(p.CREATED_AT) >= TO_DATE(#{searchDTO.startDate}, 'YYYY-MM-DD')
+            </if>
+            <if test="searchDTO.endDate != null and searchDTO.endDate != ''">
+                AND TRUNC(p.CREATED_AT) &lt;= TO_DATE(#{searchDTO.endDate}, 'YYYY-MM-DD')
+            </if>
             <if test="searchDTO.keyword != null and searchDTO.keyword != ''">
                 <choose>
                     <when test="searchDTO.searchType == 'title'">
                         AND p.TITLE LIKE '%' || #{searchDTO.keyword} || '%'
                     </when>
                     <when test="searchDTO.searchType == 'author'">
-                        <!-- 아이디가 아닌 작성자 이름으로 검색되도록 변경 -->
                         AND u.USER_NAME LIKE '%' || #{searchDTO.keyword} || '%'
                     </when>
                 </choose>
             </if>
-            ORDER BY p.CREATED_AT DESC
+            <choose>
+                <when test="searchDTO.sortBy == 'views'">
+                    ORDER BY NVL(p.VIEW_COUNT, 0) DESC, p.CREATED_AT DESC
+                </when>
+                <otherwise>
+                    ORDER BY p.CREATED_AT DESC
+                </otherwise>
+            </choose>
         ) a WHERE ROWNUM &lt;= #{end}
     ) WHERE rnum &gt;= #{start}
 </select>
@@ -38,6 +50,12 @@
         FROM POST p
         LEFT JOIN USERS u ON p.CREATED_BY = u.USER_ID
         WHERE p.BOARD_ID = #{boardId}
+        <if test="searchDTO.startDate != null and searchDTO.startDate != ''">
+            AND TRUNC(p.CREATED_AT) >= TO_DATE(#{searchDTO.startDate}, 'YYYY-MM-DD')
+        </if>
+        <if test="searchDTO.endDate != null and searchDTO.endDate != ''">
+            AND TRUNC(p.CREATED_AT) &lt;= TO_DATE(#{searchDTO.endDate}, 'YYYY-MM-DD')
+        </if>
         <if test="searchDTO.keyword != null and searchDTO.keyword != ''">
             <choose>
                 <when test="searchDTO.searchType == 'title'">

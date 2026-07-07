@@ -31,5 +31,7 @@ public interface MilestonesMapper {
     public List<MilestonesVO> getMilestoneList(String projectId);
     
     public List<IssuesVO> selectConnectedIssues(String milestoneId);
+
+	public List<IssuesVO> selectMilestoneHistoryList(String milestoneId);
 }
 

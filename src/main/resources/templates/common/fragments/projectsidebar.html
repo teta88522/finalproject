@@ -23,72 +23,93 @@
 					<!-- 작업내역 -->
 					<li>
 					<a th:href="@{/project/{projectId}/workhistory(projectId=${projectId})}"> <span
-							class="educate-icon educate-event icon-wrap"></span> <span
-							class="mini-click-non">작업내역</span>
+							><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-briefcase-fill" viewBox="0 0 16 16">
+  <path d="M6.5 1A1.5 1.5 0 0 0 5 2.5V3H1.5A1.5 1.5 0 0 0 0 4.5v1.384l7.614 2.03a1.5 1.5 0 0 0 .772 0L16 5.884V4.5A1.5 1.5 0 0 0 14.5 3H11v-.5A1.5 1.5 0 0 0 9.5 1zm0 1h3a.5.5 0 0 1 .5.5V3H6v-.5a.5.5 0 0 1 .5-.5"/>
+  <path d="M0 12.5A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5V6.85L8.129 8.947a.5.5 0 0 1-.258 0L0 6.85z"/>
+</svg> </span> <span
+							class="mini-click-non">&nbsp;작업내역</span>
 					</a>
 					</li>
 
 					<!-- 로드맵 -->
 					<li th:if="${moduleCodes.contains('h010')}">
 					<a th:href="@{/project/{projectId}/roadmap/roadmap_list(projectId=${projectId})}"> <span
-							class="educate-icon educate-event icon-wrap"></span> <span
-							class="mini-click-non">로드맵</span>
+							><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-signpost-split" viewBox="0 0 16 16">
+  <path d="M7 7V1.414a1 1 0 0 1 2 0V2h5a1 1 0 0 1 .8.4l.975 1.3a.5.5 0 0 1 0 .6L14.8 5.6a1 1 0 0 1-.8.4H9v10H7v-5H2a1 1 0 0 1-.8-.4L.225 9.3a.5.5 0 0 1 0-.6L1.2 7.4A1 1 0 0 1 2 7zm1 3V8H2l-.75 1L2 10zm0-5h6l.75-1L14 3H8z"/>
+</svg></span> <span
+							class="mini-click-non">&nbsp;로드맵</span>
 					</a>
 					</li>
 
 					<!-- 마일스톤 -->
 					<li th:if="${moduleCodes.contains('h011')}">
 					<a th:href="@{/project/{projectId}/milestones/list(projectId=${projectId})}"> <span
-							class="educate-icon educate-event icon-wrap"></span> <span
-							class="mini-click-non">마일스톤</span>
+							><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-pin-map" viewBox="0 0 16 16">
+  <path fill-rule="evenodd" d="M3.1 11.2a.5.5 0 0 1 .4-.2H6a.5.5 0 0 1 0 1H3.75L1.5 15h13l-2.25-3H10a.5.5 0 0 1 0-1h2.5a.5.5 0 0 1 .4.2l3 4a.5.5 0 0 1-.4.8H.5a.5.5 0 0 1-.4-.8z"/>
+  <path fill-rule="evenodd" d="M8 1a3 3 0 1 0 0 6 3 3 0 0 0 0-6M4 4a4 4 0 1 1 4.5 3.969V13.5a.5.5 0 0 1-1 0V7.97A4 4 0 0 1 4 3.999z"/>
+</svg></span> <span
+							class="mini-click-non">&nbsp;마일스톤</span>
 					</a>
 					</li>
 
 					<!-- 일감 -->
 					<li>
 					<a th:href="@{/project/{projectId}/issues(projectId=${projectId})}"><span
-							class="educate-icon educate-event icon-wrap"></span> <span
-							class="mini-click-non">일감</span>
+							><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-person-workspace" viewBox="0 0 16 16">
+  <path d="M4 16s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1zm4-5.95a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5"/>
+  <path d="M2 1a2 2 0 0 0-2 2v9.5A1.5 1.5 0 0 0 1.5 14h.653a5.4 5.4 0 0 1 1.066-2H1V3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v9h-2.219c.554.654.89 1.373 1.066 2h.653a1.5 1.5 0 0 0 1.5-1.5V3a2 2 0 0 0-2-2z"/>
+</svg></span> <span
+							class="mini-click-non">&nbsp;일감</span>
 					</a>
 					</li>
 
 					<!-- 간트차트 -->
 					<li th:if="${moduleCodes.contains('h008')}">
 					<a th:href="@{/project/{projectId}/gantt/ganttView(projectId=${projectId})}"> <span
-							class="educate-icon educate-event icon-wrap"></span> <span
-							class="mini-click-non">간트차트</span>
+							><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-bar-chart-steps" viewBox="0 0 16 16">
+  <path d="M.5 0a.5.5 0 0 1 .5.5v15a.5.5 0 0 1-1 0V.5A.5.5 0 0 1 .5 0M2 1.5a.5.5 0 0 1 .5-.5h4a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-4a.5.5 0 0 1-.5-.5zm2 4a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-7a.5.5 0 0 1-.5-.5zm2 4a.5.5 0 0 1 .5-.5h6a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-6a.5.5 0 0 1-.5-.5zm2 4a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-7a.5.5 0 0 1-.5-.5z"/>
+</svg></span> <span
+							class="mini-click-non">&nbsp;간트차트</span>
 					</a>
 					</li>
 
 					<!-- 달력 -->
 					<li th:if="${moduleCodes.contains('h012')}">
 					<a th:href="@{@{/project/{projectId}/calendar/view(projectId=${projectId})}}"> <span
-							class="educate-icon educate-event icon-wrap"></span> <span
-							class="mini-click-non">달력</span>
+							><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-calendar" viewBox="0 0 16 16">
+  <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5M1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4z"/>
+</svg></span> <span
+							class="mini-click-non">&nbsp;달력</span>
 					</a>
 					</li>
 
 					<!-- 문서관리 -->
 					<li th:if="${moduleCodes.contains('h005')}">
 					<a th:href="@{/project/{projectId}/document/list(projectId=${projectId})}"> <span
-							class="educate-icon educate-event icon-wrap"></span> <span
-							class="mini-click-non">문서관리</span>
+							><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-file-earmark" viewBox="0 0 16 16">
+  <path d="M14 4.5V14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h5.5zm-3 0A1.5 1.5 0 0 1 9.5 3V1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V4.5z"/>
+</svg></span> <span
+							class="mini-click-non">&nbsp;문서관리</span>
 					</a>
 					</li>
 
 					<!-- 자료실 -->
 					<li th:if="${moduleCodes.contains('h003')}">
 					<a th:href="@{/project/{projectId}/repository(projectId=${projectId})}"> <span
-							class="educate-icon educate-event icon-wrap"></span> <span
-							class="mini-click-non">자료실</span>
+							><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-archive" viewBox="0 0 16 16">
+  <path d="M0 2a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1v7.5a2.5 2.5 0 0 1-2.5 2.5h-9A2.5 2.5 0 0 1 1 12.5V5a1 1 0 0 1-1-1zm2 3v7.5A1.5 1.5 0 0 0 3.5 14h9a1.5 1.5 0 0 0 1.5-1.5V5zm13-3H1v2h14zM5 7.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5"/>
+</svg></span> <span
+							class="mini-click-non">&nbsp;자료실</span>
 					</a>
 					</li>
 
 					<!-- 위키 -->
 					<li th:if="${moduleCodes.contains('h006')}">
 					<a th:href="@{/project/{projectId}/wiki/list(projectId=${projectId})}"> <span
-							class="educate-icon educate-event icon-wrap"></span> <span
-							class="mini-click-non">위키</span>
+							><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-wikipedia" viewBox="0 0 16 16">
+  <path d="M8.835 3.003c.828-.006 2.688 0 2.688 0l.033.03v.288q0 .12-.133.12c-.433.02-.522.063-.68.29-.087.126-.258.393-.435.694l-1.52 2.843-.043.089 1.858 3.801.113.031 2.926-6.946q.152-.42-.044-.595c-.132-.114-.224-.18-.563-.195l-.275-.014a.16.16 0 0 1-.096-.035.1.1 0 0 1-.046-.084v-.289l.042-.03h3.306l.034.03v.29q0 .117-.133.117-.65.03-.962.281a1.64 1.64 0 0 0-.488.704s-2.691 6.16-3.612 8.208c-.353.672-.7.61-1.004-.019A224 224 0 0 1 8.044 8.81c-.623 1.285-1.475 3.026-1.898 3.81-.411.715-.75.622-1.02.019-.45-1.065-1.131-2.519-1.817-3.982-.735-1.569-1.475-3.149-1.943-4.272-.167-.4-.293-.657-.412-.759q-.18-.15-.746-.18Q0 3.421 0 3.341v-.303l.034-.03c.615-.003 3.594 0 3.594 0l.034.03v.288q0 .119-.15.118l-.375.016q-.483.02-.483.288-.002.125.109.4c.72 1.753 3.207 6.998 3.207 6.998l.091.023 1.603-3.197-.32-.71L6.24 5.095s-.213-.433-.286-.577l-.098-.196c-.387-.77-.411-.82-.865-.88-.137-.017-.208-.035-.208-.102v-.304l.041-.03h2.853l.075.024v.303q0 .104-.15.104l-.206.03c-.523.04-.438.254-.09.946l1.057 2.163 1.17-2.332c.195-.427.155-.534.074-.633-.046-.055-.202-.144-.54-.158l-.133-.015a.16.16 0 0 1-.096-.034.1.1 0 0 1-.045-.085v-.288l.041-.03Z"/>
+</svg></span> <span
+							class="mini-click-non">&nbsp;위키</span>
 					</a>
 					</li>
 
@@ -96,39 +117,49 @@
 
 					<!-- 테스트 -->
 					<li><a class="has-arrow" > <span
-							class="educate-icon educate-professor icon-wrap"></span> <span
-							class="mini-click-non">테스트</span>
+							><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-shield-check" viewBox="0 0 16 16">
+  <path d="M5.338 1.59a61 61 0 0 0-2.837.856.48.48 0 0 0-.328.39c-.554 4.157.726 7.19 2.253 9.188a10.7 10.7 0 0 0 2.287 2.233c.346.244.652.42.893.533q.18.085.293.118a1 1 0 0 0 .101.025 1 1 0 0 0 .1-.025q.114-.034.294-.118c.24-.113.547-.29.893-.533a10.7 10.7 0 0 0 2.287-2.233c1.527-1.997 2.807-5.031 2.253-9.188a.48.48 0 0 0-.328-.39c-.651-.213-1.75-.56-2.837-.855C9.552 1.29 8.531 1.067 8 1.067c-.53 0-1.552.223-2.662.524zM5.072.56C6.157.265 7.31 0 8 0s1.843.265 2.928.56c1.11.3 2.229.655 2.887.87a1.54 1.54 0 0 1 1.044 1.262c.596 4.477-.787 7.795-2.465 9.99a11.8 11.8 0 0 1-2.517 2.453 7 7 0 0 1-1.048.625c-.28.132-.581.24-.829.24s-.548-.108-.829-.24a7 7 0 0 1-1.048-.625 11.8 11.8 0 0 1-2.517-2.453C1.928 10.487.545 7.169 1.141 2.692A1.54 1.54 0 0 1 2.185 1.43 63 63 0 0 1 5.072.56"/>
+  <path d="M10.854 5.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L7.5 7.793l2.646-2.647a.5.5 0 0 1 .708 0"/>
+</svg></span> <span
+							class="mini-click-non">&nbsp;테스트</span>
 					</a>
 						<ul class="submenu-angle" aria-expanded="false">
-							<li><a th:href="@{/project/{projectId}/tests(projectId=${projectId})}"> <span
-									class="mini-sub-pro">테스트 목록</span></a></li>
 							<li><a th:href="@{/project/{projectId}/testcases(projectId=${projectId})}"> <span
 									class="mini-sub-pro">테스트케이스 목록</span></a></li>
-							<li><a th:href="@{/project/{projectId}/bugs(projectId=${projectId})}"> <span class="mini-sub-pro">버그
-										목록</span></a></li>
+							<li><a th:href="@{/project/{projectId}/tests(projectId=${projectId})}">
+							<span class="mini-sub-pro">테스트 목록</span></a></li>
+							<li><a th:href="@{/project/{projectId}/bugs(projectId=${projectId})}">
+							<span class="mini-sub-pro">버그 목록</span></a></li>
 						</ul></li>
 
 					<!-- 저장소 -->
 					<li th:if="${moduleCodes.contains('h004')}">
 					<a th:href="@{/project/{projectId}/sourcerepository(projectId=${projectId})}"> <span
-							class="educate-icon educate-event icon-wrap"></span> <span
-							class="mini-click-non">저장소</span>
+							><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-github" viewBox="0 0 16 16">
+  <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8"/>
+</svg></span> <span
+							class="mini-click-non">&nbsp;저장소</span>
 					</a>
 					</li>
 
 					<!-- 게시판 -->
 					<li th:if="${moduleCodes.contains('h007')}">
 					<a th:href="@{/project/{projectId}/notice/BoardList(projectId=${projectId})}"> <span
-							class="educate-icon educate-event icon-wrap"></span> <span
-							class="mini-click-non">게시판</span>
+							><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-view-list" viewBox="0 0 16 16">
+  <path d="M3 4.5h10a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2m0 1a1 1 0 0 0-1 1v3a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-3a1 1 0 0 0-1-1zM1 2a.5.5 0 0 1 .5-.5h13a.5.5 0 0 1 0 1h-13A.5.5 0 0 1 1 2m0 12a.5.5 0 0 1 .5-.5h13a.5.5 0 0 1 0 1h-13A.5.5 0 0 1 1 14"/>
+</svg></span> <span
+							class="mini-click-non">&nbsp;게시판</span>
 					</a>
 					</li>
 
-					<!-- 설정  2026/06/23 고동현 수정-->
+					<!-- 구성원 추가  2026/06/23 고동현 수정-->
 					<li th:if="${subscribeYn == 'Y'}"><a
 						th:href="@{/project/{projectId}/settings/members(projectId=${projectId})}">
-							<span class="educate-icon educate-event icon-wrap"></span> <span
-							class="mini-click-non">구성원 추가</span>
+							<span><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-person-add" viewBox="0 0 16 16">
+  <path d="M12.5 16a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7m.5-5v1h1a.5.5 0 0 1 0 1h-1v1a.5.5 0 0 1-1 0v-1h-1a.5.5 0 0 1 0-1h1v-1a.5.5 0 0 1 1 0m-2-6a3 3 0 1 1-6 0 3 3 0 0 1 6 0M8 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4"/>
+  <path d="M8.256 14a4.5 4.5 0 0 1-.229-1.004H3c.001-.246.154-.986.832-1.664C4.484 10.68 5.711 10 8 10q.39 0 .74.025c.226-.341.496-.65.804-.918Q8.844 9.002 8 9c-5 0-6 3-6 4s1 1 1 1z"/>
+</svg></span> <span
+							class="mini-click-non">&nbsp;구성원 추가</span>
 					</a></li>
 				</ul>
 			</nav>

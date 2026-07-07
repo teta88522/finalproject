@@ -31,8 +31,17 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // 3. 동적 상태 색상 배정기 (Hash Palette)
-    const colorPalette = ['#007bff', '#28a745', '#e83e8c', '#fd7e14', '#6f42c1', '#17a2b8', '#dc3545', '#20c997'];
+    // 3. 동적 상태 색상 배정기 (Hash Palette) - 파스텔톤 컬러 매핑
+    const colorPalette = [
+        { bg: '#e0e7ff', text: '#4f46e5', border: '#c7d2fe' }, // Indigo
+        { bg: '#dcfce7', text: '#166534', border: '#bbf7d0' }, // Green
+        { bg: '#fef3c7', text: '#92400e', border: '#fde68a' }, // Amber
+        { bg: '#fee2e2', text: '#991b1b', border: '#fca5a5' }, // Red
+        { bg: '#e0f2fe', text: '#0369a1', border: '#bae6fd' }, // Sky
+        { bg: '#fae8ff', text: '#86198f', border: '#f5d0fe' }, // Fuchsia
+        { bg: '#f3e8ff', text: '#6b21a8', border: '#e9d5ff' }, // Purple
+        { bg: '#ffedd5', text: '#c2410c', border: '#fed7aa' }  // Orange
+    ];
     
     function getHashFromString(str) {
         if (!str) return 0;
@@ -45,9 +54,14 @@ document.addEventListener('DOMContentLoaded', function() {
         const statusName = badge.getAttribute('data-status');
         if(statusName) {
             const colorIndex = getHashFromString(statusName) % colorPalette.length;
-            badge.style.backgroundColor = colorPalette[colorIndex];
+            const colors = colorPalette[colorIndex];
+            badge.style.backgroundColor = colors.bg;
+            badge.style.color = colors.text;
+            badge.style.border = `1px solid ${colors.border}`;
         } else {
-            badge.style.backgroundColor = '#6c757d';
+            badge.style.backgroundColor = '#f1f5f9';
+            badge.style.color = '#64748b';
+            badge.style.border = '1px solid #cbd5e1';
         }
     });
 

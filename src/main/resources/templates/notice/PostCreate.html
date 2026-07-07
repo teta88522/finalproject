@@ -9,12 +9,19 @@
     <!-- 일감 첨부파일 UI 디자인 이식을 위한 CSS 연결 -->
     <link rel="stylesheet" th:href="@{/css/common-ui.css}">
     <link rel="stylesheet" th:href="@{/css/issues/issues.css}">
+    <link rel="stylesheet" th:href="@{/css/milestones/common_layout_mile.css}" />
     <link rel="stylesheet" th:href="@{/css/notice/post_create.css}">
 </head>
 <body>
 <div layout:fragment="Content">
-    <div class="post-create-card">
-        <h1>게시판 글쓰기</h1>
+    <div class="container-fluid board-page-wrapper">
+        <div class="board-page-panel">
+            <div class="board-page-header">
+                <div>
+                    <h3 class="board-page-title">게시판 글쓰기</h3>
+                </div>
+            </div>
+            <div class="board-page-body">
         
         <!-- 파일 전송을 위한 enctype="multipart/form-data" 및 js 바인딩용 id="documentEditForm" 지정 -->
         <form id="documentEditForm" th:action="@{/project/{projectId}/notice/PostCreate(projectId=${projectId})}" 
@@ -37,7 +44,7 @@
                 <label class="form-label">첨부파일</label>
                 <div class="issues-file-box">
                     <div>
-                        <label for="fileInput" class="btn btn-custon-rounded-four btn-default issues-file-select">
+                        <label for="fileInput" class="btn btn-custon-rounded-four custom-white-btn issues-file-select">
                             파일 선택
                         </label> 
                         <input type="file" id="fileInput" name="files" multiple class="issues-file-input"> 
@@ -47,11 +54,13 @@
                 </div>
             </div>
 
-            <div class="btn-area">
-                <a th:href="@{/project/{projectId}/notice/BoardDetail(projectId=${projectId}, boardId=${boardId})}" class="btn-cancel">취소</a>
-                <button type="submit" class="btn-submit">등록</button>
+            <div class="board-page-footer">
+                <a th:href="@{/project/{projectId}/notice/BoardDetail(projectId=${projectId}, boardId=${boardId})}" class="btn btn-custon-rounded-four custom-white-btn">취소</a>
+                <button type="submit" class="btn btn-custon-rounded-four custom-default-btn">등록</button>
             </div>
         </form>
+            </div>
+        </div>
     </div>
     
 </div>

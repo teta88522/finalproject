@@ -58,11 +58,26 @@ document.addEventListener("DOMContentLoaded", function() {
     // --- [2] 로드맵 총 진행률 계산 및 버튼 활성화 ---
     const avgProgress = totalIssues === 0 ? 0 : Math.round(totalProgressSum / totalIssues);
     
+    // 📝 모든 마일스톤이 완료(L003) 상태인지 체크 (미지정 마일스톤 제외)
+    let allMilestonesCompleted = true;
+    if (roadmapData.milestoneList) {
+        roadmapData.milestoneList.forEach(milestone => {
+            if (milestone.milestoneId && !milestone.milestoneId.startsWith("UNASSIGNED_")) {
+                if (milestone.statusCode !== 'L003') {
+                    allMilestonesCompleted = false;
+                }
+            }
+        });
+    }
+
     const btnComplete = document.getElementById('btnCompleteRoadmap');
-    if (btnComplete && avgProgress === 100) {
-        // 이미 완료(k003) 상태라면 disabled 해제하지 않음 (서버 타임리프 바인딩에 의한 th:disabled 조건 보호)
-        if (roadmapData.statusCode !== 'k003') {
-            btnComplete.disabled = false; // 100% 달성 시 완료 버튼 활성화
+    if (btnComplete) {
+        if (avgProgress === 100 && allMilestonesCompleted && roadmapData.statusCode !== 'k003') {
+            btnComplete.disabled = false; // 100% 달성 및 모든 마일스톤 완료 시 완료 버튼 활성화
+            btnComplete.classList.remove('btn-disabled');
+        } else {
+            btnComplete.disabled = true; // 조건 미달 혹은 완료상태면 비활성화
+            btnComplete.classList.add('btn-disabled');
         }
     }
     
@@ -100,7 +115,7 @@ document.addEventListener("DOMContentLoaded", function() {
             labels: ['완료', '잔여'],
             datasets: [{
                 data: [avgProgress, 100 - avgProgress],
-                backgroundColor: ['#3B82F6', '#E2E8F0'],
+                backgroundColor: ['#6366f1', '#e2e8f0'], // 남색 -> Indigo 테마 통일
                 borderWidth: 0
             }]
         },
@@ -115,7 +130,7 @@ document.addEventListener("DOMContentLoaded", function() {
     // --- [5] 두 번째 차트 (일감 상태별 분포) ---
     const statusLabels = ['진행예정', '진행중', '완료', '기타'];
     const statusData = [statusStats['진행예정'], statusStats['진행중'], statusStats['완료'], statusStats['기타']];
-    const colors = ['#9CA3AF', '#3B82F6', '#22C55E', '#A855F7'];
+    const colors = ['#94a3b8', '#6366f1', '#22c55e', '#a855f7']; // 파스텔 뱃지색에 일치하도록 보정
 
     const ctxStatus = document.getElementById('statusChart').getContext('2d');
     new Chart(ctxStatus, {
@@ -195,8 +210,8 @@ document.addEventListener("DOMContentLoaded", function() {
 	        // 2. D-Day 오름차순 정렬 (마감일이 제일 가까운 순, 지연된 과거 날짜 포함)
 	        pendingIssues.sort((a, b) => a.dDay - b.dDay);
 
-	        // 3. 상위 5개만 추출
-	        const topIssues = pendingIssues.slice(0, 5);
+	        // 3. 상위 3개만 추출 (Top 3)
+	        const topIssues = pendingIssues.slice(0, 3);
 
 	        // 4. 화면에 그리기 (렌더링)
 	        if (topIssues.length === 0) {
@@ -215,10 +230,10 @@ document.addEventListener("DOMContentLoaded", function() {
 	                    colorClass = 'red'; // 오늘 당장 (위험)
 	                } else if (item.dDay <= 3) {
 	                    dDayText = `D-${item.dDay}`;
-	                    colorClass = 'orange'; // 3일 이내 (주의)
+	                    colorClass = 'red'; // 3일 이내도 빨간색으로 통일하여 위험 강조
 	                } else {
 	                    dDayText = `D-${item.dDay}`;
-	                    colorClass = 'blue'; // 그 외 (안전)
+	                    colorClass = 'orange'; // 그 외 (안전/주의)
 	                }
 
 	                htmlStr += `
@@ -235,7 +250,16 @@ document.addEventListener("DOMContentLoaded", function() {
 	        }
 	    }
 	
-	const colorPalette = ['#007bff', '#28a745', '#e83e8c', '#fd7e14', '#6f42c1', '#17a2b8', '#dc3545', '#20c997'];
+	const colorPalette = [
+        { bg: '#e0e7ff', text: '#4f46e5', border: '#c7d2fe' }, // Indigo
+        { bg: '#dcfce7', text: '#166534', border: '#bbf7d0' }, // Green
+        { bg: '#fef3c7', text: '#92400e', border: '#fde68a' }, // Amber
+        { bg: '#fee2e2', text: '#991b1b', border: '#fca5a5' }, // Red
+        { bg: '#e0f2fe', text: '#0369a1', border: '#bae6fd' }, // Sky
+        { bg: '#fae8ff', text: '#86198f', border: '#f5d0fe' }, // Fuchsia
+        { bg: '#f3e8ff', text: '#6b21a8', border: '#e9d5ff' }, // Purple
+        { bg: '#ffedd5', text: '#c2410c', border: '#fed7aa' }  // Orange
+    ];
 	    
 	    function getHashFromString(str) {
 	        if (!str) return 0;
@@ -249,11 +273,14 @@ document.addEventListener("DOMContentLoaded", function() {
 	        const statusName = badge.getAttribute('data-status');
 	        if(statusName) {
 	            const colorIndex = getHashFromString(statusName) % colorPalette.length;
-	            badge.style.backgroundColor = colorPalette[colorIndex];
-	            badge.style.color = '#ffffff'; // 배경색이 진하므로 글씨는 흰색으로
+	            const colors = colorPalette[colorIndex];
+	            badge.style.backgroundColor = colors.bg;
+	            badge.style.color = colors.text;
+	            badge.style.border = `1px solid ${colors.border}`;
 	        } else {
-	            badge.style.backgroundColor = '#6c757d'; // 상태가 없을 때 기본 회색
-	            badge.style.color = '#ffffff';
+	            badge.style.backgroundColor = '#f1f5f9';
+	            badge.style.color = '#64748b';
+	            badge.style.border = '1px solid #cbd5e1';
 	        }
 	    });
 });

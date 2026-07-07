@@ -32,22 +32,22 @@
         <section class="summary-section">
             <div class="summary-card">
                 <span class="summary-label">전체 테스트</span>
-                <strong th:text="${testSummary != null ? testSummary.totalCount : 0}">0</strong>
+                <strong th:text="${testSummary != null and testSummary.totalCount != null ? testSummary.totalCount : 0}">0</strong>
             </div>
 
             <div class="summary-card expected">
                 <span class="summary-label">예정</span>
-                <strong th:text="${testSummary != null ? testSummary.expectedCount : 0}">0</strong>
+                <strong th:text="${testSummary != null and testSummary.expectedCount != null ? testSummary.expectedCount : 0}">0</strong>
             </div>
 
             <div class="summary-card progress-card">
                 <span class="summary-label">진행중</span>
-                <strong th:text="${testSummary != null ? testSummary.progressCount : 0}">0</strong>
+                <strong th:text="${testSummary != null and testSummary.progressCount != null ? testSummary.progressCount : 0}">0</strong>
             </div>
 
             <div class="summary-card end">
                 <span class="summary-label">종료</span>
-                <strong th:text="${testSummary != null ? testSummary.endCount : 0}">0</strong>
+                <strong th:text="${testSummary != null and testSummary.endCount != null ? testSummary.endCount : 0}">0</strong>
             </div>
         </section>
 
@@ -262,7 +262,7 @@
             <div class="list-top">
                 <div class="section-title">테스트 목록</div>
                 <div class="list-count">
-                    총 <strong th:text="${testSummary != null ? testSummary.totalCount : 0}">0</strong>건
+                    총 <strong th:text="${testSummary != null and testSummary.totalCount != null ? testSummary.totalCount : 0}">0</strong>건
                 </div>
             </div>
 
@@ -332,7 +332,7 @@
                             </td>
 
                             <td th:text="${test.assigneeName != null ? test.assigneeName : '-'}">담당자</td>
-                            <td th:text="${test.totalCaseCount}">0</td>
+                            <td th:text="${test.totalCaseCount != null ? test.totalCaseCount : 0}">0</td>
                             <td th:text="${test.startDate}">2026-01-01</td>
                             <td th:text="${test.endDate}">2026-01-08</td>
                             <td th:text="${test.createdByName != null ? test.createdByName : test.createdBy}">작성자</td>

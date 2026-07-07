@@ -87,6 +87,8 @@
                        placeholder="test1234@email.com">
             </div>
 
+            <p class="info-message" id="emailCheckMessage"></p>
+
             <div class="form-row">
                 <label for="phone">연락처</label>
                 <input type="text"
@@ -100,6 +102,7 @@
             <p class="info-message" id="phoneCheckMessage"></p>
 
             <input type="hidden" id="idCheckYn" value="N">
+            <input type="hidden" id="emailCheckYn" value="N">
             <input type="hidden" id="phoneCheckYn" value="N">
 
             <div class="form-btn-area">
@@ -157,6 +160,7 @@
             .catch(error => {
                 console.log(error);
                 pfAlert("아이디 중복확인 중 오류가 발생했습니다.", "중복확인 오류", "error");
+                idCheckYn.value = "N";
             });
     }
 
@@ -200,6 +204,49 @@
             message.innerText = "* 비밀번호가 일치하지 않습니다.";
             message.style.color = "red";
         }
+    });
+
+    document.getElementById("email").addEventListener("input", function () {
+        const emailInput = document.getElementById("email");
+        const message = document.getElementById("emailCheckMessage");
+        const emailCheckYn = document.getElementById("emailCheckYn");
+
+        const email = emailInput.value.trim();
+
+        emailCheckYn.value = "N";
+        message.innerText = "";
+
+        if (email === "") {
+            return;
+        }
+
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+        if (!emailRegex.test(email)) {
+            message.innerText = "* 이메일 형식이 올바르지 않습니다.";
+            message.style.color = "red";
+            return;
+        }
+
+        fetch("/checkEmail?email=" + encodeURIComponent(email))
+            .then(response => response.json())
+            .then(data => {
+                if (data.duplicated) {
+                    message.innerText = "* 이미 사용중인 이메일입니다.";
+                    message.style.color = "red";
+                    emailCheckYn.value = "N";
+                } else {
+                    message.innerText = "* 사용가능한 이메일입니다.";
+                    message.style.color = "#3366cc";
+                    emailCheckYn.value = "Y";
+                }
+            })
+            .catch(error => {
+                console.log(error);
+                message.innerText = "* 이메일 확인 중 오류가 발생했습니다.";
+                message.style.color = "red";
+                emailCheckYn.value = "N";
+            });
     });
 
     document.getElementById("phone").addEventListener("input", function () {
@@ -269,7 +316,9 @@
         const passwordCheck = passwordCheckInput.value;
         const email = emailInput.value;
         const phone = phoneInput.value;
+
         const idCheckYn = document.getElementById("idCheckYn").value;
+        const emailCheckYn = document.getElementById("emailCheckYn").value;
         const phoneCheckYn = document.getElementById("phoneCheckYn").value;
 
         if (userName.trim() === "") {
@@ -304,6 +353,18 @@
 
         if (email.trim() === "") {
             pfAlert("이메일을 입력하세요.", "회원가입 확인", "warning", emailInput);
+            return false;
+        }
+
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+        if (!emailRegex.test(email.trim())) {
+            pfAlert("이메일 형식이 올바르지 않습니다.", "회원가입 확인", "warning", emailInput);
+            return false;
+        }
+
+        if (emailCheckYn !== "Y") {
+            pfAlert("이미 사용중인 이메일이거나 이메일 확인이 완료되지 않았습니다.", "회원가입 확인", "warning", emailInput);
             return false;
         }
 

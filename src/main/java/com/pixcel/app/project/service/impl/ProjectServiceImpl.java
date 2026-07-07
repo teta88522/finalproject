@@ -108,6 +108,83 @@ public class ProjectServiceImpl implements ProjectService {
 		resultMap.put("projectMemberId", projectMemberId);
 		return resultMap;
 	}
+	
+	@Override
+	@Transactional
+	public Map<String, Object> insertProjectMemberList(String projectId, List<String> teamMemberIds, String roleId) {
+	    Map<String, Object> resultMap = new HashMap<>();
+
+	    if (teamMemberIds == null || teamMemberIds.isEmpty()) {
+	        resultMap.put("result", false);
+	        resultMap.put("message", "추가할 구성원을 하나 이상 선택해주세요.");
+	        return resultMap;
+	    }
+
+	    // 역할 없음 선택 시 "" 값을 null로 변환
+	    if (roleId != null && roleId.trim().equals("")) {
+	        roleId = null;
+	    }
+
+	    int successCount = 0;
+	    int duplicateCount = 0;
+	    int failCount = 0;
+
+	    for (String teamMemberId : teamMemberIds) {
+	        if (teamMemberId == null || teamMemberId.trim().equals("")) {
+	            failCount++;
+	            continue;
+	        }
+
+	        int existsCount = projectMapper.selectProjectMemberDuplicateCount(projectId, teamMemberId);
+
+	        if (existsCount > 0) {
+	            duplicateCount++;
+	            continue;
+	        }
+
+	        ProjectMemberVO projectMemberVO = new ProjectMemberVO();
+	        projectMemberVO.setProjectId(projectId);
+	        projectMemberVO.setTeamMemberId(teamMemberId);
+	        projectMemberVO.setRoleId(roleId);
+
+	        int nextNo = projectMapper.selectProjectMemberNextNo();
+	        String yearMonth = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMM"));
+	        String projectMemberId = "PROJECT_MEMBER_" + yearMonth + "_" + String.format("%04d", nextNo);
+
+	        projectMemberVO.setProjectMemberId(projectMemberId);
+
+	        int insertResult = projectMapper.insertProjectMember(projectMemberVO);
+
+	        if (insertResult > 0) {
+	            successCount++;
+	        } else {
+	            failCount++;
+	        }
+	    }
+
+	    if (successCount <= 0) {
+	        resultMap.put("result", false);
+
+	        if (duplicateCount > 0 && failCount == 0) {
+	            resultMap.put("message", "선택한 구성원은 이미 프로젝트에 참가중입니다.");
+	        } else {
+	            resultMap.put("message", "구성원 등록에 실패했습니다.");
+	        }
+
+	        return resultMap;
+	    }
+
+	    String message = successCount + "명의 구성원이 등록되었습니다.";
+
+	    if (duplicateCount > 0 || failCount > 0) {
+	        message += " 중복 " + duplicateCount + "명, 실패 " + failCount + "명은 제외되었습니다.";
+	    }
+
+	    resultMap.put("result", true);
+	    resultMap.put("message", message);
+
+	    return resultMap;
+	}
 
 	@Override
 	public ProjectMemberVO selectProjectMemberDetail(String projectMemberId) {

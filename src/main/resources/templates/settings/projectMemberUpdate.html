@@ -7,6 +7,9 @@
 <title>프로젝트 구성원 수정</title>
 
 <link rel="stylesheet" th:href="@{/css/settings/projectMemberUpdate.css}">
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script th:src="@{/js/common/pf-confirm.js}"></script>
 </head>
 
 <body>
@@ -32,7 +35,11 @@
         <!-- 수정 form -->
         <form th:action="@{/project/{projectId}/settings/members/update(projectId=${projectId})}"
               method="post"
-              onsubmit="return validateMemberUpdateForm();">
+              class="js-pf-confirm-submit"
+              data-confirm-title="수정 확인"
+              data-confirm-message="구성원 역할을 수정하시겠습니까?"
+              data-confirm-confirm-text="수정"
+              data-confirm-icon="question">
 
             <!-- 수정 대상 project_member PK -->
             <input type="hidden"
@@ -86,7 +93,7 @@
 
                     <div class="info-row">
                         <span class="label">현재 역할</span>
-                        <span th:text="${projectMember.roleName != null ? projectMember.roleName : '-'}">
+                        <span th:text="${projectMember.roleName != null ? projectMember.roleName : '역할 없음'}">
                             역할명
                         </span>
                     </div>
@@ -98,14 +105,14 @@
             <div class="update-section">
                 <div class="section-title">역할 수정</div>
                 <div class="section-sub-text">
-                    구성원에게 새로 부여할 역할을 선택하세요.
+                    구성원에게 새로 부여할 역할을 선택하세요. 역할 없이도 저장할 수 있습니다.
                 </div>
 
                 <div class="role-select-row">
                     <label for="roleId">역할</label>
 
                     <select id="roleId" name="roleId">
-                        <option value="">선택</option>
+                        <option value="">역할 없음</option>
 
                         <option th:each="role : ${projectRoleList}"
                                 th:value="${role.roleId}"
@@ -133,16 +140,14 @@
 
     </div>
 
-    <script>
-        function validateMemberUpdateForm() {
-            const roleId = document.getElementById("roleId").value;
+    <script th:inline="javascript">
+        const message = /*[[${message}]]*/ null;
 
-            if (!roleId) {
-                alert("역할을 선택하세요.");
-                return false;
-            }
-
-            return true;
+        if (message != null) {
+            window.PFDialog.alert(message, {
+                title: '알림',
+                icon: 'info'
+            });
         }
     </script>
 

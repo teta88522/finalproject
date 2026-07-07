@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.pixcel.app.milestones.service.MilestonesVO;
+import com.pixcel.app.project.service.ProjectService;
+import com.pixcel.app.project.service.ProjectVO;
 import com.pixcel.app.roadmap.service.RoadmapService;
 import com.pixcel.app.roadmap.service.RoadmapVO;
 import com.pixcel.app.user.security.CustomUserDetails;
@@ -31,23 +33,47 @@ import lombok.extern.slf4j.Slf4j;
 public class RoadmapController {
     
     private final RoadmapService roadmapService;
+    // -- 권한 처리
+    private final ProjectService projectService;
+    // -- 권한 처리 끝
+    
+    /** 가로말: 프로젝트 소유자(owner_id) 여부 확인 헬퍼 */
+    private boolean isProjectOwner(String projectId, String userId) {
+        // -- 권한 처리
+        ProjectVO project = projectService.selectProjectDetail(projectId);
+        return project != null && userId != null && userId.equals(project.getOwnerId());
+        // -- 권한 처리 끝
+    }
     
     @GetMapping("/setting_create")
     public String createRoadmapForm(@AuthenticationPrincipal CustomUserDetails userDetails, 
                                     @PathVariable("projectId") String projectId,
+                                    RedirectAttributes rttr,
                                     Model model) {
+        // -- 권한 처리
+        if (!isProjectOwner(projectId, userDetails.getUsername())) {
+            rttr.addFlashAttribute("errorMessage", "로드맵 생성은 프로젝트 소유자만 가능합니다.");
+            return "redirect:/project/" + projectId + "/roadmap/roadmap_list";
+        }
+        // -- 권한 처리 끝
         model.addAttribute("projectId", projectId);
         
         return "roadmap/setting_create"; 
     }
 
     @PostMapping("/setting_create")
-    public String createRoadmapSubmit(@ModelAttribute RoadmapVO roadmapVO, 
-                                      @PathVariable("projectId") String projectId) {
+    public String createRoadmapSubmit(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                      @ModelAttribute RoadmapVO roadmapVO, 
+                                      @PathVariable("projectId") String projectId,
+                                      RedirectAttributes rttr) {
+        // -- 권한 처리
+        if (!isProjectOwner(projectId, userDetails.getUsername())) {
+            rttr.addFlashAttribute("errorMessage", "로드맵 생성은 프로젝트 소유자만 가능합니다.");
+            return "redirect:/project/" + projectId + "/roadmap/roadmap_list";
+        }
+        // -- 권한 처리 끝
         roadmapVO.setProjectId(projectId);
-        
         roadmapService.insertRoadmap(roadmapVO);
-        // 💡 핵심 2: 404 에러 방지를 위해 리다이렉트는 무조건 절대 경로(풀 주소)로 적습니다.
         return "redirect:/project/" + projectId + "/roadmap/roadmap_list"; 
     }
 
@@ -63,9 +89,17 @@ public class RoadmapController {
     }
 
     @GetMapping("/setting_update")
-    public String updateRoadmapForm(@RequestParam("versionId") String versionId, 
+    public String updateRoadmapForm(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                    @RequestParam("versionId") String versionId, 
                                     @PathVariable("projectId") String projectId,
+                                    RedirectAttributes rttr,
                                     Model model) {
+        // -- 권한 처리
+        if (!isProjectOwner(projectId, userDetails.getUsername())) {
+            rttr.addFlashAttribute("errorMessage", "로드맵 수정은 프로젝트 소유자만 가능합니다.");
+            return "redirect:/project/" + projectId + "/roadmap/roadmap_detail?versionId=" + versionId;
+        }
+        // -- 권한 처리 끝
         
         RoadmapVO roadmap = roadmapService.getsettingDetail(versionId, projectId);
         
@@ -79,10 +113,18 @@ public class RoadmapController {
     }
 
     @PostMapping("/setting_update")
-    public String updateRoadmapSubmit(@ModelAttribute RoadmapVO roadmapVO,
+    public String updateRoadmapSubmit(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                      @ModelAttribute RoadmapVO roadmapVO,
                                       @RequestParam("versionId") String versionId, 
                                       @PathVariable("projectId") String projectId, 
+                                      RedirectAttributes rttr,
                                       Model model) {  
+        // -- 권한 처리
+        if (!isProjectOwner(projectId, userDetails.getUsername())) {
+            rttr.addFlashAttribute("errorMessage", "로드맵 수정은 프로젝트 소유자만 가능합니다.");
+            return "redirect:/project/" + projectId + "/roadmap/roadmap_detail?versionId=" + versionId;
+        }
+        // -- 권한 처리 끝
         
         roadmapVO.setProjectId(projectId);
         
@@ -96,9 +138,16 @@ public class RoadmapController {
     }
 
     @PostMapping("/setting_delete")
-    public String deleteRoadmap(@RequestParam("versionId") String versionId, 
+    public String deleteRoadmap(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                @RequestParam("versionId") String versionId, 
                                 @PathVariable("projectId") String projectId,
                                 RedirectAttributes rttr) {
+        // -- 권한 처리
+        if (!isProjectOwner(projectId, userDetails.getUsername())) {
+            rttr.addFlashAttribute("errorMessage", "로드맵 삭제는 프로젝트 소유자만 가능합니다.");
+            return "redirect:/project/" + projectId + "/roadmap/roadmap_detail?versionId=" + versionId;
+        }
+        // -- 권한 처리 끝
         try {
             roadmapService.deleteRoadmap(versionId, projectId);
             rttr.addFlashAttribute("message", "로드맵이 정상적으로 삭제되었습니다.");
@@ -115,9 +164,15 @@ public class RoadmapController {
     }
     
     @GetMapping("/roadmap_list")
-    public String getRoadmapListFull(@PathVariable("projectId") String projectId, Model model) {
+    public String getRoadmapListFull(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                    @PathVariable("projectId") String projectId, Model model) {
         
         List<RoadmapVO> roadmapList = roadmapService.getRoadmapFull(projectId);
+        
+        // -- 권한 처리
+        boolean isOwner = isProjectOwner(projectId, userDetails.getUsername());
+        model.addAttribute("isOwner", isOwner);
+        // -- 권한 처리 끝
         
         model.addAttribute("roadmapList", roadmapList);
         model.addAttribute("projectId", projectId);
@@ -126,7 +181,8 @@ public class RoadmapController {
     }
     
     @GetMapping("/roadmap_detail")
-    public String getRoadmapDetail(@RequestParam("versionId") String versionId,
+    public String getRoadmapDetail(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                   @RequestParam("versionId") String versionId,
                                    @PathVariable("projectId") String projectId, 
                                    Model model) {
         
@@ -136,13 +192,25 @@ public class RoadmapController {
         roadmap.setMilestoneList(milestones);
         model.addAttribute("roadmap", roadmap);
         
+        // -- 권한 처리
+        boolean isOwner = isProjectOwner(projectId, userDetails.getUsername());
+        model.addAttribute("isOwner", isOwner);
+        // -- 권한 처리 끝
+        
         return "roadmap/roadmap_detail";
     }
     
     @PostMapping("/roadmap_detail")
-    public String completeRoadmap(@RequestParam("versionId") String versionId, 
+    public String completeRoadmap(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                  @RequestParam("versionId") String versionId, 
                                   @PathVariable("projectId") String projectId,
                                   RedirectAttributes rttr) {
+        // -- 권한 처리
+        if (!isProjectOwner(projectId, userDetails.getUsername())) {
+            rttr.addFlashAttribute("errorMessage", "로드맵 완료 처리는 프로젝트 소유자만 가능합니다.");
+            return "redirect:/project/" + projectId + "/roadmap/roadmap_detail?versionId=" + versionId;
+        }
+        // -- 권한 처리 끝
         try {
             roadmapService.updateCompletion(versionId, projectId);
             rttr.addFlashAttribute("message", "로드맵이 완료 처리되었습니다.");

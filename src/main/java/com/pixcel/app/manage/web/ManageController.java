@@ -168,7 +168,7 @@ public class ManageController {
 
         model.addAttribute("subscribeYn", subscribeYn);
         model.addAttribute("ownerId", ownerId);
-        model.addAttribute("userName",userName);
+        model.addAttribute("userName", userName);
         model.addAttribute("manageRoleList", manageRoleList);
         model.addAttribute("manageGroup", manageGroup);
         model.addAttribute("assignedMemberList", assignedMemberList);
@@ -253,11 +253,15 @@ public class ManageController {
         List<ManageGroupMemberVO> assignedMemberList =
                 manageService.selectAssignedGroupMemberList(projectGroupId, ownerId);
 
+        List<ManageRoleVO> manageRoleList =
+                manageService.selectMyManageRoleList(ownerId);
+
         model.addAttribute("subscribeYn", subscribeYn);
         model.addAttribute("ownerId", ownerId);
         model.addAttribute("manageGroup", manageGroup);
         model.addAttribute("assignableMemberList", assignableMemberList);
         model.addAttribute("assignedMemberList", assignedMemberList);
+        model.addAttribute("manageRoleList", manageRoleList);
 
         return "manage/group/manageGroupMember";
     }
@@ -265,6 +269,7 @@ public class ManageController {
     @PostMapping("/groups/{projectGroupId}/members/add")
     public String addGroupMember(@PathVariable String projectGroupId,
                                  @RequestParam(value = "projectMemberIds", required = false) List<String> projectMemberIds,
+                                 @RequestParam(value = "roleId", required = false) String roleId,
                                  @CookieValue(value = "userId", required = false) String userId,
                                  @CookieValue(value = "user_pk", required = false) String userPk,
                                  @CookieValue(value = "subscribeYn", required = false) String subscribeYn,
@@ -286,7 +291,7 @@ public class ManageController {
         }
 
         Map<String, Object> resultMap =
-                manageService.addGroupMemberList(projectGroupId, projectMemberIds, ownerId);
+                manageService.addGroupMemberList(projectGroupId, projectMemberIds, roleId, ownerId);
 
         redirectAttributes.addFlashAttribute("message", resultMap.get("message"));
 

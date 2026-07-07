@@ -79,7 +79,7 @@
 }
 
 textarea.form-control {
-    height: 120px;
+    height: 160px;
     resize: vertical;
 }
 
@@ -97,7 +97,8 @@ textarea.form-control {
 }
 
 .issue-list-container {
-    max-height: 250px;
+    min-height: 180px;
+    max-height: 220px;
     overflow-y: auto;
     border: 1px solid #eaeaea;
     border-radius: 4px;

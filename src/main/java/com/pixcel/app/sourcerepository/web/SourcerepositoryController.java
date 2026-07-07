@@ -47,11 +47,20 @@ public class SourcerepositoryController {
 			// ✅ 저장된 GitHub URL / 첫 브랜치를 조회해서 모달 프리필 + 정보 카드 + 전체동기화 버튼 노출에 사용
 			ProjectVO project = projectService.selectProjectDetail(projectId);
 			String savedGitUrl = project != null ? project.getGitUrl() : null;
+			// ✅ DB에 "none" 같은 플레이스홀더 값이 실제 URL처럼 저장되어 있으면
+			//    "연결됨"으로 오판해서 GitHub 검증을 시도하다 실패하던 문제 수정. 미설정으로 취급.
+			if (savedGitUrl != null && (savedGitUrl.trim().isEmpty() || "none".equalsIgnoreCase(savedGitUrl.trim()))) {
+				savedGitUrl = null;
+			}
 			model.addAttribute("savedGitUrl", savedGitUrl);
 
 			if (savedGitUrl != null && !savedGitUrl.isEmpty()) {
 				String savedBranch = service.getFirstBranchByProjectId(projectId);
 				model.addAttribute("savedBranch", savedBranch);
+			} else {
+				// ✅ 저장소 미연결은 정상 상태(특히 신규 프로젝트)라 에러 모달/빨간 배너 대신
+				//    issues 일감생성 화면과 동일한 스타일(page-message-info)의 안내 문구로 표시
+				model.addAttribute("repoNotConnected", true);
 			}
 
 			return "sourcerepository/sourcerepositoryIndex";

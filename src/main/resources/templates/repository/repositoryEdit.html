@@ -12,6 +12,8 @@
     <div class="repo-container">
         <div class="repo-header">
             <h2 class="repo-title">자료실</h2>
+            <a th:href="@{/project/{projectId}/repository(projectId=${projectId})}"
+                class="repo-btn" style="background-color:#6c757d;">← 목록으로</a>
         </div>
 
         <div class="repo-detail-card" style="padding: 40px; min-height: 450px;">
@@ -29,7 +31,6 @@
 			                   
 			            <input type="text" id="displayFileName" class="repo-file-name-input" 
 			                   th:value="${repository?.originalName}" placeholder="파일을 선택해주세요" readonly>
-			            <button type="button" class="repo-file-clear-btn" onclick="clearFile();">×</button>
 			        </div>
 			        
 			        <p style="color: red; font-size: 12px;">
@@ -44,6 +45,17 @@
 			</form>
         </div>
     </div>
+
+    <!-- ✅ 새 파일 선택 시 표시된 파일명이 안 바뀌던 문제 수정 (change 이벤트를 아무도 안 듣고 있었음).
+         의미 없이 에러만 내던 × 버튼(정의 안 된 clearFile() 호출)은 제거함. -->
+    <script>
+        document.getElementById('uploadFile').addEventListener('change', function () {
+            var displayInput = document.getElementById('displayFileName');
+            if (this.files && this.files.length > 0) {
+                displayInput.value = this.files[0].name;
+            }
+        });
+    </script>
 </div>
 </body>
 

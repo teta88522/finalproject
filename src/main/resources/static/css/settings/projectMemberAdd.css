@@ -157,6 +157,23 @@
     background-color: #f7faff;
 }
 
+.check-col {
+    width: 64px;
+    text-align: center !important;
+}
+
+.check-col input[type="checkbox"],
+.member-check,
+#allCheck {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}
+
+.member-check:disabled {
+    cursor: not-allowed;
+}
+
 .already-joined-row {
     background-color: #fafafa;
     color: #999;

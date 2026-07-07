@@ -5,25 +5,29 @@
       layout:decorate="~{common/layouts/default_layout}">
 <head>
     <title>모든 게시판</title>
+    <link rel="stylesheet" th:href="@{/css/milestones/common_layout_mile.css}" />
     <link rel="stylesheet" th:href="@{/css/notice/board_list.css}" />
 </head>
 <body>
     <div layout:fragment="Content">
-        <div class="board-dashboard-container">
-            
-            <div class="dashboard-header">
-                <div class="header-titles">
-                    <h2>모든 게시판</h2>
-                    <p>프로젝트 내의 모든 게시판을 확인하고 최신 게시글을 확인할 수 있습니다.</p>
+        <div class="container-fluid board-page-wrapper">
+            <div class="board-page-panel">
+                
+                <div class="board-page-header">
+                    <div>
+                        <h3 class="board-page-title">모든 게시판</h3>
+                        <p class="board-page-subtitle">프로젝트 내의 모든 게시판을 확인하고 최신 게시글을 확인할 수 있습니다.</p>
+                    </div>
+                    <div>
+                        <!-- -- 권한 처리 -->
+                        <a th:if="${canManageBoard}" th:href="@{/project/{projectId}/notice/BoardCreate(projectId=${projectId})}" class="btn btn-custon-rounded-four custom-default-btn">
+                             새 게시판
+                        </a>
+                        <!-- -- 권한 처리 끝 -->
+                    </div>
                 </div>
-                <div class="header-actions">
-                    <a th:href="@{/project/{projectId}/notice/BoardCreate(projectId=${projectId})}" class="btn btn-primary">
-                         새 게시판
-                    </a>
-                </div>
-            </div>
-
-            <!-- 2-Column 레이아웃 분할 -->
+                <div class="board-page-body">
+                    <!-- 2-Column 레이아웃 분할 -->
             <div class="dashboard-content-layout">
                 
                 <!-- 좌측 영역: 게시판 목록 -->
@@ -61,7 +65,10 @@
                                             <span class="text-muted" th:text="${board.userName}">홍길동</span>
                                         </td>
                                         <td class="text-center">
-                                            <a th:href="@{/project/{projectId}/notice/BoardUpdate(projectId=${projectId}, boardId=${board.boardId})}" class="btn-manage-link">⚙️ 관리</a>
+                                            <!-- -- 권한 처리 -->
+                                            <a th:if="${canManageBoard}" th:href="@{/project/{projectId}/notice/BoardUpdate(projectId=${projectId}, boardId=${board.boardId})}" class="btn-manage-link">⚙️ 관리</a>
+                                            <span th:if="${!canManageBoard}" class="text-muted">-</span>
+                                            <!-- -- 권한 처리 끝 -->
                                         </td>
                                     </tr>
                                     
@@ -125,7 +132,9 @@
 
             </div>
 
+            </div>
         </div>
+    </div>
     </div>
 </body>
 </html>

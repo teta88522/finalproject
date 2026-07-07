@@ -45,12 +45,29 @@ public class NoticeController {
 	private final NoticeService noticeService;
 	private final PostService postService;
 	private final FileService fileService;
+	// -- 권한 처리
+	private final com.pixcel.app.issues.mapper.IssuesMapper issuesMapper;
+	
+	private boolean checkProjectPermission(String projectId, String userId, String permissionCode) {
+		if (userId == null || projectId == null) {
+			return false;
+		}
+		return issuesMapper.countProjectPermission(projectId, userId, permissionCode, null) > 0;
+	}
+	// -- 권한 처리 끝
 	
 	@GetMapping("/BoardCreate")
 	public String createBoardForm(
 				@AuthenticationPrincipal CustomUserDetails userDetails
 				,@PathVariable("projectId") String projectId,
-				Model model) {
+				Model model,
+				RedirectAttributes rttr) {
+		// -- 권한 처리
+		if (!checkProjectPermission(projectId, userDetails.getUsername(), "p009")) {
+			rttr.addFlashAttribute("errorMessage", "게시판 관리 권한이 없습니다.");
+			return "redirect:/project/" + projectId + "/notice/BoardList";
+		}
+		// -- 권한 처리 끝
 		
 		model.addAttribute("projectId", projectId);
 		model.addAttribute("noticeRequestDTO", new NoticeRequestDTO());
@@ -62,8 +79,15 @@ public class NoticeController {
 	public String createBoardForm(
 			@ModelAttribute NoticeRequestDTO noticeRequestDto,
 			@AuthenticationPrincipal CustomUserDetails userDetails,
-			@PathVariable("projectId") String projectId
+			@PathVariable("projectId") String projectId,
+			RedirectAttributes rttr
 			) {
+		// -- 권한 처리
+		if (!checkProjectPermission(projectId, userDetails.getUsername(), "p009")) {
+			rttr.addFlashAttribute("errorMessage", "게시판 관리 권한이 없습니다.");
+			return "redirect:/project/" + projectId + "/notice/BoardList";
+		}
+		// -- 권한 처리 끝
 		noticeRequestDto.setCreatedBy(userDetails.getUsername());
 		noticeService.createNoticeBoard(noticeRequestDto);
 		return "redirect:/project/" + projectId + "/notice/BoardList";
@@ -77,6 +101,11 @@ public class NoticeController {
 			) {
 		List<NoticeRequestDTO> boardList = noticeService.getBoardList(projectId);
 		model.addAttribute("boardList", boardList);
+		
+		// -- 권한 처리
+		boolean canManageBoard = checkProjectPermission(projectId, userDetails.getUsername(), "p009");
+		model.addAttribute("canManageBoard", canManageBoard);
+		// -- 권한 처리 끝
 		
 		// 1. 이미 구해온 게시판 리스트를 Map<boardId, boardName> 형태로 자바 메모리 고속 변환
 		Map<String, String> boardNameMap = boardList.stream()
@@ -102,6 +131,7 @@ public class NoticeController {
 	
 	@GetMapping("/BoardDetail")
 	public String BoardDetail(
+			@AuthenticationPrincipal CustomUserDetails userDetails,
 			@PathVariable("projectId") String projectId,
 			@RequestParam("boardId") String boardId,
 			@ModelAttribute PostSearchDTO searchDTO,
@@ -110,6 +140,16 @@ public class NoticeController {
 			) {
 		NoticeRequestDTO boardDetail = noticeService.getBoardDetail(boardId);
 		Page<PostRequestDTO> postPage = postService.getPostListByBoardId(boardId, searchDTO, pageable);
+		
+		// -- 권한 처리
+		String userId = userDetails.getUsername();
+		model.addAttribute("canManageBoard", checkProjectPermission(projectId, userId, "p009"));
+		model.addAttribute("canAddPost",     checkProjectPermission(projectId, userId, "p010"));
+		model.addAttribute("canEditPost",    checkProjectPermission(projectId, userId, "p011"));
+		model.addAttribute("canDeletePost",  checkProjectPermission(projectId, userId, "p012"));
+		model.addAttribute("canEditOwnPost",   checkProjectPermission(projectId, userId, "p013"));
+		model.addAttribute("canDeleteOwnPost", checkProjectPermission(projectId, userId, "p014"));
+		// -- 권한 처리 끝
 		
 		model.addAttribute("board",boardDetail);
 		model.addAttribute("postPage", postPage);
@@ -121,10 +161,18 @@ public class NoticeController {
 	
 	@GetMapping("/PostCreate")
 	public String PostCreate(
+			@AuthenticationPrincipal CustomUserDetails userDetails,
 			@PathVariable("projectId") String projectId,
 			@RequestParam("boardId") String boardId,
+			RedirectAttributes rttr,
 			Model model
 			) {
+		// -- 권한 처리
+		if (!checkProjectPermission(projectId, userDetails.getUsername(), "p010")) {
+			rttr.addFlashAttribute("errorMessage", "게시글 추가 권한이 없습니다.");
+			return "redirect:/project/" + projectId + "/notice/BoardDetail?boardId=" + boardId;
+		}
+		// -- 권한 처리 끝
 		model.addAttribute("boardId", boardId);
 		model.addAttribute("projectId", projectId);
 		model.addAttribute("postRequestDTO", new PostRequestDTO());
@@ -136,7 +184,14 @@ public class NoticeController {
 	                       @RequestParam("boardId") String boardId,
 	                       @PathVariable("projectId") String projectId,
 						   @RequestParam(value = "files", required = false) List<MultipartFile> files,
-	                       @AuthenticationPrincipal CustomUserDetails userDetails) {
+	                       @AuthenticationPrincipal CustomUserDetails userDetails,
+	                       RedirectAttributes rttr) {
+		// -- 권한 처리
+		if (!checkProjectPermission(projectId, userDetails.getUsername(), "p010")) {
+			rttr.addFlashAttribute("errorMessage", "게시글 추가 권한이 없습니다.");
+			return "redirect:/project/" + projectId + "/notice/BoardDetail?boardId=" + boardId;
+		}
+		// -- 권한 처리 끝
 		postDTO.setCreatedBy(userDetails.getUsername());
 		
 	    postService.createPost(postDTO);
@@ -148,7 +203,7 @@ public class NoticeController {
             if (!uploadFiles.isEmpty()) {
                 FileDTO uploadDTO = new FileDTO();
                 uploadDTO.setProjectId(projectId);
-                uploadDTO.setFileCode("f008"); // 게시판도 공용 f008 업로드 코드 지정
+                uploadDTO.setFileCode("f007");
                 uploadDTO.setUploadUserId(userDetails.getUsername());
                 uploadDTO.setConnectAddress(postDTO.getPostId()); // 연동된 postId 지정
                 
@@ -162,6 +217,7 @@ public class NoticeController {
 	
 	@GetMapping("/post_detail")
 	public String PostDetail(
+			@AuthenticationPrincipal CustomUserDetails userDetails,
 			@PathVariable("projectId") String projectId,
 			@RequestParam("boardId") String boardId,
 			@RequestParam("postId") String postId,
@@ -176,6 +232,17 @@ public class NoticeController {
 		// 첨부파일 리스트 조회 후 모델 바인딩 누락 복구
 		List<FileVO> files = fileService.selectAll(postId, null);
 		model.addAttribute("files", files);
+		
+		// -- 권한 처리
+		String userId = userDetails.getUsername();
+		boolean isAuthor = userId.equals(postDetail.getCreatedBy());
+		boolean canEdit   = checkProjectPermission(projectId, userId, "p011")
+						|| (isAuthor && checkProjectPermission(projectId, userId, "p013"));
+		boolean canDelete = checkProjectPermission(projectId, userId, "p012")
+						|| (isAuthor && checkProjectPermission(projectId, userId, "p014"));
+		model.addAttribute("canEdit",   canEdit);
+		model.addAttribute("canDelete", canDelete);
+		// -- 권한 처리 끝
   
 		model.addAttribute("post", postDetail);
 		model.addAttribute("projectId", projectId);
@@ -193,14 +260,29 @@ public class NoticeController {
 	}
 	
 	// 1. 수정 화면 이동 (기존 정보 및 업로드된 파일 목록 바인딩)
+	// 1. 수정 화면 이동 (기존 정보 및 업로드된 파일 목록 바인딩)
 	@GetMapping("/PostUpdate")
 	public String PostEdit(
+			@AuthenticationPrincipal CustomUserDetails userDetails,
 			@PathVariable("projectId") String projectId,
 			@RequestParam("boardId") String boardId,
 			@RequestParam("postId") String postId,
+			RedirectAttributes rttr,
 			Model model
 			) {
 		PostRequestDTO postDetail = postService.getPostDetail(postId);
+		
+		// -- 권한 처리
+		String userId = userDetails.getUsername();
+		boolean isAuthor = userId.equals(postDetail.getCreatedBy());
+		boolean canEdit = checkProjectPermission(projectId, userId, "p011")
+					|| (isAuthor && checkProjectPermission(projectId, userId, "p013"));
+		if (!canEdit) {
+			rttr.addFlashAttribute("errorMessage", "게시글 편집 권한이 없습니다.");
+			return "redirect:/project/" + projectId + "/notice/post_detail?boardId=" + boardId + "&postId=" + postId;
+		}
+		// -- 권한 처리 끝
+		
 		List<FileVO> files = fileService.selectAll(postId, null);
 		
 		model.addAttribute("post", postDetail);
@@ -219,8 +301,20 @@ public class NoticeController {
 			@PathVariable("projectId") String projectId,
 			@RequestParam(value = "files", required = false) List<MultipartFile> files,
 			@RequestParam(value = "deleteFileIds", required = false) List<String> deleteFileIds,
-			@AuthenticationPrincipal CustomUserDetails userDetails
+			@AuthenticationPrincipal CustomUserDetails userDetails,
+			RedirectAttributes rttr
 			) {
+		// -- 권한 처리
+		String userId = userDetails.getUsername();
+		PostRequestDTO existing = postService.getPostDetail(postDTO.getPostId());
+		boolean isAuthor = userId.equals(existing.getCreatedBy());
+		boolean canEdit = checkProjectPermission(projectId, userId, "p011")
+					|| (isAuthor && checkProjectPermission(projectId, userId, "p013"));
+		if (!canEdit) {
+			rttr.addFlashAttribute("errorMessage", "게시글 편집 권한이 없습니다.");
+			return "redirect:/project/" + projectId + "/notice/post_detail?boardId=" + boardId + "&postId=" + postDTO.getPostId();
+		}
+		// -- 권한 처리 끝
 		// 혹시라도 브라우저 캐시나 중복 전송으로 콤마(,)가 섞여 들어오는 현상을 차단하는 방어 코드
 		if (boardId != null && boardId.contains(",")) {
 			boardId = boardId.split(",")[0].trim();
@@ -258,9 +352,11 @@ public class NoticeController {
 	// 3. 게시글 삭제 처리 핸들러
 	@GetMapping("/PostDelete")
 	public String PostDelete(
+			@AuthenticationPrincipal CustomUserDetails userDetails,
 			@PathVariable("projectId") String projectId,
 			@RequestParam("boardId") String boardId,
-			@RequestParam("postId") String postId
+			@RequestParam("postId") String postId,
+			RedirectAttributes rttr
 			) {
 		// 혹시라도 쉼표(,)나 큰따옴표(")가 섞여서 들어오는 현상을 방지하는 방어 코드
 		if (boardId != null) {
@@ -270,38 +366,73 @@ public class NoticeController {
 			postId = postId.replace("\"", "").split(",")[0].trim();
 		}
 		
+		// -- 권한 처리
+		String userId = userDetails.getUsername();
+		PostRequestDTO target = postService.getPostDetail(postId);
+		boolean isAuthor = userId.equals(target.getCreatedBy());
+		boolean canDelete = checkProjectPermission(projectId, userId, "p012")
+					|| (isAuthor && checkProjectPermission(projectId, userId, "p014"));
+		if (!canDelete) {
+			rttr.addFlashAttribute("errorMessage", "게시글 삭제 권한이 없습니다.");
+			return "redirect:/project/" + projectId + "/notice/post_detail?boardId=" + boardId + "&postId=" + postId;
+		}
+		// -- 권한 처리 끝
+		
 		postService.deletePost(postId);
 		return "redirect:/project/" + projectId + "/notice/BoardDetail?boardId=" + boardId;
 	}
 
 	@GetMapping("/BoardUpdate")
-		public String BoardEdit(
+	public String BoardEdit(
+			@AuthenticationPrincipal CustomUserDetails userDetails,
 			@PathVariable("projectId") String projectId,
 			@RequestParam("boardId") String boardId,
+			RedirectAttributes rttr,
 			Model model
 			) {
+		// -- 권한 처리
+		if (!checkProjectPermission(projectId, userDetails.getUsername(), "p009")) {
+			rttr.addFlashAttribute("errorMessage", "게시판 관리 권한이 없습니다.");
+			return "redirect:/project/" + projectId + "/notice/BoardList";
+		}
+		// -- 권한 처리 끝
 		// 기존 게시판 정보 상세 조회 후 모델 바인딩
 		NoticeRequestDTO boardDetail = noticeService.getBoardDetail(boardId);
 		model.addAttribute("board", boardDetail);
 		model.addAttribute("projectId", projectId);
-		return "notice/BoardUpdate"; // 새로 만들 템플릿 파일명
+		return "notice/BoardUpdate";
 	}
 
 	@PostMapping("/BoardUpdate")
-		public String BoardUpdate(
+	public String BoardUpdate(
+			@AuthenticationPrincipal CustomUserDetails userDetails,
 			@PathVariable("projectId") String projectId,
-			@ModelAttribute NoticeRequestDTO noticeRequestDto
+			@ModelAttribute NoticeRequestDTO noticeRequestDto,
+			RedirectAttributes rttr
 			) {
+		// -- 권한 처리
+		if (!checkProjectPermission(projectId, userDetails.getUsername(), "p009")) {
+			rttr.addFlashAttribute("errorMessage", "게시판 관리 권한이 없습니다.");
+			return "redirect:/project/" + projectId + "/notice/BoardList";
+		}
+		// -- 권한 처리 끝
 		noticeService.updateBoard(noticeRequestDto);
 		return "redirect:/project/" + projectId + "/notice/BoardList";
 	}
 
 	@GetMapping("/BoardDelete")
 	public String BoardDelete(
+			@AuthenticationPrincipal CustomUserDetails userDetails,
 			@PathVariable("projectId") String projectId,
 			@RequestParam("boardId") String boardId,
 			RedirectAttributes redirectAttributes
 			) {
+		// -- 권한 처리
+		if (!checkProjectPermission(projectId, userDetails.getUsername(), "p009")) {
+			redirectAttributes.addFlashAttribute("errorMessage", "게시판 관리 권한이 없습니다.");
+			return "redirect:/project/" + projectId + "/notice/BoardList";
+		}
+		// -- 권한 처리 끝
 		boolean isDeleted = noticeService.deleteBoard(boardId);
 		
 		if (!isDeleted) {

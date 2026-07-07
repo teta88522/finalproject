@@ -22,6 +22,14 @@ public class ManageServiceImpl implements ManageService {
 
     private final ManageMapper manageMapper;
 
+    private String blankToNull(String value) {
+        if (value == null || value.trim().equals("")) {
+            return null;
+        }
+
+        return value;
+    }
+
     @Override
     public List<ManageProjectVO> selectMyManageProjectList(String ownerId) {
         return manageMapper.selectMyManageProjectList(ownerId);
@@ -45,6 +53,8 @@ public class ManageServiceImpl implements ManageService {
     public Map<String, Object> insertManageGroup(ManageGroupVO manageGroupVO, String ownerId) {
 
         Map<String, Object> resultMap = new HashMap<>();
+
+        manageGroupVO.setRoleId(blankToNull(manageGroupVO.getRoleId()));
 
         int projectOwnerCount =
                 manageMapper.selectProjectOwnerCheckCount(manageGroupVO.getProjectId(), ownerId);
@@ -92,6 +102,8 @@ public class ManageServiceImpl implements ManageService {
     public Map<String, Object> updateManagerGroup(ManageGroupVO manageGroupVO, String ownerId) {
 
         Map<String, Object> resultMap = new HashMap<>();
+
+        manageGroupVO.setRoleId(blankToNull(manageGroupVO.getRoleId()));
 
         ManageGroupVO originGroup =
                 manageMapper.selectManageGroupDetail(manageGroupVO.getProjectGroupId(), ownerId);
@@ -185,6 +197,7 @@ public class ManageServiceImpl implements ManageService {
     @Transactional
     public Map<String, Object> addGroupMember(String projectGroupId,
                                               String projectMemberId,
+                                              String roleId,
                                               String ownerId) {
 
         Map<String, Object> resultMap = new HashMap<>();
@@ -210,8 +223,10 @@ public class ManageServiceImpl implements ManageService {
             return resultMap;
         }
 
+        roleId = blankToNull(roleId);
+
         int result =
-                manageMapper.addGroupMember(projectGroupId, projectMemberId, ownerId);
+                manageMapper.addGroupMember(projectGroupId, projectMemberId, roleId, ownerId);
 
         if (result <= 0) {
             resultMap.put("result", false);
@@ -229,9 +244,16 @@ public class ManageServiceImpl implements ManageService {
     @Transactional
     public Map<String, Object> addGroupMemberList(String projectGroupId,
                                                   List<String> projectMemberIds,
+                                                  String roleId,
                                                   String ownerId) {
 
         Map<String, Object> resultMap = new HashMap<>();
+
+        if (projectGroupId == null || projectGroupId.equals("")) {
+            resultMap.put("result", false);
+            resultMap.put("message", "그룹 정보가 없습니다.");
+            return resultMap;
+        }
 
         if (projectMemberIds == null || projectMemberIds.isEmpty()) {
             resultMap.put("result", false);
@@ -248,17 +270,39 @@ public class ManageServiceImpl implements ManageService {
             return resultMap;
         }
 
-        for (String projectMemberId : projectMemberIds) {
-            Map<String, Object> addResult =
-                    addGroupMember(projectGroupId, projectMemberId, ownerId);
+        roleId = blankToNull(roleId);
 
-            if (!Boolean.TRUE.equals(addResult.get("result"))) {
-                throw new RuntimeException(String.valueOf(addResult.get("message")));
+        int successCount = 0;
+        int failCount = 0;
+
+        for (String projectMemberId : projectMemberIds) {
+            if (projectMemberId == null || projectMemberId.trim().equals("")) {
+                continue;
+            }
+
+            int result =
+                    manageMapper.addGroupMember(projectGroupId, projectMemberId, roleId, ownerId);
+
+            if (result > 0) {
+                successCount++;
+            } else {
+                failCount++;
             }
         }
 
+        if (successCount <= 0) {
+            resultMap.put("result", false);
+            resultMap.put("message", "구성원 배정에 실패했습니다. 이미 다른 그룹에 배정된 구성원일 수 있습니다.");
+            return resultMap;
+        }
+
         resultMap.put("result", true);
-        resultMap.put("message", "구성원 배정이 완료되었습니다.");
+
+        if (failCount > 0) {
+            resultMap.put("message", successCount + "명의 구성원이 배정되었습니다. 실패 " + failCount + "건이 있습니다.");
+        } else {
+            resultMap.put("message", successCount + "명의 구성원이 배정되었습니다.");
+        }
 
         return resultMap;
     }

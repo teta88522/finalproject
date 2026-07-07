@@ -8,7 +8,7 @@
 <body>
 <div layout:fragment="Content">
 <div class="container-fluid" style="height:calc(100vh - 130px); display:flex; flex-direction:column; padding-bottom:24px;">
-    <div style="background:#fff; border-radius:12px; box-shadow:0 2px 12px rgba(0,0,0,0.08); padding:24px; flex:1; display:flex; flex-direction:column; overflow:hidden;">
+    <div style="background:#fff; border-radius:12px; box-shadow:0 2px 12px rgba(0,0,0,0.08); padding:24px; flex:1; display:flex; flex-direction:column; overflow:auto;">
  
         <!-- 헤더 고정 -->
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-shrink:0;">
@@ -59,11 +59,14 @@
                                     <span th:text="${file.originalName}" ></span>
                                     <span th:text="'v' + ${file.fileVersion}"></span>
                                 </span>
-                                <a class="btn btn-default btn-custon-three btn-custon-rounded-four btn-xs" th:href="@{/project/{projectId}/document/detail/{documentId}/{fileId}/download(projectId=${projectId},
-        									documentId=${docDetail.documentId},
-        									fileId=${file.fileId})}">
-                                    <i class="fa fa-download"></i>
-                                </a>
+                                 <!-- 개별 다운로드: <a> → <button> 으로 교체 -->
+        <!-- 변경 후 (정상) -->
+<button type="button"
+        class="btn btn-default btn-custon-three btn-custon-rounded-four btn-xs"
+        th:data-file-id="${file.fileId}"
+        onclick="handleSingleDownload(this)">
+    <i class="fa fa-download"></i>
+</button>
                             </li>
                             <li th:if="${#lists.isEmpty(fileList)}"
                                 style="font-size:12px; color:#aaa; padding:4px 0;">
@@ -94,41 +97,38 @@
  
         <!-- 하단 버튼 바 -->
         <div style="display:flex; justify-content:flex-end; gap:6px; padding-top:16px; border-top:1px solid #f0f0f0; flex-shrink:0; margin-top:4px;">
+            <!-- ⑥ 목록 -->
+            <a th:href="@{/project/{projectId}/document/historylist/{documentId}(projectId=${projectId},documentId=${docDetail.documentId})}"  class="btn btn-custon-rounded-four custom-white-btn">
+                <i class="fa fa-list" style="margin-right:5px;"></i> 목록
+            </a>
             <!-- ④ 다운로드 이력 -->
             <button
         		type="button"
         		data-toggle="modal"
         		data-target="#downloadHistoryModal"
-        		style="display:flex; align-items:center; gap:6px; font-size:13px; padding:6px 14px; border:1px solid #ddd; border-radius:6px; background:#fff; color:#555; cursor:pointer;">
-        		<i class="fa fa-plus" style="font-size:11px;"></i>
+        		class="btn btn-custon-rounded-four custom-white-btn">
         		파일 다운로드 이력
     		</button>
-            <!-- ⑤ 파일 다운로드 -
             <!-- ⑤ 파일 다운로드 -->
-            <a class="btn btn-info btn-custon-three btn-custon-rounded-four"
-   					style="font-size:13px; padding:6px 16px;"
-   					th:href="@{/project/{projectId}/document/detail/{documentId}/download(projectId=${projectId},documentId=${docDetail.documentId})}">
-
-    			<i class="fa fa-download" style="margin-right:5px;"></i>
-    			전체 파일 다운로드
-			</a>
-            <!-- ⑥ 목록 -->
-            <a th:href="@{/project/{projectId}/document/list(projectId=${projectId})}" class="btn btn-default btn-custon-three btn-custon-rounded-four" style="font-size:13px; padding:6px 16px;">
-                <i class="fa fa-list" style="margin-right:5px;"></i> 목록
-            </a>
+            <button type="button"
+        class="btn btn-custon-rounded-four custom-white-btn"
+        onclick="handleAllDownload()">
+    <i class="fa fa-download" style="margin-right:5px;"></i>
+    전체 파일 다운로드
+</button>
         </div>
  
     </div>
 </div>
 <div class="modal fade" id="downloadHistoryModal" tabindex="-1" role="dialog">
   <div class="modal-dialog" role="document" style="border-radius:20px;">
-    <div class="modal-content" style="border-radius:20px; overflow:hidden; border:none;">
+    <div class="modal-content" style="border-radius:5px; overflow:hidden; border:none;">
 
       <!-- form 추가 -->
       <div>
 
         <!-- 헤더 -->
-            <div style="background:#1a6fe8; padding:18px 24px; display:flex; align-items:center; justify-content:space-between;">
+            <div style="background:#031225; padding:18px 24px; display:flex; align-items:center; justify-content:space-between;">
                 <h4 style="color:#fff; margin:0; font-size:15px; font-weight:500;">
                     파일 다운로드 이력
                 </h4>
@@ -142,16 +142,16 @@
                     <thead style="background:#f8f9fa;">
                     <tr>
                         <th style="width:10%; text-align:center;">No</th>
-                        <th style="width:45%;">파일명</th>
-                        <th style="width:20%; text-align:center;">다운로드 사용자</th>
+                        <th style="width:40%; text-align:center;">파일명</th>
+                        <th style="width:25%; text-align:center;">다운로드 사용자</th>
                         <th style="width:25%; text-align:center;">다운로드 일시</th>
                     </tr>
                     </thead>
 
-                    <tbody>
+                    <tbody >
                     <tr th:each="history, stat : ${downloadHistoryList}">
                         <td class="text-center" th:text="${stat.count}">1</td>
-                        <td th:text="${history.originalName}">sample.pdf</td>
+                        <td class="text-center" th:text="${history.originalName}">sample.pdf</td>
                         <td class="text-center" th:text="${history.userName}">홍길동</td>
                         <td class="text-center" th:text="${history.downloadDate}">
                             2026-07-01 14:30
@@ -173,7 +173,7 @@
             <div class="modal-footer" style="border-top:1px solid #f0f0f0; padding:14px 24px 20px;">
                 <button
                         type="button"
-                        class="btn btn-default btn-custon-three btn-custon-rounded-three"
+                        class="btn btn-custon-rounded-four custom-white-btn"
                         data-dismiss="modal">
                     닫기
                 </button>
@@ -184,6 +184,76 @@
     </div>
   </div>
 </div>
+<script th:inline="javascript">
+// Thymeleaf에서 JS 변수로 주입
+const projectId  = /*[[${projectId}]]*/ null;
+const documentId = /*[[${docDetail.documentId}]]*/ null;
+
+/* ── 공통: Fetch → Blob → 브라우저 다운로드 ── */
+async function downloadBlob(url) {
+    const response = await fetch(url);
+    if (!response.ok) throw new Error('다운로드 실패: ' + response.status);
+
+    // Content-Disposition에서 파일명 추출 (없으면 fallback)
+    const disposition = response.headers.get('Content-Disposition') ?? '';
+    const match = disposition.match(/filename\*?=(?:UTF-8'')?["']?([^"';\n]+)/i);
+    const filename = match ? decodeURIComponent(match[1]) : 'download';
+
+    const blob = await response.blob();
+    const blobUrl = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = blobUrl;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(blobUrl);
+}
+
+/* ── 전체 다운로드 ── */
+async function handleAllDownload() {
+    try {
+        await downloadBlob(`/project/${projectId}/document/detail/${documentId}/download`);
+        await refreshDownloadHistory(); // 이력 즉시 갱신
+    } catch (e) {
+        console.error('전체 다운로드 실패', e);
+        alert('다운로드 중 오류가 발생했습니다.');
+    }
+}
+
+/* ── 개별 다운로드 ── */
+async function handleSingleDownload(btn) {
+    const fileId = btn.dataset.fileId;  // data-file-id 값 읽기
+    try {
+        await downloadBlob(`/project/${projectId}/document/detail/${documentId}/${fileId}/download`);
+        await refreshDownloadHistory();
+    } catch (e) {
+        console.error('개별 다운로드 실패', e);
+        alert('다운로드 중 오류가 발생했습니다.');
+    }
+}
+/* ── 다운로드 이력 모달 갱신 ── */
+async function refreshDownloadHistory() {
+    try {
+        // 현재 페이지를 다시 fetch해서 tbody 내용만 추출
+        const res = await fetch(window.location.href);
+        const html = await res.text();
+        
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        
+        // 새로 받아온 페이지의 tbody 내용을 현재 모달에 반영
+        const newTbody = doc.querySelector('#downloadHistoryModal tbody');
+        const currentTbody = document.querySelector('#downloadHistoryModal tbody');
+        
+        if (newTbody && currentTbody) {
+            currentTbody.innerHTML = newTbody.innerHTML;
+        }
+    } catch (e) {
+        console.error('이력 갱신 실패', e);
+    }
+}
+</script>
 </div>
 </body>
 

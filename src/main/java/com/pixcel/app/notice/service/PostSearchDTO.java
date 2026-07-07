@@ -10,4 +10,5 @@ public class PostSearchDTO {
 	private String endDate;
 	private String searchType;
 	private String keyword;
+	private String sortBy; // "latest"(최신순, 기본) 또는 "views"(조회수순)
 }

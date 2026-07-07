@@ -6,6 +6,8 @@ import com.pixcel.app.roadmap.service.RoadmapService;
 import com.pixcel.app.roadmap.service.RoadmapVO;
 import com.pixcel.app.user.security.CustomUserDetails;
 import com.pixcel.app.web.AllProjectController;
+import com.pixcel.app.project.service.ProjectService;
+import com.pixcel.app.project.service.ProjectVO;
 
 import com.pixcel.app.issues.service.IssuesVO;
 import com.pixcel.app.milestones.service.MilestonesMemberDTO;
@@ -37,12 +39,20 @@ public class MilestonesController {
 
     private final MilestonesService milestonesService; //서비스를 받아 mybatis와 연결
     private final RoadmapService roadmapService; // 📝 로드맵 서비스 주입 추가
+    private final ProjectService projectService; // 📝 프로젝트 조회 서비스 주입 추가
     
     //마일스톤 생성화면
     @GetMapping("/create")
     public String createMilestoneForm(@AuthenticationPrincipal CustomUserDetails userDetails,
-    								  @PathVariable("projectId") String projectId
-    									,Model model) {
+    								  @PathVariable("projectId") String projectId,
+    								  RedirectAttributes rttr,
+    								  Model model) {
+        // -- 권한 처리
+        if (!milestonesService.checkProjectPermission(projectId, userDetails.getUsername(), "p002")) {
+            rttr.addFlashAttribute("errorMessage", "마일스톤 생성 권한이 없습니다.");
+            return "redirect:/project/" + projectId + "/milestones/list";
+        }
+        // -- 권한 처리 끝
   
    
     
@@ -53,6 +63,8 @@ public class MilestonesController {
     roadmapVO.setProjectId(projectId);
     List<RoadmapVO> roadmapList = roadmapService.getSettingList(roadmapVO);
     
+    ProjectVO project = projectService.selectProjectDetail(projectId); // 📝 프로젝트 상세 정보(시작일/종료일) 조회
+    model.addAttribute("project", project); // 📝 프로젝트 기간 제한용 모델 전송
     model.addAttribute("managerList", managerList); //화면에 팀원 목록을 넘겨줌
     model.addAttribute("roadmapList", roadmapList); // 📝 로드맵 버전 목록을 화면에 넘겨줌
     model.addAttribute("projectId", projectId);
@@ -77,45 +89,86 @@ public class MilestonesController {
     //화면에서 저장시 form데이터가 RequestDTO에 담겨서 컨트롤러 옴
     @PostMapping("/create")
     public String createMilestoneSubmit(
+    		@AuthenticationPrincipal CustomUserDetails userDetails,
     		@ModelAttribute MilestonesVO milestoneVO,
     		@PathVariable("projectId") String projectId) {
     	
     	milestoneVO.setProjectId(projectId);
-    	milestonesService.createMilestone(milestoneVO);
+    	milestonesService.createMilestone(milestoneVO, userDetails.getUsername());
     	return "redirect:/project/" + projectId + "/milestones/detail?id=" + milestoneVO.getMilestoneId();
     	
     }
     
     @GetMapping("/detail")
-    public String milestoneDetail(@RequestParam("id") String milestoneId,
-    							  @PathVariable("projectId") String projectId
-    			, Model model) {
+    public String milestoneDetail(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestParam("id") String milestoneId,
+            @PathVariable("projectId") String projectId,
+            Model model) {
     	
         // SQL JOIN 문을 통해 담당자 이름(managerName)까지 한 번에 바인딩되어 넘어옵니다.
     	MilestonesVO detailVO = milestonesService.getMilestoneDetail(milestoneId, projectId);
     	List<IssuesVO> connectedIssues = milestonesService.selectConnectedIssues(milestoneId);
+        List<IssuesVO> historyList = milestonesService.selectMilestoneHistoryList(milestoneId);
         if (detailVO == null) {
             return "redirect:/project/" + projectId + "/milestones/list"; // 조회 실패 시 메인으로 리다이렉트
         }
         
+        // [안전장치] 연결된 로드맵이 완료(k003) 상태인지 체크하여 모델 바인딩
+        boolean isRoadmapCompleted = false;
+        if (detailVO.getVersionId() != null) {
+            RoadmapVO roadmap = roadmapService.getsettingDetail(detailVO.getVersionId(), projectId);
+            if (roadmap != null && "k003".equals(roadmap.getStatusCode())) {
+                isRoadmapCompleted = true;
+            }
+        }
+        model.addAttribute("isRoadmapCompleted", isRoadmapCompleted);
+        
+        // -- 권한 처리
+        boolean canUpdate = milestonesService.checkProjectPermission(projectId, userDetails.getUsername(), "p003");
+        boolean canDelete = milestonesService.checkProjectPermission(projectId, userDetails.getUsername(), "p004");
+        model.addAttribute("canUpdate", canUpdate);
+        model.addAttribute("canDelete", canDelete);
+        // -- 권한 처리 끝
+        
         model.addAttribute("milestone", detailVO);
         model.addAttribute("issues", connectedIssues);
+        model.addAttribute("historyList", historyList);
         model.addAttribute("projectId", projectId);
         return "milestones/detail"; 
     }
     
  // 마일스톤 수정 화면 진입
     @GetMapping("/update")
-    public String updateMilestoneForm(@RequestParam("id") String milestoneId,
-    		 						@PathVariable("projectId") String projectId, 
-    		 						Model model) {
+    public String updateMilestoneForm(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestParam("id") String milestoneId,
+            @PathVariable("projectId") String projectId, 
+            Model model,
+            RedirectAttributes rttr) {
     	
   
     	MilestonesVO milestone = milestonesService.getMilestoneDetail(milestoneId,projectId);
         
+        // -- 권한 처리
+        if (!milestonesService.checkProjectPermission(projectId, userDetails.getUsername(), "p003")) {
+            rttr.addFlashAttribute("errorMessage", "마일스톤 수정 권한이 없습니다.");
+            return "redirect:/project/" + projectId + "/milestones/detail?id=" + milestoneId;
+        }
+        // -- 권한 처리 끝
+        
     	if (milestone == null) {
             log.warn("권한 없는 수정 폼 접근 시도! milestoneId: {}", milestoneId);
             return "redirect:/project/" + projectId + "/milestones/list?error=unauthorized";
+        }
+    	
+        // [안전장치] 원래 마일스톤이 연결되어 있던 로드맵이 완료(k003) 상태인지 체크하여 진입 차단
+        if (milestone.getVersionId() != null) {
+            RoadmapVO roadmap = roadmapService.getsettingDetail(milestone.getVersionId(), projectId);
+            if (roadmap != null && "k003".equals(roadmap.getStatusCode())) {
+                rttr.addFlashAttribute("errorMessage", "이미 완료된 로드맵에 속한 마일스톤은 수정할 수 없습니다.");
+                return "redirect:/project/" + projectId + "/milestones/detail?id=" + milestoneId;
+            }
         }
     	
         List<MilestonesMemberDTO> managerList = milestonesService.getManagerList(projectId);
@@ -125,6 +178,9 @@ public class MilestonesController {
         RoadmapVO roadmapVO = new RoadmapVO();
         roadmapVO.setProjectId(projectId);
         List<RoadmapVO> roadmapList = roadmapService.getSettingList(roadmapVO);
+        
+        ProjectVO project = projectService.selectProjectDetail(projectId); // 📝 프로젝트 상세 정보 조회
+        model.addAttribute("project", project); // 📝 프로젝트 기간 제한용 모델 전송
         
         // 3. 뷰(HTML)로 데이터 전달
         model.addAttribute("milestone", milestone);      // 수정 폼에 채워질 기존 데이터
@@ -138,23 +194,49 @@ public class MilestonesController {
  // 마일스톤 데이터 실제 수정 (저장)
     @PostMapping("/update")
     public String updateMilestoneSubmit(
-        @ModelAttribute MilestonesVO requestDTO, @PathVariable("projectId") String projectId) {  
+        @AuthenticationPrincipal CustomUserDetails userDetails,
+        @ModelAttribute MilestonesVO requestDTO, 
+        @PathVariable("projectId") String projectId,
+        RedirectAttributes rttr) {  
     	
-    	requestDTO.setProjectId(projectId);
-        milestonesService.updateMilestone(requestDTO);
-        return "redirect:/project/" + projectId + "/milestones/detail?id=" + requestDTO.getMilestoneId();
+    	try {
+            requestDTO.setProjectId(projectId);
+            milestonesService.updateMilestone(requestDTO, userDetails.getUsername());
+            return "redirect:/project/" + projectId + "/milestones/detail?id=" + requestDTO.getMilestoneId();
+        } catch (IllegalArgumentException e) {
+            rttr.addFlashAttribute("errorMessage", e.getMessage());
+            return "redirect:/project/" + projectId + "/milestones/detail?id=" + requestDTO.getMilestoneId();
+        } catch (SecurityException e) {
+            rttr.addFlashAttribute("errorMessage", e.getMessage());
+            return "redirect:/project/" + projectId + "/milestones/detail?id=" + requestDTO.getMilestoneId();
+        }
     }
     //삭제
     @PostMapping("/delete")
-    public String deleteMilestone( @RequestParam("milestoneId") String milestoneId,
-    								@PathVariable("projectId") String projectId,
-    								RedirectAttributes rttr) {
+    public String deleteMilestone(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestParam("milestoneId") String milestoneId,
+            @PathVariable("projectId") String projectId,
+            RedirectAttributes rttr) {
   
     	try {
-    		milestonesService.deleteMilestone(milestoneId,projectId);
+            // [안전장치] 연결된 로드맵이 완료(k003) 상태인지 체크하여 삭제 차단
+            MilestonesVO milestone = milestonesService.getMilestoneDetail(milestoneId, projectId);
+            if (milestone != null && milestone.getVersionId() != null) {
+                RoadmapVO roadmap = roadmapService.getsettingDetail(milestone.getVersionId(), projectId);
+                if (roadmap != null && "k003".equals(roadmap.getStatusCode())) {
+                    rttr.addFlashAttribute("errorMessage", "이미 완료된 로드맵에 속한 마일스톤은 삭제할 수 없습니다.");
+                    return "redirect:/project/" + projectId + "/milestones/detail?id=" + milestoneId;
+                }
+            }
+
+    		milestonesService.deleteMilestone(milestoneId, projectId, userDetails.getUsername());
     		rttr.addFlashAttribute("message", "마일스톤이 정상적으로 삭제되었습니다.");
             return "redirect:/project/" + projectId + "/milestones/list";
-    	}catch(DataIntegrityViolationException e) {
+    	} catch (SecurityException e) {
+            rttr.addFlashAttribute("errorMessage", e.getMessage());
+            return "redirect:/project/" + projectId + "/milestones/detail?id=" + milestoneId;
+    	} catch (DataIntegrityViolationException e) {
     		rttr.addFlashAttribute("errorMessage", "해당 마일스톤에 연결된 문서가 있어 삭제할 수 없습니다.");
     		return "redirect:/project/" + projectId + "/milestones/detail?id=" + milestoneId;
     	}catch (Exception e) {
@@ -167,9 +249,18 @@ public class MilestonesController {
     
     //목록
     @GetMapping("/list")
-    public String getMilestoneList(Model model, @PathVariable("projectId") String projectId) {
+    public String getMilestoneList(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            Model model, 
+            @PathVariable("projectId") String projectId) {
        
         List<MilestonesVO> milestoneList = milestonesService.getMilestoneList(projectId);
+        
+        // -- 권한 처리
+        boolean canCreate = milestonesService.checkProjectPermission(projectId, userDetails.getUsername(), "p002");
+        model.addAttribute("canCreate", canCreate);
+        // -- 권한 처리 끝
+
         model.addAttribute("milestoneList", milestoneList);
         model.addAttribute("projectId", projectId);
         return "milestones/list";

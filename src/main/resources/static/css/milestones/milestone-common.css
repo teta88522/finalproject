@@ -53,12 +53,40 @@ body {
 
 /* 상태 뱃지 공통 */
 .status-badge {
-    padding: 6px 14px;
-    font-size: 13px;
+    padding: 4px 12px;
+    font-size: 12px;
     font-weight: 600;
-    border-radius: 3px;
-    color: #fff;
-    background-color: #006DF0;
+    border-radius: 20px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #4f46e5;
+    background-color: #e0e7ff;
+    border: 1px solid #c7d2fe;
 }
-.status-todo { background-color: #999999; }
-.status-done { background-color: #65b12d; }
+.status-todo {
+    background-color: #f1f5f9;
+    color: #64748b;
+    border: 1px solid #cbd5e1;
+}
+.status-inpg {
+    background-color: #e0e7ff;
+    color: #4f46e5;
+    border: 1px solid #c7d2fe;
+}
+.status-done {
+    background-color: #dcfce7;
+    color: #166534;
+    border: 1px solid #bbf7d0;
+}
+
+/* 필터 영역 초기화 버튼 테두리 강조 */
+#btnFilterReset {
+    border: 1px solid #888888 !important;
+    color: #555555;
+}
+#btnFilterReset:hover {
+    background-color: #f0f0f0;
+    border-color: #555555 !important;
+    color: #222222;
+}

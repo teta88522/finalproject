@@ -25,12 +25,13 @@
 }
 
 .status-badge {
-  background-color: #e8f5e9;
-  color: #2e7d32;
-  padding: 4px 8px;
-  border-radius: 4px;
+  padding: 4px 12px;
+  border-radius: 20px;
   font-size: 12px;
-  font-weight: bold;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* 2단 레이아웃 분할 */
@@ -114,14 +115,15 @@
 .progress-bg {
   width: 100px;
   height: 8px;
-  background: #e0e0e0;
+  background: #e2e8f0;
   border-radius: 4px;
   overflow: hidden;
 }
 
 .progress-bar {
   height: 100%;
-  background: #2196f3;
+  background: linear-gradient(90deg, #3b82f6 0%, #6366f1 100%);
+  border-radius: 4px;
 }
 
 /* 일감 테이블 */
@@ -167,12 +169,12 @@
   background: #fff;
   border: 1px solid #e0e0e0;
   border-radius: 8px;
-  padding: 20px;
+  padding: 16px 20px;
 }
 
 .chart-card h3 {
   margin-top: 0;
-  margin-bottom: 20px;
+  margin-bottom: 12px;
   font-size: 16px;
 }
 
@@ -223,11 +225,11 @@
 }
 
 .huge-percent {
-  font-size: 48px;
+  font-size: 38px;
   font-weight: bold;
-  color: #3b82f6; /* 파란색 통일 */
+  color: #4f46e5; /* 남색 -> 인디고 통일 */
   line-height: 1;
-  margin-bottom: 12px;
+  margin-bottom: 6px;
 }
 
 .progress-breakdown {
@@ -242,9 +244,9 @@
 
 /* 첫 번째 차트 크기 작게 고정 */
 .small-chart {
-  width: 120px !important;
-  height: 120px !important;
-  max-width: 120px;
+  width: 100px !important;
+  height: 100px !important;
+  max-width: 100px;
 }
 
 /* --- 일감 상태별 분포 (두 번째 카드) 커스텀 범례 스타일 --- */
@@ -363,12 +365,12 @@
     pointer-events: none;
 }
 
-/* 완료 버튼 (기본 파란색) */
+/* 완료 버튼 (어두운 남색 테마 통일) */
 .btn-complete {
     display: inline-block;
     padding: 8px 16px;
-    background-color: #3b82f6; 
-    border: 1px solid #3b82f6;
+    background-color: #02101f; 
+    border: 1px solid #02101f;
     border-radius: 4px;
     color: #fff;
     font-size: 14px;
@@ -377,7 +379,8 @@
 }
 
 .btn-complete:hover:not(:disabled) {
-    background-color: #2563eb;
+    background-color: #12243d;
+    border-color: #12243d;
 }
 
 /* 완료 버튼이 비활성화(disabled) 상태일 때 - 회색 처리 */
@@ -434,30 +437,35 @@
 }
 
 .issue-status {
-    display: inline-block;
-    padding: 4px 10px;
-    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px 12px;
+    border-radius: 20px;
     font-size: 12px;
-    font-weight: 500;
+    font-weight: 600;
     text-align: center;
 }
 
-/* 1. 진행 예정 (회색) */
+/* 1. 진행 예정 */
 .status-k001 {
-    background-color: #868e96; /* 차분한 회색 */
-	color: #ffffff;
+    background-color: #f1f5f9;
+    color: #64748b;
+    border: 1px solid #cbd5e1;
 }
 
-/* 2. 진행 중 (파란색) */
+/* 2. 진행 중 */
 .status-k002 {
-    background-color: #007bff; /* 쨍한 파란색 */
-	color: #ffffff;
+    background-color: #e0e7ff;
+    color: #4f46e5;
+    border: 1px solid #c7d2fe;
 }
 
-/* 3. 완료 (초록색) */
+/* 3. 완료 */
 .status-k003 {
-    background-color: #28a745; /* 안정적인 초록색 */
-	color: #ffffff;
+    background-color: #dcfce7;
+    color: #166534;
+    border: 1px solid #bbf7d0;
 }
 
 /* 마감 임박 위젯 컨테이너 */
@@ -520,3 +528,43 @@
 
 .border-blue { border-left-color: #007bff; }
 .badge-blue { background-color: #cce5ff; color: #007bff; }
+
+/* 로드맵 상세 화면 전용 뷰포트 고정 높이 해제 오버라이드 */
+.roadmap-page-wrapper {
+    height: auto !important;
+    min-height: 0 !important;
+    padding-bottom: 24px;
+}
+.roadmap-page-panel {
+    flex: none !important;
+    overflow: visible !important;
+}
+.roadmap-page-body {
+    flex: none !important;
+    overflow-y: visible !important;
+    padding-right: 0 !important;
+}
+
+/* 마일스톤 리스트 영역 최대 높이 및 스크롤바 활성화 */
+.milestone-list {
+    max-height: 620px; /* 14개 내외 목록 노출 */
+    overflow-y: auto;
+    padding-right: 8px;
+    margin-bottom: 20px; /* 하단 여유 공간 확보 */
+}
+.milestone-list::-webkit-scrollbar {
+    width: 6px;
+}
+.milestone-list::-webkit-scrollbar-thumb {
+    background-color: #cccccc;
+    border-radius: 3px;
+}
+.milestone-list::-webkit-scrollbar-track {
+    background-color: #f1f1f1;
+    border-radius: 3px;
+}
+
+/* 마진 탑 12px 유틸리티 클래스 추가 */
+.mt-12 {
+    margin-top: 12px !important;
+}

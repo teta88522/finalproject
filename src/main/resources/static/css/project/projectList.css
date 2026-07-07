@@ -6,11 +6,11 @@
 
 /* ② min-height 제거: 전체 스크롤 없음 */
 .project-list-page {
-	max-width: 1400px;
-	margin: 0 auto;
-	padding: 30px 20px;
-	background-color: #f5f7fb;
-	box-sizing: border-box;
+    width: 100%;
+    max-width: none;   /* 또는 삭제 */
+    margin: 0;
+    padding: 30px 40px;
+    box-sizing: border-box;
 }
 
 .project-page-header {
@@ -60,38 +60,7 @@
 	gap: 8px;
 }
 
-.search-action-btn {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	height: 36px;
-	padding: 0 14px;
-	border-radius: 6px;
-	background-color: #2f6fed;
-	border: 1px solid #2f6fed;
-	color: #fff;
-	font-size: 14px;
-	font-weight: 600;
-	text-decoration: none;
-	cursor: pointer;
-	transition: 0.15s;
-}
 
-.search-action-btn:hover {
-	background-color: #245fd0;
-	border-color: #245fd0;
-	color: #fff;
-}
-
-.search-action-btn.manage {
-	background-color: #fff;
-	border-color: #2f6fed;
-	color: #2f6fed;
-}
-
-.search-action-btn.manage:hover {
-	background-color: #eef3ff;
-}
 
 .search-form-row {
 	display: grid;
@@ -228,41 +197,6 @@
 	margin-top: 20px;
 }
 
-.btn-basic, .mini-btn, .page-btn {
-	border: 1px solid #d6dce8;
-	background-color: #fff;
-	color: #333;
-	border-radius: 6px;
-	cursor: pointer;
-	transition: 0.15s;
-	font-size: 14px;
-	text-decoration: none;
-	box-sizing: border-box;
-}
-
-.btn-basic {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	height: 36px;
-	padding: 0 18px;
-}
-
-.btn-basic.btn-primary {
-	background-color: #2f6fed;
-	border-color: #2f6fed;
-	color: #fff;
-}
-
-.btn-basic:hover, .mini-btn:hover {
-	background-color: #eef3ff;
-	border-color: #9bbcff;
-}
-
-.btn-basic.btn-primary:hover {
-	background-color: #245fd0;
-	border-color: #245fd0;
-}
 
 .project-list-section {
 	background-color: #fff;
@@ -311,7 +245,10 @@
 .project-table {
 	width: 100%;
 	border-collapse: collapse;
-	table-layout: fixed;
+	/* ✅ subscribeYn에 따라 컬럼 개수(식별자/관리)가 달라지는데,
+	   fixed 레이아웃 + nth-child 고정폭이 컬럼 개수 변화에 대응 못 해서
+	   컬럼이 줄면 표 전체 폭도 같이 줄어 오른쪽에 빈 공간이 남던 문제. auto로 변경. */
+	table-layout: auto;
 	background-color: #fff;
 }
 
@@ -325,7 +262,7 @@
 	font-size: 13px;
 	font-weight: 700;
 	color: #444;
-	text-align: left;
+	text-align: center;
 	border-bottom: 1px solid #dfe5ef;
 	white-space: nowrap;
 }
@@ -336,7 +273,6 @@
 	font-size: 14px;
 	color: #333;
 	border-bottom: 1px solid #edf0f5;
-	vertical-align: middle;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
@@ -355,37 +291,10 @@
 	border-bottom: none;
 }
 
-.project-table th:nth-child(1), .project-table td:nth-child(1) {
-	width: 100px;
-}
-
-.project-table th:nth-child(2), .project-table td:nth-child(2) {
-	width: 170px;
-}
-
-.project-table th:nth-child(3), .project-table td:nth-child(3) {
-	width: 260px;
-}
-
-.project-table th:nth-child(4), .project-table td:nth-child(4) {
-	width: 100px;
-}
-
-.project-table th:nth-child(5), .project-table td:nth-child(5) {
-	width: 180px;
-}
-
-.project-table th:nth-child(6), .project-table td:nth-child(6) {
-	width: 90px;
-}
-
-.project-table th:nth-child(7), .project-table td:nth-child(7),
-	.project-table th:nth-child(8), .project-table td:nth-child(8) {
-	width: 110px;
-}
-
-.project-table th:nth-child(9), .project-table td:nth-child(9) {
-	width: 130px;
+/* ✅ 컬럼 개수가 subscribeYn에 따라 달라져서(식별자/관리 유무) nth-child 위치 기반
+   고정폭은 위치가 밀리면서 오히려 잘못된 컬럼에 잘못된 폭이 적용되던 문제가 있었음.
+   auto 레이아웃으로 바꿨으니 내용 기준으로 자동 분배 + 항상 100% 채움. */
+.project-action-cell {
 	text-align: center;
 }
 
@@ -427,22 +336,7 @@
 	gap: 6px;
 }
 
-.mini-btn {
-	padding: 7px 12px;
-	font-size: 13px;
-	border-radius: 6px;
-}
 
-.mini-btn.delete {
-	border-color: #f1b8b8;
-	color: #d93025;
-	background-color: #fff;
-}
-
-.mini-btn.delete:hover {
-	background-color: #fff1f1;
-	border-color: #e58a8a;
-}
 
 .empty-row {
 	height: 90px !important;
@@ -475,12 +369,11 @@
 
 .page-btn:hover:not(.disabled):not([disabled]) {
 	background-color: #eef3ff;
-	border-color: #9bbcff;
 }
 
 .page-btn.active {
-	background-color: #2f6fed;
-	border-color: #2f6fed;
+	background-color: #031225;
+	border-color: #031225;
 	color: #fff;
 	font-weight: 700;
 }

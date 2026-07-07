@@ -29,10 +29,6 @@
     font-size: 14px;
 }
 
-
-
-
-
 .btn.small {
     min-width: 50px;
     height: 30px;
@@ -224,7 +220,7 @@
 
 .bug-table th,
 .bug-table td {
-    padding: 11px 8px;
+    padding: 10px 7px;
     border-bottom: 1px solid #e8ecf3;
     text-align: left;
     vertical-align: middle;
@@ -245,12 +241,17 @@
 }
 
 .bug-table tbody tr.selected {
-    background: #eaf2ff;
+    background: #eef4ff;
+}
+
+.bug-table tbody tr.selected td {
+    border-color: #c8dcff;
 }
 
 .bug-table th:nth-child(1),
 .bug-table td:nth-child(1) {
-    width: 140px;
+    width: 56px;
+    text-align: center;
 }
 
 .bug-table th:nth-child(2),
@@ -271,17 +272,23 @@
 .bug-table td:nth-child(6),
 .bug-table th:nth-child(7),
 .bug-table td:nth-child(7) {
-    width: 100px;
+    width: 95px;
 }
 
 .bug-table th:nth-child(8),
 .bug-table td:nth-child(8) {
-    width: 105px;
+    width: 96px;
 }
 
 .bug-table th:nth-child(9),
 .bug-table td:nth-child(9) {
-    width: 118px;
+    width: 112px;
+    text-align: center;
+}
+
+.manage-cell {
+    padding-left: 4px !important;
+    padding-right: 4px !important;
 }
 
 .title-cell {
@@ -325,7 +332,6 @@
     color: #267a35;
 }
 
-/* 상세정보 상태/심각도/우선순위 뱃지 */
 .badge-detail-wrap {
     display: flex;
     align-items: center;
@@ -341,12 +347,27 @@
 
 .row-actions {
     display: flex;
-    gap: 6px;
+    gap: 4px;
     align-items: center;
+    justify-content: center;
+    flex-wrap: nowrap;
+    width: 100%;
 }
 
 .row-actions form {
     margin: 0;
+    display: inline-flex;
+}
+
+.row-actions .action-btn {
+    min-width: 44px !important;
+    width: 44px !important;
+    height: 28px !important;
+    padding: 0 !important;
+    font-size: 12px !important;
+    line-height: 28px !important;
+    border-radius: 6px !important;
+    white-space: nowrap;
 }
 
 .detail-section {
@@ -406,14 +427,6 @@
     width: 16px;
     height: 16px;
     cursor: pointer;
-}
-
-.bug-table tbody tr.selected {
-    background: #eef4ff;
-}
-
-.bug-table tbody tr.selected td {
-    border-color: #c8dcff;
 }
 
 @media (max-width: 1280px) {

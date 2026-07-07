@@ -14,6 +14,9 @@ public interface userService {
 	public boolean checkLoginId(String loginId);
 	
 	public boolean checkPhone(String phone);
+	
+    // 이메일 중복확인
+    public boolean checkEmail(String email);
 
 	//김덕모 마이페이지 설정
 	public userServiceVO getUserDetail(String userId);

@@ -6,20 +6,25 @@
 <head>
     <meta charset="UTF-8">
     <title>게시판 정보 수정</title>
+    <link rel="stylesheet" th:href="@{/css/milestones/common_layout_mile.css}" />
     <link rel="stylesheet" th:href="@{/css/notice/board_create.css}" />
 </head>
 <body>
     <div layout:fragment="Content">
-        <div class="kiaalap-wrapper board-container">
-            <div class="kiaalap-panel form-panel">
-                <div class="panel-header">
-                    <h2>게시판 정보 수정</h2>
+        <div class="container-fluid board-page-wrapper">
+            <div class="board-page-panel">
+                <div class="board-page-header">
+                    <div>
+                        <h3 class="board-page-title">게시판 정보 수정</h3>
+                    </div>
                 </div>
+                <div class="board-page-body">
 
                 <div class="panel-body">
                     <form id="boardUpdateForm"
                           th:action="@{/project/{projectId}/notice/BoardUpdate(projectId=${projectId})}"
                           th:object="${board}"
+                          th:data-error-message="${errorMessage}"
                           method="POST"
                           novalidate>
 
@@ -56,47 +61,36 @@
                             </div>
                         </div>
 
-                        <div class="board-form-actions">
+                        <div class="board-page-footer">
                             <a th:href="@{/project/{projectId}/notice/BoardDelete(projectId=${projectId}, boardId=${board.boardId})}"
-                               class="btn-board-delete"
-                               th:onclick="return confirmDelete([[${board.postCount}]])">
+                               class="btn btn-custon-rounded-four btn-danger custom-btn"
+                               id="btnDeleteBoard"
+                               th:data-post-count="${board.postCount}">
                                 삭제
                             </a>
                             <a th:href="@{/project/{projectId}/notice/BoardList(projectId=${projectId})}" 
-                               class="btn-board-cancel">
+                               class="btn btn-custon-rounded-four custom-white-btn"
+                               id="btnCancelBoard">
                                 취소
                             </a>
                             <a href="javascript:void(0)" 
                                id="btnSubmit" 
-                               class="btn-board-submit">
+                               class="btn btn-custon-rounded-four custom-default-btn">
                                 수정
                             </a>
                         </div>
                     </form>
                 </div>
+                
+                <script th:src="@{/js/notice/board_update.js}"></script>
+                
+                <!-- SweetAlert2 및 공통 다이얼로그 추가 -->
+                <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+                <script th:src="@{/js/common/pf-confirm.js}"></script>
             </div>
         </div>
-
-        <script th:src="@{/js/notice/board_update.js}"></script>
-        
-        <script th:inline="javascript">
-            /*<![CDATA[*/
-            // 📝 타임리프 주석식 문법을 적용하여 IDE의 자바스크립트 문법 에러 경고를 완전히 처단합니다.
-            const errorMessage = /*[[${errorMessage}]]*/ null;
-            if (errorMessage) {
-                alert(errorMessage);
-            }
-
-            // 게시판 삭제 전 글 개수 안전 차단기
-            function confirmDelete(postCount) {
-                if (postCount > 0) {
-                    alert("게시글이 존재하는 게시판은 삭제할 수 없습니다. (현재 등록된 글: " + postCount + "개)");
-                    return false; // 이동 차단
-                }
-                return confirm("정말로 이 게시판을 삭제하시겠습니까?\n삭제 시 복구할 수 없습니다.");
-            }
-            /*]]>*/
-        </script>
+        </div>
+    </div>
     </div>
 </body>
 </html>

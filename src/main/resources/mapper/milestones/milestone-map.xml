@@ -189,6 +189,7 @@
         	,i.title
         	,i.version_id
         	,i.progress_rate
+        	,i.issue_no
         	,u.user_name AS assigneeName
         	,v.version_name
         	,g.status_name AS issueStatusName
@@ -199,4 +200,24 @@
         WHERE i.MILESTONE_ID = #{milestoneId}
     </select>
     
+    <select id="selectMilestoneHistoryList" resultType="IssuesVO">
+        SELECT 
+            h.HISTORY_ID,
+            h.HISTORY_GROUP_ID,
+            h.ISSUE_ID,
+            h.CHANGED_BY,
+            h.CHANGE_TYPE_CODE,
+            h.FIELD_NAME,
+            h.REASON,
+            h.BEFORE_VALUE,
+            h.AFTER_VALUE,
+            h.CHANGED_AT,
+            i.TITLE,
+            u.USER_NAME AS changedByName
+         FROM ISSUE_HISTORY h
+         INNER JOIN ISSUE i ON h.ISSUE_ID = i.ISSUE_ID
+        LEFT JOIN USERS u ON h.CHANGED_BY = u.USER_ID
+        WHERE i.MILESTONE_ID = #{milestoneId}
+        ORDER BY h.CHANGED_AT DESC, h.HISTORY_ID DESC
+    </select>
 </mapper>

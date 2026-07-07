@@ -7,6 +7,9 @@
 <title>프로젝트 구성원 추가</title>
 
 <link rel="stylesheet" th:href="@{/css/settings/projectMemberAdd.css}">
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script th:src="@{/js/common/pf-confirm.js}"></script>
 </head>
 
 <body>
@@ -36,13 +39,13 @@
             <div class="add-section">
                 <div class="section-title">역할 선택</div>
                 <div class="section-sub-text">
-                    추가할 구성원에게 부여할 역할을 선택하세요.
+                    추가할 구성원에게 부여할 역할을 선택하세요. 역할 없이도 등록할 수 있습니다.
                 </div>
 
                 <div class="role-select-row">
                     <label for="roleId">역할</label>
                     <select id="roleId" name="roleId">
-                        <option value="">선택</option>
+                        <option value="">역할 없음</option>
                         <option th:each="role : ${projectRoleList}"
                                 th:value="${role.roleId}"
                                 th:text="${role.roleName}">
@@ -59,7 +62,7 @@
                     <div>
                         <div class="section-title">팀 구성원 목록</div>
                         <div class="section-sub-text">
-                            이미 프로젝트에 참가 중인 팀원은 선택할 수 없습니다.
+                            이미 프로젝트에 참가 중인 팀원은 선택할 수 없습니다. 여러 명 선택 후 한 번에 저장할 수 있습니다.
                         </div>
                     </div>
 
@@ -74,7 +77,11 @@
                     <table class="candidate-table">
                         <thead>
                             <tr>
-                                <th>선택</th>
+                                <th class="check-col">
+                                    <input type="checkbox"
+                                           id="allCheck"
+                                           onclick="toggleAllMembers(this)">
+                                </th>
                                 <th>상태</th>
                                 <th>팀명</th>
                                 <th>이름</th>
@@ -94,11 +101,13 @@
                             <tr th:each="member : ${candidateList}"
                                 th:classappend="${member.joinedYn == 'Y'} ? ' already-joined-row' : ''">
 
-                                <td>
-                                    <input type="radio"
-                                           name="teamMemberId"
+                                <td class="check-col">
+                                    <input type="checkbox"
+                                           name="teamMemberIds"
+                                           class="member-check"
                                            th:value="${member.teamMemberId}"
-                                           th:disabled="${member.joinedYn == 'Y'}">
+                                           th:disabled="${member.joinedYn == 'Y'}"
+                                           onclick="syncAllCheckState()">
                                 </td>
 
                                 <td>
@@ -146,18 +155,60 @@
 
     </div>
 
-    <script>
-        function validateMemberAddForm() {
-            const checkedMember = document.querySelector('input[name="teamMemberId"]:checked');
-            const roleId = document.getElementById("roleId").value;
+    <script th:inline="javascript">
+        const message = /*[[${message}]]*/ null;
 
-            if (!checkedMember) {
-                alert("추가할 구성원을 선택하세요.");
-                return false;
+        if (message != null) {
+            window.PFDialog.alert(message, {
+                title: '알림',
+                icon: 'info'
+            });
+        }
+
+        function pfAlert(message, title, icon) {
+            window.PFDialog.alert(message, {
+                title: title || "알림",
+                icon: icon || "warning"
+            });
+        }
+
+        function toggleAllMembers(allCheck) {
+            const checks = document.querySelectorAll('.member-check:not(:disabled)');
+
+            checks.forEach(function (check) {
+                check.checked = allCheck.checked;
+            });
+        }
+
+        function syncAllCheckState() {
+            const allCheck = document.getElementById("allCheck");
+            const checks = document.querySelectorAll('.member-check:not(:disabled)');
+
+            if (!allCheck) {
+                return;
             }
 
-            if (!roleId) {
-                alert("역할을 선택하세요.");
+            if (checks.length === 0) {
+                allCheck.checked = false;
+                return;
+            }
+
+            let checkedCount = 0;
+
+            checks.forEach(function (check) {
+                if (check.checked) {
+                    checkedCount++;
+                }
+            });
+
+            allCheck.checked = checkedCount === checks.length;
+        }
+
+        function validateMemberAddForm() {
+            const checkedMembers = document.querySelectorAll('input[name="teamMemberIds"]:checked');
+
+            if (checkedMembers.length === 0) {
+                pfAlert("추가할 구성원을 선택하세요.", "구성원 선택 확인", "warning");
                 return false;
             }
 

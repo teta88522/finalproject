@@ -143,6 +143,9 @@
    ============================================================ */
 .table-wrap {
     overflow-x: auto;
+    /* ✅ 일감 유형이 많은 프로젝트에서 표가 끝없이 길어지던 문제 - 최대 높이 지정 후 스크롤로 처리 */
+    max-height: 320px;
+    overflow-y: auto;
 }
 
 .tracker-table {
@@ -153,6 +156,9 @@
 
 .tracker-table thead tr {
     background: #f1f5f9;
+    position: sticky;
+    top: 0;
+    z-index: 1;
 }
 
 .tracker-table th,

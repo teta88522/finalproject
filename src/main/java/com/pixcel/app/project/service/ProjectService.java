@@ -36,6 +36,8 @@ public interface ProjectService {
 	
 	public Map<String, Object> deleteProject(String projectId);
 	
+	public Map<String, Object> insertProjectMemberList(String projectId, List<String> teamMemberIds, String roleId);
+	
 	// ✅ 추가: 일감 추적 데이터 조회
 	public List<IssueStatVO> selectIssueStatByProjectId(String projectId);
 	

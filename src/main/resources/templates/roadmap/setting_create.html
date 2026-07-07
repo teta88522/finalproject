@@ -8,18 +8,20 @@
     <meta charset="UTF-8" />
     <title>새 버전(로드맵) 생성</title>
 
+    <link rel="stylesheet" th:href="@{/css/milestones/common_layout_mile.css}" />
     <link rel="stylesheet" th:href="@{/css/milestones/milestone-common.css}" />
     <link rel="stylesheet" th:href="@{/css/roadmap/setting-create.css}" />
   </head>
   <body>
     <div layout:fragment="Content">
-      <div class="kiaalap-wrapper milestone-container">
-        <div class="kiaalap-panel form-panel">
-          <div class="panel-header">
-            <h2>새 로드맵 만들기</h2>
+      <div class="container-fluid roadmap-page-wrapper">
+        <div class="roadmap-page-panel">
+          <div class="roadmap-page-header">
+            <div>
+              <h3 class="roadmap-page-title">새 로드맵 만들기</h3>
+            </div>
           </div>
-
-          <div class="panel-body">
+          <div class="roadmap-page-body">
             <form
               id="versionCreateForm"
               th:action="@{/project/{projectId}/roadmap/setting_create(projectId=${projectId})}"
@@ -75,6 +77,7 @@
                   name="defaultYn"
                   value="Y"
                   class="form-checkbox"
+                  checked
                 />
                 <label for="defaultYn"
                   >이 버전을 프로젝트의 기본(Default) 버전으로
@@ -82,20 +85,19 @@
                 >
               </div>
 
-              <div class="form-actions">
+              <div class="roadmap-page-footer">
                 <button
                   type="button"
-                  class="btn btn-default"
+                  class="btn btn-custon-rounded-four custom-white-btn"
                   onclick="history.back()"
                 >
                   취소
                 </button>
-                <button type="button" id="btnSubmit" class="btn btn-primary">
+                <button type="button" id="btnSubmit" class="btn btn-custon-rounded-four custom-default-btn">
                   생성하기
                 </button>
               </div>
             </form>
-          </div>
         </div>
       </div>
 

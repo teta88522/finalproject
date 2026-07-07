@@ -8,18 +8,20 @@
     <meta charset="UTF-8" />
     <title>버전(로드맵) 수정</title>
 
+    <link rel="stylesheet" th:href="@{/css/milestones/common_layout_mile.css}" />
     <link rel="stylesheet" th:href="@{/css/milestones/milestone-common.css}" />
     <link rel="stylesheet" th:href="@{/css/roadmap/setting-create.css}" />
   </head>
   <body>
     <div layout:fragment="Content">
-      <div class="kiaalap-wrapper milestone-container">
-        <div class="kiaalap-panel form-panel">
-          <div class="panel-header">
-            <h2>로드맵 수정</h2>
+      <div class="container-fluid roadmap-page-wrapper">
+        <div class="roadmap-page-panel">
+          <div class="roadmap-page-header">
+            <div>
+              <h3 class="roadmap-page-title">로드맵 수정</h3>
+            </div>
           </div>
-
-          <div class="panel-body">
+          <div class="roadmap-page-body">
             <div
               th:if="${errorMessage}"
               class="alert alert-danger"
@@ -58,12 +60,6 @@
               </div>
 
               <div class="form-group">
-                <label class="form-label" for="statusCode"
-                  >상태 <span class="required">*</span></label
-                >
-              </div>
-
-              <div class="form-group">
                 <label class="form-label" for="description">설명</label>
                 <textarea
                   id="description"
@@ -93,31 +89,24 @@
 				  </label>
 				</div>
 
-              <div class="form-actions form-actions-split" style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-top: 40px; padding-top: 20px; border-top: 1px solid #eee;">
-                <div class="left-btn">
+              <div class="roadmap-page-footer" style="border-top: 1px solid #eee; display: flex; justify-content: flex-end; align-items: center; gap: 8px; padding-top: 20px;">
                   <a th:href="@{/project/{projectId}/roadmap/roadmap_list(projectId=${projectId})}"
-                     class="btn-board-cancel"
-                     style="background-color: #7f8c8d; color: #fff !important; text-decoration: none; padding: 10px 20px; border-radius: 4px; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; height: 38px; width: 80px; box-sizing: border-box; border: none; cursor: pointer;">
-                      목록
+                     class="btn btn-custon-rounded-four custom-white-btn" id="btnCancel">
+                       목록
                   </a>
-                </div>
-                <div class="right-btn" style="display: flex; gap: 8px;">
                   <a href="javascript:void(0)"
                      id="btnDelete"
-                     class="btn-board-delete"
+                     class="btn btn-custon-rounded-four btn-danger custom-btn"
                      th:data-issue-count="${roadmap.issueCount}"
                      th:data-milestone-count="${roadmap.milestoneCount}"
-                     th:data-default-yn="${roadmap.defaultYn}"
-                     style="background-color: #e74c3c; color: #fff !important; text-decoration: none; padding: 10px 20px; border-radius: 4px; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; height: 38px; width: 80px; box-sizing: border-box; border: none; cursor: pointer;">
-                      삭제
+                     th:data-default-yn="${roadmap.defaultYn}">
+                       삭제
                   </a>
                   <a href="javascript:void(0)"
                      id="btnSubmit"
-                     class="btn-board-submit"
-                     style="background-color: #006df0; color: #fff !important; text-decoration: none; padding: 10px 20px; border-radius: 4px; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; height: 38px; width: 80px; box-sizing: border-box; border: none; cursor: pointer;">
-                      수정
+                     class="btn btn-custon-rounded-four custom-default-btn">
+                       수정
                   </a>
-                </div>
               </div>
             </form>
 

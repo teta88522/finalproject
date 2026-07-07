@@ -38,7 +38,7 @@
 			<!-- Header with Branch Selector -->
 			<div class="file-header">
 				<div>
-					<h2>📁 파일 목록</h2>
+					<h2>파일 목록</h2>
 					<div class="file-header-meta">
 						<form method="get"
 							style="display: flex; gap: 10px; align-items: center;">
@@ -56,8 +56,7 @@
 				<a
 					th:href="${currentPath != null and !currentPath.isEmpty()} ? @{/project/{projectId}/sourcerepository/file-history(projectId=${projectId}, path=${currentPath}, branch=${branch})} : @{/project/{projectId}/sourcerepository/commits(projectId=${projectId}, branch=${branch})}"
 					class="file-history-btn"
-					style="text-decoration: none; display: inline-block;"> 📜
-					History </a>
+					style="text-decoration: none; display: inline-block;">History </a>
 			</div>
  
 			<!-- File List -->
@@ -95,7 +94,7 @@
 			<div class="file-actions">
 				<a
 					th:href="@{/project/{projectId}/sourcerepository(projectId=${projectId})}"
-					class="file-btn file-btn-secondary"> 🏠 저장소 메인 </a>
+					class="file-btn file-btn-secondary">저장소 메인 </a>
 			</div>
 		</div>
 

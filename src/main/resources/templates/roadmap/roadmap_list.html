@@ -5,63 +5,67 @@
 <head>
     <meta charset="UTF-8" />
     <title>로드맵(버전) 목록</title>
+    <link rel="stylesheet" th:href="@{/css/milestones/common_layout_mile.css}" />
     <link rel="stylesheet" th:href="@{/css/milestones/milestone-common.css}" />
-    <link rel="stylesheet" th:href="@{/css/roadmap/roadmap-list.css}" />
+    <link rel="stylesheet" th:href="@{/css/roadmap/roadmap-list.css(v=2)}" />
+    <link rel="stylesheet" th:href="@{/css/common-filter.css}" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
 </head>
 <body>
 <div layout:fragment="Content">
-    <div class="kiaalap-wrapper">
+    <div class="container-fluid roadmap-page-wrapper">
         <script th:if="${errorMessage}">
             alert("[[${errorMessage}]]");
         </script>
 
-        <div class="kiaalap-panel main-box">
+        <div class="roadmap-page-panel">
             
             <div class="main-header">
                 <div class="main-header-title-area">
                     <h2>로드맵</h2>
                     <p class="main-header-desc">프로젝트 내의 모든 로드맵을 확인할 수 있습니다.</p>
                 </div>
-				<button 
+				<!-- 권한 처리 -->
+				<button th:if="${isOwner}"
 				    type="button" 
 				    class="btn btn-default" 
 				    id="btnSettings"
 				    th:data-url="@{/project/{projectId}/roadmap/setting_create(projectId=${projectId})}">
 				     버전 생성
 				</button>
+				<!-- 권한 처리 끝 -->
             </div>
 
-            <hr class="section-divider" />
+            <div class="roadmap-page-body">
+                <hr class="section-divider" />
 
-            <!-- 📝 일감 목록과 100% 동일한 검색조건 테두리 박스로 개량 -->
-            <div class="search-section" style="margin-bottom: 20px; padding: 20px; background: #fff; border: 1px solid #e5e7eb; border-radius: 4px; clear: both;">
-                <div class="search-header" style="margin-bottom: 15px; border-bottom: 1px solid #f3f4f6; padding-bottom: 10px;">
-                    <div class="search-title" style="font-size: 14px; font-weight: bold; color: #1f2937;">검색조건</div>
+                <!-- 검색조건 필터 영역 -->
+                <div class="search-section">
+                <div class="search-header">
+                    <div class="search-title">검색조건</div>
                 </div>
-                <div class="js-filter-row">
-                    <div class="js-filter-group">
-                        <label> 로드맵</label>
+                <div class="search-form-row">
+                    <div class="search-field">
+                        <label>로드맵</label>
                         <select id="roadmapFilter">
                             <option value="">전체 로드맵</option>
                         </select>
                     </div>
-                    <div class="js-filter-group">
-                        <label> 마일스톤</label>
+                    <div class="search-field">
+                        <label>마일스톤</label>
                         <select id="milestoneFilter">
                             <option value="">전체 마일스톤</option>
                         </select>
                     </div>
-                    <div class="js-filter-group search-group">
-                        <label> 일감 검색</label>
+                    <div class="search-field">
+                        <label>일감 검색</label>
                         <input type="text" id="issueSearch" placeholder="일감 제목 입력..." autocomplete="off" />
                     </div>
                 </div>
                 
-                <!-- 📝 버튼 영역 추가 (일감 검색조건의 디자인 이식) -->
-                <div class="filter-actions-row" style="margin-top: 15px; display: flex; gap: 8px; justify-content: flex-start;">
-                    <button type="button" id="btnFilterReset" class="btn btn-default" style="padding: 6px 16px; font-size: 13px; border-radius: 4px; cursor: pointer;">초기화</button>
-                    <button type="button" id="btnFilterSearch" class="btn btn-primary" style="padding: 6px 16px; font-size: 13px; border-radius: 4px; cursor: pointer; background-color: #006df0; border-color: #006df0; color: #fff;">검색</button>
+                <div class="search-btn-area">
+                    <button type="button" id="btnFilterReset" class="btn btn-custon-rounded-four custom-white-btn filter-btn">초기화</button>
+                    <button type="button" id="btnFilterSearch" class="btn btn-custon-rounded-four custom-default-btn filter-btn">검색</button>
                 </div>
             </div>
 
@@ -102,7 +106,7 @@
 							        <div class="milestone-sub-header" 
 							             th:if="${milestone.milestoneId != null and !milestone.milestoneId.startsWith('UNASSIGNED')}">
 							            <div class="m-title-area">
-							                <i class="fas fa-cube" style="color:#006df0; margin-right:5px;"></i>
+							                <i class="fas fa-cube" style="color:#02101f; margin-right:5px;"></i>
 							                <a th:href="@{/project/{projectId}/milestones/detail(projectId=${projectId},id=${milestone.milestoneId})}" class="title-link hover-primary" th:text="${milestone.title}">마일스톤 타이틀</a>
 							                
 							                <span class="status-badge" style="margin-left:12px;"
@@ -151,6 +155,7 @@
             </div>
         </div>
     </div>
+</div>
     <script th:src="@{/js/roadmap/roadmap-list.js}"></script>
 </div>
 </body>

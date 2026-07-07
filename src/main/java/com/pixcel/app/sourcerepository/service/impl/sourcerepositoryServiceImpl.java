@@ -196,7 +196,6 @@ public class sourcerepositoryServiceImpl implements sourcerepositoryService {
 	public void saveGitHubUrl(String projectId, String gitHubUrl) {
 		try {
 			projectMapper.updateProjectGitUrl(projectId, gitHubUrl);
-			System.out.println("✅ GitHub URL 저장 완료: " + gitHubUrl);
 		} catch (Exception e) {
 			throw new RuntimeException("GitHub URL 저장 실패: " + e.getMessage());
 		}
@@ -314,7 +313,6 @@ public class sourcerepositoryServiceImpl implements sourcerepositoryService {
 				try {
 					mapper.insertSourcerepositoryCommits(newCommits);
 					successCount = newCommits.size();
-					System.out.println("✅ 배치 INSERT 성공: " + successCount + "건");
 				} catch (Exception batchEx) {
 					// ✅ 느린 경로(폴백): 배치 전체가 실패한 경우에만 한 건씩 다시 시도해서
 					//    문제가 되는 커밋만 정확히 걸러내고 나머지는 살림
@@ -323,7 +321,6 @@ public class sourcerepositoryServiceImpl implements sourcerepositoryService {
 						try {
 							mapper.insertSourcerepositoryCommit(commit);
 							successCount++;
-							System.out.println("✅ Commit 저장: " + commit.getCommitHash());
 						} catch (Exception e) {
 							failCount++;
 							failedShas.add(commit.getCommitHash());
@@ -332,9 +329,6 @@ public class sourcerepositoryServiceImpl implements sourcerepositoryService {
 					}
 				}
 			}
-
-			System.out.println("✅ GitHub 동기화 완료: 성공 " + successCount + "건, 실패 " + failCount + "건 (총 "
-					+ newCommits.size() + "건 시도)");
 
 			// ✅ 일부라도 저장 실패한 게 있으면 콘솔에만 남기지 않고 예외로 알림
 			//    (컨트롤러가 이 메시지를 flash message로 화면에 띄워줌)
@@ -424,10 +418,16 @@ public class sourcerepositoryServiceImpl implements sourcerepositoryService {
 				throw new RuntimeException("GitHub URL 파싱 실패");
 			}
 
-			String apiUrl = githubApiUrl + "/repos/" + owner + "/" + repo + "/commits?sha=" + branch + "&per_page=30";
+			// ✅ URLEncoder는 "/"까지 %2F로 인코딩해서 GitHub이 path 값을 못 알아듣게 만들 수 있었음.
+			//    UriComponentsBuilder로 표준적인 쿼리 파라미터 인코딩을 사용하도록 변경.
+			org.springframework.web.util.UriComponentsBuilder uriBuilder = org.springframework.web.util.UriComponentsBuilder
+					.fromHttpUrl(githubApiUrl + "/repos/" + owner + "/" + repo + "/commits")
+					.queryParam("sha", branch)
+					.queryParam("per_page", 30);
 			if (path != null && !path.isEmpty()) {
-				apiUrl += "&path=" + java.net.URLEncoder.encode(path, StandardCharsets.UTF_8);
+				uriBuilder.queryParam("path", path);
 			}
+			String apiUrl = uriBuilder.build().encode().toUriString();
 
 			// ✅ 인증 헤더 적용
 			HttpEntity<String> entity = new HttpEntity<>(buildGitHubHeaders());

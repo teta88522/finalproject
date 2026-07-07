@@ -36,7 +36,7 @@ document.addEventListener("DOMContentLoaded", function () {
             .then(data => {
                 if (data.update === true) {
                     alert(data.message);
-                    location.href = "/mypage"; 
+                    location.href = "/usersMypage"; 
                 } else {
                     alert(data.message);
                 }
@@ -78,7 +78,7 @@ document.addEventListener("DOMContentLoaded", function () {
             .then(data => {
                 if (data.result === true) {
                     alert(data.message);
-                    location.href = "/mypage"; 
+                    location.href = "/usersMypage"; 
                 } else {
                     alert(data.message); 
                 }
@@ -129,7 +129,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 const row = `
                     <tr>
                         <td><input type="checkbox" class="project-check" /></td>
-                        <td>${p.projectName || ''}</td>
+                        <td><a href="/projectdetail/${p.projectId}">${p.projectName || ''}</a></td>
                         <td>${p.description || ''}</td>
                         <td>${p.ownerName || ''}</td>
                         <td><a href="${p.projectUrl || '#'}" target="_blank">${p.projectUrl || ''}</a></td>

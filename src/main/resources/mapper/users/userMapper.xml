@@ -189,4 +189,13 @@
     FROM users
     WHERE REPLACE(phone, '-', '') = #{phone}
 </select>
+
+<!-- 이메일 중복확인 -->
+<select id="checkEmail"
+        parameterType="string"
+        resultType="int">
+    SELECT COUNT(*)
+    FROM users
+    WHERE LOWER(TRIM(email)) = LOWER(TRIM(#{email}))
+</select>
 </mapper>

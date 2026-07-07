@@ -21,23 +21,34 @@ document.addEventListener("DOMContentLoaded", function() {
     if (versionIdInput) {
         versionIdInput.addEventListener('change', function() {
             if (selectedIssueIds.size > 0) {
-                if (confirm("버전을 변경하시면 기존에 선택해 둔 일감 목록이 모두 초기화됩니다. 계속하시겠습니까?")) {
-                    // 일감 목록 테이블 비우기
-                    issueListBody.innerHTML = `<tr><td class="empty-row" style="text-align: center; color: #999; padding: 30px 10px;">상단 검색창을 통해 연결할 일감을 찾아보세요.</td></tr>`;
-                    selectedIssueIds.clear();
-                    addedHistoryIds.clear();
-                    updateHiddenInput();
-                } else {
-                    // 취소 시 이전 버전으로 select 값 원복
-                    versionIdInput.value = lockedVersionId || "";
-                    return;
-                }
+                window.PFDialog.confirm({
+                    title: '버전 변경 확인',
+                    message: '버전을 변경하시면 기존에 선택해 둔 일감 목록이 모두 초기화됩니다. 계속하시겠습니까?',
+                    confirmText: '변경',
+                    icon: 'warning'
+                }).then((confirmed) => {
+                    if (confirmed) {
+                        // 일감 목록 테이블 비우기
+                        issueListBody.innerHTML = `<tr><td class="empty-row" style="text-align: center; color: #999; padding: 30px 10px;">상단 검색창을 통해 연결할 일감을 찾아보세요.</td></tr>`;
+                        selectedIssueIds.clear();
+                        addedHistoryIds.clear();
+                        updateHiddenInput();
+                        lockedVersionId = versionIdInput.value;
+                        
+                        // 검색창 내용이 적혀있었다면 즉각 리프레시 검색
+                        const keyword = issueSearchInput.value.trim();
+                        fetchAndShowIssues(keyword);
+                    } else {
+                        // 취소 시 이전 버전으로 select 값 원복
+                        versionIdInput.value = lockedVersionId || "";
+                    }
+                });
+            } else {
+                lockedVersionId = this.value;
+                // 검색창 내용이 적혀있었다면 즉각 리프레시 검색
+                const keyword = issueSearchInput.value.trim();
+                fetchAndShowIssues(keyword);
             }
-            lockedVersionId = this.value;
-            
-            // 검색창 내용이 적혀있었다면 즉각 리프레시 검색
-            const keyword = issueSearchInput.value.trim();
-            fetchAndShowIssues(keyword);
         });
     }
 
@@ -124,13 +135,44 @@ document.addEventListener("DOMContentLoaded", function() {
 	              }
 	          }
 	      }
+	      
+	      // [신규 추가]: 현재 체크박스 선택된 일감들의 평균 진행률 계산
+	      function getCheckedIssuesProgressAverage() {
+	          const checked = document.querySelectorAll(".issue-checkbox:checked");
+	          if (checked.length === 0) return 0;
+	          
+	          let sum = 0;
+	          checked.forEach(cb => {
+	              const rate = parseFloat(cb.getAttribute("data-progress-rate")) || 0;
+	              sum += rate;
+	          });
+	          return Math.round(sum / checked.length);
+	      }
  
 	      // 1. 페이지가 처음 열렸을 때 기존 상태를 읽어서 즉시 적용
 	      toggleStartDateLock();
  
 	      // 2. 사용자가 드롭다운에서 상태를 변경할 때마다 실시간 적용
 	      if (statusSelect) {
-	          statusSelect.addEventListener('change', toggleStartDateLock);
+	          statusSelect.addEventListener('change', function() {
+	              if (this.value === 'L003') {
+	                  const avgProgress = getCheckedIssuesProgressAverage();
+	                  const checkedCount = document.querySelectorAll(".issue-checkbox:checked").length;
+	                  if (checkedCount === 0 || avgProgress < 100) {
+	                      window.PFDialog.alert(
+	                          '연결된 일감이 없거나, 모든 일감의 평균 진행률이 100%가 아닌 마일스톤은 완료할 수 없습니다. (현재 평균 진행률: ' + avgProgress + '%)',
+	                          {
+	                              title: '상태 변경 불가',
+	                              icon: 'warning',
+	                              confirmText: '확인'
+	                          }
+	                      );
+	                      // 완료 불가시 진행 중(L002)으로 임시 복원
+	                      this.value = 'L002';
+	                  }
+	              }
+	              toggleStartDateLock();
+	          });
 	      }
 	      // ------------------------------------------------
     // 기존 연결 일감 불러오기
@@ -226,12 +268,19 @@ document.addEventListener("DOMContentLoaded", function() {
         const emptyRow = document.querySelector("#issueListBody .empty-row");
         if (emptyRow) emptyRow.closest("tr").remove();
 
+        // 📝 [추가]: 버전이 선택되지 않은 상태에서 일감을 추가하면, 해당 일감의 버전으로 자동 연동 및 고정
+        if (versionIdInput && (versionIdInput.value === "" || versionIdInput.value === null)) {
+            versionIdInput.value = issue.versionId;
+            lockedVersionId = issue.versionId;
+        }
+
         const tr = document.createElement("tr");
         tr.innerHTML = `
             <td style="text-align: center;">
                 <input type="checkbox" class="issue-checkbox" 
                        value="${issue.issueId}" 
-                       data-version-id="${issue.versionId}" checked>
+                       data-version-id="${issue.versionId}" 
+                       data-progress-rate="${issue.progressRate || 0}" checked>
             </td>
             <td>${issue.title} (${issue.versionName})</td>
             <td style="text-align: center;"><span class="status-badge">${issue.issueStatusName || '미정'}</span></td>
@@ -329,7 +378,47 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         }
 
-        if (!isValid) { event.preventDefault(); }
+        // 3. 상태가 '완료(L003)'인데 진척도가 100%가 아니거나 일감이 없는 경우 전송 방지
+        if (statusSelect && statusSelect.value === 'L003') {
+            const avgProgress = getCheckedIssuesProgressAverage();
+            const checkedCount = document.querySelectorAll(".issue-checkbox:checked").length;
+            if (checkedCount === 0 || avgProgress < 100) {
+                window.PFDialog.alert(
+                    '연결된 일감이 없거나, 모든 일감의 평균 진행률이 100%가 아닌 마일스톤은 완료할 수 없습니다. (현재 평균 진행률: ' + avgProgress + '%)',
+                    {
+                        title: '제출 불가능',
+                        icon: 'warning',
+                        confirmText: '확인',
+						iconColor: '#fc0303'
+                    }
+                );
+                isValid = false;
+            }
+        }
+
+        if (!isValid) { 
+            event.preventDefault(); 
+            return;
+        }
+
+        // 📝 SweetAlert 수정 컨펌 연동 (제출 일시 정지 후 컨펌 승인 시 실제 submit)
+        if (form.dataset.pfUpdateApproved !== 'true') {
+            event.preventDefault(); // 일단 전송 중단
+
+            window.PFDialog.confirm({
+                title: '수정 확인',
+                message: '수정된 내용을 저장하시겠습니까?',
+                confirmText: '저장',
+                icon: 'question'
+            }).then(function(confirmed) {
+                if (confirmed) {
+                    form.dataset.pfUpdateApproved = 'true';
+                    const btn = document.getElementById('btnUpdate');
+                    if (btn) btn.disabled = true;
+                    form.submit();
+                }
+            });
+        }
     });
 
     document.querySelectorAll('.required-input').forEach(input => {

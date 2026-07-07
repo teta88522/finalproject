@@ -7,35 +7,41 @@
   <head>
     <meta charset="UTF-8" />
     <title>로드맵 상세</title>
+    <link rel="stylesheet" th:href="@{/css/milestones/common_layout_mile.css}" />
     <link rel="stylesheet" th:href="@{/css/roadmap/roadmap-detail.css}" />
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   </head>
   <body>
-    <div layout:fragment="Content" class="roadmap-container">
-    
-    <!--헤더-->
-	 <div class="main-header">
-	        <h2>로드맵 상세보기</h2>
-	        <div class="header-actions">
-	            <a th:href="@{/project/{id}/roadmap/roadmap_list(id=${projectId})}" class="btn-list">목록으로</a>
-	            <a th:href="@{/project/{projectId}/roadmap/setting_update(projectId=${projectId}, versionId=${roadmap.versionId})}"
-	               class="btn-manage"
-	               th:classappend="${roadmap.statusCode == 'k003'} ? 'btn-disabled' : ''"
-	               th:attr="onclick=${roadmap.statusCode == 'k003'} ? 'return false;' : ''"
-	               th:style="${roadmap.statusCode == 'k003'} ? 'pointer-events: none;' : ''">
-	                ⚙️ 관리
-	            </a>
-	            <!-- 📝 상태가 이미 완료(k003)인 경우 서버 단에서 미리 비활성화 및 '완료됨' 텍스트 바인딩 -->
-	            <button type="button" 
-	                    id="btnCompleteRoadmap" 
-	                    class="btn-complete" 
-	                    th:disabled="${roadmap.statusCode == 'k003'}" 
-	                    th:text="${roadmap.statusCode == 'k003'} ? '완료됨' : '완료'"
-	                    th:classappend="${roadmap.statusCode == 'k003'} ? 'btn-disabled' : ''">완료</button>
-	        </div>
-	    </div>
-	    <hr class="section-divider" style="margin-bottom: 24px;" />   
+    <div layout:fragment="Content">
+      <div class="container-fluid roadmap-page-wrapper">
+        <div class="roadmap-page-panel">
+          <div class="roadmap-page-body">
+            
+            <!--헤더-->
+            <div class="main-header">
+                <h2>로드맵 상세보기</h2>
+                <div class="header-actions">
+                    <a th:href="@{/project/{id}/roadmap/roadmap_list(id=${projectId})}" class="btn-list">목록으로</a>
+                    <!-- -- 권한 처리 -->
+                    <a th:if="${isOwner}" th:href="@{/project/{projectId}/roadmap/setting_update(projectId=${projectId}, versionId=${roadmap.versionId})}"
+                       class="btn-manage"
+                       th:classappend="${roadmap.statusCode == 'k003'} ? 'btn-disabled' : ''"
+                       th:attr="onclick=${roadmap.statusCode == 'k003'} ? 'return false;' : ''"
+                       th:style="${roadmap.statusCode == 'k003'} ? 'pointer-events: none;' : ''">
+                        ⚙️ 관리
+                    </a>
+                    <!-- 📝 상태가 이미 완료(k003)인 경우 서버 단에서 미리 비활성화 및 '완료됨' 텍스트 바인딩 -->
+                    <button th:if="${isOwner}" type="button" 
+                            id="btnCompleteRoadmap" 
+                            class="btn-complete" 
+                            disabled
+                            th:text="${roadmap.statusCode == 'k003'} ? '완료됨' : '완료'"
+                            th:classappend="${roadmap.statusCode == 'k003'} ? 'btn-disabled' : ''">완료</button>
+                    <!-- -- 권한 처리 끝 -->
+                </div>
+            </div>
+            <hr class="section-divider" style="margin-bottom: 24px;" />   
     
 		<div class="roadmap-header">
 		  
@@ -133,7 +139,7 @@
                     <tr th:each="issue : ${milestone.issueList}" th:if="${issue.issueId != null}">
                       <td>
                           <a th:href="@{/project/{projectId}/issues/{id}(projectId=${projectId}, id=${issue.issueId})}"
-                             style="text-decoration: none; color: #006df0; font-weight: 500;"
+                             style="text-decoration: none; color: #02101f; font-weight: 500;"
                              th:text="${issue.title}">
                               일감명
                           </a>
@@ -202,18 +208,21 @@
   </div>
   
 	<div class="chart-card mt-20">
-	  <h3>마감 임박 일감 (Top 5)</h3>
+	  <h3>마감 임박 일감 (Top 3)</h3>
 	  <div id="upcomingIssuesContainer" class="upcoming-issues-list">
 	    </div>
 	</div>
 </div>
 
+            </div> <!-- roadmap-page-body end -->
+        </div> <!-- roadmap-page-panel end -->
+      </div> <!-- roadmap-page-wrapper end -->
+    </div> <!-- layout:fragment="Content" end -->
+
 <!-- 📝 로드맵 완료 처리를 위한 hidden form 연동 -->
 <form id="completeRoadmapForm" th:action="@{/project/{projectId}/roadmap/roadmap_detail(projectId=${projectId})}" method="POST" style="display:none;">
     <input type="hidden" name="versionId" th:value="${roadmap.versionId}">
 </form>
-
-</div>
       <script th:inline="javascript">
         /*<![CDATA[*/
         const roadmapData = /*[[${roadmap}]]*/ {};

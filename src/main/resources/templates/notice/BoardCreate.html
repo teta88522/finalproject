@@ -4,16 +4,21 @@
       layout:decorate="~{common/layouts/default_layout}">
 <head>
     <meta charset="UTF-8">
-    <title>새 게시판 생성</title>
+    <title>새 게시판 만들기</title>
+    <link rel="stylesheet" th:href="@{/css/milestones/common_layout_mile.css}" />
     <link rel="stylesheet" th:href="@{/css/notice/board_create.css}" />
 </head>
 <body>
     <div layout:fragment="Content">
-        <div class="kiaalap-wrapper board-container">
-            <div class="kiaalap-panel form-panel">
-                <div class="panel-header">
-                    <h2>새 게시판 만들기</h2>
+        <div class="container-fluid board-page-wrapper">
+            <div class="board-page-panel">
+                
+                <div class="board-page-header">
+                    <div>
+                        <h3 class="board-page-title">새 게시판 만들기</h3>
+                    </div>
                 </div>
+                <div class="board-page-body">
 
                 <div class="panel-body">
                     <form id="boardCreateForm"
@@ -54,20 +59,19 @@
                             </div>
                         </div>
 
-                        <div class="form-actions">
-                            <button type="button" class="btn btn-default" onclick="history.back()">
+                        <div class="board-page-footer">
+                            <button type="button" class="btn btn-custon-rounded-four custom-white-btn" onclick="history.back()">
                                 취소
                             </button>
-                            <button type="button" id="btnSubmit" class="btn btn-primary">
+                            <button type="button" id="btnSubmit" class="btn btn-custon-rounded-four custom-default-btn">
                                 생성하기
                             </button>
                         </div>
                     </form>
                 </div>
+                <script th:src="@{/js/notice/board_create.js}"></script>
             </div>
         </div>
-
-        <script th:src="@{/js/notice/board_create.js}"></script>
     </div>
 </body>
 </html>

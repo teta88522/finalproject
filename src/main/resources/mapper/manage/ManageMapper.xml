@@ -24,62 +24,62 @@
 
 
     <!-- 관리자가 생성한 프로젝트들의 그룹 목록 -->
-<select id="selectMyManageGroupList"
-        resultType="com.pixcel.app.manage.service.ManageGroupVO">
+    <select id="selectMyManageGroupList"
+            resultType="com.pixcel.app.manage.service.ManageGroupVO">
 
-    SELECT
-        pg.project_group_id          AS "projectGroupId",
-        pg.project_id                AS "projectId",
-        pg.role_id                   AS "roleId",
-        pg.group_name                AS "groupName",
-        pg.group_answer              AS "groupAnswer",
+        SELECT
+            pg.project_group_id          AS "projectGroupId",
+            pg.project_id                AS "projectId",
+            pg.role_id                   AS "roleId",
+            pg.group_name                AS "groupName",
+            pg.group_answer              AS "groupAnswer",
 
-        p.project_name               AS "projectName",
+            p.project_name               AS "projectName",
 
-        r.role_name                  AS "roleName",
+            r.role_name                  AS "roleName",
 
-        COUNT(pm.project_member_id)  AS "memberCount"
-    FROM project p
-    JOIN project_group pg
-        ON p.project_id = pg.project_id
-    LEFT JOIN role r
-        ON pg.role_id = r.role_id
-    LEFT JOIN project_member pm
-        ON pg.project_group_id = pm.project_group_id
-    WHERE p.owner_id = #{ownerId}
+            COUNT(pm.project_member_id)  AS "memberCount"
+        FROM project p
+        JOIN project_group pg
+            ON p.project_id = pg.project_id
+        LEFT JOIN role r
+            ON pg.role_id = r.role_id
+        LEFT JOIN project_member pm
+            ON pg.project_group_id = pm.project_group_id
+        WHERE p.owner_id = #{ownerId}
 
-    <if test="projectIdList != null and projectIdList.size() > 0">
-        AND p.project_id IN
-        <foreach collection="projectIdList"
-                 item="projectId"
-                 open="("
-                 separator=","
-                 close=")">
-            #{projectId}
-        </foreach>
-    </if>
+        <if test="projectIdList != null and projectIdList.size() > 0">
+            AND p.project_id IN
+            <foreach collection="projectIdList"
+                     item="projectId"
+                     open="("
+                     separator=","
+                     close=")">
+                #{projectId}
+            </foreach>
+        </if>
 
-    <if test="groupName != null and groupName != ''">
-        AND pg.group_name LIKE '%' || #{groupName} || '%'
-    </if>
+        <if test="groupName != null and groupName != ''">
+            AND pg.group_name LIKE '%' || #{groupName} || '%'
+        </if>
 
-    <if test="roleName != null and roleName != ''">
-        AND r.role_name LIKE '%' || #{roleName} || '%'
-    </if>
+        <if test="roleName != null and roleName != ''">
+            AND r.role_name LIKE '%' || #{roleName} || '%'
+        </if>
 
-    GROUP BY
-        pg.project_group_id,
-        pg.project_id,
-        pg.role_id,
-        pg.group_name,
-        pg.group_answer,
-        p.project_name,
-        r.role_name
-    ORDER BY
-        p.project_name,
-        pg.group_name
+        GROUP BY
+            pg.project_group_id,
+            pg.project_id,
+            pg.role_id,
+            pg.group_name,
+            pg.group_answer,
+            p.project_name,
+            r.role_name
+        ORDER BY
+            p.project_name,
+            pg.group_name
 
-</select>
+    </select>
 	
 	
     <!-- 관리자가 생성한 역할 목록 -->
@@ -116,7 +116,8 @@
     	SELECT COUNT(*)
     	FROM project_group
     	WHERE project_id = #{projectId}
-      	AND group_name = #{groupName}
+      	  AND group_name = #{groupName}
+
     </select>
 
 
@@ -158,7 +159,7 @@
         ) VALUES (
             #{projectGroupId},
             #{projectId},
-            #{roleId},
+            #{roleId, jdbcType=VARCHAR},
             #{groupName},
             #{groupAnswer, jdbcType=VARCHAR}
         )
@@ -167,7 +168,7 @@
 	
 	<!-- 그룹 상세 조회 -->
 	<select id="selectManageGroupDetail"
-        resultType="com.pixcel.app.manage.service.ManageGroupVO">
+            resultType="com.pixcel.app.manage.service.ManageGroupVO">
 
     	SELECT
         	pg.project_group_id          AS "projectGroupId",
@@ -190,7 +191,7 @@
     	LEFT JOIN project_member pm
 	        ON pg.project_group_id = pm.project_group_id
     	WHERE pg.project_group_id = #{projectGroupId}
-      	AND p.owner_id = #{ownerId}
+      	  AND p.owner_id = #{ownerId}
     	GROUP BY
         	pg.project_group_id,
         	pg.project_id,
@@ -206,15 +207,15 @@
 
 	<!-- 그룹 수정 -->
 	<update id="updateManageGroup"
-        parameterType="com.pixcel.app.manage.service.ManageGroupVO">
+            parameterType="com.pixcel.app.manage.service.ManageGroupVO">
 
     	UPDATE project_group
     	SET
-        	role_id = #{roleId},
+        	role_id = #{roleId, jdbcType=VARCHAR},
         	group_name = #{groupName},
         	group_answer = #{groupAnswer, jdbcType=VARCHAR}
     	WHERE project_group_id = #{projectGroupId}
-    	AND project_id = #{projectId}
+    	  AND project_id = #{projectId}
 
 	</update>
 
@@ -235,11 +236,11 @@
 
     	DELETE FROM project_group
     	WHERE project_group_id = #{projectGroupId}
-      	AND project_id IN (
-          	SELECT project_id
-          	FROM project
-          	WHERE owner_id = #{ownerId}
-      	)
+      	  AND project_id IN (
+          	  SELECT project_id
+          	  FROM project
+          	  WHERE owner_id = #{ownerId}
+      	  )
 
 	</delete>
 
@@ -252,6 +253,7 @@
         	pm.project_id             AS "projectId",
         	pm.project_group_id       AS "projectGroupId",
         	pm.team_member_id         AS "teamMemberId",
+        	pm.role_id                AS "roleId",
 
         	tm.team_id                AS "teamId",
         	t.team_name               AS "teamName",
@@ -262,7 +264,8 @@
         	u.email                   AS "email",
         	u.phone                   AS "phone",
 
-        	pg.group_name             AS "groupName"
+        	pg.group_name             AS "groupName",
+        	r.role_name               AS "roleName"
     	FROM project_group pg
     	JOIN project p
         	ON pg.project_id = p.project_id
@@ -274,8 +277,10 @@
         	ON tm.user_id = u.user_id
     	LEFT JOIN team t
         	ON tm.team_id = t.team_id
+        LEFT JOIN role r
+            ON pm.role_id = r.role_id
     	WHERE pg.project_group_id = #{projectGroupId}
-      	AND p.owner_id = #{ownerId}
+      	  AND p.owner_id = #{ownerId}
     	ORDER BY
         	t.team_name,
         	u.user_name
@@ -291,6 +296,7 @@
         	pm.project_id             AS "projectId",
         	pm.project_group_id       AS "projectGroupId",
         	pm.team_member_id         AS "teamMemberId",
+        	pm.role_id                AS "roleId",
 
         	tm.team_id                AS "teamId",
         	t.team_name               AS "teamName",
@@ -299,7 +305,9 @@
         	u.login_id                AS "loginId",
         	u.user_name               AS "userName",
         	u.email                   AS "email",
-        	u.phone                   AS "phone"
+        	u.phone                   AS "phone",
+
+            r.role_name               AS "roleName"
     	FROM project_group pg
     	JOIN project p
         	ON pg.project_id = p.project_id
@@ -311,10 +319,12 @@
         	ON tm.user_id = u.user_id
     	LEFT JOIN team t
         	ON tm.team_id = t.team_id
+        LEFT JOIN role r
+            ON pm.role_id = r.role_id
     	WHERE pg.project_group_id = #{projectGroupId}
-      	AND p.owner_id = #{ownerId}
-      	AND pm.project_group_id IS NULL
-      	AND u.user_id != #{ownerId}
+      	  AND p.owner_id = #{ownerId}
+      	  AND pm.project_group_id IS NULL
+      	  AND u.user_id != #{ownerId}
     	ORDER BY
         	t.team_name,
         	u.user_name
@@ -326,15 +336,16 @@
 
     	UPDATE project_member pm
     	SET
-        	pm.project_group_id = #{projectGroupId}
+        	pm.project_group_id = #{projectGroupId},
+            pm.role_id = #{roleId, jdbcType=VARCHAR}
     	WHERE pm.project_member_id = #{projectMemberId}
-      	AND pm.project_group_id IS NULL
-      	AND pm.project_id = (
-          	SELECT pg.project_id
-          	FROM project_group pg
-          	JOIN project p
+      	  AND pm.project_group_id IS NULL
+      	  AND pm.project_id = (
+          	  SELECT pg.project_id
+          	  FROM project_group pg
+          	  JOIN project p
             	  ON pg.project_id = p.project_id
-          	WHERE pg.project_group_id = #{projectGroupId}
+          	  WHERE pg.project_group_id = #{projectGroupId}
         	    AND p.owner_id = #{ownerId}
     	  )
 
@@ -347,13 +358,13 @@
     	SET
         	pm.project_group_id = NULL
     	WHERE pm.project_member_id = #{projectMemberId}
-      	AND pm.project_group_id = #{projectGroupId}
-      	AND pm.project_id = (
-          	SELECT pg.project_id
-          	FROM project_group pg
-          	JOIN project p
+      	  AND pm.project_group_id = #{projectGroupId}
+      	  AND pm.project_id = (
+          	  SELECT pg.project_id
+          	  FROM project_group pg
+          	  JOIN project p
             	  ON pg.project_id = p.project_id
-          	WHERE pg.project_group_id = #{projectGroupId}
+          	  WHERE pg.project_group_id = #{projectGroupId}
         	    AND p.owner_id = #{ownerId}
     	  )
 

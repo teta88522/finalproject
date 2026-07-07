@@ -68,6 +68,13 @@ public class userServiceImpl implements userService {
 		int count = userMapper.checkLoginId(loginId);
 		return count > 0;
 	}
+	
+	// 이메일 중복확인
+	@Override
+	public boolean checkEmail(String email) {
+	    int count = userMapper.checkEmail(email);
+	    return count > 0;
+	}
 
 	//김덕모 마이페이지
 	@Override

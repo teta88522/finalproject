@@ -215,6 +215,9 @@ body{
 
 /* ===================== Event ===================== */
 
+html {
+    overflow-y: scroll;
+}
 .fc-event{
 
     border:none !important;
@@ -257,6 +260,18 @@ body{
 
     display:none;
 
+}
+
+.fc-daygrid-day-top{
+    position: relative;
+    z-index: 5;
+}
+
+.fc-daygrid-day-number{
+    position: relative;
+    z-index: 6;
+    background: #fff;   /* 필요하면 */
+    padding: 2px 6px;
 }
 
 /* more */
@@ -426,25 +441,18 @@ const calendar = new FullCalendar.Calendar(document.getElementById('calendar'),{
                 "#F4511E"
             ];
 
-            success(data.map((item,index)=>{
+            success(data.map((item, index) => {
 
-                const color=colors[index%colors.length];
+                const color = colors[index % colors.length];
 
-                return{
-
-                    title:item.title,
-
-                    start:item.startDate,
-
-                    end:item.dueDate,
-
-                    backgroundColor:color,
-
-                    borderColor:color,
-
-                    textColor:"#fff"
-
-                }
+                return {
+                    title: item.title,
+                    start: item.startDate,
+                    end: item.dueDate,
+                    backgroundColor: color,
+                    borderColor: color,
+                    url: '/project/' + projectId + '/issues/' + item.issueId
+                };
 
             }));
 

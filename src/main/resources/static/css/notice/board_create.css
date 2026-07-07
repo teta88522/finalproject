@@ -177,3 +177,35 @@ textarea.form-control {
 .btn-board-submit:hover {
     background-color: #0056c0;
 }
+
+/* 📝 게시판 수정 화면 버튼 스타일 강제 오버라이드 (!important 적용) */
+#btnDeleteBoard {
+    background-color: #e74c3c !important;
+    border-color: #e74c3c !important;
+    color: #fff !important;
+}
+#btnDeleteBoard:hover {
+    background-color: #c0392b !important;
+    border-color: #c0392b !important;
+    color: #fff !important;
+}
+#btnCancelBoard {
+    background-color: #fff !important;
+    border-color: #BDBDBD !important;
+    color: #000 !important;
+}
+#btnCancelBoard:hover {
+    background-color: #02101f !important;
+    border-color: #02101f !important;
+    color: #fff !important;
+}
+#btnSubmit {
+    background-color: #031225 !important;
+    border-color: #031225 !important;
+    color: #fff !important;
+}
+#btnSubmit:hover {
+    background-color: #02101f !important;
+    border-color: #02101f !important;
+    color: #fff !important;
+}

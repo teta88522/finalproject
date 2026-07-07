@@ -6,6 +6,7 @@
 
     <select id="getEvents" resultType="CalendarDto">
         SELECT 
+        	issue_id,
     		title,
     		start_date,
     		due_date

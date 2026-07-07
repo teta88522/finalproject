@@ -18,6 +18,9 @@ public interface userMapper {
 	
 	public int checkPhone(String phone);
 	
+    // 이메일 중복 확인
+    public int checkEmail(@Param("email") String email);
+	
 	//로그인
 	public userServiceVO selectUserByLoginId(String loginId);
 
