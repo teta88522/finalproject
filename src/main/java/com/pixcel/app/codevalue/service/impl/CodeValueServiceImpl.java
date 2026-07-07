@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -270,7 +271,7 @@ public class CodeValueServiceImpl implements CodeValueService {
 			throw new IllegalStateException("대체 코드값 선택이 필요한 코드값입니다.");
 		}
 
-		codeValueMapper.deleteCodeValue(userId, settingCodeId);
+		deleteCodeValueSafely(userId, settingCodeId);
 	}
 
 	// 대체 코드값으로 변경 후 삭제
@@ -319,7 +320,7 @@ public class CodeValueServiceImpl implements CodeValueService {
 			codeValueMapper.updateDefaultYnToY(userId, replaceSettingCodeId);
 		}
 
-		codeValueMapper.deleteCodeValue(userId, deleteSettingCodeId);
+		deleteCodeValueSafely(userId, deleteSettingCodeId);
 	}
 
 	// 특정 그룹의 코드값 목록만 반환한다.
@@ -356,6 +357,14 @@ public class CodeValueServiceImpl implements CodeValueService {
 				&& !"Y".equals(codeValue.getDefaultYn())
 				&& !"N".equals(codeValue.getDefaultYn())) {
 			throw new IllegalArgumentException("기본값 여부 값이 올바르지 않습니다.");
+		}
+	}
+
+	private void deleteCodeValueSafely(String userId, String settingCodeId) {
+		try {
+			codeValueMapper.deleteCodeValue(userId, settingCodeId);
+		} catch (DataIntegrityViolationException e) {
+			throw new IllegalStateException("해당 코드값을 사용 중인 데이터가 있어 삭제할 수 없습니다.", e);
 		}
 	}
 }

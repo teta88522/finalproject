@@ -181,18 +181,33 @@
 		order by setting_code_id
 	</select>
 
-	<!-- 현재는 참조 테이블 미연결 상태라 0으로 임시 처리 -->
+	<!-- 삭제 대상 코드값을 일감/소요시간에서 사용 중인지 확인 -->
 	<select id="countUsedCodeValue" resultType="int">
-		select 0
-		from dual
+		select count(*)
+		from (
+		select setting_code_id
+		from issue
+		where setting_code_id = #{settingCodeId}
+
+		union all
+
+		select setting_code_id
+		from time_log
+		where setting_code_id = #{settingCodeId}
+		)
 	</select>
 
-	<!-- 현재는 참조 테이블 미연결 상태라 실제 업데이트 없음 -->
+	<!-- 일감/소요시간에서 사용 중인 코드값을 대체 코드값으로 변경 -->
 	<update id="updateUsedCodeValueToReplacement">
-		update setting_code
-		set setting_code_id =
-		setting_code_id
-		where 1 = 0
+		begin
+		update issue
+		set setting_code_id = #{replaceSettingCodeId}
+		where setting_code_id = #{deleteSettingCodeId};
+
+		update time_log
+		set setting_code_id = #{replaceSettingCodeId}
+		where setting_code_id = #{deleteSettingCodeId};
+		end;
 	</update>
 
 </mapper>

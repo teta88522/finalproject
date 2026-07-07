@@ -451,6 +451,7 @@
 				var pendingFileList = document.getElementById('issuePendingFileList');
 				var deleteFileContainer = document.getElementById('issueDeleteFileContainer');
 				var pendingDeleteFileIds = {};
+				var selectedDetailFiles = [];
 				var updateForm = document.getElementById('issueUpdateForm');
 				var deleteForm = document.querySelector('.issues-inline-delete-form');
 
@@ -468,6 +469,7 @@
 
 				if (updateForm) {
 					updateForm.addEventListener('submit', function() {
+						syncDetailFiles();
 						showLoading('수정중');
 					});
 				}
@@ -528,6 +530,20 @@
 					}
 				}
 
+				function formatFileSize(size) {
+					var fileSize = Number(size);
+
+					if (!Number.isFinite(fileSize) || fileSize <= 0) {
+						return '0 KB';
+					}
+
+					if (fileSize >= 1024 * 1024) {
+						return (fileSize / 1024 / 1024).toFixed(1) + ' MB';
+					}
+
+					return (fileSize / 1024).toFixed(1) + ' KB';
+				}
+
 				function renderIssueFiles(files) {
 					if (!fileList) {
 						return;
@@ -552,13 +568,16 @@
 						var info = document.createElement('span');
 						var name = document.createElement('span');
 						var version = document.createElement('small');
+						var size = document.createElement('small');
 						var download = document.createElement('a');
 						var actions = document.createElement('span');
 
 						name.textContent = file.originalName || '첨부파일';
 						version.textContent = 'v' + (file.fileVersion || 1);
+						size.textContent = formatFileSize(file.fileSize);
 						info.appendChild(name);
 						info.appendChild(version);
+						info.appendChild(size);
 
 						download.className = 'btn btn-default btn-custon-rounded-four btn-xs';
 						download.href = fileDownloadPrefix + encodeURIComponent(file.fileId) + '/download';
@@ -976,42 +995,79 @@
 				}
 
 				if (detailFileInput && detailFileCount) {
-					detailFileInput.addEventListener('change', function() {
-						var count = detailFileInput.files ? detailFileInput.files.length : 0;
-						detailFileCount.textContent = count > 0 ? count + '개 선택됨' : '선택된 파일 없음';
+					detailFileInput.addEventListener('change', function(event) {
+						selectedDetailFiles = selectedDetailFiles.concat(Array.prototype.slice.call(event.target.files || []));
+						detailFileInput.value = '';
 						renderPendingAddFiles();
 					});
 				}
 
 				if (detailFileClear && detailFileInput && detailFileCount) {
 					detailFileClear.addEventListener('click', function() {
-						detailFileInput.value = '';
-						detailFileCount.textContent = '선택된 파일 없음';
+						selectedDetailFiles = [];
 						renderPendingAddFiles();
 					});
 				}
 
+				if (pendingFileList) {
+					pendingFileList.addEventListener('click', function(event) {
+						if (!event.target.matches('[data-remove-pending-file]')) {
+							return;
+						}
+
+						var index = Number(event.target.getAttribute('data-remove-pending-file'));
+
+						if (Number.isInteger(index) && index >= 0) {
+							selectedDetailFiles.splice(index, 1);
+							renderPendingAddFiles();
+						}
+					});
+				}
+
+				function syncDetailFiles() {
+					if (!detailFileInput) {
+						return;
+					}
+
+					var dataTransfer = new DataTransfer();
+
+					selectedDetailFiles.forEach(function(file) {
+						dataTransfer.items.add(file);
+					});
+
+					detailFileInput.files = dataTransfer.files;
+				}
+
 				function renderPendingAddFiles() {
-					if (!pendingFileList || !detailFileInput) {
+					if (!pendingFileList || !detailFileInput || !detailFileCount) {
 						return;
 					}
 
 					pendingFileList.innerHTML = '';
+					detailFileCount.textContent = selectedDetailFiles.length > 0 ? selectedDetailFiles.length + '개 선택됨'
+							: '선택된 파일 없음';
+					syncDetailFiles();
 
-					if (!detailFileInput.files || detailFileInput.files.length === 0) {
+					if (selectedDetailFiles.length === 0) {
 						return;
 					}
 
-					Array.prototype.forEach.call(detailFileInput.files, function(file) {
+					selectedDetailFiles.forEach(function(file, index) {
 						var item = document.createElement('li');
 						var name = document.createElement('span');
 						var badge = document.createElement('small');
+						var removeButton = document.createElement('button');
 
-						name.textContent = file.name || '첨부파일';
+						name.textContent = (file.name || '첨부파일') + ' (' + formatFileSize(file.size) + ')';
 						badge.textContent = '추가 예정';
+						removeButton.type = 'button';
+						removeButton.className = 'btn btn-default btn-custon-rounded-four btn-xs';
+						removeButton.setAttribute('data-remove-pending-file', index);
+						removeButton.textContent = '삭제';
 
 						item.appendChild(name);
 						item.appendChild(badge);
+						item.appendChild(removeButton);
 						pendingFileList.appendChild(item);
 					});
 				}

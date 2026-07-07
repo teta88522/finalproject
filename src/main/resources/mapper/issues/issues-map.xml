@@ -2713,8 +2713,18 @@
 			'ISSUE_'
 			|| TO_CHAR(SYSDATE, 'YYMM')
 			|| '_'
-			|| TO_CHAR(SEQ_ISSUE_ID.NEXTVAL, 'FM0000')
-			FROM DUAL
+			|| LPAD(NVL(MAX(issue_seq), 0) + 1, 4, '0')
+			FROM (
+			SELECT TO_NUMBER(SUBSTR(issue_id, -4)) AS issue_seq
+			FROM issue
+			WHERE SUBSTR(issue_id, 1, 11) =
+			'ISSUE_' || TO_CHAR(SYSDATE, 'YYMM') || '_'
+			UNION ALL
+			SELECT TO_NUMBER(SUBSTR(issue_id, -4)) AS issue_seq
+			FROM issue_history
+			WHERE SUBSTR(issue_id, 1, 11) =
+			'ISSUE_' || TO_CHAR(SYSDATE, 'YYMM') || '_'
+			)
 		</selectKey>
 
 		insert into issue (
