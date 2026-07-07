@@ -28,6 +28,23 @@
 					<div class="workflow-header-actions">
 						<a th:href="@{/workflow/list}"
 							class="btn btn-custon-rounded-four btn-primary custom-white-btn"> 목록 </a>
+						<a
+							th:href="@{/workflow/transition(
+								roleId=${searchVO.roleId},
+								issueTypeId=${searchVO.issueTypeId},
+								closedYn=${searchVO.closedYn},
+								applyTargetCode=${searchVO.applyTargetCode}
+							)}"
+							class="btn btn-custon-rounded-four btn-default"
+							data-workflow-clear-draft="current"> 초기화 </a>
+
+						<button type="submit" form="workflowTransitionSaveForm"
+							class="btn btn-custon-rounded-four btn-primary custom-default-btn"
+							th:disabled="${#lists.isEmpty(issueTypeList)
+								or #lists.isEmpty(roleList)
+								or #lists.isEmpty(fromStatusList)
+								or #lists.isEmpty(toStatusList)}">
+							저장</button>
 					</div>
 				</div>
 
@@ -175,7 +192,7 @@
 				</div>
 
 				<!-- 상태 전환 저장 -->
-				<form th:action="@{/workflow/transition/save}" method="post"
+				<form id="workflowTransitionSaveForm" th:action="@{/workflow/transition/save}" method="post"
 					class="workflow-transition-form workflow-loading-form"
 					data-loading-message="업무흐름을 저장하는 중입니다.">
 
@@ -308,26 +325,6 @@
 								</tbody>
 							</table>
 
-						</div>
-
-						<div class="workflow-form-actions">
-							<a
-								th:href="@{/workflow/transition(
-									roleId=${searchVO.roleId},
-									issueTypeId=${searchVO.issueTypeId},
-									closedYn=${searchVO.closedYn},
-									applyTargetCode=${searchVO.applyTargetCode}
-								)}"
-								class="btn btn-custon-rounded-four btn-default"
-								data-workflow-clear-draft="current"> 초기화 </a>
-
-							<button type="submit"
-								class="btn btn-custon-rounded-four btn-primary custom-default-btn"
-								th:disabled="${#lists.isEmpty(issueTypeList)
-									or #lists.isEmpty(roleList)
-									or #lists.isEmpty(fromStatusList)
-									or #lists.isEmpty(toStatusList)}">
-								저장</button>
 						</div>
 
 					</div>

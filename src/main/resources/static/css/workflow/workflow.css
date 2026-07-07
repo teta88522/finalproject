@@ -304,7 +304,7 @@
 .workflow-table-scroll {
 	width: 100%;
 	overflow: auto;
-	border: 1px solid #e7e7e7;
+	border: 1px solid #031225;
 	border-radius: 6px;
 }
 
@@ -323,15 +323,15 @@
 
 .workflow-transition-table thead th {
 	height: 54px;
-	background: #f8f9fa;
-	color: #303030;
+	background: #031225;
+	color: #ffffff;
 	font-weight: 600;
 	white-space: nowrap;
 }
 
 .workflow-transition-table tbody th {
-	background: #f8f9fa;
-	color: #303030;
+	background: #031225;
+	color: #ffffff;
 	font-weight: 600;
 }
 
@@ -341,7 +341,8 @@
 	position: sticky;
 	left: 0;
 	z-index: 2;
-	background: #f8f9fa;
+	background: #031225;
+	color: #ffffff;
 }
 
 .workflow-transition-table thead .workflow-fixed-col {
@@ -526,7 +527,7 @@
 	min-height: 0;
 	width: 100%;
 	overflow: auto;
-	border: 1px solid #e7e7e7;
+	border: 1px solid #031225;
 	border-radius: 6px;
 }
 
@@ -549,15 +550,15 @@
 	top: 0;
 	z-index: 3;
 	height: 46px;
-	background: #f8f9fa;
-	color: #303030;
+	background: #031225;
+	color: #ffffff;
 	font-weight: 600;
 	white-space: nowrap;
 }
 
 .workflow-summary-table tbody th {
-	background: #f8f9fa;
-	color: #303030;
+	background: #031225;
+	color: #ffffff;
 	font-weight: 600;
 }
 
@@ -567,7 +568,8 @@
 	position: sticky;
 	left: 0;
 	z-index: 2;
-	background: #f8f9fa;
+	background: #031225;
+	color: #ffffff;
 }
 
 .workflow-summary-table thead .workflow-fixed-col {

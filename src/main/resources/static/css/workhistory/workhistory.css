@@ -113,6 +113,7 @@ body.workhistory-body {
 	width: 100%;
 	overflow-x: auto;
 	overflow-y: visible;
+	border: 1px solid #031225;
 }
 
 .workhistory-table {
@@ -158,9 +159,9 @@ body.workhistory-body {
 .workhistory-table thead th {
 	height: 34px;
 	padding: 6px 8px;
-	background: #f4f6fb;
+	background: #031225;
 	border-bottom: 1px solid #e1e5f0;
-	color: #333333;
+	color: #ffffff;
 	font-size: 12px;
 	font-weight: 700;
 	text-align: center;

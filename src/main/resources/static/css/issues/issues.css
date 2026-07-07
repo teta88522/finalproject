@@ -368,7 +368,7 @@ body.issues-list-body {
 	flex: 0 0 auto;
 	min-height: 0;
 	background: #ffffff;
-	border: 1px solid #e7e7e7;
+	border: 1px solid #031225;
 	border-radius: 8px;
 	padding: 0;
 	box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
@@ -431,11 +431,11 @@ body.issues-list-body {
 .issues-list-table thead th {
 	height: 31px;
 	padding: 5px 5px;
-	background: #f4f6fb;
+	background: #031225;
 	border-bottom: 1px solid #e1e5f0;
 	font-size: 12px;
 	font-weight: 600;
-	color: #333333;
+	color: #ffffff;
 	text-align: center;
 	vertical-align: middle;
 	white-space: nowrap;
@@ -689,6 +689,7 @@ body.issues-report-body {
 
 .issues-report-table {
 	width: 100%;
+	border: 1px solid #031225;
 	border-collapse: collapse;
 	table-layout: fixed;
 }
@@ -703,8 +704,8 @@ body.issues-report-body {
 }
 
 .issues-report-table th {
-	background: #f4f6fb;
-	color: #333333;
+	background: #031225;
+	color: #ffffff;
 	font-weight: 700;
 	text-align: center;
 }

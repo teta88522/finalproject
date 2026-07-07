@@ -28,6 +28,11 @@
 	font-size: 13px;
 }
 
+.issue-status-header .issue-status-form-actions {
+	margin-top: 0;
+	margin-bottom: 0;
+}
+
 /* ==============================
    일감상태 목록 화면
    - 메인 영역 스크롤 방지
@@ -99,6 +104,7 @@
 .issue-status-table-wrap {
 	width: 100%;
 	overflow-x: auto;
+	border: 1px solid #031225;
 }
 
 .issue-status-list-page .issue-status-table-wrap {
@@ -114,8 +120,8 @@
 }
 
 .issue-status-table thead th {
-	background: #f8f9fa;
-	color: #333;
+	background: #031225;
+	color: #ffffff;
 	font-size: 13px;
 	font-weight: 600;
 	border-bottom: 1px solid #ddd !important;

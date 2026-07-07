@@ -405,6 +405,7 @@ public class IssuesController {
 			issueForm.setIssueTypeName(issue.getIssueTypeName());
 			issueForm.setVersionId(issue.getVersionId());
 			issueForm.setVersionName(issue.getVersionName());
+			issueForm.setVersionStatusCode(issue.getVersionStatusCode());
 			issueForm.setAuthorId(issue.getAuthorId());
 			issueForm.setAuthorName(issue.getAuthorName());
 			issueForm.setCreatedAt(issue.getCreatedAt());

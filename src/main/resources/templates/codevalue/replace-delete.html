@@ -27,6 +27,17 @@
                         기본값 또는 사용 중인 코드값은 같은 그룹의 다른 코드값으로 대체한 후 삭제합니다.
                     </p>
                 </div>
+                <div class="codevalue-form-actions">
+                    <a th:href="@{/codevalue/list}"
+                       class="btn btn-custon-rounded-four btn-primary custom-white-btn">
+                        취소
+                    </a>
+
+                    <button type="submit" form="codeValueReplaceDeleteForm"
+                            class="btn btn-custon-rounded-four btn-danger custom-btn">
+                        대체 후 삭제
+                    </button>
+                </div>
             </div>
 
             <div th:if="${errorMessage}"
@@ -40,7 +51,7 @@
                     <p>삭제 대상과 같은 그룹의 코드값만 대체값으로 선택할 수 있습니다.</p>
                 </div>
 
-                <form th:action="@{/codevalue/delete/replace}"
+                <form id="codeValueReplaceDeleteForm" th:action="@{/codevalue/delete/replace}"
                       method="post">
 
                     <input type="hidden"
@@ -83,18 +94,6 @@
                         <p class="help-block">
                             삭제 대상이 기본값이면 선택한 대체 코드값이 기본값을 대신하게 됩니다.
                         </p>
-                    </div>
-
-                    <div class="codevalue-form-actions">
-                        <a th:href="@{/codevalue/list}"
-                           class="btn btn-custon-rounded-four btn-primary custom-white-btn">
-                            취소
-                        </a>
-
-                        <button type="submit"
-                                class="btn btn-custon-rounded-four btn-danger custom-btn">
-                            대체 후 삭제
-                        </button>
                     </div>
 
                 </form>

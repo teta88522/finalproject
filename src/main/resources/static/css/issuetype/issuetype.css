@@ -103,6 +103,7 @@
 .issuetype-table-wrap {
 	width: 100%;
 	overflow-x: auto;
+	border: 1px solid #031225;
 }
 
 .issuetype-list-page .issuetype-table-wrap {
@@ -118,7 +119,8 @@
 }
 
 .issuetype-table thead th {
-	background: #f8f9fa;
+	background: #031225;
+	color: #ffffff;
 	font-weight: 600;
 	border-bottom: 1px solid #ddd;
 	white-space: nowrap;
@@ -265,6 +267,7 @@ textarea.form-control {
 .field-setting-table-wrap {
 	width: 100%;
 	overflow-x: auto;
+	border: 1px solid #031225;
 }
 
 .field-setting-table {
@@ -272,7 +275,8 @@ textarea.form-control {
 }
 
 .field-setting-table thead th {
-	background: #f8f9fa;
+	background: #031225;
+	color: #ffffff;
 	font-weight: 600;
 	border-bottom: 1px solid #ddd;
 	white-space: nowrap;
@@ -318,6 +322,7 @@ textarea.form-control {
 	max-height: 360px;
 	overflow-y: auto;
 	overflow-x: hidden;
+	border: 1px solid #031225;
 }
 
 .project-select-table {
@@ -328,7 +333,8 @@ textarea.form-control {
 	position: sticky;
 	top: 0;
 	z-index: 2;
-	background: #f8f9fa;
+	background: #031225;
+	color: #ffffff;
 	font-weight: 600;
 	border-bottom: 1px solid #ddd;
 	white-space: nowrap;
@@ -545,6 +551,7 @@ textarea.form-control {
 	min-height: 0;
 	width: 100%;
 	overflow: auto;
+	border: 1px solid #031225;
 }
 
 .issuetype-summary-matrix {
@@ -564,7 +571,8 @@ textarea.form-control {
 
 .issuetype-summary-matrix thead th {
 	height: 44px;
-	background: #f8f9fa;
+	background: #031225;
+	color: #ffffff;
 	font-weight: 600;
 	border-bottom: 1px solid #dddddd;
 	white-space: nowrap;
@@ -576,8 +584,8 @@ textarea.form-control {
 
 .issuetype-summary-matrix tbody th {
 	width: 140px;
-	background: #f8f9fa;
-	color: #303030;
+	background: #031225;
+	color: #ffffff;
 	font-weight: 600;
 	text-align: left;
 	white-space: nowrap;
