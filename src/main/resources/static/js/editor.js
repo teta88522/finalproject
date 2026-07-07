@@ -14,7 +14,7 @@ if (textarea) {
   const ydoc = new Y.Doc()
 
   const provider = new WebsocketProvider(
-    'ws://localhost/ws/wiki',
+    'ws://15.164.251.233/ws/wiki',
     wikiId,
     ydoc
   )
