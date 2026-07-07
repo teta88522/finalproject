@@ -43,18 +43,11 @@
 	font-size: 14px;
 }
 
+/* ✅ "조회" 버튼은 공용 버튼 클래스(btn btn-custon-rounded-four custom-default-btn)로 색상을 통일하되,
+   버튼 크기(패딩/폰트 크기)는 기존 디자인 그대로 유지 */
 .list-controls button {
 	padding: 8px 16px;
-	background-color: #007bff;
-	color: white;
-	border: none;
-	border-radius: 4px;
-	cursor: pointer;
 	font-size: 14px;
-}
-
-.list-controls button:hover {
-	background-color: #0056b3;
 }
 
 .list-commit-list {

@@ -1,14 +1,12 @@
 @charset "UTF-8";
 
-body {
-	overflow: hidden;
-	height: 100vh;
-}
+/* ✅ body/​.repo-container에 뷰포트 고정 높이(overflow:hidden)를 걸어두면
+   내용(표 10행 + 검색조건 + 페이징)이 그 높이를 넘을 때 스크롤바 없이 잘려버림.
+   스크롤 없이 보이게 하려면 높이를 고정하지 말고 내용만큼 자연스럽게 늘어나야 함. */
 
 /* 레이아웃 */
 .repo-container {
 	padding: 10px 20px;
-	height: calc(100vh - 100px); /* 상단 네비게이션바 높이만큼 제외 */
 	display: flex;
 	flex-direction: column;
 }
@@ -61,11 +59,11 @@ body {
 }
 
 .search-section {
-	border: 1px solid #dfe3f0;
-	border-radius: 8px;
-	background-color: #ffffff;
-	padding: 16px 18px;
-	margin-bottom: 16px;
+    border: 1px solid #E6DCC8;
+    border-radius: 8px;
+    background-color: #F7EEE9;
+    padding: 16px 18px;
+    margin-bottom: 16px;
 }
 
 .search-section .search-header {
@@ -161,38 +159,38 @@ body {
 	text-decoration: none;
 }
 
-/* 테이블 영역 */
-.repo-table-card {
-	flex-grow: 1;
-	overflow: hidden; /* 스크롤 방지 */
+/* ✅ 표 wrapper. 이제 상위 컨테이너가 뷰포트 높이에 고정되지 않으므로
+   스크롤 없이 표 내용만큼 자연스럽게 늘어남. tr/td 스타일은 그대로 둠. */
+.asset-inner {
 	background: #fff;
-	border: 1px solid #e9ecef;
-	padding: 15px;
-	border-radius: 8px;
-	display: flex;
-	flex-direction: column;
 }
+
+/* 테이블 영역 */
 
 .repo-list-table {
 	width: 100%;
 	table-layout: fixed;
+	border: 1px solid #eee;
+	border-collapse: collapse;
 }
 
 .repo-list-table th {
 	padding: 12px;
-	background: #f8f9fa;
-	border-bottom: 2px solid #dee2e6;
+	background: #031225;
+	border: 1px solid #031225;
 	font-size: 14px;
-	text-align: left;
-	color: #495057;
+	text-align: center;
+	color: #fff;
 }
 
 .repo-list-table td {
-	padding: 8px 12px; /* 패딩을 약간 줄여 높이 확보 */
+	padding: 8px 10px; /* 패딩을 약간 줄여 높이 확보 */
 	font-size: 14px;
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
+	background: #fff;
+	border: 1px solid #eee;
 }
 
 .repo-list-table tbody tr:hover {
@@ -350,7 +348,8 @@ body {
     background-color: #f4f6fb;
 }
 
-.filter-check-item input[type="checkbox"] {
+.filter-check-item input[type="checkbox"],
+.filter-check-item input[type="radio"] {
     accent-color: #252ba3;
     width: 14px;
     height: 14px;

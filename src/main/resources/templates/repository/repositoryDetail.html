@@ -8,6 +8,8 @@
 </head>
 <body>
 	<div layout:fragment="Content">
+	<div class="container-fluid" style="height:calc(100vh - 130px); display:flex; flex-direction:column; padding-bottom:24px;">
+   <div style="background:#fff; border-radius:12px; box-shadow:0 2px 12px rgba(0,0,0,0.08); padding:24px; flex:1; display:flex; flex-direction:column; overflow:auto;">
 
 		<div th:if="${message}"
 			th:classappend="${msg == 'success'} ? 'page-message-success' : 'page-message-error'"
@@ -54,8 +56,12 @@
 							th:src="@{/project/{projectId}/repository/image(projectId=${projectId}, fileId=${repository.fileId})}"
 							style="max-width: 50%; height: auto; border: 1px solid #dee2e6; border-radius: 4px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); display: block; margin-left: 0; margin-right: auto;" />
 
-						<!-- 텍스트(txt) 미리보기 -->
-						<pre th:if="${#strings.endsWith(repository.originalName.toLowerCase(), '.txt')}"
+						<!-- 텍스트 미리보기 (txt, html, css, js는 실행/렌더링하지 않고 순수 텍스트로 표시) -->
+						<pre th:if="${#strings.endsWith(repository.originalName.toLowerCase(), '.txt') or
+                 #strings.endsWith(repository.originalName.toLowerCase(), '.html') or
+                 #strings.endsWith(repository.originalName.toLowerCase(), '.htm') or
+                 #strings.endsWith(repository.originalName.toLowerCase(), '.css') or
+                 #strings.endsWith(repository.originalName.toLowerCase(), '.js')}"
 							th:text="${fileContentText}"
 							style="text-align: left; max-width: 100%; max-height: 400px; overflow: auto; background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 4px; padding: 12px; white-space: pre-wrap; word-break: break-all;"></pre>
 
@@ -65,7 +71,11 @@
                  #strings.endsWith(repository.originalName.toLowerCase(), '.jpeg') or
                  #strings.endsWith(repository.originalName.toLowerCase(), '.gif') or
                  #strings.endsWith(repository.originalName.toLowerCase(), '.svg') or
-                 #strings.endsWith(repository.originalName.toLowerCase(), '.txt')}"
+                 #strings.endsWith(repository.originalName.toLowerCase(), '.txt') or
+                 #strings.endsWith(repository.originalName.toLowerCase(), '.html') or
+                 #strings.endsWith(repository.originalName.toLowerCase(), '.htm') or
+                 #strings.endsWith(repository.originalName.toLowerCase(), '.css') or
+                 #strings.endsWith(repository.originalName.toLowerCase(), '.js')}"
 							style="color: #dc3545; font-weight: 600;">미리보기가 안되는 파일입니다.</p>
 					</div>
 
@@ -78,26 +88,26 @@
 
 						<a
 							th:href="@{/project/{projectId}/repository(projectId=${projectId})}"
-							class="repo-btn repo-btn-list">목록</a>
+							class="btn btn-custon-rounded-four custom-default-btn">목록</a>
 
 						<!-- ✅ 문서관리(document)와 동일하게 모달로 여는 버튼 -->
 						<button type="button" data-toggle="modal"
-							data-target="#downloadHistoryModal" class="repo-btn"
-							style="background-color: #6c757d;">파일 다운로드 이력</button>
+							data-target="#downloadHistoryModal"
+							class="btn btn-custon-rounded-four custom-white-btn">파일 다운로드 이력</button>
 
 						<!-- 파일 다운로드 버튼 (projectId 포함) -->
 						<a id="downloadBtn"
 							th:href="@{/project/{projectId}/repository/download(projectId=${projectId}, fileId=${repository.fileId})}"
 							th:attr="data-history-url=@{/project/{projectId}/repository/history(projectId=${projectId}, fileId=${repository.fileId})},
 								data-file-name=${repository.originalName}"
-							class="repo-btn repo-btn-download">파일 다운로드</a>
+							class="btn btn-custon-rounded-four custom-default-btn">파일 다운로드</a>
 
 						<th:block
 							th:if="${userId != null && userId == repository.uploadUserId}">
 							<!-- 수정 버튼 -->
 							<a
 								th:href="@{/project/{projectId}/repository/edit(projectId=${projectId}, fileId=${repository.fileId})}"
-								class="repo-btn repo-btn-edit">수정</a>
+								class="btn btn-custon-rounded-four custom-white-btn">수정</a>
 
 							<!-- ✅ 삭제 - 프로젝트 표준 패턴(js-pf-confirm-submit)으로 통일 -->
 							<form id="deleteRepositoryForm"
@@ -110,7 +120,7 @@
 								data-confirm-icon="warning">
 								<input type="hidden" name="fileId"
 									th:value="${repository.fileId}">
-								<button type="submit" class="repo-btn repo-btn-delete">삭제</button>
+								<button type="submit" class="btn btn-custon-rounded-four btn-danger custom-btn">삭제</button>
 							</form>
 						</th:block>
 					</div>
@@ -121,65 +131,66 @@
 					<div style="margin-top: 20px;">
 						<a
 							th:href="@{/project/{projectId}/repository(projectId=${projectId})}"
-							class="repo-btn repo-btn-list">목록으로</a>
+							class="btn btn-custon-rounded-four custom-default-btn">목록으로</a>
 					</div>
 				</div>
 
 			</div>
 		</div>
+	</div>
+</div>
 
 		<!-- ✅ 파일 다운로드 이력 모달 (문서관리 documentDetail.html과 동일한 디자인) -->
 		<div class="modal fade" id="downloadHistoryModal" tabindex="-1" role="dialog">
-			<div class="modal-dialog" role="document" style="border-radius: 20px;">
-				<div class="modal-content"
-					style="border-radius: 20px; overflow: hidden; border: none;">
-
-					<!-- 헤더 -->
-					<div
-						style="background: #1a6fe8; padding: 18px 24px; display: flex; align-items: center; justify-content: space-between;">
-						<h4 style="color: #fff; margin: 0; font-size: 15px; font-weight: 500;">
-							파일 다운로드 이력</h4>
-						<span data-dismiss="modal"
-							style="color: #fff; font-size: 18px; cursor: pointer;">✕</span>
-					</div>
-
-					<!-- 바디 -->
-					<div class="modal-body"
-						style="padding: 24px; max-height: 500px; overflow-y: auto;">
-						<table class="table table-bordered table-hover"
-							style="margin-bottom: 0;">
-							<thead style="background: #f8f9fa;">
+			<div class="modal-dialog" role="document" style="border-radius:20px;">
+				<div class="modal-content" style="border-radius:5px; overflow:hidden; border:none;">
+					<!-- form 추가 -->
+					<div>
+						<!-- 헤더 -->
+						<div style="background:#031225; padding:18px 24px; display:flex; align-items:center; justify-content:space-between;">
+							<h4 style="color:#fff; margin:0; font-size:15px; font-weight:500;">
+								파일 다운로드 이력
+							</h4>
+							<span data-dismiss="modal" style="color:#fff; font-size:18px; cursor:pointer;">✕</span>
+						</div>
+						<!-- 바디 -->
+						<div class="modal-body" style="padding:24px; max-height:500px; overflow-y:auto;">
+							<table class="table table-bordered table-hover" style="margin-bottom:0;">
+								<thead style="background:#F7EEE9;">
 								<tr>
-									<th style="width: 10%; text-align: center;">No</th>
-									<th style="width: 45%;">파일명</th>
-									<th style="width: 20%; text-align: center;">다운로드 사용자</th>
-									<th style="width: 25%; text-align: center;">다운로드 일시</th>
+									<th style="width:10%; text-align:center;">No</th>
+									<th style="width:40%; text-align:center;">파일명</th>
+									<th style="width:25%; text-align:center;">다운로드 사용자</th>
+									<th style="width:25%; text-align:center;">다운로드 일시</th>
 								</tr>
-							</thead>
-							<tbody id="downloadHistoryBody">
+								</thead>
+								<tbody >
 								<tr th:each="history, stat : ${downloadHistoryList}">
 									<td class="text-center" th:text="${stat.count}">1</td>
-									<!-- ✅ 자료실은 파일 1개짜리 이력이라 history 자체엔 파일명이 없어서
-									     repository.originalName(현재 파일명)을 그대로 표시 -->
-									<td th:text="${repository != null ? repository.originalName : '-'}">sample.pdf</td>
+									<td class="text-center" th:text="${history.originalName}">sample.pdf</td>
 									<td class="text-center" th:text="${history.userName}">홍길동</td>
 									<td class="text-center" th:text="${history.downloadDate}">
-										2026-07-01 14:30</td>
+										2026-07-01 14:30
+									</td>
 								</tr>
-								<tr th:if="${downloadHistoryList == null or #lists.isEmpty(downloadHistoryList)}">
-									<td colspan="4" class="text-center" style="padding: 40px;">
-										다운로드 이력이 없습니다.</td>
+								<!-- 데이터 없을 때 -->
+								<tr th:if="${#lists.isEmpty(downloadHistoryList)}">
+									<td colspan="4" class="text-center" style="padding:40px;">
+										다운로드 이력이 없습니다.
+									</td>
 								</tr>
-							</tbody>
-						</table>
-					</div>
-
-					<!-- 푸터 -->
-					<div class="modal-footer"
-						style="border-top: 1px solid #f0f0f0; padding: 14px 24px 20px;">
-						<button type="button"
-							class="btn btn-default btn-custon-three btn-custon-rounded-three"
-							data-dismiss="modal">닫기</button>
+								</tbody>
+							</table>
+						</div>
+						<!-- 푸터 -->
+						<div class="modal-footer" style="border-top:1px solid #f0f0f0; padding:14px 24px 20px;">
+							<button
+									type="button"
+									class="btn btn-custon-rounded-four custom-white-btn"
+									data-dismiss="modal">
+								닫기
+							</button>
+						</div>
 					</div>
 				</div>
 			</div>

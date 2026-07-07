@@ -18,21 +18,27 @@
 
 			<!-- Breadcrumb -->
 			<div class="file-breadcrumb">
-				<a
-					th:href="@{/project/{projectId}/sourcerepository(projectId=${projectId})}">저장소
-					관리</a> /
-				<!-- ✅ 현재 폴더 경로 전체를 breadcrumb로 표시. 각 조각은 그 폴더로 바로 이동 -->
-				<a th:if="${breadcrumbs == null or breadcrumbs.isEmpty()}"
-					th:href="@{/project/{projectId}/sourcerepository/files(projectId=${projectId}, branch=${branch})}">파일 목록</a>
-				<th:block th:unless="${breadcrumbs == null or breadcrumbs.isEmpty()}">
-					<a th:href="@{/project/{projectId}/sourcerepository/files(projectId=${projectId}, branch=${branch})}">파일 목록</a>
-					<th:block th:each="crumb, iter : ${breadcrumbs}">
-						/ <a th:if="${!iter.last}"
-							th:href="@{/project/{projectId}/sourcerepository/files(projectId=${projectId}, path=${crumb.path}, branch=${branch})}"
-							th:text="${crumb.name}">folder</a>
-						<span th:if="${iter.last}" th:text="${crumb.name}">folder</span>
+				<div class="file-breadcrumb-text">
+					<a
+						th:href="@{/project/{projectId}/sourcerepository(projectId=${projectId})}">저장소
+						관리</a> /
+					<!-- ✅ 현재 폴더 경로 전체를 breadcrumb로 표시. 각 조각은 그 폴더로 바로 이동 -->
+					<a th:if="${breadcrumbs == null or breadcrumbs.isEmpty()}"
+						th:href="@{/project/{projectId}/sourcerepository/files(projectId=${projectId}, branch=${branch})}">파일 목록</a>
+					<th:block th:unless="${breadcrumbs == null or breadcrumbs.isEmpty()}">
+						<a th:href="@{/project/{projectId}/sourcerepository/files(projectId=${projectId}, branch=${branch})}">파일 목록</a>
+						<th:block th:each="crumb, iter : ${breadcrumbs}">
+							/ <a th:if="${!iter.last}"
+								th:href="@{/project/{projectId}/sourcerepository/files(projectId=${projectId}, path=${crumb.path}, branch=${branch})}"
+								th:text="${crumb.name}">folder</a>
+							<span th:if="${iter.last}" th:text="${crumb.name}">folder</span>
+						</th:block>
 					</th:block>
-				</th:block>
+				</div>
+				<!-- ✅ 저장소 메인으로 가는 버튼을 하단에서 breadcrumb 우측(상단)으로 이동 -->
+				<a
+					th:href="@{/project/{projectId}/sourcerepository(projectId=${projectId})}"
+					class="btn btn-custon-rounded-four custom-default-btn">저장소 메인</a>
 			</div>
  
 			<!-- Header with Branch Selector -->
@@ -55,8 +61,8 @@
 				     루트(경로 없음)면 브랜치 전체 이력으로 이동 -->
 				<a
 					th:href="${currentPath != null and !currentPath.isEmpty()} ? @{/project/{projectId}/sourcerepository/file-history(projectId=${projectId}, path=${currentPath}, branch=${branch})} : @{/project/{projectId}/sourcerepository/commits(projectId=${projectId}, branch=${branch})}"
-					class="file-history-btn"
-					style="text-decoration: none; display: inline-block;">History </a>
+					class="btn btn-custon-rounded-four custom-default-btn"
+					style="text-decoration: none;">History</a>
 			</div>
  
 			<!-- File List -->
@@ -88,13 +94,6 @@
 				<div class="file-empty-state" th:if="${files.isEmpty()}">
 					<p>📂 파일이 없습니다</p>
 				</div>
-			</div>
- 
-			<!-- Actions -->
-			<div class="file-actions">
-				<a
-					th:href="@{/project/{projectId}/sourcerepository(projectId=${projectId})}"
-					class="file-btn file-btn-secondary">저장소 메인 </a>
 			</div>
 		</div>
 

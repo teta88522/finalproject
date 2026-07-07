@@ -135,20 +135,7 @@
     cursor: pointer;
 }
 
-.btn-register {
-    background-color: #2F54EB;
-    color: #fff;
-    border: none;
-    padding: 10px 32px;
-    border-radius: 6px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background-color 0.2s;
-}
-
-.btn-register:hover {
-    background-color: #1d39c4;
-}
+/* ✅ 등록 버튼은 공용 버튼 클래스(btn btn-custon-rounded-four custom-default-btn)로 통일됨 */
 
 /* ✅ 에러 메시지 스타일 */
 .alert {

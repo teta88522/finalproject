@@ -417,7 +417,6 @@ public class ProjectController {
 		moduleMap.put("h006", "위키");
 		moduleMap.put("h007", "게시판");
 		moduleMap.put("h008", "간트차트");
-		moduleMap.put("h009", "칸반");
 		moduleMap.put("h010", "로드맵");
 		moduleMap.put("h011", "마일스톤");
 		moduleMap.put("h012", "달력");

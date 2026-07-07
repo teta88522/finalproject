@@ -60,55 +60,7 @@
 	gap: 10px;
 }
 
-/* 공통 버튼 베이스 */
-.repo-btn {
-	background-color: #007bff;
-	color: #fff !important;
-	border: none;
-	padding: 0 16px;
-	height: 32px;
-	display: inline-flex;
-	align-items: center;
-	border-radius: 4px;
-	text-decoration: none;
-	font-size: 14px;
-	font-weight: 500;
-	cursor: pointer;
-	transition: background-color 0.2s;
-}
-
-/* 버튼별 고유 색상 정의 */
-.repo-btn-download {
-	background-color: #007bff;
-}
-
-.repo-btn-download:hover {
-	background-color: #343a40;
-}
-
-.repo-btn-list {
-	background-color: #007bff;
-}
-
-.repo-btn-list:hover {
-	background-color: #343a40;
-}
-
-.repo-btn-edit {
-	background-color: #007bff;
-}
-
-.repo-btn-edit:hover {
-	background-color: #343a40;
-}
-
-.repo-btn-delete {
-	background-color: #e03131; /* 레드 */
-}
-
-.repo-btn-delete:hover {
-	background-color: #c92a2a;
-}
+/* ✅ 버튼들은 공용 버튼 클래스(btn btn-custon-rounded-four custom-default-btn 등)로 통일됨 */
 
 /* 데이터 없음 예외 창 */
 .repo-table-empty {

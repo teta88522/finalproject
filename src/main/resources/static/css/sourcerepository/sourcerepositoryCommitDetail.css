@@ -5,9 +5,25 @@
 }
 
 .detail-breadcrumb {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	flex-wrap: wrap;
 	color: #666;
 	font-size: 13px;
 	margin-bottom: 20px;
+}
+
+.detail-breadcrumb-text {
+	color: #666;
+	font-size: 13px;
+}
+
+.detail-breadcrumb-actions {
+	display: flex;
+	gap: 8px;
+	flex-shrink: 0;
 }
 
 .detail-breadcrumb a {
@@ -17,6 +33,17 @@
 
 .detail-breadcrumb a:hover {
 	text-decoration: underline;
+}
+
+/* ✅ 위 .detail-breadcrumb a { color:#007bff } 규칙이 breadcrumb 안으로 옮겨온
+   버튼(목록/저장소 메인)에도 적용되어 글자색이 파란색으로 덮어써지던 문제 수정 */
+.detail-breadcrumb-actions .btn {
+	color: #fff;
+	text-decoration: none;
+}
+
+.detail-breadcrumb-actions .btn:hover {
+	text-decoration: none;
 }
 
 .detail-header {
@@ -134,38 +161,4 @@
 	color: #999;
 }
 
-.detail-actions {
-	display: flex;
-	gap: 10px;
-	margin-top: 20px;
-}
-
-.detail-btn {
-	padding: 10px 20px;
-	border: none;
-	border-radius: 6px;
-	font-size: 14px;
-	font-weight: 600;
-	cursor: pointer;
-	text-decoration: none;
-	display: inline-block;
-	transition: all 0.3s;
-}
-
-.detail-btn-primary {
-	background-color: #007bff;
-	color: white;
-}
-
-.detail-btn-primary:hover {
-	background-color: #0056b3;
-}
-
-.detail-btn-secondary {
-	background-color: #6c757d;
-	color: white;
-}
-
-.detail-btn-secondary:hover {
-	background-color: #545b62;
-}
+/* ✅ 목록으로 돌아가기/저장소 메인 버튼은 breadcrumb 영역의 공용 버튼 클래스로 이동됨 */

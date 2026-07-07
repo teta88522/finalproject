@@ -50,7 +50,7 @@
 									style="margin:0;cursor:pointer;">모듈명</label>
 							</div>
 						</div>
-						<button type="submit" class="btn btn-outline-danger btn-sm mt-2">선택 제거</button>
+						<button type="submit" class="btn btn-custon-rounded-four btn-danger custom-btn mt-2">선택 제거</button>
 					</form>
  
 				</div>
@@ -76,7 +76,7 @@
 									th:text="${entry.value}" style="margin:0;cursor:pointer;">모듈명</label>
 							</div>
 						</div>
-						<button type="submit" class="btn btn-primary mt-2">선택 추가</button>
+						<button type="submit" class="btn btn-custon-rounded-four custom-default-btn mt-2">선택 추가</button>
 					</form>
  
 					<div th:if="${availableModules == null or #maps.isEmpty(availableModules)}"
@@ -87,7 +87,7 @@
  
 			<div class="text-end mt-4">
 				<a th:href="@{/projectdetail/{projectId}(projectId=${projectId})}"
-					class="btn btn-outline-secondary">돌아가기</a>
+					class="btn btn-custon-rounded-four custom-white-btn">돌아가기</a>
 			</div>
  
 			<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>

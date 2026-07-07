@@ -52,6 +52,12 @@
     border-color: #007bff;
 }
 
+/* 드래그 중인 파일이 영역 위에 있을 때 */
+.repo-upload-zone.dragover {
+    background-color: #eef2ff;
+    border-color: #364fc7;
+}
+
 .repo-upload-inner {
     display: flex;
     flex-direction: column;
@@ -106,34 +112,9 @@
     color: #495057;
 }
 
-/* [설계서 3번] 하단 버튼 구역 및 공통 버튼 스타일 */
+/* [설계서 3번] 하단 버튼 구역 (버튼 자체는 공용 클래스 btn btn-custon-rounded-four custom-*-btn로 통일됨) */
 .repo-btn-group {
     display: flex;
     justify-content: flex-end;
     gap: 10px;
-}
-
-.repo-btn {
-    color: #ffffff !important;
-    padding: 0 22px;
-    height: 40px;
-    line-height: 40px;
-    border-radius: 4px;
-    font-weight: 500;
-    font-size: 14px;
-    text-decoration: none;
-    display: inline-block;
-    text-align: center;
-    border: none;
-    cursor: pointer;
-    transition: background-color 0.15s ease-in-out;
-}
-
-/* 파일 업로드 및 하단 등록 버튼용 테마 (네이비) */
-.repo-btn-download {
-    background-color: #364fc7;
-}
-
-.repo-btn-download:hover {
-    background-color: #2b3a8c;
 }

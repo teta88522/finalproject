@@ -50,10 +50,10 @@
 							<div class="module-card">
 								<!-- ✅ 모듈 전체 선택 버튼 -->
 								<div style="display: flex; gap: 8px; margin-bottom: 15px;">
-									<button type="button" class="btn btn-sm btn-outline-primary"
+									<button type="button" class="btn btn-custon-rounded-four custom-white-btn"
 										onclick="document.querySelectorAll('.moduleCheckbox').forEach(cb => cb.checked = true);">
 										전체 선택</button>
-									<button type="button" class="btn btn-sm btn-outline-secondary"
+									<button type="button" class="btn btn-custon-rounded-four custom-white-btn"
 										onclick="document.querySelectorAll('.moduleCheckbox').forEach(cb => cb.checked = false);">
 										전체 해제</button>
 								</div>
@@ -140,19 +140,19 @@
 						</div>
  
 						<div class="text-end mt-5">
-							<button type="submit" class="btn-register">등록</button>
+							<button type="submit" class="btn btn-custon-rounded-four custom-default-btn">등록</button>
 						</div>
 					</div>
 				</div>
 			</form>
 		</div>
-
+ 
 		<script>
 			(function() {
 				var projectForm = document.getElementById('projectForm');
 				var startDateInput = document.getElementById('startDate');
 				var endDateInput = document.getElementById('endDate');
-
+ 
 				// ✅ 날짜 검증: startDate <= endDate 확인 (issues/list.html 패턴 참고)
 				if (projectForm && startDateInput && endDateInput) {
 					projectForm.addEventListener('submit', function(event) {
@@ -163,7 +163,7 @@
 							endDateInput.focus();
 						}
 					});
-
+ 
 					// ✅ startDate 변경 시 endDate의 최소값(min) 동적 설정
 					startDateInput.addEventListener('change', function() {
 						if (this.value) {

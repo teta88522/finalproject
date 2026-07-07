@@ -29,7 +29,7 @@
 						style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
 						<option th:value="${branch}" th:text="${branch}"></option>
 					</select>
-					<button type="submit">조회</button>
+					<button type="submit" class="btn btn-custon-rounded-four custom-default-btn">조회</button>
 				</form>
 			</div>
 
@@ -58,9 +58,6 @@
 						<div class="list-commit-date"
 							th:text="${#temporals.format(commit.committedAt, 'yyyy-MM-dd HH:mm:ss')}">
 							2024-06-30 14:30:00</div>
-						<a
-							th:href="@{/project/{projectId}/sourcerepository/commit/{sha}(projectId=${projectId}, sha=${commit.commitHash}, branch=${branch})}"
-							class="list-commit-link"> 상세 보기 → </a>
 					</div>
 				</div>
 			</div>

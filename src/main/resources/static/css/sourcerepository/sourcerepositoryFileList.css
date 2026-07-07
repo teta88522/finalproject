@@ -5,9 +5,18 @@
 }
 
 .file-breadcrumb {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
 	color: #666;
 	font-size: 13px;
 	margin-bottom: 20px;
+}
+
+.file-breadcrumb-text {
+	color: #666;
+	font-size: 13px;
 }
 
 .file-breadcrumb a {
@@ -17,6 +26,17 @@
 
 .file-breadcrumb a:hover {
 	text-decoration: underline;
+}
+
+/* ✅ 위 .file-breadcrumb a { color:#007bff } 규칙이 breadcrumb 안으로 옮겨온
+   버튼(저장소 메인)에도 적용되어 글자색이 파란색으로 덮어써지던 문제 수정 */
+.file-breadcrumb a.btn {
+	color: #fff;
+	text-decoration: none;
+}
+
+.file-breadcrumb a.btn:hover {
+	text-decoration: none;
 }
 
 .file-header {
@@ -140,28 +160,4 @@
 	margin: 0;
 }
 
-.file-actions {
-	display: flex;
-	gap: 10px;
-}
-
-.file-btn {
-	padding: 10px 20px;
-	border: none;
-	border-radius: 6px;
-	font-size: 13px;
-	font-weight: 600;
-	cursor: pointer;
-	text-decoration: none;
-	display: inline-block;
-	transition: all 0.3s;
-}
-
-.file-btn-secondary {
-	background-color: #6c757d;
-	color: white;
-}
-
-.file-btn-secondary:hover {
-	background-color: #545b62;
-}
+/* ✅ 저장소 메인 버튼은 breadcrumb 영역의 공용 버튼 클래스(btn btn-custon-rounded-four custom-white-btn)로 이동됨 */

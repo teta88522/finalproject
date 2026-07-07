@@ -10,9 +10,25 @@
 
 /* Breadcrumb */
 .detail-breadcrumb {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	flex-wrap: wrap;
 	color: #666;
 	font-size: 13px;
 	margin-bottom: 20px;
+}
+
+.detail-breadcrumb-text {
+	color: #666;
+	font-size: 13px;
+}
+
+.detail-breadcrumb-actions {
+	display: flex;
+	gap: 8px;
+	flex-shrink: 0;
 }
 
 .detail-breadcrumb a {
@@ -22,6 +38,17 @@
 
 .detail-breadcrumb a:hover {
 	text-decoration: underline;
+}
+
+/* ✅ 위 .detail-breadcrumb a { color:#007bff } 규칙이 breadcrumb 안으로 옮겨온
+   버튼(목록/저장소 메인)에도 적용되어 글자색이 파란색으로 덮어써지던 문제 수정 */
+.detail-breadcrumb-actions .btn {
+	color: #fff;
+	text-decoration: none;
+}
+
+.detail-breadcrumb-actions .btn:hover {
+	text-decoration: none;
 }
 
 /* Header */
@@ -48,22 +75,7 @@
 	word-break: break-word;
 }
 
-.detail-history-btn {
-	display: inline-block;
-	padding: 8px 16px;
-	background-color: #007bff;
-	color: white;
-	border-radius: 6px;
-	font-size: 13px;
-	font-weight: 600;
-	white-space: nowrap;
-	transition: background-color 0.2s;
-}
-
-.detail-history-btn:hover {
-	background-color: #0056b3;
-	color: white;
-}
+/* ✅ History 버튼은 공용 버튼 클래스(btn btn-custon-rounded-four custom-default-btn)로 통일됨 */
 
 .detail-meta {
 	display: flex;
@@ -145,7 +157,7 @@
 
 /* File Content */
 .detail-content {
-	background: #1e1e1e;
+	background: #1e1e1e !important;
 	border-radius: 0 0 8px 8px;
 	margin-bottom: 20px;
 	max-height: 70vh;
@@ -155,7 +167,8 @@
 .file-content {
 	margin: 0;
 	padding: 20px;
-	color: #d4d4d4;
+	background: transparent !important;
+	color: #f1f1f1 !important;
 	font-family: 'Courier New', Consolas, Monaco, monospace;
 	font-size: 13px;
 	line-height: 1.6;
@@ -164,34 +177,7 @@
 	tab-size: 4;
 }
 
-/* Bottom Actions */
-.detail-actions {
-	display: flex;
-	gap: 10px;
-	flex-wrap: wrap;
-}
-
-.detail-btn {
-	padding: 10px 20px;
-	border: none;
-	border-radius: 6px;
-	font-size: 14px;
-	font-weight: 600;
-	cursor: pointer;
-	text-decoration: none;
-	display: inline-block;
-	transition: background-color 0.2s;
-}
-
-.detail-btn-secondary {
-	background-color: #6c757d;
-	color: white;
-}
-
-.detail-btn-secondary:hover {
-	background-color: #545b62;
-	color: white;
-}
+/* ✅ 목록/저장소 메인 버튼은 breadcrumb 영역의 공용 버튼 클래스(btn btn-custon-rounded-four custom-white-btn)로 이동됨 */
 
 /* ✅ 코드 복사 완료 모달에서 체크마크 아이콘이 그려지는 애니메이션 도중
    테두리 밖으로 획이 삐져나가면서 2개가 겹쳐 보이는 것처럼 보이던 현상.

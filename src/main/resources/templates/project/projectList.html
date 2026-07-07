@@ -17,7 +17,7 @@
       
 	
 		<div class="project-list-page" th:data-subscribe-yn="${subscribeYn}">
-
+ 
 			<!-- 상단 제목 -->
 			<div class="project-page-header">
 				<div>
@@ -30,16 +30,16 @@
 							생성</a>
 					</div>
 			</div>
-
+ 
 			<!-- 검색 조건 영역 -->
 			<div class="search-section project-search-class">
 				<div class="search-header">
 					<div class="search-title">검색조건</div>
 				</div>
-
+ 
 				<form id="searchForm" th:action="@{/myproject/list}" method="get">
 					<div class="search-form-row">
-
+ 
 						<!-- 프로젝트 명 -->
 						<div class="search-field">
 							<label for="searchProjectName">프로젝트 명</label> <input type="text"
@@ -47,7 +47,7 @@
 								th:value="${searchVO != null ? searchVO.searchProjectName : ''}"
 								placeholder="프로젝트 명을 입력해주세요.">
 						</div>
-
+ 
 						<!-- 생성자 -->
 						<div class="search-field">
 							<label for="searchOwnerName">생성자</label> <input type="text"
@@ -55,8 +55,8 @@
 								th:value="${searchVO != null ? searchVO.searchOwnerName : ''}"
 								placeholder="생성자 명을 입력해주세요.">
 						</div>
-
-						<!-- ✅ 프로젝트 상태 - 다중선택 (체크박스) -->
+ 
+						<!-- ✅ 프로젝트 상태 - 단일선택 (라디오, 자료실 출처 필터와 동일한 방식) -->
 						<div class="search-field">
 							<label>프로젝트 상태</label>
 							<details class="filter-dropdown" id="statusDropdown">
@@ -65,24 +65,28 @@
 								</summary>
 								<div class="filter-dropdown-panel">
 									<label class="filter-check-item"> <input
-										type="checkbox" name="searchStatusCode" value="a001"
-										th:checked="${searchVO != null and searchVO.searchStatusCode != null and searchVO.searchStatusCode.contains('a001')}">
+										type="radio" name="searchStatusCode" value=""
+										th:checked="${searchVO == null or searchVO.searchStatusCode == null or searchVO.searchStatusCode == ''}">
+										<span>전체</span>
+									</label> <label class="filter-check-item"> <input
+										type="radio" name="searchStatusCode" value="a001"
+										th:checked="${searchVO != null and searchVO.searchStatusCode == 'a001'}">
 										<span>예정</span>
 									</label> <label class="filter-check-item"> <input
-										type="checkbox" name="searchStatusCode" value="a002"
-										th:checked="${searchVO != null and searchVO.searchStatusCode != null and searchVO.searchStatusCode.contains('a002')}">
+										type="radio" name="searchStatusCode" value="a002"
+										th:checked="${searchVO != null and searchVO.searchStatusCode == 'a002'}">
 										<span>진행중</span>
 									</label> <label class="filter-check-item"> <input
-										type="checkbox" name="searchStatusCode" value="a003"
-										th:checked="${searchVO != null and searchVO.searchStatusCode != null and searchVO.searchStatusCode.contains('a003')}">
+										type="radio" name="searchStatusCode" value="a003"
+										th:checked="${searchVO != null and searchVO.searchStatusCode == 'a003'}">
 										<span>종료</span>
 									</label>
 								</div>
 							</details>
 						</div>
-
+ 
 					</div>
-
+ 
 					<div class="search-btn-area">
 						<a th:href="@{/myproject/list}" class="btn btn-custon-rounded-four custom-white-btn">초기화</a>
 						<button type="button" class="btn btn-custon-rounded-four custom-default-btn"
@@ -90,7 +94,7 @@
 					</div>
 				</form>
 			</div>
-
+ 
 			<!-- 프로젝트 목록 영역 -->
 			<div class="project-list-section">
 				<div class="list-header">
@@ -106,7 +110,7 @@
 						건
 					</div>
 				</div>
-
+ 
 				<div class="project-table-wrap">
 					<table class="project-table">
 						<thead>
@@ -136,10 +140,10 @@
 									th:text="${project.identifier}">identifier</td>
 								<td class="project-name-cell text-center"><span
 									th:text="${project.projectName}">프로젝트명</span></td>
-								<td class="desc-cell text-center" th:text="${project.description}">프로젝트
+								<td class="desc-cell text-center" th:title="${project.description}" th:text="${project.description}">프로젝트
 									설명</td>
 								<td class="text-center" th:text="${project.ownerName}">생성자</td>
-								<td class="text-left" onclick="event.stopPropagation();"><a
+								<td class="url-cell text-left" th:title="${project.projectUrl}" onclick="event.stopPropagation();"><a
 									th:if="${project.projectUrl != null and project.projectUrl != ''}"
 									th:href="${project.projectUrl}" target="_blank"
 									th:text="${project.projectUrl}">홈페이지</a> <span
@@ -162,7 +166,7 @@
 						</tbody>
 					</table>
 				</div>
-
+ 
 				<!-- 페이징 영역 -->
 				<div class="pagination"
 					th:if="${searchVO != null and searchVO.totalPage > 0}">
@@ -170,7 +174,7 @@
 						th:classappend="${!searchVO.hasPrevious} ? ' disabled'"
 						th:disabled="${!searchVO.hasPrevious}"
 						th:onclick="${searchVO.hasPrevious} ? 'goPage(' + (searchVO.page - 1) + ')' : 'return false'">&lt;</button>
-
+ 
 					<th:block
 						th:each="pageNum : ${#numbers.sequence(1, searchVO.totalPage)}">
 						<button type="button" class="page-btn"
@@ -179,7 +183,7 @@
 							<span th:text="${pageNum}">1</span>
 						</button>
 					</th:block>
-
+ 
 					<button type="button" class="page-btn"
 						th:classappend="${!searchVO.hasNext} ? ' disabled'"
 						th:disabled="${!searchVO.hasNext}"
@@ -197,17 +201,18 @@
 			});
 		});
  
-		/* ✅ 체크박스 선택 시 summary 텍스트 업데이트 */
+		/* ✅ 프로젝트 상태는 라디오 버튼으로 하나만 선택 가능. 선택 시 summary 텍스트 업데이트 */
 		document.querySelectorAll('details.filter-dropdown').forEach(function(dropdown) {
 			const summary = dropdown.querySelector('.filter-selected-text');
-			const checkboxes = dropdown.querySelectorAll('input[type="checkbox"]');
+			const radios = dropdown.querySelectorAll('input[type="radio"]');
  
 			function updateSummary() {
-				const checked = Array.from(checkboxes).filter(cb => cb.checked).map(cb => cb.nextElementSibling.textContent);
-				summary.textContent = checked.length > 0 ? checked.join(', ') : '전체';
+				const checked = Array.from(radios).find(function(r) { return r.checked; });
+				summary.textContent = checked ? checked.nextElementSibling.textContent.trim() : '전체';
+				if (checked) dropdown.removeAttribute('open');
 			}
  
-			checkboxes.forEach(cb => cb.addEventListener('change', updateSummary));
+			radios.forEach(function(r) { r.addEventListener('change', updateSummary); });
 			updateSummary(); // 초기 렌더링 시 적용
 		});
  
@@ -227,37 +232,16 @@
 		function submitSearch() {
 			const projectName = document.getElementById('searchProjectName').value.trim();
 			const ownerName = document.getElementById('searchOwnerName').value.trim();
-			const statusChecked = document.querySelectorAll('input[name="searchStatusCode"]:checked').length > 0;
+			const checkedStatus = document.querySelector('input[name="searchStatusCode"]:checked');
+			const statusSelected = !!(checkedStatus && checkedStatus.value);
  
-			if (!projectName && !ownerName && !statusChecked) {
+			if (!projectName && !ownerName && !statusSelected) {
 				alert('검색 조건을 하나 이상 입력하거나 선택해 주세요.\n(프로젝트명, 생성자 입력 또는 상태 중 하나를 선택하세요.)');
 				return;
 			}
-			
-			// ✅ 다중선택된 status 값들을 쉼표로 구분하여 전송
+ 
 			let form = document.getElementById('searchForm');
-			
-			// 기존 hidden input 제거
-			let oldStatusInputs = form.querySelectorAll('input[name="searchStatusCode"][type="hidden"]');
-			oldStatusInputs.forEach(input => input.remove());
-			
-			// 선택된 checkbox 값들을 hidden input으로 변환
-			let checkedBoxes = Array.from(document.querySelectorAll('input[name="searchStatusCode"]:checked'));
-			let statusValues = checkedBoxes.map(cb => cb.value).join(',');
-			
-			// status 값을 hidden input으로 추가
-			if (statusValues) {
-				let hiddenInput = document.createElement('input');
-				hiddenInput.type = 'hidden';
-				hiddenInput.name = 'searchStatusCode';
-				hiddenInput.value = statusValues;
-				form.appendChild(hiddenInput);
-			}
-
-			// ✅ 원본 체크박스가 같이 제출되면 searchStatusCode 값이 중복/뒤섞여서 전송되던 문제 수정.
-			//    콤마로 합친 hidden input만 보내지도록 원본 체크박스는 제출에서 제외.
-			checkedBoxes.forEach(cb => cb.disabled = true);
-			
+ 
 			let pageInput = form.querySelector('input[name="page"]');
 			if (!pageInput) {
 				pageInput = document.createElement('input');
@@ -296,7 +280,7 @@
 			}
 		}
 	</script>
-
+ 
 	</div>
 </body>
 </html>

@@ -105,17 +105,21 @@ public class RepositoryController {
 		// ✅ 파일 다운로드 이력 (최근순)
 		model.addAttribute("downloadHistoryList", repositoryService.getDownloadHistory(fileId));
 
-		// ✅ txt 파일은 미리보기용으로 본문 내용을 함께 전달 (500KB 이하만)
+		// ✅ txt, html, css, js 파일은 미리보기용으로 본문 내용을 함께 전달 (2MB 이하만)
 		if (detail != null && detail.getOriginalName() != null
-				&& detail.getOriginalName().toLowerCase().endsWith(".txt")) {
+				&& isTextPreviewable(detail.getOriginalName())) {
 			try {
 				File txtFile = new File(detail.getFilePath());
-				if (txtFile.exists() && txtFile.length() <= 500 * 1024) {
+				if (!txtFile.exists()) {
+					// ✅ 이전엔 "파일이 너무 커서"로 잘못 표시되어, 실제로는 파일이 없는(경로가 잘못됐거나
+					//    삭제된) 상황인데도 용량 문제인 것처럼 오해하게 만들었음. 원인을 구분해서 표시.
+					model.addAttribute("fileContentText", "(서버에 파일이 존재하지 않아 미리보기를 표시할 수 없습니다.)");
+				} else if (txtFile.length() <= 2 * 1024 * 1024) {
 					String content = new String(java.nio.file.Files.readAllBytes(txtFile.toPath()),
 							java.nio.charset.StandardCharsets.UTF_8);
 					model.addAttribute("fileContentText", content);
 				} else {
-					model.addAttribute("fileContentText", "(파일이 너무 커서 미리보기를 표시할 수 없습니다.)");
+					model.addAttribute("fileContentText", "(파일이 너무 커서 미리보기를 표시할 수 없습니다. 최대 2MB까지 미리보기가 가능합니다.)");
 				}
 			} catch (Exception e) {
 				model.addAttribute("fileContentText", "(텍스트 내용을 불러올 수 없습니다.)");
@@ -257,6 +261,13 @@ public class RepositoryController {
 	public List<com.pixcel.app.file.service.FileDownloadHistoryVO> getDownloadHistoryJson(
 			@RequestParam String fileId) {
 		return repositoryService.getDownloadHistory(fileId);
+	}
+
+	// ✅ 텍스트로 미리보기 가능한 확장자 (txt, html, css, js는 실행/렌더링하지 않고 순수 텍스트로 표시)
+	private boolean isTextPreviewable(String originalName) {
+		String name = originalName.toLowerCase();
+		return name.endsWith(".txt") || name.endsWith(".html") || name.endsWith(".htm")
+				|| name.endsWith(".css") || name.endsWith(".js");
 	}
 
 }

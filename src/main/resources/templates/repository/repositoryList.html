@@ -8,8 +8,8 @@
 </head>
 <body>
 	<div layout:fragment="Content">
-	<div class="container-fluid" style="height:calc(100vh - 130px); display:flex; flex-direction:column; padding-bottom:24px;">
-   <div style="background:#fff; border-radius:12px; box-shadow:0 2px 12px rgba(0,0,0,0.08); padding:24px; flex:1; display:flex; flex-direction:column; overflow:auto;">
+	<div class="container-fluid" style="display:flex; flex-direction:column; padding-bottom:24px;">
+   <div style="background:#fff; border-radius:12px; box-shadow:0 2px 12px rgba(0,0,0,0.08); padding:24px; flex:1; display:flex; flex-direction:column;">
 	
 		<div class="repo-container">
 			<div class="repo-header">
@@ -20,6 +20,10 @@
 			</div>
  
 			<div class="search-section">
+				<div class="search-header">
+					<div class="search-title">검색조건</div>
+				</div>
+
 				<!-- ✅ 추가: 에러 메시지 표시 -->
 				<div th:if="${errorMessage}"
 					class="alert alert-danger alert-dismissible fade show" role="alert"
@@ -54,8 +58,13 @@
 									<span class="filter-selected-text">전체</span>
 								</summary>
 								<div class="filter-dropdown-panel">
+									<label class="filter-check-item">
+										<input type="radio" name="fileCode"
+										value=""
+										th:checked="${param.fileCode == null}"> <span>전체</span>
+									</label>
 									<label class="filter-check-item" th:each="code : ${sourceList}">
-										<input type="checkbox" name="fileCode"
+										<input type="radio" name="fileCode"
 										th:value="${code['CODE_ID']}"
 										th:checked="${code['CODE_ID'] == param.fileCode}"> <span
 										th:text="${code['NOTE']}">출처</span>
@@ -80,8 +89,7 @@
 					</div>
 				</form>
 			</div>
- 
-			<div class="repo-table-card">
+			<div class="asset-inner" style="border:1px solid #eef0f3; border-radius:8px;">
 				<table class="repo-list-table">
 					<thead>
 						<tr>
@@ -108,7 +116,6 @@
 					</tbody>
 				</table>
 			</div>
- 
 			<!-- 페이징 -->
 			<div class="pagination-area"
 				style="text-align: center; margin-top: 20px;">
@@ -149,17 +156,18 @@
 			});
 		});
  
-		/* 체크박스 선택 시 summary 텍스트 업데이트 */
+		/* ✅ 출처는 라디오 버튼으로 하나만 선택 가능. 선택 시 summary 텍스트 업데이트 */
 		document.querySelectorAll('details.filter-dropdown').forEach(function(dropdown) {
 			const summary = dropdown.querySelector('.filter-selected-text');
-			const checkboxes = dropdown.querySelectorAll('input[type="checkbox"]');
+			const radios = dropdown.querySelectorAll('input[type="radio"]');
  
 			function updateSummary() {
-				const checked = Array.from(checkboxes).filter(cb => cb.checked).map(cb => cb.nextElementSibling.textContent.trim());
-				summary.textContent = checked.length > 0 ? checked.join(', ') : '전체';
+				const checked = Array.from(radios).find(function(r) { return r.checked; });
+				summary.textContent = checked ? checked.nextElementSibling.textContent.trim() : '전체';
+				if (checked) dropdown.removeAttribute('open');
 			}
  
-			checkboxes.forEach(cb => cb.addEventListener('change', updateSummary));
+			radios.forEach(function(r) { r.addEventListener('change', updateSummary); });
 			updateSummary();
 		});
 		
