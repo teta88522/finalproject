@@ -9,6 +9,9 @@
 </head>
 <body>
 	<div layout:fragment="Content">
+	<div class="container-fluid" style="height:calc(100vh - 130px); display:flex; flex-direction:column; padding-bottom:24px;">
+   <div style="background:#fff; border-radius:12px; box-shadow:0 2px 12px rgba(0,0,0,0.08); padding:24px; flex:1; display:flex; flex-direction:column; overflow:auto;">
+	
 		<div class="file-detail-container">
 			<!-- Breadcrumb -->
 			<div class="detail-breadcrumb">
@@ -89,7 +92,8 @@
 				<pre class="file-content" id="fileContent" th:text="${fileContent}">// File content here</pre>
 			</div>
 		</div>
-
+	</div>
+</div>
 		<!-- ✅✅ layout:fragment="Content" 안쪽으로 이동: fragment 밖에 있으면 Thymeleaf Layout
 		     Dialect가 최종 렌더링에서 제외시켜서, 복사/다운로드 버튼의 onclick이
 		     "함수가 정의되지 않음" 에러로 조용히 실패하던 문제가 있었음 -->

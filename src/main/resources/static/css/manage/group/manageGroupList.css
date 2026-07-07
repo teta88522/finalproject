@@ -347,13 +347,13 @@
 }
 
 .group-table th {
-    background: #f8fafd;
-    color: #333;
+    background: #031225;
+    color: #fff;
     font-weight: 700;
 }
 
 .group-table tbody tr:hover {
-    background: #f4f8ff;
+    background: #fff;
 }
 
 .group-table th:nth-child(1),

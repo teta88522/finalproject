@@ -8,7 +8,9 @@
 </head>
 <body>
 <div layout:fragment="Content">
-
+<div class="container-fluid" style="height:calc(100vh - 130px); display:flex; flex-direction:column; padding-bottom:24px;">
+   <div style="background:#fff; border-radius:12px; box-shadow:0 2px 12px rgba(0,0,0,0.08); padding:24px; flex:1; display:flex; flex-direction:column; overflow:auto;">
+	
     <div class="repo-container">
         <div class="repo-header">
             <h2 class="repo-title">자료실</h2>
@@ -48,7 +50,8 @@
 			</form>
         </div>
     </div>
-
+</div>
+</div>
     <!-- ✅ 새 파일 선택 시 표시된 파일명이 안 바뀌던 문제 수정 (change 이벤트를 아무도 안 듣고 있었음).
          의미 없이 에러만 내던 × 버튼(정의 안 된 clearFile() 호출)은 제거함. -->
     <script>

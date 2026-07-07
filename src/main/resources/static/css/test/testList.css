@@ -89,11 +89,20 @@
 }
 
 /* 공통 섹션 */
-.search-section,
-.list-section {
+.search-section {
     padding: 18px;
     margin-bottom: 20px;
     background: #F7EEE9;
+    border: 1px solid #E6DCC8;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(20, 30, 50, 0.04);
+}
+
+
+.list-section {
+    padding: 18px;
+    margin-bottom: 20px;
+    background: #fff;
     border: 1px solid #E6DCC8;
     border-radius: 12px;
     box-shadow: 0 2px 8px rgba(20, 30, 50, 0.04);
@@ -298,13 +307,13 @@
 }
 
 .test-table th {
-    background: #f8fafd;
-    color: #333;
+    background: #031225;
+    color: #fff;
     font-weight: 700;
 }
 
 .test-table tbody tr:hover {
-    background: #f4f8ff;
+    background: #fff;
 }
 
 .test-table th:nth-child(1),

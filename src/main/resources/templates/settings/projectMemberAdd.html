@@ -14,7 +14,9 @@
 
 <body>
 <div layout:fragment="Content">
-
+<div class="container-fluid" style="height:calc(100vh - 130px); display:flex; flex-direction:column; padding-bottom:24px;">
+   <div style="background:#fff; border-radius:12px; box-shadow:0 2px 12px rgba(0,0,0,0.08); padding:24px; flex:1; display:flex; flex-direction:column; overflow:auto;">
+	
     <div class="project-member-add-page">
 
         <div class="add-page-header">
@@ -56,7 +58,7 @@
             </div>
 
             <!-- 구성원 선택 -->
-            <div class="add-section">
+
 
                 <div class="section-header">
                     <div>
@@ -138,15 +140,15 @@
                     </table>
                 </div>
 
-            </div>
+
 
             <div class="form-btn-area">
                 <a th:href="@{/project/{projectId}/settings/members(projectId=${projectId})}"
-                   class="btn-basic">
+                   class="btn btn-custon-rounded-four custom-white-btn">
                     취소
                 </a>
 
-                <button type="submit" class="btn-basic btn-primary">
+                <button type="submit" class="btn btn-custon-rounded-four custom-default-btn">
                     저장
                 </button>
             </div>
@@ -154,7 +156,8 @@
         </form>
 
     </div>
-
+   </div>
+</div>
     <script th:inline="javascript">
         const message = /*[[${message}]]*/ null;
 

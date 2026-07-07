@@ -343,8 +343,8 @@
 }
 
 .testcase-table th {
-    background: #f8fafd;
-    color: #333;
+    background: #031225;
+    color: #fff;
     font-weight: 700;
 }
 
@@ -685,8 +685,8 @@
 }
 
 .page-current {
-    border: 1px solid #2f6fed;
-    background: #2f6fed;
+    border: 1px solid #031225;
+    background: #031225;
     color: #fff;
     font-weight: 800;
 }

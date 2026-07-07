@@ -474,19 +474,19 @@ body.issues-list-body {
 	align-items: center;
 	justify-content: center;
 	gap: 3px;
-	color: #333333;
+	color: #fff;
 	text-decoration: none;
 }
 
 .issue-sort-link:hover, .issue-sort-link:focus {
-	color: #252ba3;
+	color: #fff;
 	text-decoration: none;
 }
 
 .issue-sort-mark {
 	font-size: 10px;
 	line-height: 1;
-	color: #252ba3;
+	color: #fff;
 }
 
 /* 셀 공통 */
@@ -638,14 +638,14 @@ body.issues-list-body {
 }
 
 .issues-page-btn:hover, .issues-page-btn:focus {
-	border-color: #252ba3;
-	color: #252ba3;
+	border-color: #031225;
+	color: #031225;
 	text-decoration: none;
 }
 
 .issues-page-btn.is-active {
-	border-color: #252ba3;
-	background: #252ba3;
+	border-color: #031225;
+	background: #031225;
 	color: #ffffff;
 	font-weight: 600;
 }
