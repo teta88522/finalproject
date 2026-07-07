@@ -256,8 +256,28 @@ body.issues-list-body {
 	overflow: auto;
 }
 
+.issues-list-shell {
+	height: calc(100vh - 130px);
+	min-height: 0;
+	display: flex;
+	flex-direction: column;
+	padding-bottom: 24px;
+}
+
+.issues-list-panel {
+	flex: 1 1 auto;
+	min-height: 0;
+	display: flex;
+	flex-direction: column;
+	padding: 24px;
+	overflow: auto;
+	background: #ffffff;
+	border-radius: 12px;
+	box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+
 .issues-list-page {
-	min-height: calc(100vh - 126px);
+	min-height: 0;
 	padding: 6px 0;
 	overflow: visible;
 }
@@ -1510,6 +1530,15 @@ body.issues-detail-body {
 	body.issues-create-body, body.issues-list-body, body.issues-detail-body,
 	body.issues-report-body {
 		overflow: auto;
+	}
+	.issues-list-shell {
+		height: auto;
+		min-height: calc(100vh - 130px);
+		padding-bottom: 16px;
+	}
+	.issues-list-panel {
+		overflow: visible;
+		padding: 16px;
 	}
 	.issues-create-page, .issues-list-page, .issues-detail-page,
 	.issues-report-page {
