@@ -84,6 +84,13 @@
     background: #F7EEE9;
     border: 1px solid #E6DCC8;
 }
+.detail-section-menu{
+	margin-bottom: 22px;
+    padding: 20px;
+    border-radius: 12px;
+    background: #fff;
+    border: 1px solid #E6DCC8;
+}
 
 .section-title {
     font-size: 17px;
@@ -154,9 +161,7 @@
     box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
 }
 
-.role-assign-section {
-    background: #f8fafc;
-}
+
 
 .role-select-wrap {
     display: grid;
@@ -182,11 +187,11 @@
 .member-table thead th {
     height: 44px;
     padding: 10px 12px;
-    background: #f3f4f6;
+    background: #031225;
     border-bottom: 1px solid #e5e7eb;
     font-size: 13px;
     font-weight: 700;
-    color: #374151;
+    color: #fff;
     text-align: center;
     white-space: nowrap;
 }
@@ -234,7 +239,7 @@
     min-width: 58px;
     padding: 4px 9px;
     border-radius: 999px;
-    background: #eef2ff;
+    background: #fff;
     color: #3730a3;
     font-size: 12px;
     font-weight: 700;
@@ -265,17 +270,13 @@
     height: 38px;
     padding: 0 16px;
     border-radius: 8px;
-    background: #2563eb !important;
-    border: 1px solid #2563eb !important;
+
     color: #fff !important;
     font-size: 14px;
     font-weight: 700;
 }
 
-.custom-default-btn:hover {
-    background: #1d4ed8 !important;
-    border-color: #1d4ed8 !important;
-}
+
 
 .custom-white-btn {
     min-width: 78px;
