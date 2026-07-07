@@ -57,7 +57,14 @@
     box-shadow: 0 6px 16px rgba(16, 24, 40, 0.05);
     box-sizing: border-box;
 }
-
+.box-section-result {
+    margin-bottom: 16px;
+    border: 1px solid #E6DCC8;
+    border-radius: 10px;
+    background-color: #fff;
+    box-shadow: 0 6px 16px rgba(16, 24, 40, 0.05);
+    box-sizing: border-box;
+}
 .box-title {
     height: 42px;
     padding: 0 16px;

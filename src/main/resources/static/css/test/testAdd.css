@@ -13,8 +13,16 @@
     color: #222;
 }
 
-.box-section {
+.box-section-big {
     background: #F7EEE9;
+    border: 1px solid #E6DCC8;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.box-section {
+    background: #fff;
     border: 1px solid #E6DCC8;
     border-radius: 12px;
     padding: 20px;
@@ -205,11 +213,11 @@
 .selected-table thead th {
     height: 42px;
     padding: 10px 11px;
-    background: #f3f4f6;
+    background: #031225;
     border-bottom: 1px solid #e5e7eb;
     font-size: 13px;
     font-weight: 700;
-    color: #374151;
+    color: #fff;
     text-align: center;
     white-space: nowrap;
 }
