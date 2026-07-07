@@ -9,6 +9,9 @@
 </head>
 <body>
 	<div layout:fragment="Content">
+	<div class="container-fluid" style="height:calc(100vh - 130px); display:flex; flex-direction:column; padding-bottom:24px;">
+   <div style="background:#fff; border-radius:12px; box-shadow:0 2px 12px rgba(0,0,0,0.08); padding:24px; flex:1; display:flex; flex-direction:column; overflow:auto;">
+	
 		<div class="file-list-container">
 			<!-- ✅ 파일 상세 조회 실패 등으로 리다이렉트되어 온 에러 메시지 표시 (이전엔 표시할 곳이 없어 조용히 사라졌음) -->
 			<div th:if="${errorMessage}"
@@ -124,7 +127,8 @@
 			});
 			</script>
 	</div>
-
+	</div>
+</div>
 </body>
 
 </html>

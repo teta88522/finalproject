@@ -1,6 +1,5 @@
 .project-member-setting-page {
     padding: 30px;
-    background-color: #f5f7fb;
     min-height: calc(100vh - 80px);
     box-sizing: border-box;
 }
@@ -110,7 +109,7 @@
 }
 
 .member-table thead {
-    background-color: #f1f4f9;
+    background-color: #031225;
 }
 
 .member-table th {
@@ -118,7 +117,7 @@
     padding: 0 12px;
     font-size: 13px;
     font-weight: 700;
-    color: #444;
+    color: #fff;
     text-align: left;
     border-bottom: 1px solid #dfe5ef;
     white-space: nowrap;
