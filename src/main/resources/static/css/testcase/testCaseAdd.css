@@ -56,6 +56,20 @@
     font-size: 13px;
     color: #333;
     font-weight: 500;
+    white-space: nowrap;
+}
+
+/* 필수값 표시 */
+.required-star {
+    margin-left: 3px;
+    color: #dc2626;
+    font-weight: 800;
+}
+
+.step-required-star {
+    margin-left: 3px;
+    color: #dc2626;
+    font-weight: 800;
 }
 
 .form-row input[type="text"],
@@ -105,6 +119,7 @@
     color: #333;
     font-weight: 500;
     margin-bottom: 8px;
+    white-space: nowrap;
 }
 
 .field-block textarea {

@@ -16,7 +16,7 @@
 <div layout:fragment="Content">
 <div class="container-fluid" style="height:calc(100vh - 130px); display:flex; flex-direction:column; padding-bottom:24px;">
    <div style="background:#fff; border-radius:12px; box-shadow:0 2px 12px rgba(0,0,0,0.08); padding:24px; flex:1; display:flex; flex-direction:column; overflow:auto;">
-	
+
     <div class="testcase-add-page">
 
         <div class="page-title-area">
@@ -38,7 +38,7 @@
                     <div class="form-table">
 
                         <div class="form-row">
-                            <label for="title">제목</label>
+                            <label for="title">제목 <span class="required-star">*</span></label>
                             <input type="text"
                                    id="title"
                                    th:field="*{title}"
@@ -47,7 +47,7 @@
                         </div>
 
                         <div class="form-row">
-                            <label for="testTypeCode">유형</label>
+                            <label for="testTypeCode">유형 <span class="required-star">*</span></label>
                             <select id="testTypeCode"
                                     th:field="*{testTypeCode}"
                                     required>
@@ -62,7 +62,7 @@
                         </div>
 
                         <div class="form-row">
-                            <label for="statusCode">상태</label>
+                            <label for="statusCode">상태 <span class="required-star">*</span></label>
                             <select id="statusCode"
                                     th:field="*{statusCode}"
                                     required>
@@ -72,7 +72,7 @@
                         </div>
 
                         <div class="form-row">
-                            <label for="versionId">버전</label>
+                            <label for="versionId">버전 <span class="required-star">*</span></label>
                             <select id="versionId"
                                     th:field="*{versionId}"
                                     required>
@@ -86,7 +86,7 @@
                         </div>
 
                         <div class="form-row">
-                            <label for="priorityCode">우선순위</label>
+                            <label for="priorityCode">우선순위 <span class="required-star">*</span></label>
                             <select id="priorityCode"
                                     th:field="*{priorityCode}"
                                     required>
@@ -98,7 +98,7 @@
                         </div>
 
                         <div class="form-row">
-                            <label for="exeEnviroment">실행환경</label>
+                            <label for="exeEnviroment">실행환경 <span class="required-star">*</span></label>
                             <input type="text"
                                    id="exeEnviroment"
                                    th:field="*{exeEnviroment}"
@@ -138,7 +138,7 @@
                         </div>
 
                         <div class="field-block">
-                            <label>테스트 절차</label>
+                            <label>테스트 절차 <span class="required-star">*</span></label>
 
                             <div class="step-table-wrap">
                                 <table class="step-table">
@@ -350,6 +350,8 @@
         });
     </script>
 
+</div>
+</div>
 </div>
 </body>
 </html>

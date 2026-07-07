@@ -457,6 +457,7 @@
     </div>
 </div>
 </div>
+
     <script th:inline="javascript">
         const message = /*[[${message}]]*/ null;
         const projectId = /*[[${projectId}]]*/ "";
@@ -630,7 +631,7 @@
                 item.className = "detail-file-item";
 
                 const fileName = file.originalName || "파일명 없음";
-                const fileSize = file.fileSize != null ? " (" + file.fileSize + " byte)" : "";
+                const fileSize = file.fileSize != null ? " (" + formatFileSizeToMb(file.fileSize) + ")" : "";
 
                 item.innerHTML =
                     '<div class="detail-file-info">' +
@@ -641,6 +642,16 @@
 
                 fileBox.appendChild(item);
             });
+        }
+
+        function formatFileSizeToMb(size) {
+            const byteSize = Number(size);
+
+            if (isNaN(byteSize) || byteSize <= 0) {
+                return "0.00 MB";
+            }
+
+            return (byteSize / 1024 / 1024).toFixed(2) + " MB";
         }
 
         function hideDetail() {

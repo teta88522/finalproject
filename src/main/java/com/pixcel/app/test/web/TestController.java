@@ -154,8 +154,8 @@ public class TestController {
 
 	    if (projectGroupCount == 0) {
 	        redirectAttributes.addFlashAttribute(
-	                "alertMessage",
-	                "현재 프로젝트에 생성된 그룹이 없습니다. 그룹을 먼저 생성하세요."
+	                "message",
+	                "현재 프로젝트에 생성된 그룹이 없어 테스트를 생성할 수 없습니다. 그룹을 먼저 생성하세요."
 	        );
 
 	        return "redirect:/manage/groups";
