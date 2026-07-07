@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.pixcel.app.codevalue.service.CodeValueService;
 import com.pixcel.app.codevalue.service.CodeValueVO;
@@ -75,6 +76,11 @@ public class DocumentController {
 		
 	    List<DocumentVO> categorydocList = documentService.selectCategorydoc(categoryId);
 	    model.addAttribute("categorydocList",categorydocList);
+
+	    DocumentCategoryVO documentCategory = documentService.selectCategoryName(categoryId);
+	    String categoryName = documentCategory.getCategoryName();
+	    model.addAttribute("categoryName",categoryName);
+
 	    int noTotal = 0;
 
 	    if (categorydocList != null && !categorydocList.isEmpty()) {
@@ -273,9 +279,21 @@ public class DocumentController {
         return "redirect:/project/" + projectId +"/document/list";
     }
 	
-	@PostMapping("/deletecategorydocument")
-	public String deleteDocumentCategoryId(@RequestParam("documentCategoryId") String documentCategoryId, @PathVariable("projectId") String projectId) {
-		documentService.deleteDocumentCategory(documentCategoryId);
+	@PostMapping("/deletecategorydocument/{documentCategoryId}")
+	public String deleteDocumentCategoryId(@PathVariable("documentCategoryId") String documentCategoryId, @PathVariable("projectId") String projectId, RedirectAttributes redirectAttributes) {
+		List<DocumentVO> categorydocList = documentService.selectCategorydoc(documentCategoryId);
+		
+		if (categorydocList == null || categorydocList.isEmpty()) {
+	        // 문서가 없으면 삭제
+	        documentService.deleteDocumentCategory(documentCategoryId);
+	    } else {
+	        // 문서가 있으면 메시지 전달
+	    	redirectAttributes.addFlashAttribute(
+	    		    "alertMessage",
+	    		    "카테고리에 문서가 포함되어 있어 삭제할 수 없습니다."
+	    		);
+	    }
+		
 		return "redirect:/project/" + projectId + "/document/list";
 	}
 	

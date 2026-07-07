@@ -174,7 +174,7 @@
   .wiki-tabs {
     display: flex;
     gap: 4px;
-    border-bottom: 2px solid #e0e0e0;
+    border-bottom: 2px solid #E6DCC8;
   }
   .wiki-tab {
     padding: 8px 20px;
@@ -198,8 +198,8 @@
     flex-wrap: wrap;
     gap: 4px;
     padding: 8px;
-    background: #f8f9fa;
-    border: 1px solid #e0e0e0;
+    background: #F7EEE9;
+    border: 1px solid #E6DCC8;
     border-top: none;
   }
   .toolbar-btn {
@@ -222,14 +222,14 @@
     padding: 16px;
     font-size: 14px;
     font-family: 'Courier New', monospace;
-    border: 1px solid #e0e0e0;
+    border: 1px solid #E6DCC8;
     border-top: none;
     border-radius: 0 0 8px 8px;
     outline: none;
     resize: none;
     line-height: 1.8;
     color: #1a1a1a;
-    background: #fafafa;
+    background: #F7EEE9;
     box-sizing: border-box;
     display: block;
   }
@@ -266,8 +266,8 @@
   .wiki-preview p { margin: 8px 0; }
 
   .wiki-toc {
-    background: #f8f9fa;
-    border: 1px solid #e0e0e0;
+    background: #F7EEE9;
+    border: 1px solid #E6DCC8;
     border-radius: 8px;
     padding: 16px;
     margin-bottom: 20px;
@@ -277,7 +277,7 @@
   .wiki-toc-title { font-weight: 700; margin-bottom: 8px; font-size: 14px; }
   .wiki-toc ol { padding-left: 20px; margin: 0; list-style-type: decimal; }
   .wiki-toc li { margin: 4px 0; font-size: 13px; display: list-item; }
-  .wiki-toc a { color: #031225; text-decoration: none; }
+  .wiki-toc a { color: #3d6ef5; text-decoration: none; }
   .wiki-toc a:hover { text-decoration: underline; }
 
   .version-panel { width: 280px; border-left: 1px solid #e0e0e0; padding: 16px; overflow-y: auto; max-height: 700px; display: none; }
@@ -322,7 +322,7 @@
     justify-content: space-between;
     align-items: center;
     padding: 16px;
-    border: 1px solid #f0f0f0;
+    border: 1px solid rgb(128, 128, 128);
     border-radius: 8px;
     margin-bottom: 10px;
     cursor: pointer;

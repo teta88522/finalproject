@@ -31,7 +31,7 @@
  
     <!-- 스크롤 영역 -->
     <div style="flex:1; overflow-y:auto;">
-      <div style="border:1px solid #eef0f3; border-radius:8px; overflow:hidden;">
+      <div style="border:1px solid #E6DCC8; border-radius:8px; overflow:hidden; background:#F7EEE9;">
         <form id="documentEditForm" th:action="@{/project/{projectId}/document/update/{documentId}(projectId=${projectId},documentId=${docDetail.documentId})}" method="post" enctype="multipart/form-data" class="workflow-loading-form"
       data-loading-message="저장하는 중입니다.">
 
@@ -39,10 +39,10 @@
           <input type="hidden" name="documentVersionId" th:value="${documentVersionId}">
  
           <!-- 문서 버전 -->
-          <div style="display:flex; align-items:center; border-bottom:1px solid #f3f4f6; padding:12px 16px; background:#fafafa;">
+          <div style="display:flex; align-items:center; border-bottom:1px solid #E6DCC8; padding:12px 16px; background:#F7EEE9;">
             <label style="width:120px; font-size:13px; color:#888; font-weight:500; margin:0; flex-shrink:0;">문서 버전</label>
             <div style="display:flex; align-items:center; flex:1;">
-              <span style="background:#f8f9fb; border-radius:6px; padding:6px 10px; font-size:13px; color:#555; border:1px solid #eee; flex:1;"
+              <span style="background:#FFFDF7; border-radius:6px; padding:6px 10px; font-size:13px; color:#555; border:1px solid #eee; flex:1;"
                     th:text="${documentVersionId}"></span>
               <span style="display:inline-block; background:#eef2ff; color:#4f6ef7; font-size:11px; font-weight:600; padding:2px 8px; border-radius:20px; margin-left:8px;">
                 <i class="fa fa-lock" style="font-size:10px; margin-right:3px;"></i> 자동 관리
@@ -50,7 +50,7 @@
             </div>
           </div>
           <!-- 제목 -->
-          <div style="display:flex; align-items:center; border-bottom:1px solid #f3f4f6; padding:12px 16px;">
+          <div style="display:flex; align-items:center; border-bottom:1px solid #E6DCC8; padding:12px 16px;">
             <label style="width:120px; font-size:13px; color:#888; font-weight:500; margin:0; flex-shrink:0;">제목</label>
             <input name="title" type="text" class="form-control"
                    placeholder="제목을 입력하세요"
@@ -59,7 +59,7 @@
           </div>
  
           <!-- 설명 -->
-          <div style="display:flex; align-items:flex-start; border-bottom:1px solid #f3f4f6; padding:12px 16px;">
+          <div style="display:flex; align-items:flex-start; border-bottom:1px solid #E6DCC8; padding:12px 16px;">
             <label style="width:120px; font-size:13px; color:#888; font-weight:500; margin:0; flex-shrink:0; padding-top:4px;">설명</label>
             <textarea name="description" class="form-control"
                       placeholder="설명을 입력하세요"
@@ -68,18 +68,18 @@
           </div>
  
           <!-- 첨부파일 -->
-          <div style="font-size:11px; font-weight:600; color:#aaa; text-transform:uppercase; letter-spacing:0.05em; padding:10px 16px 4px; background:#f8f9fb; border-bottom:1px solid #f3f4f6;">
+          <div style="font-size:11px; font-weight:600; color:#E6DCC8; text-transform:uppercase; letter-spacing:0.05em; padding:10px 16px 4px; background:#F7EEE9; border-bottom:1px solid #f3f4f6;">
             <i class="fa fa-paperclip" style="margin-right:5px;"></i> 첨부파일 관리
           </div>
  
-          <div style="padding:14px 16px; background:#f8f9fb;">
+          <div style="padding:14px 16px; background:#F7EEE9;">
  
             <div id="existingFileList" style="margin-bottom:12px;">
               <p style="font-size:12px; color:#999; margin-bottom:8px;">기존 첨부파일</p>
 
               <div th:each="file : ${fileList}"
                    th:id="'file-row-' + ${file.fileId}"
-                   style="display:flex; align-items:center; justify-content:space-between; padding:7px 10px; background:#fff; border:1px solid #eee; border-radius:6px; margin-bottom:6px; font-size:12px; color:#555;">
+                   style="display:flex; align-items:center; justify-content:space-between; padding:7px 10px; background:#fff; border:1px solid #E6DCC8; border-radius:6px; margin-bottom:6px; font-size:12px; color:#555;">
                 
                 <div style="display:flex; align-items:center; gap:8px; flex:1;">
                   <i class="fa fa-file-o"></i>
@@ -95,7 +95,7 @@
 
             <!-- 신규 파일 -->
             <div class="form-group alert-up-pd">
-                    <div style="display:flex; align-items:flex-start; padding:12px 16px; background:#f8f9fb;">
+                    <div style="display:flex; align-items:flex-start; padding:12px 16px; background:#F7EEE9;">
                         <label style="width:120px; font-size:13px; color:#888; font-weight:500; margin:0; padding-top:4px;">파일 첨부</label>
                         <div style="flex:1;">
                             <label for="fileInput" class="btn btn-default" style="cursor:pointer; font-size:13px; padding:5px 14px; border-radius:6px; border:1px solid #ddd; background:#fff; margin:0;">

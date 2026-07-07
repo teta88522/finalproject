@@ -24,4 +24,5 @@ public interface DocumentMapper {
 	public int deleteDocument(String documentId);
 	public int deleteDocumentHistory(String documentHistoryId);
 	public int deleteDocumentCategory(String documentCategoryId);
+	public DocumentCategoryVO selectCategoryName(String categoryId);
 }

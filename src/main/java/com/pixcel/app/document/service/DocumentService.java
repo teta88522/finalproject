@@ -20,4 +20,5 @@ public interface DocumentService {
 	public int deleteDocument(String documentId);
 	public int deleteDocumentCategory(String documentCategoryId);
 	public int deleteDocumentHistory(String documentHistoryId);
+	public DocumentCategoryVO selectCategoryName(String categoryId);
 }

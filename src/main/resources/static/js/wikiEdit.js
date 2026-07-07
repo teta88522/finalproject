@@ -43,7 +43,11 @@ function generateToc(html) {
   toc += '</ol></div>'
   return toc
 }
-
+function toggleVersionPanel() {
+  const panel = document.getElementById('versionPanel')
+  panel.classList.toggle('open')
+  if (panel.classList.contains('open')) loadVersionList()
+}
 async function convertWikiLinks(html) {
   const pattern = /\[\[(.+?)\]\]/g
   const matches = [...html.matchAll(pattern)]

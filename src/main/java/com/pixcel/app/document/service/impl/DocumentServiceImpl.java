@@ -98,6 +98,12 @@ public class DocumentServiceImpl implements DocumentService{
 		return documentMapper.deleteDocumentHistory(documentHistoryId);
 	}
 
+	@Override
+	public DocumentCategoryVO selectCategoryName(String categoryId) {
+		// TODO Auto-generated method stub
+		return documentMapper.selectCategoryName(categoryId);
+	}
+
 
 
 

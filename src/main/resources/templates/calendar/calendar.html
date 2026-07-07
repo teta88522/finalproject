@@ -15,7 +15,7 @@
    =================================================== */
 
 body{
-    background:#f5f6f8;
+    background:#F7EEE9;
 }
 
 /* ===================== Calendar ===================== */
@@ -89,15 +89,6 @@ body{
 
 /* Prev Next */
 
-.fc-prev-button,
-.fc-next-button{
-
-    width:36px;
-
-    padding:0 !important;
-
-}
-
 /* Today */
 
 .fc-today-button{
@@ -117,7 +108,7 @@ body{
 
 .fc-scrollgrid{
 
-    border:1px solid #edf0f4;
+    border:1px solid #E6DCC8;
 
     border-radius:8px;
 
@@ -129,13 +120,14 @@ body{
 
 .fc-col-header-cell{
 
-    background:#fafbfc;
+    background:#031225;
+    
 
 }
 
 .fc-col-header-cell-cushion{
 
-    color:#666;
+    color:#fff;
 
     font-weight:600;
 
@@ -441,24 +433,32 @@ const calendar = new FullCalendar.Calendar(document.getElementById('calendar'),{
                 "#F4511E"
             ];
 
-            success(data.map((item, index) => {
+            success(
 
-                const color = colors[index % colors.length];
+                data
+                .filter(item => item.dueDate != null && item.dueDate !== "")
+                .map((item,index)=>{
 
-                return {
-                    title: item.title,
-                    start: item.startDate,
-                    end: item.dueDate,
-                    backgroundColor: color,
-                    borderColor: color,
-                    url: '/project/' + projectId + '/issues/' + item.issueId
-                };
+                    const color=colors[index % colors.length];
 
-            }));
+                    return{
+                        title:item.title,
+                        start:item.startDate,
+                        end:item.dueDate,
+                        backgroundColor:color,
+                        borderColor:color,
+                        url:'/project/'+projectId+'/issues/'+item.issueId
+                    };
 
-        });
+                })
+
+            );
+
+        })
+        .catch(fail);
 
     }
+
 
 });
 

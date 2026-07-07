@@ -21,6 +21,12 @@
         ORDER BY document_id DESC
     </select>
     
+    <select id="selectCategoryName" resultType="DocumentCategoryVO">
+        SELECT category_name
+		FROM document_category
+		WHERE document_category_id = #{categoryId}
+    </select>
+    
     <select id="selectHistoryAll" resultType="DocumentHistoryVO">
         select
         	count(*) over() as total_cnt,

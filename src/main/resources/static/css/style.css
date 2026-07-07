@@ -47,7 +47,7 @@ body {
   height: 100%;
   font-family: "Roboto", sans-serif;
   font-weight: 400;
-  background: #f6f8fa;
+  background: #F7EEE9;
 }
 .floatleft {
   float: left;
@@ -236,6 +236,7 @@ body {
   margin-left: 200px;
   padding-top: 126px; /* 헤더 두 줄 합산 높이 */
   transition: all 0.3s;
+  background-color:#F7EEE9
 }
 /* 사이드바 없을 때 사이드바 공간 제거 */
 body.no-sidebar .left-sidebar-pro {

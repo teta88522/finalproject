@@ -21,16 +21,16 @@
  
         <!-- 내용 스크롤 -->
         <div style="flex:1; overflow-y:auto;">
-            <div style="border:1px solid #eef0f3; border-radius:8px; overflow:hidden;">
+            <div style="background-color:#F7EEE9;  border:1px solid #E6DCC8; border-radius:8px; overflow:hidden;">
  
                 <!-- 제목 -->
-                <div style="display:flex; align-items:center; border-bottom:1px solid #f3f4f6; padding:12px 16px;">
+                <div style="display:flex; align-items:center; border-bottom:1px solid #E6DCC8; padding:12px 16px;">
                     <label style="width:120px; font-size:13px; color:#888; font-weight:500; margin:0;">제목</label>
                     <span style="flex:1; font-size:13px; color:#333;" th:text="${docDetail.title}"></span>
                 </div>
  
                 <!-- 마일스톤 -->
-                <div style="display:flex; align-items:center; border-bottom:1px solid #f3f4f6; padding:12px 16px;">
+                <div style="display:flex; align-items:center; border-bottom:1px solid #E6DCC8; padding:12px 16px;">
                     <label style="width:120px; font-size:13px; color:#888; font-weight:500; margin:0;">마일스톤</label>
                     <span style="flex:1; font-size:13px; color:#333;">
                         <span style="color:#888;">마일스톤 : </span>
@@ -39,7 +39,7 @@
                 </div>
  
                 <!-- 설명 -->
-                <div style="display:flex; align-items:flex-start; border-bottom:1px solid #f3f4f6; padding:12px 16px;">
+                <div style="display:flex; align-items:flex-start; border-bottom:1px solid #E6DCC8; padding:12px 16px;">
                     <label style="width:120px; font-size:13px; color:#888; font-weight:500; margin:0; padding-top:4px;">설명</label>
                     <span style="flex:1; font-size:13px; color:#333; white-space:pre-line; line-height:1.75;"
                           th:text="${docDetail.description}"></span>
@@ -47,7 +47,7 @@
  
                 <!-- 첨부파일 -->
                 <!-- 첨부파일 -->
-                <div style="display:flex; align-items:flex-start; border-bottom:1px solid #f3f4f6; padding:12px 16px; background:#f8f9fb;">
+                <div style="display:flex; align-items:flex-start; border-bottom:1px solid #E6DCC8; padding:12px 16px; background:#F7EEE9;">
                     <label style="width:120px; font-size:13px; color:#888; font-weight:500; margin:0; padding-top:4px;">첨부파일</label>
                     <div style="flex:1;">
                         <!-- 첨부파일 목록 -->
