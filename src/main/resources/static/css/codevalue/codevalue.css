@@ -10,6 +10,10 @@
 }
 
 .codevalue-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
     margin-bottom: 10px;
 }
 
@@ -24,6 +28,11 @@
     margin: 0;
     color: #777;
     font-size: 13px;
+}
+
+.codevalue-header .codevalue-form-actions {
+    margin-top: 0;
+    margin-bottom: 0;
 }
 
 
@@ -151,6 +160,7 @@
     min-height: 0;
     overflow-y: auto;
     overflow-x: hidden;
+    border: 1px solid #031225;
 }
 
 .codevalue-table {
@@ -163,8 +173,8 @@
     position: sticky;
     top: 0;
     z-index: 5;
-    background: #f8f9fa;
-    color: #333;
+    background: #031225;
+    color: #ffffff;
     font-size: 13px;
     font-weight: 600;
     border-bottom: 1px solid #ddd !important;

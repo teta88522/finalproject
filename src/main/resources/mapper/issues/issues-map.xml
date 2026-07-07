@@ -2782,6 +2782,7 @@
 		m.title as milestone_title,
 		i.version_id,
 		v.version_name,
+		v.status_code as version_status_code,
 		i.issue_type_id,
 		i.issue_status_id,
 		ist.status_name as

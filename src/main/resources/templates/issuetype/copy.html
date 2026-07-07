@@ -22,12 +22,18 @@
 						<h3>일감유형 복사</h3>
 						<p>기존 일감유형 설정을 복사하여 새 유형을 생성합니다.</p>
 					</div>
+					<div class="header-actions">
+						<a th:href="@{/issuetype/list}"
+							class="btn btn-custon-rounded-four btn-primary custom-white-btn"> 취소 </a>
+						<button type="submit" form="issueTypeCopyForm"
+							class="btn btn-custon-rounded-four btn-primary custom-default-btn">복사 생성</button>
+					</div>
 				</div>
 
 				<div th:if="${errorMessage}" class="page-message page-message-error"
 					th:text="${errorMessage}"></div>
 
-				<form th:action="@{/issuetype/copy}" method="post"
+				<form id="issueTypeCopyForm" th:action="@{/issuetype/copy}" method="post"
 					th:object="${issueType}">
 
 					<div class="issuetype-form-layout">
@@ -204,14 +210,6 @@
 							</div>
 						</div>
 
-					</div>
-
-					<div class="form-actions">
-						<a th:href="@{/issuetype/list}"
-							class="btn btn-custon-rounded-four btn-primary custom-white-btn"> 취소 </a>
-
-						<button type="submit"
-							class="btn btn-custon-rounded-four btn-primary custom-default-btn">복사 생성</button>
 					</div>
 
 				</form>

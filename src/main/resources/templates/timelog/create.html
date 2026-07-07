@@ -27,6 +27,9 @@
 					<div class="timelog-actions">
 						<a th:href="@{/project/{projectId}/issues(projectId=${selectedProjectId})}"
 							class="btn btn-custon-rounded-four btn-default">전체조회</a>
+						<button type="submit" form="timelogCreateForm"
+							class="btn btn-custon-rounded-four btn-primary"
+							th:disabled="${#lists.isEmpty(workTypeList) or #lists.isEmpty(issueList)}">등록</button>
 					</div>
 				</div>
 
@@ -115,12 +118,6 @@
 								class="form-control timelog-description" maxlength="1000" required></textarea>
 						</div>
 
-						<div class="timelog-form-actions">
-							<a th:href="@{/project/{projectId}/issues(projectId=${selectedProjectId})}"
-								class="btn btn-custon-rounded-four btn-default">취소</a>
-							<button type="submit" class="btn btn-custon-rounded-four btn-primary"
-								th:disabled="${#lists.isEmpty(workTypeList) or #lists.isEmpty(issueList)}">등록</button>
-						</div>
 					</form>
 				</div>
 			</div>

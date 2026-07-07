@@ -64,6 +64,7 @@ public class IssuesServiceImpl implements IssuesService {
 	private static final String REPORT_NONE_NAME = "\uBBF8\uC9C0\uC815";
 	private static final long ISSUE_LIST_FILTER_CACHE_TTL_MILLIS = 120_000L;
 	private static final int ISSUE_HISTORY_GROUP_PAGE_SIZE = 10;
+	private static final String ROADMAP_COMPLETED_STATUS_CODE = "k003";
 
 	private static final String PERMISSION_ISSUE_CREATE_CODE = "p005";
 	private static final String PERMISSION_ISSUE_CREATE_NAME = "일감 추가";
@@ -346,8 +347,10 @@ public class IssuesServiceImpl implements IssuesService {
 		pageData.put("timeLogTotalCount", issue.getTimeLogTotalCount() == null ? 0 : issue.getTimeLogTotalCount());
 		pageData.put("timeLogTotalHours", issue.getTimeLogTotalHours() == null ? 0 : issue.getTimeLogTotalHours());
 		pageData.put("deletedIssue", false);
-		pageData.put("canUpdateIssue", "Y".equals(issue.getIssueUpdatePermissionYn()));
-		pageData.put("canDeleteIssue", "Y".equals(issue.getIssueDeletePermissionYn()));
+		boolean completedRoadmapIssue = isCompletedRoadmapIssue(issue);
+		pageData.put("completedRoadmapIssue", completedRoadmapIssue);
+		pageData.put("canUpdateIssue", "Y".equals(issue.getIssueUpdatePermissionYn()) && !completedRoadmapIssue);
+		pageData.put("canDeleteIssue", "Y".equals(issue.getIssueDeletePermissionYn()) && !completedRoadmapIssue);
 
 		return pageData;
 	}
@@ -401,6 +404,8 @@ public class IssuesServiceImpl implements IssuesService {
 		if (!hasIssueUpdatePermission(projectId, issueId, userId)) {
 			throw new IllegalArgumentException("일감 수정 권한이 없습니다.");
 		}
+
+		validateIssueRoadmapEditable(issuesMapper.selectIssueForUpdate(projectId, issueId));
 	}
 
 	@Override
@@ -416,6 +421,7 @@ public class IssuesServiceImpl implements IssuesService {
 			throw new IllegalArgumentException("수정할 일감이 없습니다.");
 		}
 
+		validateIssueRoadmapEditable(currentIssue);
 		issue.setHistoryGroupId(resolveHistoryGroupId(issue.getHistoryGroupId()));
 		normalizeIssueForUpdate(issue, currentIssue);
 		validateLength(issue);
@@ -552,6 +558,8 @@ public class IssuesServiceImpl implements IssuesService {
 		if (deleteTarget == null) {
 			throw new IllegalArgumentException("삭제할 일감이 없습니다.");
 		}
+
+		validateIssueRoadmapDeletable(deleteTarget);
 
 		try {
 			List<FileVO> deleteFileList = issuesMapper.selectIssueFileList(issueId);
@@ -1038,6 +1046,22 @@ public class IssuesServiceImpl implements IssuesService {
 		if (issue.getIssueId().equals(issue.getParentIssueId())) {
 			throw new IllegalArgumentException("자기 자신은 상위 일감으로 선택할 수 없습니다.");
 		}
+	}
+
+	private void validateIssueRoadmapEditable(IssuesVO issue) {
+		if (isCompletedRoadmapIssue(issue)) {
+			throw new IllegalArgumentException("완료된 로드맵에 속한 일감은 수정할 수 없습니다.");
+		}
+	}
+
+	private void validateIssueRoadmapDeletable(IssuesVO issue) {
+		if (isCompletedRoadmapIssue(issue)) {
+			throw new IllegalArgumentException("완료된 로드맵에 속한 일감은 삭제할 수 없습니다.");
+		}
+	}
+
+	private boolean isCompletedRoadmapIssue(IssuesVO issue) {
+		return issue != null && ROADMAP_COMPLETED_STATUS_CODE.equals(issue.getVersionStatusCode());
 	}
 
 	private void validateIssueUpdateSaveCondition(IssuesVO validation) {

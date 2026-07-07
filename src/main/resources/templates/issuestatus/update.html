@@ -22,6 +22,12 @@
 						<h1>일감 상태 수정</h1>
 						<p>등록된 일감 상태 정보를 수정합니다.</p>
 					</div>
+					<div class="issue-status-form-actions">
+						<a th:href="@{/issuestatus/list}"
+							class="btn btn-custon-rounded-four btn-primary custom-white-btn"> 취소 </a>
+						<button type="submit" form="issueStatusUpdateForm"
+							class="btn btn-custon-rounded-four btn-primary custom-default-btn">수정</button>
+					</div>
 				</div>
 
 				<div th:if="${errorMessage}" class="page-message page-message-error"
@@ -33,7 +39,7 @@
 						<p>상태명, 설명, 종료 여부를 수정합니다.</p>
 					</div>
 
-					<form th:action="@{/issuestatus/update}" method="post"
+					<form id="issueStatusUpdateForm" th:action="@{/issuestatus/update}" method="post"
 						th:object="${issueStatus}">
 
 						<input type="hidden" th:field="*{issueStatusId}">
@@ -56,14 +62,6 @@
 								<option value="N">진행</option>
 								<option value="Y">종료</option>
 							</select>
-						</div>
-
-						<div class="issue-status-form-actions">
-							<a th:href="@{/issuestatus/list}"
-								class="btn btn-custon-rounded-four btn-primary custom-white-btn"> 취소 </a>
-
-							<button type="submit"
-								class="btn btn-custon-rounded-four btn-primary custom-default-btn">수정</button>
 						</div>
 
 					</form>

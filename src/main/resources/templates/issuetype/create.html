@@ -22,12 +22,18 @@
 						<h3>일감유형 생성</h3>
 						<p>일감 생성 시 사용할 유형과 항목 설정을 등록합니다.</p>
 					</div>
+					<div class="header-actions">
+						<a th:href="@{/issuetype/list}"
+							class="btn btn-custon-rounded-four btn-primary custom-white-btn"> 취소 </a>
+						<button type="submit" form="issueTypeCreateForm"
+							class="btn btn-custon-rounded-four btn-primary custom-default-btn">등록</button>
+					</div>
 				</div>
 
 				<div th:if="${errorMessage}" class="page-message page-message-error"
 					th:text="${errorMessage}"></div>
 
-				<form th:action="@{/issuetype/create}" method="post"
+				<form id="issueTypeCreateForm" th:action="@{/issuetype/create}" method="post"
 					th:object="${issueType}">
 
 					<div class="issuetype-form-layout">
@@ -175,14 +181,6 @@
 							</div>
 						</div>
 
-					</div>
-
-					<div class="form-actions">
-						<a th:href="@{/issuetype/list}"
-							class="btn btn-custon-rounded-four btn-primary custom-white-btn"> 취소 </a>
-
-						<button type="submit"
-							class="btn btn-custon-rounded-four btn-primary custom-default-btn">등록</button>
 					</div>
 
 				</form>

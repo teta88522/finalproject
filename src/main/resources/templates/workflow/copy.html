@@ -31,7 +31,12 @@
 
 					<div class="workflow-header-actions">
 						<a th:href="@{/workflow/list}"
-							class="btn btn-custon-rounded-four btn-primary custom-white-btn"> 목록 </a>
+							class="btn btn-custon-rounded-four btn-primary custom-white-btn"> 취소 </a>
+
+						<button type="submit" form="workflowCopyForm"
+							class="btn btn-custon-rounded-four btn-primary custom-default-btn"
+							th:disabled="${#lists.isEmpty(issueTypeList) or #lists.isEmpty(roleList)}">
+							복사</button>
 					</div>
 				</div>
 
@@ -50,7 +55,7 @@
 					class="page-message page-message-info">등록된 역할이 없습니다. 역할을 먼저
 					등록해주세요.</div>
 
-				<form th:action="@{/workflow/copy}" method="post"
+				<form id="workflowCopyForm" th:action="@{/workflow/copy}" method="post"
 					th:object="${workflowVO}" class="workflow-copy-form workflow-loading-form"
 					data-loading-message="업무흐름을 복사하는 중입니다.">
 
@@ -146,16 +151,6 @@
 						<div class="workflow-copy-notice">
 							<strong>주의</strong> <span>복사 시 대상 업무흐름의 기존 상태전환 설정은 삭제되고
 								원본 설정으로 대체됩니다.</span>
-						</div>
-
-						<div class="workflow-form-actions">
-							<a th:href="@{/workflow/list}"
-								class="btn btn-custon-rounded-four btn-primary custom-white-btn"> 취소 </a>
-
-							<button type="submit"
-								class="btn btn-custon-rounded-four btn-primary custom-default-btn"
-								th:disabled="${#lists.isEmpty(issueTypeList) or #lists.isEmpty(roleList)}">
-								복사</button>
 						</div>
 
 					</div>
