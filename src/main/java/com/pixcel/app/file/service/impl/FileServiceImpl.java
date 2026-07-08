@@ -7,7 +7,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -17,7 +16,6 @@ import java.util.zip.ZipOutputStream;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.repository.query.Param;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -43,64 +41,62 @@ public class FileServiceImpl implements FileService{
 	@Override
 	@Transactional
 	public int uploadFile(List<MultipartFile> files, FileDTO req) {
-	    if (files == null || files.isEmpty() || req == null) return 0;
+		if (files == null || files.isEmpty() || req == null) {
+            return 0;
+        }
+		
+		File uploadDir = new File(fileDir);
+        if (!uploadDir.exists()) {
+            uploadDir.mkdirs();
+        }
 
-	    File uploadDir = new File(fileDir);
-	    if (!uploadDir.exists()) uploadDir.mkdirs();
-
-	    int count = 0;
-
-	    for (MultipartFile file : files) {
-	        if (file == null || file.isEmpty()) continue;
-	        try {
-	            String originName = file.getOriginalFilename();
-	            if (!StringUtils.hasText(originName)) continue;
-
-	            // ★ 요청 스레드에서 미리 읽어둠
-	            byte[] fileBytes = file.getBytes();
-	            long fileSize = file.getSize();
-
-	            // ★ DB 작업도 여기서 먼저 처리
-	            int nextVersion = fileMapper.selectNextFileVersion(
-	                req.getProjectId(), req.getConnectAddress(), originName);
-	            String uuid = UUID.randomUUID().toString();
-	            String saveName = uuid + "_" + originName;
-	            String saveFileDir = fileDir + saveName;
-
-	            FileVO vo = new FileVO();
-	            vo.setProjectId(req.getProjectId());
-	            vo.setVersionId(req.getVersionId());
-	            vo.setFileCode(req.getFileCode());
-	            vo.setOriginalName(originName);
-	            vo.setStoredName(saveName);
-	            vo.setFilePath(saveFileDir);
-	            vo.setFileSize(String.valueOf(fileSize));
-	            vo.setUploadUserId(req.getUploadUserId());
-	            vo.setFileVersion(nextVersion);
-	            vo.setConnectAddress(req.getConnectAddress());
-	            vo.setDocumentVersionId(req.getDocumentVersionId());
-	            fileMapper.insertFile(vo);
-
-	            // ★ 디스크 I/O만 비동기로
-	            saveFileAsync(fileBytes, saveName);
-
-	            count++;
-	        } catch (Exception e) {
-	            e.printStackTrace();
-	        }
-	    }
-	    return count;
+        
+		int count = 0;
+		
+		for(MultipartFile file : files) {
+			if (file == null || file.isEmpty()) {
+                continue;
+            }
+			try {
+					String originName = file.getOriginalFilename();
+					if (!StringUtils.hasText(originName)) {
+	                    continue;
+	                }
+					String projectId =  req.getProjectId();
+					String connectAddress = req.getConnectAddress();
+					int nextVersion = fileMapper.selectNextFileVersion(req.getProjectId(),
+			        req.getConnectAddress(),
+					        originName);
+					
+					String uuid = UUID.randomUUID().toString();
+					String saveName  = uuid + "_" + originName;
+					File dest = new File(fileDir, saveName);
+					file.transferTo(dest);
+					String saveFileDir = fileDir + saveName;
+					
+					FileVO vo = new FileVO();
+					vo.setProjectId(projectId);
+					vo.setVersionId(req.getVersionId());
+					vo.setFileCode(req.getFileCode());
+					vo.setOriginalName(originName);
+					vo.setStoredName(saveName);
+					vo.setFilePath(saveFileDir);
+					vo.setFileSize(String.valueOf(file.getSize()));
+					vo.setUploadUserId(req.getUploadUserId());
+					vo.setFileVersion(nextVersion);
+					vo.setConnectAddress(connectAddress);
+					vo.setDocumentVersionId(req.getDocumentVersionId());
+					fileMapper.insertFile(vo);
+					
+					count++;
+					
+				} catch(Exception e) {
+					e.printStackTrace();
+				}
+				
+		}
+		return count;
 	    
-	}
-
-	@Async
-	public void saveFileAsync(byte[] fileBytes, String saveName) {
-	    try {
-	        File dest = new File(fileDir, saveName);
-	        Files.write(dest.toPath(), fileBytes);
-	    } catch (Exception e) {
-	        e.printStackTrace();
-	    }
 	}
 
 
