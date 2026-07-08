@@ -8,6 +8,7 @@
 <link rel="stylesheet" th:href="@{/css/gantt/dhtmlxgantt.css}">
 <script th:src="@{/js/gantt/dhtmlxgantt.js}"></script>
 <link rel="stylesheet" th:href="@{/css/milestones/common_layout_mile.css}" />
+<link rel="stylesheet" th:href="@{/css/common-filter.css}" />
 <link rel="stylesheet" th:href="@{/css/gantt/gantt.css}" />
 </head>
 <body>
@@ -30,43 +31,43 @@
 			        <div class="search-title">검색조건</div>
 			    </div>
 			    
-			    <div class="js-filter-row">
-			        <div class="js-filter-group">
-			            <label> 마일스톤</label>
+			    <div class="search-form-row">
+			        <div class="search-field">
+			            <label>마일스톤</label>
 			            <select id="f_milestone">
 			                <option value="all">전체 마일스톤</option>
 			            </select>
 			        </div>
-			        <div class="js-filter-group">
-			            <label> 상태</label>
+			        <div class="search-field">
+			            <label>상태</label>
 			            <select id="f_status">
 			                <option value="all">전체 상태</option>
 			            </select>
 			        </div>
-			        <div class="js-filter-group">
-			            <label> 담당자</label>
+			        <div class="search-field">
+			            <label>담당자</label>
 			            <select id="f_assignee">
 			                <option value="all">전체 담당자</option>
 			            </select>
 			        </div>
-			        <div class="js-filter-group search-group">
-			            <label> 일감 검색</label>
+			        <div class="search-field">
+			            <label>일감 검색</label>
 			            <input type="text" id="f_text" placeholder="일감 제목 입력..." autocomplete="off" />
 			        </div>
-			        <div class="js-filter-group date-group">
+			        <div class="search-field">
 			            <label><i class="far fa-calendar-alt"></i> 기간</label>
-			            <div class="date-inputs">
-			                <input type="date" id="f_start" />
-			                <span>~</span>
-			                <input type="date" id="f_end" />
+			            <div style="display:flex; align-items:center; gap:6px;">
+			                <input type="date" id="f_start" style="flex:1;" />
+			                <span style="color:#aaa;">~</span>
+			                <input type="date" id="f_end" style="flex:1;" />
 			            </div>
 			        </div>
 			    </div>
 			    
 			    <!-- 📝 간트 필터 전용 초기화 및 검색 버튼 영역 추가 -->
-			    <div class="filter-actions-row">
+			    <div class="search-btn-area">
 			        <button type="button" id="btnFilterReset" class="btn btn-custon-rounded-four custom-white-btn filter-btn">초기화</button>
-			        <button type="button" id="btnFilterSearch" class="btn btn-custon-rounded-four custom-default-btn">검색</button>
+			        <button type="button" id="btnFilterSearch" class="btn btn-custon-rounded-four custom-default-btn filter-btn">검색</button>
 			    </div>
 			</div>
 			
