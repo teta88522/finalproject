@@ -12,7 +12,7 @@
    <div style="background:#fff; border-radius:12px; box-shadow:0 2px 12px rgba(0,0,0,0.08); padding:24px; flex:1; display:flex; flex-direction:column; overflow:auto;">
 	
 			<div class="repo-header">
-				<h2 class="repo-title">자료실</h2>
+				<h1>자료실</h1>
 				<a
 					th:href="@{/project/{projectId}/repository/new(projectId=${projectId})}"
 					class="btn btn-custon-rounded-four custom-default-btn">업로드</a>
@@ -117,7 +117,7 @@
 			</div>
 			<!-- 페이징 -->
 			<div class="pagination-area"
-				style="text-align: center; margin-top: 20px;">
+				style="text-align: center;">
 				<ul class="pagination">
 					<li th:classappend="${!repositoryPage.hasPrevious} ? 'disabled'">
 						<a
