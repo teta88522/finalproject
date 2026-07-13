@@ -36,13 +36,6 @@
    <td align="center">GIT</td>
    <td align="center">DB</td>
  </tr>
-  <tr>
-   <td align="left"><p>회원가입 및 로그인</p><p>역할 및 권한 관리</p><p>구성원/그룹 관리</p><p>역할 및 권한 관리</p><p>테스트 케이스 및 버그 관리</p></td>
-   <td align="left"><p>기존 정보(코드 값·일감상태·일감유형) 설정</p><p>업무 흐름</p><p>일감(작업내역·소요시간·보고서)</p></td>
-  <td align="left"><p>문서 관리</p><p>위키</p><p>달력</p><p>헤더/사이드바</p></td>
-   <td align="left"><p>프로젝트</p><p>자료실</p><p>저장소(Git 연동)</p></td>
-   <td align="left"><p>마이페이지</p><p>로드맵</p><p>마일스톤</p><p>간트차트</p><p>게시판</p></td>
- </tr>
 </table>
 
 ---
