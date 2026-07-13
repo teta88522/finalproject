@@ -41,7 +41,7 @@
    <td align="center">DB</td>
  </tr>
   <tr>
-   <td align="center"><p>회원가입 및 로그인</p><p>역할 및 권한 관리</p></td>
+   <td align="right"><p>회원가입 및 로그인</p><p>역할 및 권한 관리</p><p>구성원/그룹 관리</p><p>역할 및 권한 관리</p><p>테스트 케이스 및 버그 관리</p></td>
    <td align="center">배포</td>
   <td align="center">개발환경</td>
    <td align="center">GIT</td>
